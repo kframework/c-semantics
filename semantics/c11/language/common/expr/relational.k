@@ -295,20 +295,49 @@ module C-COMMON-EXPR-RELATIONAL
      an array of length one with the type of the object as its element type.
      }*/
      // if one of the pointers is null, it's straightforward
-     rule tv(NullPointer, T::UType) == tv(N:SymLoc, T'::UType)
+     rule tv(V::CValue, T::UType) == tv(N:SymLoc, T'::UType)
           => makeTruth(NullPointer ==K N, T, T')
-          requires notBool hasLint
+          requires notBool (isFunctionPointerType(type(T')) andBool isNullPointerConstant(tv(V, T)))
+               andBool (isNullPointerConstant(tv(V, T)) orBool V ==K NullPointer)
           [structural]
-     rule tv(NullPointer, T::UType) != tv(N:SymLoc, T'::UType)
+     rule tv(V::CValue, T::UType) != tv(N:SymLoc, T'::UType)
           => makeTruth(NullPointer =/=K N, T, T')
-          requires notBool hasLint
+          requires notBool (isFunctionPointerType(type(T')) andBool isNullPointerConstant(tv(V, T)))
+               andBool (isNullPointerConstant(tv(V, T)) orBool V ==K NullPointer)
           [structural]
-     rule tv(N:SymLoc, T::UType) == tv(NullPointer, T'::UType)
+     rule tv(N:SymLoc, T::UType) == tv(V::CValue, T'::UType)
           => makeTruth(NullPointer ==K N, T, T')
-          requires notBool hasLint
+          requires notBool (isFunctionPointerType(type(T)) andBool isNullPointerConstant(tv(V, T')))
+               andBool (isNullPointerConstant(tv(V, T')) orBool V ==K NullPointer)
           [structural]
-     rule tv(N:SymLoc, T::UType) != tv(NullPointer, T'::UType)
+     rule tv(N:SymLoc, T::UType) != tv(V::CValue, T'::UType)
           => makeTruth(NullPointer =/=K N, T, T')
+          requires notBool (isFunctionPointerType(type(T)) andBool isNullPointerConstant(tv(V, T')))
+               andBool (isNullPointerConstant(tv(V, T')) orBool V ==K NullPointer)
+          [structural]
+
+     rule tv(V::CValue, T::UType) == tv(N:SymLoc, T'::UType)
+          => lintNullFunPtrCompare ~> makeTruth(NullPointer ==K N, T, T')
+          requires isFunctionPointerType(type(T'))
+               andBool isNullPointerConstant(tv(V, T))
+          [structural]
+     rule tv(V::CValue, T::UType) != tv(N:SymLoc, T'::UType)
+          => lintNullFunPtrCompare ~> makeTruth(NullPointer =/=K N, T, T')
+          requires isFunctionPointerType(type(T'))
+               andBool isNullPointerConstant(tv(V, T))
+          [structural]
+     rule tv(N:SymLoc, T::UType) == tv(V::CValue, T'::UType)
+          => lintNullFunPtrCompare ~> makeTruth(NullPointer ==K N, T, T')
+          requires isFunctionPointerType(type(T))
+               andBool isNullPointerConstant(tv(V, T'))
+          [structural]
+     rule tv(N:SymLoc, T::UType) != tv(V::CValue, T'::UType)
+          => lintNullFunPtrCompare ~> makeTruth(NullPointer =/=K N, T, T')
+          requires isFunctionPointerType(type(T))
+               andBool isNullPointerConstant(tv(V, T'))
+          [structural]
+     syntax KItem ::= "lintNullFunPtrCompare"
+     rule lintNullFunPtrCompare => .K
           requires notBool hasLint
           [structural]
 
