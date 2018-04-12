@@ -966,7 +966,7 @@ module LIBC-STDIO
           [structural]
      rule <k> (.K => writeItem(D, Item, Arg, NRead))
                ~> fscanf'(FD::FD, (ListItem(Arg::RValue) => .List) _,
-                    (ListItem(%(true, _, _, _) #as D::Directive) => .List) _,
+                    (ListItem(%(Wr::WriteBehavior, _, _, _) #as D::Directive) => .List) _,
                     M::Int => #if isReadCountDirective(D) #then M #else M +Int 1 #fi,
                     Item::String => "",
                     NRead::Int)
@@ -975,9 +975,10 @@ module LIBC-STDIO
           <read-buffer> Buffer::String </read-buffer>
           <feof> Eof:Bool </feof>
           requires ((Buffer ==K "" andBool Eof) orBool atFieldWidth(Item, D)) andBool isCompleteItem(Item, D)
+               andBool (Wr ==K dirWrite orBool Wr ==K dirAlloc)
           [structural]
      rule <k> fscanf'(FD::FD, _,
-                    (ListItem(%(false, _, _, _) #as D::Directive) => .List) _,
+                    (ListItem(%(dirRead, _, _, _) #as D::Directive) => .List) _,
                     M::Int => M +Int 1,
                     Item::String => "",
                     _)
@@ -1040,15 +1041,16 @@ module LIBC-STDIO
      rule (.K => writeItem(D, Item, Arg, NRead))
           ~> str(C::String)
           ~> fscanf'(_, (ListItem(Arg::RValue) => .List) _,
-               (ListItem(%(true, _, _, _) #as D::Directive) => .List) _,
+               (ListItem(%(Wr::WriteBehavior, _, _, _) #as D::Directive) => .List) _,
                M::Int => #if isReadCountDirective(D) #then M #else M +Int 1 #fi,
                Item::String => "",
                NRead::Int)
           requires notBool inScanSet(C, D, Item) andBool isCompleteItem(Item, D)
+               andBool (Wr ==K dirWrite orBool Wr ==K dirAlloc)
           [structural]
      rule str(C::String)
           ~> fscanf'(_, _,
-               (ListItem(%(false, _, _, _) #as D::Directive) => .List) _,
+               (ListItem(%(dirRead, _, _, _) #as D::Directive) => .List) _,
                M::Int => M +Int 1,
                Item::String => "",
                _)
@@ -1091,63 +1093,86 @@ module LIBC-STDIO
      rule isReadCountDirective(%(_, _, _, "n")) => true
      rule isReadCountDirective(_) => false [owise]
 
-     syntax KItem ::= writeItem(Directive, String, RValue, Int) [function]
-     rule writeItem(%(true, _, "", "c"), Item::String, tv(Loc:SymLoc, _), _)
+     syntax KItem ::= writeItem(Directive, String, K, Int)
+     context writeItem(_, _, HOLE:KItem => reval(HOLE), _) [result(RValue)]
+
+     rule writeItem(%(dirAlloc, Width::Int, "", "c"), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item)))
+          ~> writeItem(%(dirWrite, Width, "", "c"), Item, (* Loc), N)
+     rule writeItem(%(dirAlloc, Width::Int, "l", "c"), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item) *Int byteSizeofType(type(cfg:wcharut))))
+          ~> writeItem(%(dirWrite, Width, "l", "c"), Item, (* Loc), N)
+
+     rule writeItem(%(dirAlloc, Width::Int, "", "s"), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item) +Int 1))
+          ~> writeItem(%(dirWrite, Width, "", "s"), Item, (* Loc), N)
+     rule writeItem(%(dirAlloc, Width::Int, "l", "s"), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item) *Int byteSizeofType(type(cfg:wcharut)) +Int 1))
+          ~> writeItem(%(dirWrite, Width, "l", "s"), Item, (* Loc), N)
+
+     rule writeItem(%(dirAlloc, Width::Int, "", D::String), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item) +Int 1))
+          ~> writeItem(%(dirWrite, Width, "", "s"), Item, (* Loc), N)
+          requires firstChar(D) ==String "["
+     rule writeItem(%(dirAlloc, Width::Int, "l", D::String), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item) *Int byteSizeofType(type(cfg:wcharut)) +Int 1))
+          ~> writeItem(%(dirWrite, Width, "l", "s"), Item, (* Loc), N)
+          requires firstChar(D) ==String "["
+
+     rule writeItem(%(dirWrite, _, "", "c"), Item::String, tv(Loc:SymLoc, _), _)
           => writeChars(Loc, Item)
-     rule writeItem(%(true, _, "l", "c"), Item::String, tv(Loc:SymLoc, _), _)
+     rule writeItem(%(dirWrite, _, "l", "c"), Item::String, tv(Loc:SymLoc, _), _)
           => writeWChars(Loc, stringToList(Item))
 
-     rule writeItem(%(true, _, "", "s"), Item::String, tv(Loc:SymLoc, _), _)
+     rule writeItem(%(dirWrite, _, "", "s"), Item::String, tv(Loc:SymLoc, _), _)
           => writeString(Loc, Item)
-     rule writeItem(%(true, _, "l", "s"), Item::String, tv(Loc:SymLoc, _), _)
+     rule writeItem(%(dirWrite, _, "l", "s"), Item::String, tv(Loc:SymLoc, _), _)
           => writeWString(Loc, stringToList(Item))
 
-     rule writeItem(%(true, _, "", D::String), Item::String, tv(Loc:SymLoc, _), _)
+     rule writeItem(%(dirWrite, _, "", D::String), Item::String, tv(Loc:SymLoc, _), _)
           => writeString(Loc, Item)
           requires firstChar(D) ==String "["
-     rule writeItem(%(true, _, "l", D::String), Item::String, tv(Loc:SymLoc, _), _)
+     rule writeItem(%(dirWrite, _, "l", D::String), Item::String, tv(Loc:SymLoc, _), _)
           => writeWString(Loc, stringToList(Item))
           requires firstChar(D) ==String "["
 
-     rule writeItem(%(true, _, Length::String, "d"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "d"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 10), utype(getFormatType'("%d", Length)))))
-     rule writeItem(%(true, _, Length::String, "i"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "i"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 0), utype(getFormatType'("%i", Length)))))
           requires notBool has0xPrefix(Item)
-     rule writeItem(%(true, _, Length::String, "i"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "i"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%i", Length)))))
           requires has0xPrefix(Item)
-     rule writeItem(%(true, _, Length::String, "o"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "o"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 8), utype(getFormatType'("%o", Length)))))
-     rule writeItem(%(true, _, Length::String, "u"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "u"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 10), utype(getFormatType'("%u", Length)))))
-     rule writeItem(%(true, _, Length::String, "x"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "x"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 16), utype(getFormatType'("%x", Length)))))
           requires notBool has0xPrefix(Item)
-     rule writeItem(%(true, _, Length::String, "x"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "x"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%x", Length)))))
           requires has0xPrefix(Item)
 
-     rule writeItem(%(true, _, Length::String, "p"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "p"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(cfg:intToPointer(String2Base(Item, 16), utype(getFormatType'("%p", Length))), utype(getFormatType'("%p", Length)))))
           requires notBool has0xPrefix(Item)
                andBool toUpperCase(Item) =/=String "(NIL)"
-     rule writeItem(%(true, _, Length::String, "p"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "p"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(cfg:intToPointer(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%p", Length))), utype(getFormatType'("%p", Length)))))
           requires has0xPrefix(Item)
                andBool toUpperCase(Item) =/=String "(NIL)"
-     rule writeItem(%(true, _, Length::String, "p"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "p"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(NullPointer, utype(getFormatType'("%p", Length)))))
           requires toUpperCase(Item) ==String "(NIL)"
 
-     rule writeItem(%(true, _, Length::String, D::String) #as D'::Directive, Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, D::String) #as D'::Directive, Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := stringToFloat(Item, utype(innerType(type(Ptr))), utype(getFormatType'("%" +String D, Length))))
           requires isFloatDirective(D')
 
-     rule writeItem(%(true, _, Length::String, "n"), _, Ptr::RValue, M::Int)
+     rule writeItem(%(dirWrite, _, Length::String, "n"), _, Ptr:RValue, M::Int)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(M, utype(int))))
-
-     rule writeItem(_, _, _, _) => .K [owise]
 
      syntax KItem ::= stringToFloat(String, UType, UType)
      rule stringToFloat(S::String, T::UType, ut(_, float))
@@ -1172,9 +1197,10 @@ module LIBC-STDIO
           => deleteObject(Base) ~> cast(T, V)
           [structural]
 
-     syntax Directive ::= "%" "(" Bool "," Int "," String "," String ")"
+     syntax Directive ::= "%" "(" WriteBehavior "," Int "," String "," String ")"
                         | "%%"
                         | String
+     syntax WriteBehavior ::= "dirWrite" | "dirAlloc" | "dirRead"
 
      // (Input char, current directive, item read so far.)
      syntax Bool ::= inScanSet(String, Directive, String) [function]
@@ -1436,17 +1462,17 @@ module LIBC-STDIO
      rule isSpaceSkipDirective(_) => true [owise]
 
      syntax Directive ::= normalizeDirective(Directive) [function]
-     rule normalizeDirective(%(Write::Bool, 0, Length::String, "c"))
+     rule normalizeDirective(%(Write::WriteBehavior, 0, Length::String, "c"))
           => %(Write, 1, Length, "c")
-     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "X"))
+     rule normalizeDirective(%(Write::WriteBehavior, Width::Int, Length::String, "X"))
           => %(Write, Width, Length, "x")
-     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "A"))
+     rule normalizeDirective(%(Write::WriteBehavior, Width::Int, Length::String, "A"))
           => %(Write, Width, Length, "a")
-     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "E"))
+     rule normalizeDirective(%(Write::WriteBehavior, Width::Int, Length::String, "E"))
           => %(Write, Width, Length, "e")
-     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "F"))
+     rule normalizeDirective(%(Write::WriteBehavior, Width::Int, Length::String, "F"))
           => %(Write, Width, Length, "f")
-     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "G"))
+     rule normalizeDirective(%(Write::WriteBehavior, Width::Int, Length::String, "G"))
           => %(Write, Width, Length, "g")
      rule normalizeDirective(D::Directive) => D [owise]
 
@@ -1461,14 +1487,21 @@ module LIBC-STDIO
           => parseResult(%%, L)
      rule parseDirective(ListItem("%") ListItem("*") L::List)
           => parseResult(%
-               ( false
+               ( dirRead
+               , parseDigits(L)
+               , parseLengthMod(eatDigits(L))
+               , parseConvSpec(eatLengthMod(eatDigits(L)))
+               ), eatConvSpec(eatLengthMod(eatDigits(L))))
+     rule parseDirective(ListItem("%") ListItem("m") L::List)
+          => parseResult(%
+               ( dirAlloc
                , parseDigits(L)
                , parseLengthMod(eatDigits(L))
                , parseConvSpec(eatLengthMod(eatDigits(L)))
                ), eatConvSpec(eatLengthMod(eatDigits(L))))
      rule parseDirective(ListItem("%") L::List)
           => parseResult(%
-               ( true
+               ( dirWrite
                , parseDigits(L)
                , parseLengthMod(eatDigits(L))
                , parseConvSpec(eatLengthMod(eatDigits(L)))
