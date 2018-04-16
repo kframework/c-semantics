@@ -28,11 +28,18 @@ FILES_TO_DIST = \
         LICENSE \
         licenses
 
+LIBC_SO = $(DIST_DIR)/$(PROFILE)/lib/libc.so
+LIBSTDCXX_SO = $(DIST_DIR)/$(PROFILE)/lib/libstdc++.so
+
+define timestamp_of
+    $(DIST_DIR)/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
+endef
+
 .PHONY: default check-vars semantics clean fast cpp-semantics translation-semantics execution-semantics $(DIST_DIR) test-build pass fail fail-compile parser/cparser cpp-parser/clang-kast
 
 default: test-build
 
-fast: $(DIST_DIR)/$(PROFILE)/lib/libc.so $(DIST_DIR)/$(PROFILE)/lib/libstdc++.so $(DIST_DIR)/$(PROFILE)/c11-cpp14-kompiled/c11-cpp14-kompiled/timestamp
+fast: $(LIBC_SO) $(LIBSTDCXX_SO) $(call timestamp_of,c11-cpp14)
 
 check-vars:
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
@@ -71,34 +78,20 @@ $(DIST_DIR)/kcc: $(SCRIPTS_DIR)/kcc $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/i
 
 $(PROFILE_DIR)/cpp-pp:
 
-$(DIST_DIR)/$(PROFILE)/c11-cpp14-kompiled/c11-cpp14-kompiled/timestamp: $(DIST_DIR)/kcc execution-semantics
-	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-cpp14-kompiled $(DIST_DIR)/$(PROFILE)
-	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/c11-cpp14-kompiled $(DIST_DIR)/$(shell basename $(d)))
+$(call timestamp_of,c11-cpp14):         execution-semantics $(DIST_DIR)/$(PROFILE)/c11-cpp14-kompiled
+$(call timestamp_of,c11-translation):   translation-semantics $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled
+$(call timestamp_of,cpp14-translation): cpp-semantics $(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled
+$(call timestamp_of,c11-nd):            semantics $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled
+$(call timestamp_of,c11-nd-thread):     semantics $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled
 
-$(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp: $(DIST_DIR)/kcc translation-semantics
-	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(PROFILE)
+$(DIST_DIR)/$(PROFILE)/%-kompiled: $(DIST_DIR)/kcc
+	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/$(*)-kompiled $(DIST_DIR)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(shell basename $(d)))
+		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/$(*)-kompiled $(DIST_DIR)/$(shell basename $(d)))
 
-$(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp: $(DIST_DIR)/kcc cpp-semantics
-	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/cpp14-translation-kompiled $(DIST_DIR)/$(PROFILE)
-	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/cpp14-translation-kompiled $(DIST_DIR)/$(shell basename $(d)))
-
-$(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp: semantics
-	@cp -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-kompiled $(DIST_DIR)/$(PROFILE)
-	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-kompiled $(DIST_DIR)/$(shell basename $(d)))
-
-$(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp: semantics
-	@cp -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-thread-kompiled $(DIST_DIR)/$(PROFILE)
-	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-thread-kompiled $(DIST_DIR)/$(shell basename $(d)))
-
-$(DIST_DIR)/$(PROFILE)/lib/libstdc++.so: $(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) $(DIST_DIR)/kcc
+$(LIBSTDCXX_SO): $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) $(DIST_DIR)/kcc
 	@echo "Translating the C++ standard library... ($(PROFILE_DIR))"
-	cd $(PROFILE_DIR)/compiler-src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(DIST_DIR)/$(PROFILE)/lib/libstdc++.so *.C $(KCCFLAGS) -I .
+	cd $(PROFILE_DIR)/compiler-src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(LIBSTDCXX_SO) *.C $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		$(shell pwd)/$(DIST_DIR)/kcc -profile $(shell basename $(d)) && \
 		cd $(d)/compiler-src && \
@@ -106,9 +99,9 @@ $(DIST_DIR)/$(PROFILE)/lib/libstdc++.so: $(DIST_DIR)/$(PROFILE)/cpp14-translatio
 	@$(shell pwd)/$(DIST_DIR)/kcc -profile $(PROFILE)
 	@echo "Done."
 
-$(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_DIR)/kcc
+$(LIBC_SO): $(call timestamp_of,cpp14-translation) $(call timestamp_of,c11-translation) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_DIR)/kcc
 	@echo "Translating the C standard library... ($(PROFILE_DIR))"
-	cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(DIST_DIR)/$(PROFILE)/lib/libc.so *.c $(KCCFLAGS) -I .
+	cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(LIBC_SO) *.c $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		echo "Translating the C standard library... ($(d))" && \
 		$(shell pwd)/$(DIST_DIR)/kcc -profile $(shell basename $(d)) && \
@@ -117,7 +110,7 @@ $(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/cpp14-translation-kom
 	@$(shell pwd)/$(DIST_DIR)/kcc -profile $(PROFILE)
 	@echo "Done."
 
-$(DIST_DIR): test-build $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp
+$(DIST_DIR): test-build $(call timestamp_of,c11-nd) $(call timestamp_of,c11-nd-thread)
 
 test-build: fast
 	@echo "Testing kcc..."
