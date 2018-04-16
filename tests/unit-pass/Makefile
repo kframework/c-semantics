@@ -12,6 +12,7 @@ CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
 C_TEST_COMPARISON = ${C_TESTS:=.cmp}
 CC=gcc-4.9
 CXX=g++-5
+LDFLAGS=-pthread
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
@@ -40,22 +41,22 @@ compile: ${KCC_COMPILED_TESTS}
 
 %-link1.c.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@../../dist/kcc -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/kcc -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.C.kcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
-	@../../dist/k++ -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/k++ -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.c.kcc: %.c
 	@echo -n "Compiling $<... "
-	@../../dist/kcc -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/kcc -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.kcc: %.C
 	@echo -n "Compiling $<... "
-	@../../dist/k++ -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/k++ -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.c.gcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^ (reference)... "
-	@$(CC) -std=c11 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(LDFLAGS) -std=c11 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.C.gcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^ (reference)... "
@@ -63,7 +64,7 @@ compile: ${KCC_COMPILED_TESTS}
 
 %.c.gcc: %.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(LDFLAGS) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.gcc: %.C
 	@echo -n "Compiling $< (reference)... "
 	@$(CXX) -std=c++14 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
