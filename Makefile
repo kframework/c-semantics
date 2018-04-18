@@ -57,6 +57,7 @@ $(DIST_DIR)/kcc: $(SCRIPTS_DIR)/kcc $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/i
 	@-cp -Lp $(PROFILE_DIR)/cpp-pp $(DIST_DIR)/$(PROFILE)
 	@cp -RLp $(PROFILE_DIR)/include $(DIST_DIR)/$(PROFILE)
 	@cp -RLp $(PROFILE_DIR)/src $(DIST_DIR)/$(PROFILE)
+	@cp -RLp $(PROFILE_DIR)/native $(DIST_DIR)/$(PROFILE)
 	@cp -RLp $(PROFILE_DIR)/compiler-src $(DIST_DIR)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		mkdir -p $(DIST_DIR)/$(shell basename $(d))/lib)
@@ -69,11 +70,13 @@ $(DIST_DIR)/kcc: $(SCRIPTS_DIR)/kcc $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/i
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp $(d)/src $(DIST_DIR)/$(shell basename $(d)))
 	@$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -RLp $(d)/native $(DIST_DIR)/$(shell basename $(d)))
+	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp $(d)/compiler-src $(DIST_DIR)/$(shell basename $(d)))
 	@cp -RLp $(FILES_TO_DIST) $(DIST_DIR)
 	@cat $(SCRIPTS_DIR)/kcc | perl $(SCRIPTS_DIR)/getopt.pl > $(DIST_DIR)/kcc
 	@chmod --reference=$(SCRIPTS_DIR)/kcc $(DIST_DIR)/kcc
-	@gcc $(SCRIPTS_DIR)/writelong.c -o $(DIST_DIR)/writelong
+	@$(CC) $(SCRIPTS_DIR)/writelong.c -o $(DIST_DIR)/writelong
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
 $(PROFILE_DIR)/cpp-pp:
@@ -99,14 +102,17 @@ $(LIBSTDCXX_SO): $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR
 	@$(shell pwd)/$(DIST_DIR)/kcc -profile $(PROFILE)
 	@echo "Done."
 
-$(LIBC_SO): $(call timestamp_of,cpp14-translation) $(call timestamp_of,c11-translation) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_DIR)/kcc
+$(LIBC_SO): $(call timestamp_of,cpp14-translation) $(call timestamp_of,c11-translation) $(wildcard $(PROFILE_DIR)/native/*.c) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/native/*.c)) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_DIR)/kcc
 	@echo "Translating the C standard library... ($(PROFILE_DIR))"
-	cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(LIBC_SO) *.c $(KCCFLAGS) -I .
+	cd $(PROFILE_DIR)/native && $(CC) -c *.c -I .
+	cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(LIBC_SO) *.c $(PROFILE_DIR)/native/*.o $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		echo "Translating the C standard library... ($(d))" && \
 		$(shell pwd)/$(DIST_DIR)/kcc -profile $(shell basename $(d)) && \
+		cd $(d)/native && \
+		$(CC) -c *.c -I . && \
 		cd $(d)/src && \
-		$(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(DIST_DIR)/$(shell basename $(d))/lib/libc.so *.c $(KCCFLAGS) -I .)
+		$(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(DIST_DIR)/$(shell basename $(d))/lib/libc.so *.c $(d)/native/*.o $(KCCFLAGS) -I .)
 	@$(shell pwd)/$(DIST_DIR)/kcc -profile $(PROFILE)
 	@echo "Done."
 

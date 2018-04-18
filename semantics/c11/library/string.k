@@ -17,6 +17,7 @@ module LIBC-STRING
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
+     imports LIBC-SYNTAX
 
      rule (.K => cast(utype(unsigned-char), V))
           ~> builtin("memset", _, V::RValue, _)
@@ -80,5 +81,12 @@ module LIBC-STRING
      rule builtin("__xpg_strerror_r", A1::RValue, A2::RValue, A3::RValue)
           => nativeCall("__xpg_strerror_r", ListItem(A1) ListItem(A2) ListItem(A3), .List)
           [native-call]
+
+     rule (.K => getString(Ptr))
+          ~> builtin("strlen", Ptr::RValue)
+          [structural]
+     rule str(S::String) ~> builtin("strlen", _)
+          => tv(lengthString(S), utype(size_t))
+          [structural]
 
 endmodule

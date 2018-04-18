@@ -169,6 +169,7 @@ module LIBC-INIT
           (id("strerror") |-> fun(ptr(char), int)
           (id("strerror_r") |-> fun(int, int, ptr(char), size_t)
           (id("__xpg_strerror_r") |-> fun(int, int, ptr(char), size_t)
+          (id("strlen") |-> fun(size_t, ptr(const(char)))
 
           // stdarg
           (id("__kcc_va_copy") |-> fun(void, ptr(va_list), va_list)
@@ -182,7 +183,7 @@ module LIBC-INIT
           extensionBuiltins
           // we need these parentheses to avoid an exponential explosion of parsing time;
           // really should look further into true priorities in the parser kernel.
-          ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+          )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
      rule mtx_t => typeref("__kcc_typeref_mtx_t")
      rule jmp_buf => typeref("__kcc_typeref_jmp_buf")
