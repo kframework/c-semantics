@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <unistd.h>
 
 pthread_mutex_t mut;
 int var1;
@@ -10,6 +11,8 @@ void * thread1(void * p) {
       pthread_mutex_unlock(&mut);
 
       for (;;) {
+            sleep(1);
+
             pthread_mutex_lock(&mut);
             int v = var1;
             pthread_mutex_unlock(&mut);
@@ -24,6 +27,8 @@ void * thread2(void * p) {
       pthread_mutex_unlock(&mut);
 
       for (;;) {
+            sleep(1);
+
             pthread_mutex_lock(&mut);
             int v = var2;
             pthread_mutex_unlock(&mut);
