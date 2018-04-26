@@ -3,7 +3,7 @@ module CPP-EXPR-MEMBERS-SYNTAX
      imports CPP-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-SORTS
-     syntax Expr ::= fieldExp(Expr, Name, CPPType, Int) [strict(1)]
+     syntax Expr ::= fieldExp(Expr, CPPType, Int) [strict(1)]
 endmodule
 
 module CPP-EXPR-MEMBERS
@@ -24,21 +24,28 @@ module CPP-EXPR-MEMBERS
      context HOLE:Expr . _ _
 
      rule V:Val . no-template (Name(_:Class, _) #as N::Name)
-       => lookupFieldCPP(V, N, 0)
+       => lookupFieldCPP(V, type(V), N, 0)
 
-     syntax KItem ::= lookupFieldCPP(Val, Name, Int)
+     syntax KItem ::= lookupFieldCPP(Val, CPPType, Name, Int)
      //TODO(traiansf): Check access permissions
-     rule <k> lookupFieldCPP(V::Val, Name(FC::Class, F::CId) #as N::Name, PrevOffset::Int)
-           => fieldExp(V, N, addQuals(getQuals(type(V)), T), Offset +Int PrevOffset)
+     rule <k> lookupFieldCPP(V::Val, TC::CPPType, Name(FC::Class, F::CId), PrevOffset::Int)
+           => fieldExp(V, addQuals(getQuals(type(V)), T), Offset +Int PrevOffset)
           ...</k>
           <class-id> FC </class-id>
           <cenv>... F |-> (T::CPPType |-> classOffset(Offset::Int)) ...</cenv>
+          requires type(simpleType(TC)) ==Type type(classType(FC))
 
-     rule <k> lookupFieldCPP(V::Val, Name(FC::Class => C, F::CId), PrevOffset::Int => PrevOffset +Int Offset) ...</k>
+     rule <k> lookupFieldCPP(V::Val, t(... st: classType(DC::Class => BC)), Name(BC::Class, _), PrevOffset::Int => PrevOffset +Int Offset)
+          ...</k>
+          <class-id> DC </class-id>
+          <cenv>... baseClass(BC)  |-> (_ |-> classOffset(Offset::Int)) ...</cenv>
+          requires isBaseClassOf(BC, DC)
+
+     rule <k> lookupFieldCPP(V::Val, _, Name(FC::Class => C, F::CId), PrevOffset::Int => PrevOffset +Int Offset) ...</k>
           <class-id> FC </class-id>
           <cenv>... F |-> (_::CPPType |-> envEntry(... base: memberBase(unnamedObject(C::Class), _, _))) unnamedObject(C) |-> (_::CPPType |-> classOffset(Offset::Int)) ...</cenv>
 
-     rule fieldExp(lv(Loc:SymLoc, _, _), _, T::CPPType, Offset::Int)
+     rule fieldExp(lv(Loc:SymLoc, _, _), T::CPPType, Offset::Int)
           => lv(Loc +bytes Offset /Int cfg:bitsPerByte, noTrace, T)
           requires notBool isCPPBitfieldType(T)
 

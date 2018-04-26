@@ -39,6 +39,7 @@ module CPP-TYPING-SYNTAX
      imports COMMON-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-SORTS
+     imports SYMLOC-SORTS
 
      syntax AType ::= CPPType
 
@@ -277,6 +278,8 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPType ::= implicitObjectParameterType(CPPFunctionType) [function]
 
+     syntax Expr ::= getBaseClassSubobject(base: LVal, baseType: CPPClassType) [strict]
+
      syntax Bool ::= isBaseClassOf(base: CPPClassType, derived: CPPClassType) [function]
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isBaseClassOf(base: Class, derived: Class) [function, klabel(isClassBaseClassOf)]
@@ -325,6 +328,7 @@ module CPP-TYPING
      imports CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-SYMLOC-SYNTAX
 
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: noMethod))) => toList(L)
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(... constructor: true)))) => toList(L)
@@ -654,6 +658,8 @@ module CPP-TYPING
      rule isUnnamedPRValue(T::CPPType) 
           => notBool isUnnamedLValue(T) andBool notBool isUnnamedXValue(T)
     
+     rule getBaseClassSubobject(lv(L::SymLoc, Tr::Trace, D::CPPClassType), B::CPPClassType) => lv(baseClassSubobject(L, B, D), Tr, B)
+
      rule isBaseClassOf(t(_, _, classType(B::Class)), t(_, _, classType(D::Class))) => isBaseClassOf(B, D)
      rule isBaseClassOf(B::Class, D::Class) => #isBaseClassOf(B, ListItem(D), #configuration)
      rule isDirectBaseClassOf(B::Class, D::Class) => #isDirectBaseClassOf(B, D, #configuration)
