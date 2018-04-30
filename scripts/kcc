@@ -29,9 +29,11 @@ my $MAGIC = "\x7fKAST";
 
 my @objFiles = ();
 my @nativeObjFiles = ();
+my @trampolineFiles = ();
 my @nativeLibs = ();
 my @srcFiles = ();
 
+my $symbols;
 our @cppArgs = ();
 our @ld_lib = ();
 our @ldArgs = ('-lmpfr', '-lgmp', '-lffi', '-lm', '-ldl', '-Wl,--no-as-needed', '-u', $RVMAIN);
@@ -345,8 +347,6 @@ sub main {
   -frunner-script	Compile program to perl script with analysis tool options. [undocumented]
   -fissue-report=<file>	Write issues to the specified file.
 			Format (CSV/JSON) is inferred from the specified file extension.
-  -fworkspace=<dir>	Use <dir> for the workspace of ) . $0 . q( when reporting
-			errors.
   -Wlint		Generate lint errors for potentially undesirable
 			behaviors.*
     {
@@ -431,6 +431,12 @@ sub main {
 				compiler.
 				WARNING: Due to technical limitations this also
 				disables support for inline assembly.
+  -fnative-binary	Build a standalone binary containing only the native code
+			needed to execute native functions for the application
+			when linking. Slower, but avoids symbol conflicts
+			when compiling C code that is part of the RV-Match runtime.
+			For the purposes of optimization, you must pass this flag
+			during both compilation and linking. [undocumented]
   -fuse-native-std-lib	Use native implementations instead of semantics when
 			interpreting calls to standard library functions.
   -x <language>		Set language for input files.
@@ -544,7 +550,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     } else {
       $oval = '-';
     }
-    return preprocess($oval, $srcFiles[0], $srcFiles[1]);
+    return preprocess($oval, '/dev/null', $srcFiles[0], $srcFiles[1]);
   } elsif ($hasStdin) {
     error("-E or -x required when input is from standard input.\n");
   }
@@ -579,7 +585,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     mergeObjs(1, 0);
     my $obj = tempFile('merge');
     execute('ld', '-r', '-o', $obj, @nativeObjFiles);
-    execute(catfile($distDirectory, 'merge-kcc-obj'), $obj, $objFiles[0], $main::oflag || 'a.out');
+    execute(catfile($distDirectory, 'merge-kcc-obj'), $obj, $objFiles[0], $trampolineFiles[0], $main::oflag || 'a.out');
     return 0;
   }
 
@@ -604,7 +610,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
 
   # At this point, we have 0 source files and 1 object file left for
   # the final calls to krun.
-  my $retval = execute(getKRunCommand($programConfFile, \@objFiles, undef, 1, 'c++', undef));
+  my $retval = execute(getKRunCommand($programConfFile, \@objFiles, undef, 1, 'c++', undef, undef));
   checkError($retval, $programConfFile, 1);
 
   # add space to end of args with () so that batch scripts work on windows
@@ -710,6 +716,31 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     print $pluginPath catfile($dir, 'realdef.cma');
     close($pluginPath);
 
+    my $compiler;
+    if ($args->{'-Xk++'}) {
+      $compiler = 'g++';
+    } else {
+      $compiler = 'gcc';
+    }
+
+
+    if ($args->{'-fnative-binary'}) {
+      my $dir = catfile($profileDirectory, 'native-server');
+      execute("cat '$trampolineFiles[0]' | awk -F '\t' '{if (\$1!=\"\") print \$1; }' | " . catfile($distDirectory, "make-trampolines") . " > '$tempDir/trampolines.h'");
+      execute("cat '$trampolineFiles[0]' | awk -F '\t' '{if (\$2!=\"\") print \$2; }' > '$tempDir/used_symbols'");
+      execute("(cat '$trampolineFiles[0]' | awk -F '\t' '{if (\$1!=\"\") print \"__\" \$1; }'; comm -12 '$tempDir/used_symbols' '$symbols') | sort | uniq | " . catfile($distDirectory, "make-symbols") . " > '$tempDir/symbols.c'");
+      my @cmd = ($compiler, '-fsanitize=undefined', '-o', "$tempDir/native_binary",
+                         catfile($dir, 'main.o'),
+                         catfile($dir, 'platform.o'),
+                         catfile($dir, 'server.c'),
+                         '-I', $dir, '-I', $tempDir, "-w", "-g",
+                         @ldArgs);
+      my $retval = execute(@cmd);
+      checkError($retval, $programConfFile, 1);
+    } else {
+      system("touch", "$tempDir/native_binary");
+    }
+
     my $old_cwd = getcwd();
     chdir($tempDir);
     $retval = execute('ld', '-r', '-b', 'binary', '-o', 'kore_term.o', 'kore_term');
@@ -718,18 +749,15 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     checkError($retval, $programConfFile, 1);
     $retval = execute('ld', '-r', '-b', 'binary', '-o', 'plugin_path.o', 'plugin_path');
     checkError($retval, $programConfFile, 1);
+    $retval = execute('ld', '-r', '-b', 'binary', '-o', 'native_binary.o', 'native_binary');
+    checkError($retval, $programConfFile, 1);
     chdir($old_cwd);
-
-    my @cmd = ();
-    if ($args->{'-Xk++'}) {
-      push(@cmd, 'g++');
-    } else {
-      push(@cmd, 'gcc');
-    }
-    push(@cmd, catfile($dir, 'execution_partial.o'), '-o', $oval, '-Wl,-E',
+    
+    my @cmd = ($compiler, catfile($dir, 'execution_partial.o'), '-o', $oval, '-Wl,-E',
                catfile($tempDir, 'kore_term.o'),
                catfile($tempDir, 'marshal_term.o'),
                catfile($tempDir, 'plugin_path.o'),
+               catfile($tempDir, 'native_binary.o'),
                @ldArgs);
     checkError(execute(@cmd), $programConfFile, 1);
   }
@@ -752,10 +780,18 @@ sub mergeObjs {
 
   if ($mergeObjs) {
     my $accum = tempFile('merge');
-    my @cmd = getKRunCommand($accum, \@objFiles, undef, 0, 'c++', undef);
+    my @cmd = getKRunCommand($accum, \@objFiles, undef, 0, 'c++', undef, undef);
     checkError(execute(@cmd), $accum, 1);
     @objFiles = ($accum);
   }
+
+  my $trampolines = tempFile('trampolines');
+  my $cmd = "cat @trampolineFiles | sort | uniq > '$trampolines'";
+  if ($args->{'-d'}) {
+    print("$cmd\n");
+  }
+  execute($cmd);
+  @trampolineFiles = ($trampolines);
 }
 
 sub isKObj {
@@ -838,9 +874,11 @@ sub classify {
     } elsif (isKObj($_)) {
       my $kast = tempFile('kast');
       my $obj = tempFile('obj');
-      execute(catfile($distDirectory, 'split-kcc-obj'), $_, $obj, $kast);
+      my $trampolines = tempFile('trampolines');
+      execute(catfile($distDirectory, 'split-kcc-obj'), $_, $obj, $kast, $trampolines);
       push(@objFiles, $kast);
       push(@nativeObjFiles, $obj);
+      push(@trampolineFiles, $trampolines);
       push(@ldArgs, $obj);
     } elsif (isNativeObj($_) or -e $_) {
       push(@nativeObjFiles, $_);
@@ -875,8 +913,10 @@ sub extractStatic {
       if (isKObj(catfile($tempDir, $_))) {
         my $kast = tempFile("ar-kast-$_");
         my $obj = tempFile("ar-obj-$_");
-        execute(catfile($distDirectory, 'split-kcc-obj'), catfile($tempDir, $_), $obj, $kast);
+        my $trampolines = tempFile("ar-trampolines-$_");
+        execute(catfile($distDirectory, 'split-kcc-obj'), catfile($tempDir, $_), $obj, $kast, $trampolines);
         push(@objFiles, $kast);
+        push(@trampolineFiles, $trampolines);
         push(@repackageObjs, $obj);
       } else {
         push(@repackageObjs, catfile($tempDir, $_));
@@ -897,8 +937,9 @@ sub compile {
   if ($lang eq 'c' or $lang eq 'c++') {
     my $kast = tempFile('kast');
     my $obj = tempFile('obj');
+    my $trampolines = tempFile('trampolines');
     my $uuid = create_uuid_as_string();
-    my $retval = execute(getKRunCommand($kast, \@arr, $inputFile, 0, $lang, $uuid));
+    my $retval = execute(getKRunCommand($kast, \@arr, $inputFile, 0, $lang, $uuid, $trampolines));
     checkError($retval, $kast, 1);
     my $compiler = 'gcc';
     if ($args->{'-Xk++'}) {
@@ -909,10 +950,10 @@ sub compile {
     } else {
       $retval = execute($compiler, '-c', getStd($lang), '-x', $lang, $inputFile, '-o', $obj, @cppArgs);
       checkError($retval, $obj, 0);
-      execute('globalize-syms', $uuid, $obj);
+      execute(catfile($distDirectory, 'globalize-syms'), $uuid, $obj);
     }
     execute('objcopy', '--redefine-sym', "main=$RVMAIN", $obj);
-    execute(catfile($distDirectory, 'merge-kcc-obj'), $obj, $kast, $oval);
+    execute(catfile($distDirectory, 'merge-kcc-obj'), $obj, $kast, $trampolines, $oval);
   } else {
     my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval, @cppArgs);
     checkError($retval, $oval, 0);
@@ -966,11 +1007,11 @@ sub add_arg {
 }
 
 sub getKRunCommand {
-  my ($output, $objsRef, $src, $link, $lang, $uuid) = (@_);
+  my ($output, $objsRef, $src, $link, $lang, $uuid, $trampolines) = (@_);
   my @objs = @$objsRef;
 
   my @krun_args;
-  my $symbols = $link ? dumpSymbols() : 'dummy';
+  $symbols = $link ? dumpSymbols() : 'dummy';
   if ($use_interpreter) {
     my $dir = $lang eq 'c++' ? catfile($CPP_TRANS_DEF, 'cpp14-translation-kompiled') : catfile($C_TRANS_DEF, 'c11-translation-kompiled');
     @krun_args = (
@@ -1048,7 +1089,7 @@ sub getKRunCommand {
     @krun_args = add_arg("OBJS", ".K", 'text', @krun_args);
   }
   if (defined $src) {
-    my $kast = parse($src, $lang);
+    my $kast = parse($src, $lang, $trampolines);
     @krun_args = add_arg("PGM", $kast, 'textfile', @krun_args);
   } else {
     @krun_args = add_arg("PGM", ".K", 'text', @krun_args);
@@ -1064,7 +1105,7 @@ sub dumpSymbols {
 }
 
 sub preprocess {
-  my ($output, $inputFile, $lang) = (@_);
+  my ($output, $trampolines, $inputFile, $lang) = (@_);
   my $isStdout = 0;
   if ($output eq '-') {
     $output = tempFile('pp');
@@ -1078,19 +1119,26 @@ sub preprocess {
     my @ppArgs = (catfile($profileDirectory, 'cpp-pp'),
       @main::cppArgs, getStd($lang), $inputFile, '-o', $output);
 
-    return execPreprocess($output, $isStdout, @ppArgs);
+    return execPreprocess($output, $isStdout, $lang, $trampolines, @ppArgs);
   }
 
   my @ppArgs = (catfile($profileDirectory, 'pp'),
     @main::cppArgs, getStd($lang), $inputFile, '-o', $output);
 
-  return execPreprocess($output, $isStdout, @ppArgs);
+  return execPreprocess($output, $isStdout, $lang, $trampolines, @ppArgs);
 }
 
 sub execPreprocess {
-  my ($output, $isStdout, @ppArgs) = (@_);
+  my ($output, $isStdout, $lang, $trampolines, @ppArgs) = (@_);
   my $retval = execute(@ppArgs);
   if (!$retval) {
+    if ($args->{'-fnative-binary'}) {
+      my $cmd = "set -o pipefail && " . catfile($distDirectory, "call-sites") . " '$output' --char=sc -- -x $lang | sort | uniq > '$trampolines'";
+      my $callSitesRetval = execute("/bin/bash", "-c", $cmd);
+      checkError($callSitesRetval, $output, 0);
+    } else {
+      system('touch', $trampolines)
+    }
     execute("rv-ifdefclear", $output);
     for (@ifdef) {
       execute("rv-ifdefall", $output, @$_);
@@ -1141,11 +1189,11 @@ sub tempDir {
 }
 
 sub parse {
-  my ($inputFile, $lang) = (@_);
+  my ($inputFile, $lang, $trampolines) = (@_);
 
   my $ppResult = tempFile('pp');
   my $kast = tempFile('kast');
-  checkError(preprocess($ppResult, $inputFile, $lang), $ppResult, 0);
+  checkError(preprocess($ppResult, $trampolines, $inputFile, $lang), $ppResult, 0);
 
   if ($lang eq 'c++') {
     my $std = getStd('c++');
