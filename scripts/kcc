@@ -343,6 +343,7 @@ sub main {
   -d<chars>		Debugging info from preprocessor. See documentation
 			for GCC.
     { push(@main::cppArgs, "-d$chars"); }
+  -ftranslation-depth=<depth>	Compile program up to a given depth. [undocumented]
   -fmessage-length=0	Write all error messages on a single line.
   -frunner-script	Compile program to perl script with analysis tool options. [undocumented]
   -fissue-report=<file>	Write issues to the specified file.
@@ -1034,6 +1035,11 @@ sub getKRunCommand {
     if ($args->{'-d'}) {
       push(@krun_args, '--debug');
     }
+  }
+
+  if ($args->{'-ftranslation-depth='}) {
+    push(@krun_args, '--depth');
+	push(@krun_args, $args->{'-ftranslation-depth='});
   }
   my @options = initOptions();
   if (!$hasBuiltins && $args->{'-Xbuiltins'}) {
