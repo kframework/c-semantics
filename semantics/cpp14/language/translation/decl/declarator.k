@@ -502,18 +502,14 @@ module CPP-DECL-DECLARATOR
      rule isStaticInitialization(pre(BuiltinCallOp(...), _, _)) => false
      rule isStaticInitialization(le(beginConstruction(...), _, _)) => true
      rule isStaticInitialization(le(endConstruction(...), _, _)) => true
-     rule isStaticInitialization(le(_ :=init V::Expr, _, _)) => false
-          requires notBool isEvalVal(V)
-     rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => false
-          requires notBool isEvalVal(V)
+     rule isStaticInitialization(le(_ :=init V::Expr, _, _)) => isEvalVal(V)
+     rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => isEvalVal(V)
      rule isStaticInitialization(compoundInit(E1::Expr, E2::Expr)) => isStaticInitialization(E1) andBool isStaticInitialization(E2)
      rule isStaticInitialization(le(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(pre(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(xe(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
-     rule isStaticInitialization(le(_ :=init V::Expr, _, _)) => true
-          requires isEvalVal(V)
-     rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => true
-          requires isEvalVal(V)
+
+
      rule isStaticInitialization(lv(_, _, _)) => true
 
      syntax Expr ::= stripInitHolds(K) [function]

@@ -667,7 +667,6 @@ module CPP-TYPING
     
      rule getBaseClassSubobject(lv(L::SymLoc, Tr::Trace, D::CPPClassType), B::CPPClassType) => lv(baseClassSubobject(L, B, D), Tr, B)
 
-
      rule getBaseClassOffset(Base::Class, Derived::Class)
          => getAllBaseClassOffsets(Derived)[ Base ]
 
@@ -691,7 +690,7 @@ module CPP-TYPING
      rule #getDirectBaseClassOffsets(M::Map => M[B <- CurrentOffset +Int Offset],
                (ListItem(t(...st: classType(B::Class)) #as T::CPPType) => .List) _,
                CurrentOffset::Int, 
-               (baseClass(B) |-> (_::TypeMap T |-> classOffset(Offset::Int))) _::Map)
+               (baseClass(B) |-> (_::TypeMap T |-> classOffset(_, Offset::Int))) _::Map)
      requires notBool (B in_keys(M))
 
 

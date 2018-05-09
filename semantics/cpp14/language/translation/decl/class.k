@@ -702,7 +702,7 @@ module CPP-DECL-CLASS
           <class>...
             <class-id> C </class-id>
             <class-type> Key::ClassKey </class-type>
-            <cenv> CE::Map => #if X ==K #NoName #then CE #else CE[X, T <- classOffset(padOrNot(V, T, Key))] #fi </cenv>
+            <cenv> CE::Map => #if X ==K #NoName #then CE #else CE[X, T <- classOffset(V, padOrNot(V, T, Key))] #fi </cenv>
             <sizeof> V::Int => updateMaxOffset(V, T, Key) </sizeof>
             <align> M::Int => maxInt(M, byteAlignofType(T)) </align>
           ...</class>
@@ -716,7 +716,7 @@ module CPP-DECL-CLASS
           <class>...
             <class-id> C </class-id>
             <class-type> Key::ClassKey </class-type>
-            <cenv> CE::Map => #if X ==K #NoName #then CE #else CE[X, T <- classOffset(padOrNot(V, T, Key))] #fi </cenv>
+            <cenv> CE::Map => #if X ==K #NoName #then CE #else CE[X, T <- classOffset(V, padOrNot(V, T, Key))] #fi </cenv>
             <dsize> V::Int => updateMaxOffset(V, T, Key) </dsize>
             <align> M::Int => maxInt(M, byteAlignofType(T)) </align>
             <sizeof> V2::Int => maxInt(V2, padTo(updateMaxOffset(V, T, Key), 1)) </sizeof>
@@ -732,7 +732,7 @@ module CPP-DECL-CLASS
           <class>...
             <class-id> C </class-id>
             <class-type> Key::ClassKey </class-type>
-            <cenv> CE::Map => #if X ==K #NoName #then CE #else CE[X, T <- classOffset(padOrNot(V, getT'(T), Key))] #fi </cenv>
+            <cenv> CE::Map => #if X ==K #NoName #then CE #else CE[X, T <- classOffset(V, padOrNot(V, getT'(T), Key))] #fi </cenv>
             <dsize> V::Int => updateMaxOffset(V, T, Key) </dsize>
             <align> M::Int => maxInt(M, byteAlignofType(getT'(T))) </align>
             <sizeof> V2::Int => maxInt(V2, padTo(updateMaxOffset(V, T, Key), 1)) </sizeof>
@@ -757,7 +757,7 @@ module CPP-DECL-CLASS
           <class>...
             <class-id> C </class-id>
             <class-type> Union() </class-type>
-            <cenv> CE::Map => CE[X, T <- classOffset(0)] </cenv>
+            <cenv> CE::Map => CE[X, T <- classOffset(0, 0)] </cenv>
             <dsize> V::Int => maxInt(V, bitSizeofType(T)) </dsize>
             <align> M::Int => maxInt(M, byteAlignofType(T)) </align>
             <sizeof> V2::Int => maxInt(V2, maxInt(V, bitSizeofType(T))) </sizeof>
@@ -766,7 +766,7 @@ module CPP-DECL-CLASS
                andBool notBool isCPPBitfieldType(T)
 
      // non-POD-layout non-union, non-bitfield, non-empty-base-class
-     rule <k> layoutField(X::CId, T::CPPType) => tryLayoutField(X, T, padTo(V, #if isBaseClass(X) #then nvAlignof(T) #else byteAlignofType(T) #fi), false) ...</k>
+     rule <k> layoutField(X::CId, T::CPPType) => tryLayoutField(X, T, V, padTo(V, #if isBaseClass(X) #then nvAlignof(T) #else byteAlignofType(T) #fi), false) ...</k>
           <curr-scope> classScope(C::Class, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -790,34 +790,34 @@ module CPP-DECL-CLASS
      rule #nvSizeof(<class>... <nvsize> V::Int </nvsize> ...</class>) => V
      rule #nvAlignof(<class>... <nvalign> V::Int </nvalign> ...</class>) => V
 
-     syntax KItem ::= tryLayoutField(CId, CPPType, offset: Int, isEmptyBase: Bool)
-     rule <k> tryLayoutField(X::CId, T::CPPType, Offset::Int, false) => .K ...</k>
+     syntax KItem ::= tryLayoutField(CId, CPPType, naoffset: Int, offset: Int, isEmptyBase: Bool)
+     rule <k> tryLayoutField(X::CId, T::CPPType, NaOffset::Int, Offset::Int, false) => .K ...</k>
           <curr-scope> classScope(C::Class, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
             <class-type> Key::ClassKey </class-type>
-            <cenv> CE::Map => CE[X, T <- classOffset(Offset)] </cenv>
+            <cenv> CE::Map => CE[X, T <- classOffset(NaOffset, Offset)] </cenv>
             <dsize> V::Int => Offset +Int #if isBaseClass(X) #then nvSizeof(T) #else bitSizeofType(T) #fi </dsize>
             <align> M::Int => maxInt(M, #if isBaseClass(X) #then nvAlignof(T) #else byteAlignofType(T) #fi) </align>
             <sizeof> V2::Int => maxInt(V2, Offset +Int #if isBaseClass(X) #then nvSizeof(T) #else bitSizeofType(T) #fi) </sizeof>
           ...</class>
           requires size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), Offset))) ==Int 0
-     rule <k> tryLayoutField(X::CId, T::CPPType, Offset::Int, true) => .K ...</k>
+     rule <k> tryLayoutField(X::CId, T::CPPType, NaOffset::Int, Offset::Int, true) => .K ...</k>
           <curr-scope> classScope(C::Class, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
             <class-type> Key::ClassKey </class-type>
-            <cenv> CE::Map => CE[X, T <- classOffset(Offset)] </cenv>
+            <cenv> CE::Map => CE[X, T <- classOffset(NaOffset, Offset)] </cenv>
             <align> M::Int => maxInt(M, nvAlignof(T)) </align>
             <sizeof> V2::Int => maxInt(V2, Offset +Int bitSizeofType(T)) </sizeof>
           ...</class>
           requires size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), Offset))) ==Int 0
 
-     rule <k> tryLayoutField(X::CId, T::CPPType, Offset::Int => Offset +Int #if isBaseClass(X) #then nvAlignof(T) #else byteAlignofType(T) #fi *Int cfg:bitsPerByte, _) ...</k>
+     rule <k> tryLayoutField(X::CId, T::CPPType, _, Offset::Int => Offset +Int #if isBaseClass(X) #then nvAlignof(T) #else byteAlignofType(T) #fi *Int cfg:bitsPerByte, _) ...</k>
           <curr-scope> classScope(C::Class, _) </curr-scope>
           requires size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), Offset))) >Int 0
 
@@ -829,7 +829,7 @@ module CPP-DECL-CLASS
           <class>...
             <class-id> C </class-id>
             <class-type> Key::ClassKey </class-type>
-            <cenv> CE::Map => CE[baseClass(D), T <- classOffset(0)] </cenv>
+            <cenv> CE::Map => CE[baseClass(D), T <- classOffset(0, 0)] </cenv>
             <align> M::Int => maxInt(M, nvAlignof(T)) </align>
             <sizeof> V2::Int => maxInt(V2, bitSizeofType(T)) </sizeof>
           ...</class>
@@ -839,7 +839,7 @@ module CPP-DECL-CLASS
                andBool size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), 0))) ==Int 0
 
      // non-POD-layout non-union, empty base class, type conflict at 0
-     rule <k> layoutField(baseClass(D::Class), T::CPPType) => tryLayoutField(baseClass(D), T, padTo(V, nvAlignof(T)), true) ...</k>
+     rule <k> layoutField(baseClass(D::Class), T::CPPType) => tryLayoutField(baseClass(D), T, V, padTo(V, nvAlignof(T)), true) ...</k>
           <curr-scope> classScope(C::Class, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -888,7 +888,7 @@ module CPP-DECL-CLASS
                   | getTypesAtOffsetForLayoutInUnion(CPPType, ClassInfo, Int) [function]
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
                <non-static-data-members>... ListItem(kpair(X::CId, T::CPPType)) => .List </non-static-data-members>
-               <cenv>... X |-> (_::TypeMap T |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... X |-> (_::TypeMap T |-> classOffset(_, FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           requires FOffset >Int Offset
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
@@ -897,7 +897,7 @@ module CPP-DECL-CLASS
           ...</class>, Offset::Int)
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <non-static-data-members>... ListItem(kpair(X::CId, T'::CPPType)) </non-static-data-members>
-               <cenv>... X |-> (_::TypeMap T' |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... X |-> (_::TypeMap T' |-> classOffset(_, FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
           requires FOffset <=Int Offset
@@ -907,7 +907,7 @@ module CPP-DECL-CLASS
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>
                <non-static-data-members> .List </non-static-data-members>
-               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> classOffset(_, FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           requires FOffset >Int Offset
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
@@ -918,7 +918,7 @@ module CPP-DECL-CLASS
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) </base-classes>
                <non-static-data-members> .List </non-static-data-members>
-               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> classOffset(_, FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
           requires FOffset <=Int Offset

@@ -10,8 +10,18 @@ REFERENCE_TEST_RESULTS = ${TESTS:=.ref}
 TEST_COMPARISON = ${TESTS:=.cmp}
 CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
 C_TEST_COMPARISON = ${C_TESTS:=.cmp}
-CC=gcc-4.9
-CXX=g++-5
+
+ifeq ($(origin CC),default)
+	CC = gcc-4.9
+endif
+
+ifeq ($(origin CXX),default)
+	CXX=g++-5
+endif
+
+KCC=../../dist/kcc
+KXX=../../dist/k++
+
 LDFLAGS=-pthread
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
@@ -31,6 +41,9 @@ cpp-comparison: ${CPP_TEST_COMPARISON}
 
 compile: ${KCC_COMPILED_TESTS}
 
+zeroinit-class-padding.C.cmp:
+	@echo $@: disabled due to GCC bug 85548
+
 # some versions of GNU make define the following pattern rule using cp. We need
 # to disable this, otherwise we will skip compilation and things will break.
 %.out: %
@@ -41,18 +54,18 @@ compile: ${KCC_COMPILED_TESTS}
 
 %-link1.c.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@../../dist/kcc -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.C.kcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
-	@../../dist/k++ -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KXX) -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.c.kcc: %.c
 	@echo -n "Compiling $<... "
-	@../../dist/kcc -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.kcc: %.C
 	@echo -n "Compiling $<... "
-	@../../dist/k++ -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KXX) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.c.gcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^ (reference)... "
