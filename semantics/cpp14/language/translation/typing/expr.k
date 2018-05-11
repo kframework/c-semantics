@@ -297,4 +297,7 @@ module CPP-TYPING-EXPR
      //rule typeof(& E1::Expr) => typeofBuiltinOperator(operator&, E1)
      rule typeof(* E1::Expr) => typeofBuiltinOperator(operator*, E1, E1)
 
+     context GnuEnumUnderlyingType(HOLE:AType, _) [result(CPPType)]
+     rule GnuEnumUnderlyingType(T:CPPEnumType, _) => underlyingType(T)
+
 endmodule

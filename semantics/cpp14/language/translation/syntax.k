@@ -169,7 +169,7 @@ module CPP-ABSTRACT-SYNTAX
 
      // extensions
      syntax AType ::= GnuTypeOfExpr(AType)
-                    | GnuEnumUnderlyingType(AType)               
+                    | GnuEnumUnderlyingType(AType, AType)
 
      syntax ExceptionSpec ::= NoExceptionSpec() 
                             | NoexceptSpec(AExpr)

@@ -78,6 +78,8 @@ module CPP-TRANSLATION-NAME
 
      syntax Scope ::= getRestOfScope(EnumScope) [function]
      rule getRestOfScope(enumScope(N:Namespace :: _)) => namespaceScope(N)
+     rule getRestOfScope(enumScope(localQual(B::BlockScope) :: _)) => B
+     // TODO with class
 
      // name lookup in namespace scope
      rule <k> nameLookupInNamespaceScope(X::CId, N::Namespace, Tag::Tag, Mask::Set)
