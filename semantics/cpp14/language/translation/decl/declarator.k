@@ -298,12 +298,13 @@ module CPP-DECL-DECLARATOR
            requires notBool isVarDeclarationType(Type)
 
      // Static member declaration/definition, in the enclosing namespace.
-     rule <k> declareObject((N::Namespace :: _::ClassSpecifier) #as C:Class, C, X::CId, T:CPPType, Init::Expr, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
+     // Note that static member are not allowed in local classes
+     rule <k> declareObject((CQ::ClassQualifier :: _::ClassSpecifier) #as C:Class, C, X::CId, T:CPPType, Init::Expr, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
            => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type))
            ~> defineObject(C, X, T, Init, Type, StaticStorage, S)
           ...</k>
-          <curr-scope> namespaceScope(N) </curr-scope>
-          requires completeDeclaration(T, Init) ==K T
+          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
+          requires completeDeclaration(T, Init) ==K T andBool getClassNamespace(C) ==K N andBool notBool isLocalQualifier(CQ)
 
      rule <k> (.K => deduceAuto(T, Init)) 
               ~> declareObject(_, _, _, T::CPPTypeExpr, Init::Init, _, _, _, _) ...</k>

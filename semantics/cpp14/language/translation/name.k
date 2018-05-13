@@ -394,6 +394,7 @@ module CPP-TRANSLATION-NAME
           requires N =/=K NoNNS()
      rule NNS(Name(NoNNS(), X::CId)) => NNS(X)
      rule N::NNS :: NNS(X:CId) => NNS(Name(N, X)) [anywhere]
+     rule NNS(Name(NoNNS(), X:CId)) => NNS(X) [anywhere]
 
      syntax KItem ::= extractNNS(K) [strict]
      rule extractNNS(nsRef(N::Namespace)) => N
