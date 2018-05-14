@@ -20,6 +20,6 @@ module LIBCPP-EXCEPTION
 
      rule initException
           => allocObject(bnew(0, terminate_handler, .Set, builtinSymbol("::std::__terminate_handler")), terminate_handler, byteSizeofType(terminate_handler))
-          ~> allowInit(ExpressionStmt(lv(lnew(bnew(0, terminate_handler, .Set, builtinSymbol("::std::__terminate_handler"))), noTrace, terminate_handler) := prv(lnew(obj(0, 0, builtinSymbol("::__cpp_abort()"))), noTrace, terminate_handler)))
+          ~> ExpressionStmt(lv(lnew(bnew(0, terminate_handler, .Set, builtinSymbol("::std::__terminate_handler"))), noTrace, terminate_handler) :=init prv(lnew(obj(0, 0, builtinSymbol("::__cpp_abort()"))), noTrace, terminate_handler))
 
 endmodule

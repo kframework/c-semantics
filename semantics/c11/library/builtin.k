@@ -47,13 +47,13 @@ module LIBC-BUILTIN
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-NATIVE-BRIDGE-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports LIBC-SYNTAX
 
-     syntax KItem ::= prepareBuiltin(CId, Bool, HeatList, HeatList) [strict(3, 4)]
      rule <k> callBuiltin
                => Return(prepareBuiltin(F, variadic in getParams(T),
                     toHeatList(filterList(P, #klabel(`notVarArg`))),
@@ -62,6 +62,29 @@ module LIBC-BUILTIN
           <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
+          <options> Opts::Set </options>
+          requires notBool (UseNativeStdLib() in Opts)
+               andBool (F in_keys(builtins))
+          [structural]
+     rule <k> callBuiltin
+               => Return(prepareNativeCall(F,
+                    toHeatList(filterList(P, #klabel(`notVarArg`))),
+                    toHeatList(filterList(P, #klabel(`isVarArg`)))))
+          ...</k>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-function-params> P:List </curr-function-params>
+          <types>... F |-> T:Type ...</types>
+          <options> Opts::Set </options>
+          requires ((UseNativeStdLib() in Opts) orBool notBool (F in_keys(builtins)))
+               andBool (F in_keys(nativeDefinedBuiltins))
+          [structural]
+     rule <k> callBuiltin
+               => Return(prepareNativeCall(F,
+                    toHeatList(filterList(P, #klabel(`notVarArg`))),
+                    toHeatList(filterList(P, #klabel(`isVarArg`)))))
+          ...</k>
+          <curr-scope> blockScope(nativeFunction(_) #as F::CId, _) </curr-scope>
+          <curr-function-params> P:List </curr-function-params>
           [structural]
 
      rule isVarArg(vararg(_)) => true
@@ -69,6 +92,17 @@ module LIBC-BUILTIN
 
      rule notVarArg(K:K) => notBool isVarArg(K)
 
+     syntax KItem ::= prepareNativeCall(CId, HeatList, HeatList) [strict(2, 3)]
+     rule prepareNativeCall(Identifier(F:String), Args::HeatList, VarArgs::HeatList)
+          => nativeCall(F, hListToList(Args), hListToList(VarArgs))
+          requires allRValueInHeatList(Args) andBool allRValueInHeatList(VarArgs)
+          [native-call]
+     rule prepareNativeCall(nativeFunction(F:Int), Args::HeatList, VarArgs::HeatList)
+          => nativeCall(F, hListToList(Args), hListToList(VarArgs))
+          requires allRValueInHeatList(Args) andBool allRValueInHeatList(VarArgs)
+          [native-call]
+
+     syntax KItem ::= prepareBuiltin(CId, Bool, HeatList, HeatList) [strict(3, 4)]
      rule prepareBuiltin(Identifier(F:String), false, .HeatList, _)
           => builtin(F)
           [structural]
@@ -127,11 +161,6 @@ module LIBC-BUILTIN
                andBool size(hListToList(Args)) >Int 3
           [structural]
 
-     rule prepareBuiltin(nativeFunction(Address:Int), _, Args:HeatList, VarArgs:HeatList)
-          => builtin*(Address, hListToList(Args), hListToList(VarArgs))
-          requires allRValueInHeatList(Args)
-               andBool allRValueInHeatList(VarArgs)
-
      rule success => tv(0, utype(int))
 
      rule isAllocatedDuration(obj(... d: libc)) => true
@@ -145,24 +174,24 @@ module LIBC-BUILTIN
      syntax K ::= "initStdio" [function]
      rule initStdio
           => alloc(bnew(!Stdin:Int, file, libc), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stdin, file, libc)) := stdin))
+          ~> Initializer(fileLVal(bnew(!Stdin, file, libc)) := stdin)
           ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stdin")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdin"))) := & fileLVal(bnew(!Stdin, file, libc))))
+          ~> Initializer(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdin"))) := & fileLVal(bnew(!Stdin, file, libc)))
 
           ~> alloc(bnew(!Stdout:Int, file, libc), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stdout, file, libc)) := stdout))
+          ~> Initializer(fileLVal(bnew(!Stdout, file, libc)) := stdout)
           ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stdout")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdout"))) := & fileLVal(bnew(!Stdout, file, libc))))
+          ~> Initializer(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdout"))) := & fileLVal(bnew(!Stdout, file, libc)))
 
           ~> alloc(bnew(!Stderr:Int, file, libc), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stderr, file, libc)) := stderr))
+          ~> Initializer(fileLVal(bnew(!Stderr, file, libc)) := stderr)
           ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stderr")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stderr"))) := & fileLVal(bnew(!Stderr, file, libc))))
+          ~> Initializer(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stderr"))) := & fileLVal(bnew(!Stderr, file, libc)))
 
      // TODO(_Thread_local errno)
      syntax K ::= "initErrno" [function]
      rule initErrno
           => alloc(obj(0, byteAlignofType(type(int)), builtinSymbol("errno")), type(int), byteSizeofType(type(int)))
-          ~> allowInit(Computation(lv(lnew(obj(0, byteAlignofType(type(int)), builtinSymbol("errno"))), type(int)) := tv(0, utype(int))))
+          ~> Initializer(lv(lnew(obj(0, byteAlignofType(type(int)), builtinSymbol("errno"))), type(int)) := tv(0, utype(int)))
 
 endmodule

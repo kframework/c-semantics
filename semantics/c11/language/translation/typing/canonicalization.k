@@ -30,7 +30,6 @@ module C-TYPING-CANONICALIZATION
 
      rule canonicalizeType(M::List) => canonicalizeType'(M, .List, .List)
           [structural]
-
      // Sort specifiers from modifiers.
      rule canonicalizeType'(_::List (ListItem(S:TypeSpecifier) => .List),
                _::List (.List => ListItem(S)),
@@ -47,7 +46,6 @@ module C-TYPING-CANONICALIZATION
                andBool notBool isTypeSpecifier(S)
                andBool notBool isReducibleSpecifier(S)
           [structural]
-
      rule (.K => DeclType(S, D))
           ~> canonicalizeType'(_ ListItem(TAtomic(S:K, D:K)), _, _)
           [structural]
@@ -56,7 +54,6 @@ module C-TYPING-CANONICALIZATION
                _,
                _::List (.List => ListItem(atomic(T))))
           [structural]
-
      rule (.K => DeclType(S, D))
           ~> canonicalizeType'(_ ListItem(AlignasType(S:K, D:K)), _, _)
           [structural]
@@ -65,13 +62,14 @@ module C-TYPING-CANONICALIZATION
                _,
                _::List (.List => ListItem(alignas(byteAlignofType(T)))))
           [structural]
-
      context canonicalizeType'(_ ListItem(AlignasExpression(HOLE:KItem)), _, _)
      rule canonicalizeType'(_::List (ListItem(AlignasExpression(tv(A:Int, _))) => .List),
                _,
                _::List (.List => ListItem(alignas(A))))
           [structural]
-
+     rule (.K => CV("TCANON3", "Function declared without a return type."))
+          ~> canonicalizeType'(_::List ListItem(MissingType()), _, _)
+          [structural]
      // Canonicalize the specifiers then add the modifiers.
      rule canonicalizeType'(.List, Specs::List, Mods::List)
           => addMods(Mods, canonicalizeSpecifier(Specs))
@@ -81,6 +79,7 @@ module C-TYPING-CANONICALIZATION
      rule isReducibleSpecifier(TAtomic(_, _)) => true
      rule isReducibleSpecifier(AlignasExpression(_)) => true
      rule isReducibleSpecifier(AlignasType(_, _)) => true
+     rule isReducibleSpecifier(MissingType()) => true
      rule isReducibleSpecifier(_) => false [owise]
 
      rule addMods(Mods::List ListItem(RestrictReserved(Tok:String, _)), T:Type)
@@ -431,6 +430,10 @@ module C-TYPING-CANONICALIZATION
      rule canonicalizeSpecifier(ListItem(Int()) ListItem(Long()) ListItem(Signed()) ListItem(Long())) => type(long-long-int)
      rule canonicalizeSpecifier(ListItem(Int()) ListItem(Long()) ListItem(Long()) ListItem(Signed())) => type(long-long-int)
 
+     rule canonicalizeSpecifier(ListItem(OversizedInt())) => type(oversized-int)
+     rule canonicalizeSpecifier(ListItem(Signed()) ListItem(OversizedInt())) => type(oversized-int)
+     rule canonicalizeSpecifier(ListItem(OversizedInt()) ListItem(Signed())) => type(oversized-int)
+
      rule canonicalizeSpecifier(ListItem(Unsigned()) ListItem(Long()) ListItem(Long())) => type(unsigned-long-long-int)
      rule canonicalizeSpecifier(ListItem(Long()) ListItem(Unsigned()) ListItem(Long())) => type(unsigned-long-long-int)
      rule canonicalizeSpecifier(ListItem(Long()) ListItem(Long()) ListItem(Unsigned())) => type(unsigned-long-long-int)
@@ -446,5 +449,13 @@ module C-TYPING-CANONICALIZATION
      rule canonicalizeSpecifier(ListItem(Int()) ListItem(Unsigned()) ListItem(Long()) ListItem(Long())) => type(unsigned-long-long-int)
      rule canonicalizeSpecifier(ListItem(Int()) ListItem(Long()) ListItem(Unsigned()) ListItem(Long())) => type(unsigned-long-long-int)
      rule canonicalizeSpecifier(ListItem(Int()) ListItem(Long()) ListItem(Long()) ListItem(Unsigned())) => type(unsigned-long-long-int)
+
+     rule canonicalizeSpecifier(ListItem(Unsigned()) ListItem(OversizedInt())) => type(unsigned-oversized-int)
+     rule canonicalizeSpecifier(ListItem(OversizedInt()) ListItem(Unsigned())) => type(unsigned-oversized-int)
+
+     rule canonicalizeSpecifier(ListItem(AutoType())) => type(auto-type)
+
+     rule (.K => CV("TCANON4", "Declaration with no type specifiers."))
+          ~> canonicalizeSpecifier(.List)
 
 endmodule

@@ -1,8 +1,8 @@
 module SYMLOC-SORTS
-     syntax IntPtr ::= SymLoc
+     syntax IntPtr ::= PtrValue
+     syntax PtrValue ::= SymLoc
      syntax SymBase
      syntax SymLoc
-     syntax CValue ::= IntPtr
 endmodule
 
 module SYMLOC-SYNTAX
@@ -78,6 +78,7 @@ module SYMLOC-SYNTAX
      syntax KResult ::= SymLoc
 
      syntax SymLoc ::= SymLoc "+bytes" Int [function]
+     syntax SymLoc ::= SymLoc "+bits" Int [function]
 
      syntax Bool ::= SymLoc ">bytes" SymLoc [function]
                    | SymLoc ">=bytes" SymLoc [function]
@@ -109,6 +110,10 @@ module SYMLOC-SYNTAX
 
      syntax SymLoc ::= stripProv(SymLoc, K) [function, klabel(stripProvByKLabel)]
      syntax K ::= getProv(SymLoc, K) [function]
+
+     // Given a loc (with a bit offset) and a size in bits, calculate the
+     // number of bytes from the loc's byte offset required to cover all bits.
+     syntax Int ::= byteRange(SymLoc, Int) [function]
 endmodule
 
 module SYMLOC
@@ -185,6 +190,10 @@ module SYMLOC
      rule loc(Base:SymBase, Offset:Int, Prov:Set) +bytes N:Int
           => loc(Base, Offset +Int N, Prov)
      rule NullPointer +bytes _ => NullPointer
+
+     rule Loc::SymLoc +bits N:Int
+          => setBitOffset(N %Int cfg:bitsPerByte, Loc +bytes (N /Int cfg:bitsPerByte))
+     rule NullPointer +bits _ => NullPointer
 
      rule loc(_, A:Int) >bytes loc(_, B:Int) => A >Int B
      rule loc(_, A:Int) >=bytes loc(_, B:Int) => A >=Int B
@@ -291,5 +300,9 @@ module SYMLOC
      rule resolveLinking(loc(Base::SymBase, Offset::Int, Prov::Set), _ Base |-> Base'::SymBase) => loc(Base', Offset, Prov)
      rule resolveLinking(loc(Base::SymBase, Offset::Int), _ Base |-> Base'::SymBase) => loc(Base', Offset)
      rule resolveLinking(Loc::SymLoc, _) => Loc [owise]
+
+     rule byteRange(Loc::SymLoc, Bits::Int)
+          => (bitOffsetIntoLastByte(Loc) +Int Bits +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
+
 endmodule
 

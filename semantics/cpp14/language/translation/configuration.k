@@ -1,12 +1,14 @@
 module C-CONFIGURATION
+     imports C-LINKING-INIT-SYNTAX
+     imports COMMON-CONFIGURATION
+     imports CPP-DYNAMIC-SYNTAX
+     imports DEFAULT-STRATEGY
      imports MAP
      imports SET
-     imports C-LINKING-INIT-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
-     imports COMMON-CONFIGURATION
 
      configuration
 <global />
+<s />
 <result-value color="red" exit=""> 1 </result-value>
 <T multiplicity="?">
 <exec>
@@ -34,10 +36,6 @@ module C-CONFIGURATION
      <elab-stack> .List </elab-stack>
 
      <deferred-class-actions> .K </deferred-class-actions>
-
-     // Toggle to allow writes and other special treatment
-     // for initializers.
-     <initializing> false </initializing>
 
      <curr-state>
          <curr-tu color="lightgray"> "" </curr-tu>
@@ -70,6 +68,9 @@ module C-CONFIGURATION
 <generated-annotations> .List </generated-annotations>
 
 <options> $OPTIONS:Set </options>
+
+<uuid> $UUID:String </uuid>
+
 </T>
 
 <json> $JSON:String </json>

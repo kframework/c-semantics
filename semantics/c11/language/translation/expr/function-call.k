@@ -5,7 +5,7 @@ module C-EXPR-FUNCTION-CALL
      imports COMPAT-SYNTAX
      imports C-ABSTRACT-SORTS
      imports C-BINDING-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ERROR-SYNTAX
@@ -63,12 +63,12 @@ module C-EXPR-FUNCTION-CALL
           => te(Call(checkUse(tv(V, T)), list(L)), T')
           requires L =/=K .List
 
-     syntax KResult ::= "fauxParam"
-     rule elaborateDone((Computation(te((fauxParam := V:K), _)) => .K) ~> _)
+     syntax Nclv ::= "fauxParam"
+     rule elaborateDone((Initializer(fauxParam := V:K) => .K) ~> _)
           ~> elabCall(_, _, _, _:List (.List => ListItem(V)))
      rule (elaborateDone(.K) => .K) ~> elabCall(_, _, _, _)
 
      rule bindParam(_, T:Type, V:RValue)
-          => runInit(Computation(ncle(fauxParam, T) := V))
+          => Initializer(ncle(fauxParam, T) := V)
 
 endmodule

@@ -101,6 +101,17 @@ module C-BINDING
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           requires T =/=K variadic
           [structural]
+     rule <k> (.K => bindParam(unnamed(N, Tu), T, V))
+          ~> bind(
+               (ListItem(T:Type) => .List) _,
+               .List,
+               (ListItem(V:RValue) => .List) _)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <next-unnamed> N:Int => N +Int 1 </next-unnamed>
+          requires T =/=K variadic
+          [structural]
      rule bind(ListItem(T:VoidType),
                ListItem(T':VoidType), .List) => .K
           [structural]

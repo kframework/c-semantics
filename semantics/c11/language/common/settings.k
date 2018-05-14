@@ -1,9 +1,8 @@
 module C-SETTINGS-SYNTAX
      imports SETTINGS-SYNTAX
+     imports COMMON-SORTS
      imports STRING
      imports LIST
-
-     syntax SimpleBasicType ::= "cfg:enumAlias" [function]
 
      syntax Int ::= "cfg:sizeofBool" [function]
      syntax Int ::= "cfg:sizeofSignedChar" [function]
@@ -11,6 +10,7 @@ module C-SETTINGS-SYNTAX
      syntax Int ::= "cfg:sizeofInt" [function]
      syntax Int ::= "cfg:sizeofLongInt" [function]
      syntax Int ::= "cfg:sizeofLongLongInt" [function]
+     syntax Int ::= "cfg:sizeofOversizedInt" [function]
      syntax Int ::= "cfg:sizeofFloat" [function]
      syntax Int ::= "cfg:sizeofDouble" [function]
      syntax Int ::= "cfg:sizeofLongDouble" [function]
@@ -35,6 +35,7 @@ module C-SETTINGS-SYNTAX
      syntax Int ::= "cfg:alignofInt" [function]
      syntax Int ::= "cfg:alignofLongInt" [function]
      syntax Int ::= "cfg:alignofLongLongInt" [function]
+     syntax Int ::= "cfg:alignofOversizedInt" [function]
      syntax Int ::= "cfg:alignofFloat" [function]
      syntax Int ::= "cfg:alignofDouble" [function]
      syntax Int ::= "cfg:alignofLongDouble" [function]

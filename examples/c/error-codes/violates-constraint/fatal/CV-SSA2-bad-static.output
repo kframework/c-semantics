@@ -1,7 +1,9 @@
 CV-SSA2-bad-static.c:3:16: error: Static assertion failed: fifty minus fifty must be 0.
-  Constraint violation (CV-SSA2).
-   see C11 section 6.7.10:2 http://rvdoc.org/C11/6.7.10
-   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
+    Constraint violation (CV-SSA2):
+        see C11 section 6.7.10:2 http://rvdoc.org/C11/6.7.10
+        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
 kcc -d CV-SSA2-bad-static.c

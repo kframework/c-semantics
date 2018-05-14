@@ -62,7 +62,7 @@ type typeSpecifier = (* Merge all specifiers into one type *)
   | Tshort
   | Tint
   | Tlong
-  | Tint64
+  | ToversizedInt
   | Tfloat
   | Tdouble
   | Tsigned
@@ -78,6 +78,7 @@ type typeSpecifier = (* Merge all specifiers into one type *)
   | Tenum of string * enum_item list option * attribute list
   | TtypeofE of expression                      (* GCC __typeof__ *)
   | TtypeofT of type_name       (* GCC __typeof__ *)
+  | TautoType
   | Tcomplex
   | Timaginary
   | Tatomic of type_name
@@ -107,6 +108,7 @@ and spec_elem =
   
   | SpecAlignment of alignment_spec
   | SpecType of typeSpecifier
+  | SpecMissingType
   | SpecPattern of string       (* specifier pattern variable *)
 
 and alignment_spec =
@@ -268,7 +270,8 @@ and unary_operator =
 and expression =
     NOTHING
   | UNSPECIFIED
-  | OffsetOf of type_name * expression * cabsloc
+  | OFFSETOF of type_name * expression * cabsloc
+  | TYPES_COMPAT of type_name * type_name * cabsloc
   | LOCEXP of expression * cabsloc
   | UNARY of unary_operator * expression
   | LABELADDR of string  (* GCC's && Label *)

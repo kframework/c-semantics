@@ -28,16 +28,18 @@ module C-TRANSLATION-INIT
           <options> Opts:Set </options>
           requires notBool (XBuiltins() in Opts)
 
-     rule TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
-          => makeTu(TU +String newUUID)
-          ~> preDeclareStrings(Strings)
-          ~> listToK(Decls)
-          ~> allocateIncompleteTentatives
-          ~> removeUnusedIdentifiers
+     rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
+               => makeTu(TU +String Uuid)
+               ~> preDeclareStrings(Strings)
+               ~> listToK(Decls)
+               ~> allocateIncompleteTentatives
+               ~> removeUnusedIdentifiers
+          ...</k>
+          <uuid> Uuid::String </uuid>
 
      syntax KItem ::= preDeclareStrings(List)
      rule preDeclareStrings(ListItem(K:K) L:List)
-          => runInit(K ~> discard)
+          => K ~> discard
           ~> preDeclareStrings(L)
           [structural]
      rule preDeclareStrings(.List) => .K
@@ -76,13 +78,5 @@ module C-TRANSLATION-INIT
      rule AttributeWrapper(K:K, _) => K
 
      rule NothingExpression() => {emptyValue}:>Expression
-
-     rule Computation(.K) => .K
-     rule <k> Computation(V:RValue) => .K ...</k>
-          <elab>... .K => Computation(V) </elab>
-          requires isHold(V)
-     // Totally elide pure expressions from the translated program.
-     rule Computation(V:RValue) => .K
-          requires notBool isHold(V)
 
 endmodule

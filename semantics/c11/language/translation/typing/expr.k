@@ -15,6 +15,7 @@ module C-TYPING-EXPR
      imports COMPAT-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
@@ -151,12 +152,15 @@ module C-TYPING-EXPR
           => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
      rule typeof(OffsetOf(_, _, _)
           => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
+     rule typeof(TypesCompat(_, _, _, _)
+          => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
 
      // cast expression
      context typeof(Cast((HOLE:KItem), _, _)) [result(Type)]
      rule typeof(Cast(T:Type, K:K, V:K) => Cast(DeclType(T, K), V))
      context typeof(Cast(HOLE:KItem,_))
      rule typeof(Cast(T:Type, _) => elideDeclParams(T))
+     rule typeof(cast(T:UType, _) => elideDeclParams(type(T)))
 
      syntax Type ::= usualArithmeticConversion(Type, Type) [klabel(usualArithmeticConversionQ), function]
      rule usualArithmeticConversion(T::Type, T'::Type)

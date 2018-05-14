@@ -29,6 +29,8 @@ module COMMON-CONFIGURATION
      <linking-state multiplicity="?" initial="">
           // CId |-> Set(TUs)
           <external-decls> .Map </external-decls>
+          // CId |-> CabsLoc
+          <external-decls-loc> .Map </external-decls-loc>
           // CIds |-> CabsLoc
           <external-uses> .Map </external-uses>
           // CId |-> CabsLoc

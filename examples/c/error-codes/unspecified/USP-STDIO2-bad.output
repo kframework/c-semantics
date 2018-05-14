@@ -1,6 +1,8 @@
- Printing an unspecified value.
-   at printf(USP-STDIO2-bad.c:10:9)
-   by main(USP-STDIO2-bad.c:10:9)
-  Unspecified value or behavior (USP-STDIO2).
-   see C11 section 7.21.6.1:8 http://rvdoc.org/C11/7.21.6.1
-2139062016
+Printing an unspecified value:
+      > in printf at USP-STDIO2-bad.c:10:9
+        in main at USP-STDIO2-bad.c:10:9
+
+    Unspecified value or behavior (USP-STDIO2):
+        see C11 section 7.21.6.1:8 http://rvdoc.org/C11/7.21.6.1
+
+0

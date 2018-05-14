@@ -1,0 +1,6 @@
+Unsupported pthread function. This feature is currently under development:
+      > in pthread_rwlockattr_init at IMPL-PTHREAD99-bad.c:7:7
+        in main at IMPL-PTHREAD99-bad.c:7:7
+
+    Implementation defined behavior (IMPL-PTHREAD99)
+

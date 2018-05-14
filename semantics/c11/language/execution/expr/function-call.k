@@ -18,7 +18,7 @@ module C-EXPR-FUNCTION-CALL
      imports COMMON-BUILTIN-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-BINDING-SYNTAX
-     imports C-CHECK-LOC-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
@@ -84,13 +84,19 @@ module C-EXPR-FUNCTION-CALL
           <functions>... Base |-> Fun:RValue ...</functions>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
-
-     rule <k> Call(
-               tv(loc(obj(0, Align::Int, nativeAddress()), Address:Int), ut(_, pointerType(T:FunctionType))),
+     rule <k> Call(tv(loc(obj(0, Align::Int, nativeAddress()), Address:Int), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
                => sequencePoint
                ~> application(CurrLoc, obj(0, Align, nativeAddress()), functionObject(nativeFunction(Address), makeNativeDecl(T), .List), T, CLinkage, krlist(L))
           ...</k>
+          <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
+          [structural]
+     rule <k> Call(tv(loc(obj(0, 0, nativeSymbol(S::String)), _), ut(_, pointerType(_:FunctionType))),
+               rvlist(L:List))
+               => sequencePoint
+               ~> application(CurrLoc, obj(0, 0, nativeSymbol(S)), functionObject(Identifier(S), T, .List), T, CLinkage, krlist(L))
+          ...</k>
+          <external-types>... Identifier(S) |-> T::Type ...</external-types>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
 
@@ -118,6 +124,10 @@ module C-EXPR-FUNCTION-CALL
      rule checkStackDepth => .K
           requires notBool hasLint
 
+     syntax KItem ::= checkRecursion(CId, String, Map) [function]
+     rule checkRecursion(_, _, _) => .K
+          requires notBool hasLint
+
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
      // Function call (into C function)
@@ -133,10 +143,12 @@ module C-EXPR-FUNCTION-CALL
                ~> bind(getParams(DefT), getParams(CallT), L)
                ~> sequencePoint
                ~> checkStackDepth
+               ~> checkRecursion(X, getTU(Base), Calls)
                ~> #if isNativeLoc(Base) orBool isBuiltinLoc(Base)
                   #then callBuiltin #else Goto(funLabel) #fi
           </k>
-          <call-stack> .List => ListItem(
+          <called-functions> Calls::Map => incrementCalled(X, getTU(Base), Calls) </called-functions>
+          <call-stack> (.List => ListItem(
                <call-stack-frame>
                     <continuation> K:K </continuation>
                     <stack-function-control>
@@ -148,7 +160,7 @@ module C-EXPR-FUNCTION-CALL
                     </stack-function-control>
                     <stack-lang-linkage> CallingLang </stack-lang-linkage>
                </call-stack-frame>
-          ) ...</call-stack>
+          )) ...</call-stack>
           (<function-control>
                C::Bag
                <curr-tu> OldTu::String </curr-tu>
@@ -169,11 +181,18 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule <k> bindParam(X:CId, T:Type, V:RValue)
-               => declareInternalVariable(X, T, initValue(X, T, Computation(X := V)))
+               => declareInternalVariable(X, T, initValue(X, T, Initializer(X := V)))
           ...</k>
           <curr-function-params>...
                .List => ListItem(X)
           </curr-function-params>
           [structural]
+
+     syntax Map ::= incrementCalled(CId, String, Map) [function]
+     rule incrementCalled(X::CId, Tu::String, (kpair(X, Tu) |-> N::Int) Calls::Map)
+          => (kpair(X, Tu) |-> (N +Int 1)) Calls
+     rule incrementCalled(X::CId, Tu::String, Calls::Map)
+          => (kpair(X, Tu) |-> 1) Calls
+          [owise]
 
 endmodule

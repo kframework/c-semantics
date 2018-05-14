@@ -41,19 +41,8 @@ module CPP-ELABORATOR
                ListItem(elabTemplateFrame(Cont:K, OldElab:K, I::TemplateInfo)) => .List
           ...</elab-stack>
 
-     rule (.K => allowInit(K)) ~> runInit(K:K)
+     rule (.K => K) ~> runInit(K:K)
      rule K:Val ~> runInit(_) => .K
-
-     rule <k> allowInit(K:K) => K ~> initDone(I) ...</k>
-          <initializing> I:Bool => true </initializing>
-
-     syntax KItem ::= initDone(Bool)
-     rule <k> R:KResult ~> initDone(I::Bool) => R ...</k>
-          <initializing> _ => I </initializing>
-          [structural]
-     rule <k> initDone(I::Bool) => .K ...</k>
-          <initializing> _ => I </initializing>
-          [structural]
 
      rule elaborate(K1:K, K2:K) => elaborate(K1) ~> elaborate(K2)
      rule elaborateDone(K1:K) ~> elaborate(K2:K)

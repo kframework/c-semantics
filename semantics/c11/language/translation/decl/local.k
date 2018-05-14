@@ -6,6 +6,7 @@ module C-DECL-LOCAL
      imports COMPAT-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
@@ -37,6 +38,7 @@ module C-DECL-LOCAL
                andBool notBool isStaticType(T')
                andBool areDeclCompat(T, T')
                andBool notBool (X in_keys(LocalTypes))
+               andBool (notBool isAutoType(T'))
           [structural]
      // Extern, external type exists but no def.
      rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit)
@@ -53,6 +55,7 @@ module C-DECL-LOCAL
                andBool areDeclCompat(T, T')
                andBool notBool (X in_keys(Defs))
                andBool notBool (X in_keys(LocalTypes))
+               andBool (notBool isAutoType(T'))
           [structural]
      // Extern, external type does not exist.
      rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
@@ -68,6 +71,7 @@ module C-DECL-LOCAL
                andBool notBool isStaticType(T)
                andBool notBool (X in_keys(Types))
                andBool notBool (X in_keys(LocalTypes))
+               andBool (notBool isAutoType(T))
           [structural]
      rule <k> declareInternalVariable(X:CId, T:Type, Init:KResult)
                => initLocalStatic(X, toInitValue(X, T, Init))
@@ -76,12 +80,16 @@ module C-DECL-LOCAL
           requires isStaticType(T)
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
+               andBool (notBool isAutoType(T))
           [structural]
      rule <k> declareInternalVariable(X:CId, T:Type, Init:KResult)
                => defineAndInit(X, T, toInitValue(X, T, Init))
           ...</k>
           <elab>... .K => declareInternalVariable(X, T, Init) </elab>
           requires isNaked(T)
+               andBool (notBool isAutoType(T))
+          [structural]
+     rule declareInternalVariable(_, t(_, _, auto-type) => T, initValue(_, T::Type, _))
           [structural]
      // We don't give local extern decls an entry in the "local-types" map in
      // order to detect this case.
@@ -118,7 +126,7 @@ module C-DECL-LOCAL
                => allocObject(bnew(!I:Int, T, static(TU)), T)
                ~> addToEnv(X, T, bnew(!I, T, static(TU)))
                ~> giveType(X, T)
-               ~> runInit(stripInitHolds(Init))
+               ~> Init
           ...</k>
           <curr-scope> S:Scope </curr-scope>
           <curr-tu> TU:String </curr-tu>

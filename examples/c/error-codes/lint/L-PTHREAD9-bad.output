@@ -1,6 +1,8 @@
- Terminating a thread while holding lock on mutexes.
-  Locked here:
-   at pthread_mutex_lock(L-PTHREAD9-bad.c:14:5)
-   by locker_thread(L-PTHREAD9-bad.c:14:5)
-  Possible unintended behavior (L-PTHREAD9).
-   see CERT-C section POS50-C http://rvdoc.org/CERT-C/POS50-C
+Terminating a thread while holding lock on mutexes:
+    Locked here:
+      > in pthread_mutex_lock at L-PTHREAD9-bad.c:14:5
+        in locker_thread at L-PTHREAD9-bad.c:14:5
+
+    Possible unintended behavior (L-PTHREAD9):
+        see CERT-C section POS50-C http://rvdoc.org/CERT-C/POS50-C
+

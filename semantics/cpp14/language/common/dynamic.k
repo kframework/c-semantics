@@ -56,10 +56,10 @@ module CPP-DYNAMIC-SYNTAX
      imports SET
      imports BOOL
 
-     syntax CPPValue ::= SymLoc
-                       | BitValue
-                       | NullPtrVal // value of type std::nullptr_t
-                       | Float
+     syntax CPPValue ::= BitValue
+                       | PtrValue
+                       | Encodable
+     syntax PtrValue ::= NullPtrVal // value of type std::nullptr_t
                        | MemberPtr
                        | vtable(Class) // virtual table pointer in class object
      syntax EffectiveValue ::= CPPValue

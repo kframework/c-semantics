@@ -59,6 +59,8 @@ module C-TYPING-EFFECTIVE
                andBool notBool isNoType(LAT)
      rule updateLastAccessType(Loc::SymLoc, T::Type, dynamicType(_:NoType))
           => setLastAccessType(Loc, dynamicType(T))
+     rule updateLastAccessType(Loc::SymLoc, T::Type, _:NoType)
+          => setLastAccessType(Loc, dynamicType(T))
      rule updateLastAccessType(Loc::SymLoc, _, _) => Loc [owise]
 
      rule updateLastAccessVariant(Loc::SymLoc, F::CId, LAT::EffectiveType)
@@ -112,9 +114,12 @@ module C-TYPING-EFFECTIVE
      syntax KItem ::= setEffectiveType(SymBase, K) [strict(2)]
      rule <k> setEffectiveType(Base::SymBase, T'::EffectiveType) => .K ...</k>
           <mem>... Base |-> object(T::EffectiveType => mergeVariants(T, T'), _, _) ...</mem>
-          requires notBool isNoType(T)
-     rule <k> setEffectiveType(Base::SymBase, T:NoType) => .K ...</k>
-          <mem>... Base |-> object(_ => dynamicType(T), _, _) ...</mem>
+          requires notBool isNoType(T')
+     rule <k> setEffectiveType(Base::SymBase, T':NoType) => .K ...</k>
+          <mem>... Base |-> object(dynamicType(_ => T'), _, _) ...</mem>
+     rule <k> setEffectiveType(Base::SymBase, T':NoType) => .K ...</k>
+          <mem>... Base |-> object(T::EffectiveType, _, _) ...</mem>
+          requires notBool isDynamicType(T)
 
      rule getFixedFieldType(loc(_, _, _) #as Loc::SymLoc, F::CId, T::StructOrUnionType)
           => getFixedFieldType(stripProv(Loc), F, T)
@@ -250,8 +255,8 @@ module C-TYPING-EFFECTIVE
           => ListItem(T) ListItem(t(Qs, .Set, InnerT))
      // we have some redundancy here because we are trying to make matching as fast as possible,
      // so we avoid side conditions on these rules as much as we can.
-     rule getTypesAtOffset(t(_, _, _:SimpleArrayType) #as T::ArrayType, 0)
-          => ListItem(T) getTypesAtOffset(getElementType(0, T), 0)
+     rule getTypesAtOffset(t(Qs::Quals, _, _:SimpleArrayType) #as T::ArrayType, 0)
+          => ListItem(T) getTypesAtOffset(addQualifiers(Qs, getElementType(0, T)), 0)
      rule getTypesAtOffset(t(Qs::Quals, _, structType(_)) #as T::StructType, 0)
           => ListItem(T) getTypesAtOffset(addQualifiers(Qs, getFieldTypeAtOffset(0, T)), 0)
      rule getTypesAtOffset(t(Qs::Quals, _, unionType(_)) #as T::UnionType, 0)
@@ -259,13 +264,13 @@ module C-TYPING-EFFECTIVE
                #then .List
                #else getTypesAtOffset(addQualifiers(Qs, getActiveVariant(T)), 0) #fi
 
-     rule getTypesAtOffset(t(_, _, arrayType(InnerT::Type, _)) #as T::ArrayType, Offset::Int)
+     rule getTypesAtOffset(t(Qs::Quals, _, arrayType(InnerT::Type, _)) #as T::ArrayType, Offset::Int)
           => #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0
-               #then getTypesAtOffset(getElementType(Offset, T), Offset %Int bitSizeofType(InnerT)) #else .List #fi
+               #then getTypesAtOffset(addQualifiers(Qs, getElementType(Offset, T)), Offset %Int bitSizeofType(InnerT)) #else .List #fi
           requires Offset >Int 0 andBool Offset <Int bitSizeofType(T)
-     rule getTypesAtOffset(t(_, _, variableLengthArrayType(InnerT::Type, _)) #as T::ArrayType, Offset::Int)
+     rule getTypesAtOffset(t(Qs::Quals, _, variableLengthArrayType(InnerT::Type, _)) #as T::ArrayType, Offset::Int)
           => #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0
-               #then getTypesAtOffset(getElementType(Offset, T), Offset %Int bitSizeofType(InnerT)) #else .List #fi
+               #then getTypesAtOffset(addQualifiers(Qs, getElementType(Offset, T)), Offset %Int bitSizeofType(InnerT)) #else .List #fi
           requires Offset >Int 0 andBool Offset <Int bitSizeofType(T)
      rule getTypesAtOffset(t(Qs::Quals, _, structType(_)) #as T::StructType, Offset::Int)
           => getTypesAtOffset(addQualifiers(Qs, getFieldTypeAtOffset(Offset, T)), Offset -Int floorBitOffset(Offset, T))

@@ -76,11 +76,8 @@ module CPP-SYMLOC
      rule derivedClassSuperobject(NullMemberPointer, _, _) => NullMemberPointer
      rule derivedClassSuperobject(NullMemberFunctionPointer, _, _) => NullMemberFunctionPointer
 
-     rule baseClassSubobject(L:SymLoc, t(... st: classType(B::Class)), D::CPPClassType)
-          => #baseClassSubobject(L, B, getClassInfo(D))
+     rule baseClassSubobject(L:SymLoc, t(... st: classType(B::Class)), t(... st: classType(D::Class)))
+          => L +bytes getBaseClassOffset(B, D) /Int cfg:bitsPerByte
           requires L =/=K NullPointer
-     syntax SymLoc ::= #baseClassSubobject(SymLoc, Class, ClassInfo) [function]
-     rule #baseClassSubobject(L::SymLoc, B::Class, <class>... <cenv>... baseClass(B) |-> (_::CPPType |-> classOffset(Offset::Int)) ...</cenv> ...</class>)
-          => L +bytes Offset /Int cfg:bitsPerByte
 
 endmodule

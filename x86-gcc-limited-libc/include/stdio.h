@@ -1,6 +1,5 @@
 #ifndef _KCC_STDIO_H
 #define _KCC_STDIO_H
-#include <kcc_settings.h>
 #include <stddef.h>
 #include <stdarg.h>
 
@@ -11,7 +10,6 @@ extern FILE* stdin;
 extern FILE* stdout;
 extern FILE* stderr;
 
-// stdio.h
 #define EOF -1
 
 int fprintf(FILE * restrict stream, const char * restrict format, ...);

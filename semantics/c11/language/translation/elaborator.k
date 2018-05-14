@@ -1,5 +1,6 @@
 module C-ELABORATOR-SYNTAX
      imports BASIC-K
+     imports C-ABSTRACT-SORTS
 
      syntax KItem ::= elaborate(K) [klabel(elaborate1)]
      syntax KItem ::= elaborate(K, K)
@@ -10,7 +11,8 @@ module C-ELABORATOR-SYNTAX
      // Elaboration for initializers -- copies up the environment.
      syntax KItem ::= elaborateInit(K)
 
-     syntax KItem ::= runInit(K)
+     // Converts nclv back to lv, so lvalues are re-evaluated during execution.
+     syntax KItem ::= nclvToLV(Nclv) [function]
 endmodule
 
 module C-ELABORATOR
@@ -37,7 +39,7 @@ module C-ELABORATOR
                ListItem(elabFrame(Cont:K, OldElab:K)) => .List
           ...</elab-stack>
 
-     rule <k> elaborateInit(K:K) ~> Cont:K => allowInit(K) </k>
+     rule <k> elaborateInit(K:K) ~> Cont:K => K </k>
           <elab> OldElab:K => .K </elab>
           (I:InitCalcCell
                => <init-calc>... .Bag ...</init-calc>)
@@ -51,13 +53,13 @@ module C-ELABORATOR
                ListItem(elabInitFrame(Cont:K, OldElab:K, I:InitCalcCell)) => .List
           ...</elab-stack>
 
-     rule (.K => elaborateInit(K)) ~> runInit(K:K)
-     rule elaborateDone(_) ~> runInit(_) => .K
-
      rule elaborate(K1:K, K2:K) => elaborate(K1) ~> elaborate(K2)
      rule elaborateDone(K1:K) ~> elaborate(K2:K)
           => elaborate(K2) ~> elaborateDone(K1)
      rule elaborateDone(K2:K) ~> elaborateDone(K1:K)
           => elaborateDone(K1:K, K2:K)
+
+     rule nclvToLV(nclv(Loc::SymLoc, T::Type)) => lv(Loc, T)
+     rule nclvToLV(ncle(K:K, _)) => K
 
 endmodule

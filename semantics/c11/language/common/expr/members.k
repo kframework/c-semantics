@@ -8,7 +8,7 @@ module C-COMMON-EXPR-MEMBERS
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
@@ -25,35 +25,32 @@ module C-COMMON-EXPR-MEMBERS
      an lvalue. If the first expression has qualified type, the result has the
      so-qualified version of the type of the designated member.
      }*/
-     rule <k> nclv(Loc::SymLoc, T:StructOrUnionType) . F:CId
-               => createLv(Loc, T, F, getLastAccessType(Loc), getFixedFieldType(Loc, F, T))
-          ...</k>
-          <initializing> Initializing:Bool </initializing>
-          requires notBool (Atomic() inQuals getQualifiers(T)) orBool Initializing
+     rule nclv(Loc::SymLoc, T:StructOrUnionType) .init F:CId
+          => createLv(Loc, T, F, getLastAccessType(Loc), getFixedFieldType(Loc, F, T))
           [structural]
-     rule <k> (.K => UNDEF("CEM1",
-               "Attempting to access a member in an atomic struct."))
-               ~> Lbl:KLabel(_, t(Qs::Quals, _, structType(_))) . _:CId
-          ...</k>
-          <initializing> false </initializing>
+     rule nclv(Loc::SymLoc, T:StructOrUnionType) . F:CId
+          => createLv(Loc, T, F, getLastAccessType(Loc), getFixedFieldType(Loc, F, T))
+          requires notBool (Atomic() inQuals getQualifiers(T))
+          [structural]
+     rule (.K => UNDEF("CEM1", "Attempting to access a member in an atomic struct."))
+          ~> Lbl:KLabel(_, t(Qs::Quals, _, structType(_))) . _:CId
           requires Atomic() inQuals Qs
                andBool isNCLKLabel(#klabel(Lbl))
           [structural]
-     rule <k> (.K => UNDEF("CEM2",
-               "Attempting to access a member in an atomic union."))
-               ~> Lbl:KLabel(_, t(Qs::Quals, _, unionType(_))) . _:CId
-          ...</k>
-          <initializing> false </initializing>
+     rule (.K => UNDEF("CEM2", "Attempting to access a member in an atomic union."))
+          ~> Lbl:KLabel(_, t(Qs::Quals, _, unionType(_))) . _:CId
           requires Atomic() inQuals Qs
                andBool isNCLKLabel(#klabel(Lbl))
+          [structural]
+
+     rule nclv(Loc::SymLoc, T:ArrayType) [[ N::Int ]]
+          => * (checkUse(tv(Loc, utype(arrayToPtrType(T)))) + tv(N, utype(int)))
           [structural]
 
      syntax KItem ::= createLv(SymLoc, StructOrUnionType, CId, K, K) [strict(4, 5)]
      rule createLv(NullPointer => loc(obj(0, 1, nativeAddress()), 0), _, _, _, _)
      rule createLv(Loc::SymLoc, T::StructOrUnionType, F::CId, LAT:EffectiveType, t(...) #as T'::Type)
-          => lv(setBitOffset(findFieldOffset(F, T) %Int cfg:bitsPerByte,
-                    updateLastAccessVariant(Loc, F, LAT) +bytes (findFieldOffset(F, T) /Int cfg:bitsPerByte)),
-               addQualifiers(getQualifiers(T), T'))
+          => lv(updateLastAccessVariant(Loc, F, LAT) +bits findFieldOffset(F, T), addQualifiers(getQualifiers(T), T'))
           requires Loc =/=K NullPointer andBool notBool isNoType(T')
      rule (.K => unknownMemberAccess)
           ~> createLv(_, _, _, _, _:NoType)

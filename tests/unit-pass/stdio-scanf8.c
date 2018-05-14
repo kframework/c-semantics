@@ -12,5 +12,13 @@ main (int argc, char *argv[])
   printf ("ret: %d, name: %s\n", ret, buf);
   if (ret != 1 || strcmp (buf, "Term_bits[]") != 0)
     abort ();
+
+  char * buf2;
+  ret = sscanf ("static char Term_bits[] = {", "static char %ms = {", &buf2);
+  printf ("ret: %d, name: %s\n", ret, buf);
+  if (ret != 1 || strcmp (buf, "Term_bits[]") != 0)
+    abort ();
+
+  free(buf2);
   return 0;
 }

@@ -20,16 +20,14 @@ module LIBC-SYNTAX
 
      syntax RValue ::= "eof" [function]
 
-     syntax CValue ::= Opaque
-     syntax EffectiveValue ::= Opaque
-     syntax Opaque ::= opaque(K, UType)
-
      syntax RValue ::= "stdin"  [function]
                      | "stdout" [function]
                      | "stderr" [function]
 
      syntax LValue ::= fileLVal(SymBase) [function]
      syntax LValue ::= filePtr(SymBase) [function]
+
+     syntax Opts ::= UseNativeStdLib()
 
 endmodule
 
@@ -90,7 +88,7 @@ module LIBC-INIT
 
           // setjmp
           (id("longjmp") |-> noreturn(fun(void, jmp_buf, int))
-          (id("__setjmp") |-> fun(int, jmp_buf)
+          (id("_setjmp") |-> fun(int, jmp_buf)
 
           // signal
           (id("raise") |-> fun(int, int)
@@ -166,14 +164,18 @@ module LIBC-INIT
           (id("vsscanf") |-> fun(int, restrict(ptr(const(char))), restrict(ptr(const(char))), va_list)
 
           // string
+          (id("memset") |-> fun(ptr(void), ptr(void), int, size_t)
           (id("strcpy") |-> fun(ptr(char), restrict(ptr(char)), restrict(ptr(const(char))))
           (id("strerror") |-> fun(ptr(char), int)
+          (id("strerror_r") |-> fun(int, int, ptr(char), size_t)
+          (id("__xpg_strerror_r") |-> fun(int, int, ptr(char), size_t)
+          (id("strlen") |-> fun(size_t, ptr(const(char)))
 
           // stdarg
-          (id("__va_copy") |-> fun(void, ptr(va_list), va_list)
-          (id("va_end") |-> fun(void, va_list)
-          (id("__va_inc") |-> fun(ptr(void), va_list)
-          (id("__va_start") |-> fun(void, ptr(va_list), ptr(void))
+          (id("__kcc_va_copy") |-> fun(void, ptr(va_list), va_list)
+          (id("__kcc_va_end") |-> fun(void, va_list)
+          (id("__kcc_va_inc") |-> fun(ptr(void), va_list)
+          (id("__kcc_va_start") |-> fun(void, ptr(va_list), ptr(void))
 
           // errno
           (id("errno") |-> type(int)
@@ -181,14 +183,14 @@ module LIBC-INIT
           extensionBuiltins
           // we need these parentheses to avoid an exponential explosion of parsing time;
           // really should look further into true priorities in the parser kernel.
-          )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+          )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
-     rule mtx_t => struct("__typeref_mtx_t")
-     rule jmp_buf => ptr(cfg:ptrdiffut)
-     rule va_list => type(cfg:ptrdiffut)
-     rule file => struct("__typeref_file")
-     rule fpos_t => struct("__typeref_fpos_t")
-     rule lconv => struct("__typeref_lconv")
+     rule mtx_t => typeref("__kcc_typeref_mtx_t")
+     rule jmp_buf => typeref("__kcc_typeref_jmp_buf")
+     rule va_list => typeref("__kcc_typeref_va_list")
+     rule file => typeref("__kcc_typeref_file")
+     rule fpos_t => typeref("__kcc_typeref_fpos_t")
+     rule lconv => typeref("__kcc_typeref_lconv")
      rule sighandler_t => ptr(fun(void, int))
      rule size_t => type(cfg:sizeut)
 

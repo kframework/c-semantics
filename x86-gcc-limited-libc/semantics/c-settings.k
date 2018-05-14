@@ -9,8 +9,6 @@ module C-SETTINGS
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule cfg:enumAlias => int
-
      syntax SimpleSignedCharType ::= SimpleCharType
      syntax SimpleSignedType ::= SimpleEnumType
 
@@ -22,6 +20,7 @@ module C-SETTINGS
      rule cfg:sizeofInt => 4
      rule cfg:sizeofLongInt => 4
      rule cfg:sizeofLongLongInt => 8
+     rule cfg:sizeofOversizedInt => 16
      rule cfg:sizeofFloat => 4
      rule cfg:sizeofDouble => 8
      rule cfg:sizeofLongDouble => 16
@@ -50,6 +49,7 @@ module C-SETTINGS
      rule cfg:alignofInt => 4
      rule cfg:alignofLongInt => 4
      rule cfg:alignofLongLongInt => 8
+     rule cfg:alignofOversizedInt => 16
      rule cfg:alignofFloat => 4
      rule cfg:alignofDouble => 8
      rule cfg:alignofLongDouble => 16

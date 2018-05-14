@@ -50,12 +50,13 @@ module CPP-TRANSLATION-INIT
      rule param(prd(_, _, _, T::TemplateParam)) => T
 
      rule <k> TranslationUnit(TU:String, Decls:List)
-               => makeTu(TU +String newUUID)
+               => makeTu(TU +String Uuid)
                ~> makeNs(GlobalNamespace())
                ~> implicitDecls
                ~> listToK(Decls)
                ~> removeUnusedIdentifiers
           ...</k>
+          <uuid> Uuid::String </uuid>
           // don't delete this... we want to make sure the fresh counter starts
           // at 1 for each TU because unlike C, C++ doesn't give us unique block
           // numbers directly from the parser, so we are using the fresh counter to

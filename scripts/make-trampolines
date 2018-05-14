@@ -1,0 +1,221 @@
+#!/bin/bash
+
+printf "#include \"platform.h\"\n"
+printf "#define bool _Bool\n\n"
+
+explain_type='
+remaining=1
+typ=""
+structName=""
+while (( $remaining > 0 )); do
+    remaining=$(($remaining-1))
+    head=$1
+    shift
+    case $head in
+    p)
+        typ="$typ pointer to void"
+        ;;
+    v)
+        typ="$typ void"
+        ;;
+    sc)
+        typ="$typ signed char"
+        ;;
+    b)
+        typ="$typ bool"
+        ;;
+    uc)
+        typ="$typ unsigned char"
+        ;;
+    us)
+        typ="$typ unsigned short"
+        ;;
+    ui)
+        typ="$typ unsigned int"
+        ;;
+    ul)
+        typ="$typ unsigned long"
+        ;;
+    ull)
+        typ="$typ unsigned long long"
+        ;;
+    ss)
+        typ="$typ short"
+        ;;
+    si)
+        typ="$typ int"
+        ;;
+    sl)
+        typ="$typ long"
+        ;;
+    ll)
+        typ="$typ long long"
+        ;;
+    f)
+        typ="$typ float"
+        ;;
+    d)
+        typ="$typ double"
+        ;;
+    ld)
+        typ="$typ long double"
+        ;;
+    cf)
+        typ="$typ float complex"
+        ;;
+    cd)
+        typ="$typ double complex"
+        ;;
+    cld)
+        typ="$typ long double complex"
+        ;;
+    a)
+        remaining=$((remaining+1))
+        typ="$typ _Atomic"
+        ;;
+    s[0-9]*)
+        nfields=${head#s}
+        sremaining=$nfields
+        structName="$head"
+        while (( $sremaining > 0 )); do
+            shead=$1
+            shift
+            IFS="$OIFS"
+            structName="${structName}_${shead}"
+            IFS="_ "
+            case $shead in
+                [su][0-9]*)
+                    snfields=${shead#?}
+                    sremaining=$(($sremaining+$snfields))
+                    ;;
+            esac
+            sremaining=$(($sremaining-1))
+        done
+        typ="$typ struct __$structName"
+    esac
+done
+'
+
+function explain_args {
+    local nfixed=$1
+    shift
+    local conn=""
+    while (( $nfixed > 0 )); do
+        printf "$conn$1"
+        shift
+        conn=", "
+        nfixed=$((nfixed - 1))
+    done
+}
+
+function explain_fun_type {
+    printf "pointer to function ("
+    eval "$explain_type"
+    local return_type="$typ"
+    local conn=""
+    arg_types=""
+    if [ $# -eq 2 ]; then
+        printf "void"
+    else
+        while (( "$#" > 2 )); do
+            eval "$explain_type"
+            arg_types="$arg_types$conn$typ"
+            conn=";"
+        done
+        local nfixed=$1
+        IFS=";"
+        explain_args $nfixed $arg_types
+        IFS="_ "
+        variadic=$2
+        if [[ $variadic = v && $nfixed > 0 ]]; then
+            printf ", ..."
+        elif [ $variadic = v ]; then
+            printf "..."
+        fi
+    fi
+    printf ") returning "
+    printf "%s" "$return_type"
+}
+
+function print_struct {
+    if [ -z "$*" ]; then
+        return
+    fi
+    local currentStruct="$*"
+    local output="  struct __$* {
+"
+    shift
+    local idx=0
+    while (( "$#" )); do
+        eval "$explain_type"
+        local field_type="$typ"
+        print_struct $structName
+        IFS="$OIFS"
+        local output="$output    $("$(dirname "$0")/cdecl" declare _$idx as $field_type)
+"
+        IFS="_ "
+        local idx=$(($idx+1))
+    done
+    local output="$output  };
+"
+    printf "%s" "$structs" | grep -s -- "^$currentStruct\$" "-" > /dev/null
+    if [ $? -eq 1 ]; then
+        structs="$structs
+$currentStruct"
+        printf "%s" "$output"
+    fi
+}
+
+function print_structs {
+    structs=""
+    eval "$explain_type"
+    print_struct $structName
+    while (( "$#" > 2 )); do
+        eval "$explain_type"
+        IFS="_ "
+        print_struct $structName
+    done
+}
+
+function write_trampoline {
+    printf "static void __%s (void (*fptr)(), void *retval) {\n" "$*"
+    explained_type=$(explain_fun_type "$@")
+    print_structs "$@"
+    eval "$explain_type"
+    local return_type="$typ"
+    IFS="$OIFS"
+    printf "  %s = %s;\n" "$("$(dirname "$0")/cdecl" -s declare fun as $explained_type)" "$("$(dirname "$0")/cdecl" -s cast fptr into $explained_type)"
+    if [ "$return_type" != " void" ]; then
+        printf "  %s = retval;\n" "$("$(dirname "$0")/cdecl" -s declare typed_retval as pointer to $return_type)"
+    fi
+    idx=0
+    IFS="_ "
+    while (( "$#" > 2 )); do
+        eval "$explain_type"
+        IFS="$OIFS"
+        printf "  %s;\n" "$("$(dirname "$0")/cdecl" -s declare _$idx as $typ)"
+        IFS="_ "
+        printf "  __recv_message(&_$idx, sizeof(_$idx));\n"
+        idx=$(($idx+1))
+    done
+    if [ "$return_type" != " void" ]; then
+        printf "  *typed_retval = fun("
+    else
+        printf "  fun("
+    fi
+    conn=""
+    IFS="$OIFS"
+    for i in `seq 0 $(($idx-1))`; do
+        printf "${conn}_$i"
+        conn=", "
+    done
+    IFS="_ "
+    printf ");\n"
+    printf "}\n"
+}
+
+OIFS="$IFS"
+IFS="_ "
+while read line; do
+    write_trampoline $line  
+done

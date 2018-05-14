@@ -1,0 +1,8 @@
+Deleting an uncreated key:
+      > in pthread_key_delete at UB-PTHREAD12-bad.c:6:7
+        in main at UB-PTHREAD12-bad.c:6:7
+
+    Undefined behavior (UB-PTHREAD12):
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see POSIX 2008 section pthread_key_delete http://rvdoc.org/POSIX%202008/pthread_key_delete
+

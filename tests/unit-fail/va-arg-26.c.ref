@@ -1,9 +1,11 @@
- 'va_start' called on function whose last fixed argument is not compatible with type after default argument promotions.
-   at __va_start(va-arg-26.c:10:4)
-   by f(va-arg-26.c:10:4)
-   by main(va-arg-26.c:18:3)
-  Undefined behavior (UB-STDARG12).
-   see C11 section J.2:1 item 143 http://rvdoc.org/C11/J.2
-   see C11 section J.2:1 item 143 http://rvdoc.org/C11/J.2
-   see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
+'va_start' called on function whose last fixed argument is not compatible with type after default argument promotions:
+      > in __kcc_va_start at va-arg-26.c:10:4
+        in f at va-arg-26.c:10:4
+        in main at va-arg-26.c:18:3
+
+    Undefined behavior (UB-STDARG12):
+        see C11 section J.2:1 item 143 http://rvdoc.org/C11/J.2
+        see C11 section J.2:1 item 143 http://rvdoc.org/C11/J.2
+        see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
+
 Execution failed (configuration dumped)

@@ -1,6 +1,11 @@
-#include<stddef.h>
 int main() {
-  int x = 0;
-  int *y = &x;
-  y == ((float *)0);
+      void * p = (void*)0;
+      int x = 0;
+      int *y = &x;
+
+      y == ((float *)0);
+
+      *((unsigned char*)&p);
+
+      return 0;
 }

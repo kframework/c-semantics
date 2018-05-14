@@ -1,7 +1,9 @@
 CV-CEB5-bad-static.c:5:3: error: Both bitwise shift operands must have integer type.
-  Constraint violation (CV-CEB5).
-   see C11 section 6.5.7:2 http://rvdoc.org/C11/6.5.7
-   see CERT-C section INT13-C http://rvdoc.org/CERT-C/INT13-C
-   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
+    Constraint violation (CV-CEB5):
+        see C11 section 6.5.7:2 http://rvdoc.org/C11/6.5.7
+        see CERT-C section INT13-C http://rvdoc.org/CERT-C/INT13-C
+        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
 kcc -d CV-CEB5-bad-static.c

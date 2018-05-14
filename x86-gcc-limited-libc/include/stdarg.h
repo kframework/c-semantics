@@ -1,10 +1,17 @@
-#ifndef _KCC_STDARG_H
-#define _KCC_STDARG_H
+#ifndef _STDARG_H
+#define _STDARG_H
 #include <kcc_settings.h>
 #include <stddef.h>
 
-#include <stdlib.h>
-typedef ptrdiff_t va_list;
+#ifndef __cplusplus
+typedef ptrdiff_t __builtin_va_list;
+#endif
+
+#ifndef __GNUC_VA_LIST
+#define __GNUC_VA_LIST
+typedef __builtin_va_list __gnuc_va_list;
+#endif
+typedef __gnuc_va_list va_list;
 
 /* The va_arg macro expands to an expression that has the specified type and
  * the value of the next argument in the call. The parameter ap shall have been
@@ -20,21 +27,22 @@ typedef ptrdiff_t va_list;
  *
  * one type is a signed integer type, the other type is the corresponding
  * unsigned integer type, and the value is representable in both types;
- * 
+ *
  * one type is pointer to void and the other is a pointer to a character type.
- */ 
-// type va_arg(va_list ap, type);
-#define va_arg(ap, t) (*((t*)(__va_inc((ap)))))
-void *__va_inc(va_list ap); // increments the ap, and returns the current vararg
+ */
+/* type va_arg(va_list ap, type); */
+#define va_arg(ap, t) (*((t*)(__kcc_va_inc((ap)))))
+void *__kcc_va_inc(va_list ap); // increments the ap, and returns the current vararg
 
-// void va_start(va_list ap, parmN);
-#define va_start(ap, pN) (__va_start((&(ap)), ((void*)(&(pN)))))
-void __va_start(va_list *ap, void *pN);
+/* void va_start(va_list ap, parmN); */
+#define va_start(ap, pN) (__kcc_va_start((&(ap)), ((void*)(&(pN)))))
+void __kcc_va_start(va_list *ap, void *pN);
 
-void va_end(va_list ap);
+#define va_end __kcc_va_end
+void __kcc_va_end(va_list ap);
 
-// void va_copy(va_list dst, va_list src);
-#define va_copy(dst, src) (__va_copy((&(dst)), (src)))
-void __va_copy(va_list *dst, va_list src);
+/* void va_copy(va_list dst, va_list src); */
+#define va_copy(dst, src) (__kcc_va_copy((&(dst)), (src)))
+void __kcc_va_copy(va_list *dst, va_list src);
 
 #endif

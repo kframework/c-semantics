@@ -1,6 +1,7 @@
 // information used by execution and translation configuration and therefore
 // included in all C and C++ modules
 module C-DYNAMIC-SORTS
+     imports COMMON-SORTS
      syntax LHold
      syntax RHold
      syntax NCLHold
@@ -9,9 +10,8 @@ module C-DYNAMIC-SORTS
      syntax Nclv
      syntax Hold
      syntax Scope
-     syntax NumValue
-     syntax CValue
      syntax TrapLValue
+     syntax Agg
      syntax Typed ::= LValue | RValue | Hold | Nclv | TrapLValue
 endmodule
 
@@ -27,7 +27,6 @@ module C-DYNAMIC-SYNTAX
      imports K-REFLECTION
      imports LIST
      imports BITS-SORTS
-     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SORTS
      imports C-REVAL-SYNTAX
      imports C-TYPING-SORTS
@@ -61,13 +60,9 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= "discard"
 
-     syntax NumValue ::= Float | BitValue // Int is a subsort of BitValue
-     syntax CValue ::= SymLoc | Agg
-     syntax EffectiveValue ::= CValue
-     syntax C ::= NumValue | Type | RValue
-
      syntax Nclv ::= nclv(SymLoc, Type)
      syntax TrapLValue ::= trap(UType) [klabel(trap1)]
+     syntax LValue ::= Nclv | LHold | NCLHold | TrapLValue
      syntax KResult ::= RValue | Type | UType | DType | Nclv | TrapLValue
 
      syntax BlockScope ::= blockScope(CId, Int)
@@ -137,6 +132,16 @@ module C-DYNAMIC-SYNTAX
 
      syntax Bool ::= isNCLKLabel(K) [function, klabelPredicate]
                    | isRKLabel(K) [function, klabelPredicate]
+
+     // Initializers.
+     syntax InitLValue ::= LValue
+                         | InitLValue "[[" Int "]]" [strict(1)]
+                         | InitLValue ".init" CId [strict(1)]
+
+     syntax EncodableValue ::= Opaque
+     syntax Opaque ::= opaque(K, UType)
+     syntax KItem ::= fromOpaque(CValue) [function]
+
 endmodule
 
 module C-DYNAMIC
@@ -144,6 +149,7 @@ module C-DYNAMIC
      imports C-CONFIGURATION
      imports BOOL
      imports K-EQUAL
+     imports C-CHECK-USE-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -194,18 +200,6 @@ module C-DYNAMIC
      rule N:Int => tv(N, utype(cfg:largestUnsigned))
           [structural] // for internal computations
 
-     rule <k> allowInit(K:K) => K ~> initDone(I) ...</k>
-          <initializing> I:Bool => true </initializing>
-          [structural]
-
-     syntax KItem ::= initDone(Bool)
-     rule <k> R:KResult ~> initDone(I::Bool) => R ...</k>
-          <initializing> _ => I </initializing>
-          [structural]
-     rule <k> initDone(I::Bool) => .K ...</k>
-          <initializing> _ => I </initializing>
-          [structural]
-
      rule isNoInit(NoInit()) => true
      rule isNoInit(initValue(_, _, .K)) => true
      rule isNoInit(_) => false [owise]
@@ -217,8 +211,8 @@ module C-DYNAMIC
           requires #klabel(Lbl) =/=K #klabel(`compoundAssign`) andBool #klabel(Lbl) =/=K #klabel(`postOp`)
      rule fillRHoles(_, K:K) => K [owise]
 
-     rule fillLHoles(LV:KResult, LHOLE) => LV
-     rule fillLHoles(LV:KResult, Lbl:KLabel(L:K, R:K))
+     rule fillLHoles(LV:K, LHOLE) => LV
+     rule fillLHoles(LV:K, Lbl:KLabel(L:K, R:K))
           => Lbl(fillLHoles(LV, L), fillLHoles(LV, R))
           requires #klabel(Lbl) =/=K #klabel(`compoundAssign`) andBool #klabel(Lbl) =/=K #klabel(`postOp`)
      rule fillLHoles(_, K:K) => K [owise]
@@ -235,4 +229,8 @@ module C-DYNAMIC
      rule allRValueInHeatList(hItem(_) hs:: _) => false
      rule allRValueInHeatList(hrItem(_) hs:: HL:HeatList)
           => allRValueInHeatList(HL)
+
+     rule fromOpaque(opaque(V:K, _)) => V
+     rule fromOpaque(_) => .K [owise]
+
 endmodule

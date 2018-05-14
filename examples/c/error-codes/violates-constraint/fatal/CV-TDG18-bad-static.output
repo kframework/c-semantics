@@ -1,7 +1,9 @@
 CV-TDG18-bad-static.c:4:7: error: Declaration for x appears with invalid storage class specifiers.
-  Constraint violation (CV-TDG18).
-   see C11 section 6.7.1:3 http://rvdoc.org/C11/6.7.1
-   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
+    Constraint violation (CV-TDG18):
+        see C11 section 6.7.1:3 http://rvdoc.org/C11/6.7.1
+        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
 kcc -d CV-TDG18-bad-static.c

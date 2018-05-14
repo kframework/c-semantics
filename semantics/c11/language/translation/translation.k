@@ -8,7 +8,7 @@ require "env.k"
 require "error.k"
 require "function-def.k"
 require "init.k"
-require "io-direct.k"
+require "io.k"
 require "literal.k"
 require "process-label.k"
 require "promotion.k"
@@ -29,6 +29,7 @@ require "expr/cast.k"
 require "expr/conditional.k"
 require "expr/eval.k"
 require "expr/function-call.k"
+require "expr/generic.k"
 require "expr/identifier.k"
 require "expr/inc-and-dec.k"
 require "expr/logical.k"
@@ -39,10 +40,12 @@ require "expr/reference.k"
 require "expr/relational.k"
 require "expr/sequencing.k"
 require "expr/sizeof.k"
+require "expr/types-compat.k"
 require "expr/unary.k"
 
 require "stmt/block.k"
 require "stmt/break.k"
+require "stmt/expr.k"
 require "stmt/goto.k"
 require "stmt/if-then.k"
 require "stmt/labeled.k"
@@ -67,7 +70,7 @@ module C-TRANSLATION
      imports C-ELABORATOR
      imports C-ENV
      imports C-FUNCTION-DEF
-     imports C-IO-DIRECT
+     imports C-IO
      imports C-LITERAL
      imports C-PROCESS-LABEL
      imports C-PROMOTION
@@ -90,6 +93,7 @@ module C-TRANSLATION
      imports C-EXPR-CONDITIONAL
      imports C-EXPR-EVAL
      imports C-EXPR-FUNCTION-CALL
+     imports C-EXPR-GENERIC
      imports C-EXPR-IDENTIFIER
      imports C-EXPR-INC-AND-DEC
      imports C-EXPR-LOGICAL
@@ -100,10 +104,12 @@ module C-TRANSLATION
      imports C-EXPR-RELATIONAL
      imports C-EXPR-SEQUENCING
      imports C-EXPR-SIZEOF
+     imports C-EXPR-TYPES-COMPAT
      imports C-EXPR-UNARY
 
      imports C-STMT-BLOCK
      imports C-STMT-BREAK
+     imports C-STMT-EXPR
      imports C-STMT-GOTO
      imports C-STMT-IF-THEN
      imports C-STMT-LABELED

@@ -39,6 +39,7 @@ module CPP-TYPING-SYNTAX
      imports COMMON-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-SORTS
+     imports SYMLOC-SORTS
 
      syntax AType ::= CPPType
 
@@ -277,9 +278,12 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPType ::= implicitObjectParameterType(CPPFunctionType) [function]
 
+     syntax Expr ::= getBaseClassSubobject(base: LVal, baseType: CPPClassType) [strict]
+
      syntax Bool ::= isBaseClassOf(base: CPPClassType, derived: CPPClassType) [function]
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isBaseClassOf(base: Class, derived: Class) [function, klabel(isClassBaseClassOf)]
+                   | isPropperBaseClassOf(base: Class, derived: Class) [function, klabel(isClassPropperBaseClassOf)]
                    | isDirectBaseClassOf(base: Class, derived: Class) [function]
                    | hasVirtualMembers(CPPClassType) [function]
                    | isUnionLikeClass(Class) [function]
@@ -309,6 +313,11 @@ module CPP-TYPING-SYNTAX
      syntax Enum ::= getEnumId(CPPEnumType) [function]
      syntax Bool ::= isEnumScoped(CPPEnumType) [function]
                    | isEnumFixed(CPPEnumType) [function]
+
+     // Intended to use only when the derived class
+     // has only one such base.
+     syntax Int ::= getBaseClassOffset(base: Class, derived: Class) [function]
+
 endmodule
 
 module CPP-TYPING
@@ -325,6 +334,8 @@ module CPP-TYPING
      imports CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-SYMLOC-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
 
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: noMethod))) => toList(L)
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(... constructor: true)))) => toList(L)
@@ -654,6 +665,39 @@ module CPP-TYPING
      rule isUnnamedPRValue(T::CPPType) 
           => notBool isUnnamedLValue(T) andBool notBool isUnnamedXValue(T)
     
+     rule getBaseClassSubobject(lv(L::SymLoc, Tr::Trace, D::CPPClassType), B::CPPClassType) => lv(baseClassSubobject(L, B, D), Tr, B)
+
+     rule getBaseClassOffset(Base::Class, Derived::Class)
+         => getAllBaseClassOffsets(Derived)[ Base ]
+
+     // Returns a mapping of type Class |-> Offset, including C |-> 0 for given class C.
+     syntax Map ::= getAllBaseClassOffsets(Class) [function]
+     rule getAllBaseClassOffsets(D::Class) => #getAllBaseClassOffsets2(.Map, D |-> 0)
+
+     syntax Map ::= #getAllBaseClassOffsets2(processed: Map, fresh: Map) [function]
+     rule #getAllBaseClassOffsets2(Processed::Map, .Map) => Processed
+     rule #getAllBaseClassOffsets2(M::Map => M[D <- CurrentOffset],
+               ((D::Class |-> CurrentOffset::Int) => .Map) _::Map (.Map => getDirectBaseClassOffsets(CurrentOffset, getClassInfo(D))))
+
+     syntax Map ::= getDirectBaseClassOffsets(currentOffset: Int, info: ClassInfo) [function]
+     rule getDirectBaseClassOffsets(CurrentOffset::Int,
+               <class>... <base-classes>BCS::List</base-classes> <cenv> ClassEnv::Map </cenv>  ...</class>)
+          => #getDirectBaseClassOffsets(.Map, BCS, CurrentOffset, ClassEnv)
+
+     syntax Map ::= #getDirectBaseClassOffsets(result: Map, bases: List, currentOffset: Int, cenv: Map) [function]
+     rule #getDirectBaseClassOffsets(M::Map, .List, _, _) => M
+     rule #getDirectBaseClassOffsets(M::Map, ListItem(B:Class => type(classType(B))) _, _, _)
+     rule #getDirectBaseClassOffsets(M::Map => M[B <- CurrentOffset +Int Offset],
+               (ListItem(t(...st: classType(B::Class)) #as T::CPPType) => .List) _,
+               CurrentOffset::Int, 
+               (baseClass(B) |-> (_::TypeMap T |-> classOffset(_, Offset::Int))) _::Map)
+     requires notBool (B in_keys(M))
+
+
+     rule isPropperBaseClassOf(D::Class, D) => false
+     rule isPropperBaseClassOf(B::Class, D::Class) => isBaseClassOf(B, D)
+          requires B =/=K D
+
      rule isBaseClassOf(t(_, _, classType(B::Class)), t(_, _, classType(D::Class))) => isBaseClassOf(B, D)
      rule isBaseClassOf(B::Class, D::Class) => #isBaseClassOf(B, ListItem(D), #configuration)
      rule isDirectBaseClassOf(B::Class, D::Class) => #isDirectBaseClassOf(B, D, #configuration)

@@ -1,6 +1,8 @@
- The left operand in a bitwise right-shift is negative.
-   at main(IMPL-CEB8-bad.c:5:3)
-  Implementation defined behavior (IMPL-CEB8).
-   see C11 section 6.5.7:5 http://rvdoc.org/C11/6.5.7
-   see C11 section J.3.5:1 item 5 http://rvdoc.org/C11/J.3.5
-   see CERT-C section INT13-C http://rvdoc.org/CERT-C/INT13-C
+The left operand in a bitwise right-shift is negative:
+      > in main at IMPL-CEB8-bad.c:5:3
+
+    Implementation defined behavior (IMPL-CEB8):
+        see C11 section 6.5.7:5 http://rvdoc.org/C11/6.5.7
+        see C11 section J.3.5:1 item 5 http://rvdoc.org/C11/J.3.5
+        see CERT-C section INT13-C http://rvdoc.org/CERT-C/INT13-C
+

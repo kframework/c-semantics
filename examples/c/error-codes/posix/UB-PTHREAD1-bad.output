@@ -1,6 +1,8 @@
- Initializing an already initialized mutex.
-   at pthread_mutex_init(UB-PTHREAD1-bad.c:17:5)
-   by main(UB-PTHREAD1-bad.c:17:5)
-  Undefined behavior (UB-PTHREAD1).
-   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
-   see POSIX 2008 section pthread_mutex_init http://rvdoc.org/POSIX%202008/pthread_mutex_init
+Initializing an already initialized mutex:
+      > in pthread_mutex_init at UB-PTHREAD1-bad.c:17:5
+        in main at UB-PTHREAD1-bad.c:17:5
+
+    Undefined behavior (UB-PTHREAD1):
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see POSIX 2008 section pthread_mutex_init http://rvdoc.org/POSIX%202008/pthread_mutex_init
+

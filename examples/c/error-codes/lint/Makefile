@@ -21,6 +21,14 @@ comparison: ${TEST_COMPARISON}
 	@echo -n "Compiling $^... "
 	@kcc -Wlint -o $@ $^ -pthread > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
+L-EFNCE1-good.kcc: L-EFNCE1-good.c
+	@echo -n "Compiling $^... "
+	@kcc -Wlint -Wno-L-EFNC3 -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+
+L-EFNCE1-bad.kcc: L-EFNCE1-bad.c
+	@echo -n "Compiling $^... "
+	@kcc -Wlint -Wno-L-EFNC3 -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+
 %-good.out: %-good.kcc
 	@echo -n "Running $<... "
 	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_RUN}

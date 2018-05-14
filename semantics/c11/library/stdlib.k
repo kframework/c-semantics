@@ -11,7 +11,7 @@ module LIBC-STDLIB
      imports STRING
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-IO-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-NATIVE-BRIDGE-SYNTAX
@@ -218,14 +218,16 @@ module LIBC-STDLIB
           ~> builtin("getenv", KeyPtr::RValue)
           [structural]
      rule <k> Ptr:RValue ~> builtin("getenv", _)
-               => Ptr
-          ...</k>
-          <getenv> .K => Ptr </getenv>
-          [structural]
-     rule <k> Ptr:RValue ~> builtin("getenv", _)
                => deleteObject(base(Loc)) ~> Ptr
           ...</k>
-          <getenv> tv(Loc:SymLoc, _) => Ptr </getenv>
+          <getenv> tv(Loc:SymLoc, _) #as OldPtr::RValue => Ptr </getenv>
+          requires notBool isNull(OldPtr)
+          [structural]
+     rule <k> Ptr:RValue ~> builtin("getenv", _)
+               => Ptr
+          ...</k>
+          <getenv> OldPtr:RValue => Ptr </getenv>
+          requires isNull(OldPtr)
           [structural]
 
 endmodule

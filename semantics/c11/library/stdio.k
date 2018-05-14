@@ -9,7 +9,8 @@ module LIBC-STDIO
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-EXECUTION-ERROR-SYNTAX
+     imports C-IO-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
@@ -54,9 +55,9 @@ module LIBC-STDIO
           <uri> Path </uri>
           [structural]
      rule <k> fsetpos(V:RValue, _) => setErrno(#EBADF) ~> eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
      rule <k> (.K => UNDEF("STDIO9", "'fsetpos': called to set a position that was not returned by a previous successful call to the fgetpos function on a stream associated with the same file."))
                ~> fsetpos(tv(opaque(FD:FD, _), _), tv(V::CValue, _))
@@ -86,9 +87,9 @@ module LIBC-STDIO
           requires isWritable(Mode) andBool (Op =/=K inputOp)
           [structural]
      rule <k> fflush(V:RValue) => setErrno(#EBADF) ~> eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
      rule <k> (.K => UNDEF("STDIO7", "'fflush': called on an input stream or an input/output stream on which the most recent operation was input."))
                ~> fflush(tv(opaque(FD:Int, _), _))
           ...</k>
@@ -141,13 +142,13 @@ module LIBC-STDIO
      rule <k> (.K => tell(FD))
                ~> fgetpos(tv(opaque(FD:Int, _), _), _)
           ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> fgetpos(V:RValue, _) => setErrno(#EBADF) ~> eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
      rule <k> tv(Pos:Int, _) ~> fgetpos(tv(opaque(FD:Int, _), _), PosPtr::RValue)
                => Computation((* PosPtr) := tv(opaque(fpos(Path, Pos), utype(fpos_t)), utype(fpos_t)))
@@ -180,9 +181,9 @@ module LIBC-STDIO
           requires isWritable(Mode)
           [structural]
      rule <k> fputc(_, V:RValue) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
      rule <k> fputc(N::Int, tv(opaque(FD:Int, _), _))
                => eof
@@ -223,9 +224,9 @@ module LIBC-STDIO
           requires isReadable(Mode)
           [structural]
      rule <k> fgetc(V:RValue) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
      rule <k> fgetc(tv(opaque(FD:Int, _), _))
                => eof
@@ -249,13 +250,13 @@ module LIBC-STDIO
                ~> cleareof(FD)
                ~> tv(C, utype(int))
           ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> ungetc(_, V:RValue) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
 
      rule builtin("feof", FDPtr::RValue) => feof(* FDPtr)
@@ -279,9 +280,9 @@ module LIBC-STDIO
           requires notBool (Buffer ==K "" andBool Eof)
           [structural]
      rule <k> feof(V:RValue) => tv(0, utype(int)) ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
 
      syntax KItem ::= ferror(K)
@@ -296,21 +297,21 @@ module LIBC-STDIO
           <ferror> 0 </ferror>
           [structural]
      rule <k> ferror(V:RValue) => tv(0, utype(int)) ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
 
      syntax KItem ::= fileno(K)
      context fileno(HOLE:KItem => reval(HOLE)) [result(RValue)]
      rule <k> fileno(tv(opaque(FD:Int, _), _)) => tv(FD, utype(int)) ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> fileno(V:RValue) => setErrno(#EBADF) ~> eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      rule builtin("clearerr", FDPtr::RValue)
@@ -326,9 +327,9 @@ module LIBC-STDIO
           <ferror> _ => 0 </ferror>
           [structural]
      rule <k> clearerr(V:RValue) => voidVal ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      syntax KItem ::= cleareof(Int)
@@ -356,12 +357,12 @@ module LIBC-STDIO
                ~> close(FD)
                ~> success
           ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> fclose'(FD::Int) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires notBool (FD in OpenFiles)
+          <open-files> OpenFiles:Map </open-files>
+          requires notBool (FD in_keys(OpenFiles))
           [structural]
 
      rule builtin("fopen", Filename::RValue, Mode::RValue)
@@ -422,7 +423,12 @@ module LIBC-STDIO
                => Computation(fileLVal(Base) := tv(opaque(FD, utype(file)), utype(file)))
                ~> & fileLVal(Base)
           ...</k>
-          <open-files>... .Set => SetItem(FD) </open-files>
+          <open-files>... .Map => FD |-> printStackTrace(L, Tu, Sc, Loc, Env) </open-files>
+          <call-stack> L:List </call-stack>
+          <curr-tu> Tu::String </curr-tu>
+          <renv> Env::Map </renv>
+          <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+          <curr-scope> Sc:Scope </curr-scope>
           <files>...
                (.Bag =>
                     <file>...
@@ -480,7 +486,7 @@ module LIBC-STDIO
 
      syntax KItem ::= trapBuf(SymLoc, Int)
      rule trapBuf(Loc::SymLoc, Sz::Int)
-          => writeBytes(stripProv(Loc), dataList(times(Sz, piece(trap, cfg:bitsPerByte))), type(arrayType(type(unsigned-char), Sz)))
+          => initBytes(stripProv(Loc), times(Sz, piece(trap, cfg:bitsPerByte)))
           requires notBool isNull(tv(Loc, utype(pointerType(type(void)))))
                andBool Sz >Int 0
      rule trapBuf(_, _) => .K [owise]
@@ -491,13 +497,13 @@ module LIBC-STDIO
                => setBuf(FD, Mode, Sz)
                ~> success
           ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> setbuf(V:RValue, _, _) => setErrno(#EBADF) ~> eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      rule builtin("fread", Ptr::RValue, tv(Size:Int, _), tv(NMemb:Int, _), FDPtr::RValue)
@@ -534,9 +540,9 @@ module LIBC-STDIO
           requires notBool isReadable(Mode)
           [structural]
      rule <k> fread(_, _, _, V:RValue) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      syntax KItem ::= "fread'" "(" SymLoc "," Int "," K ")" [strict(3)]
@@ -554,7 +560,6 @@ module LIBC-STDIO
 
      syntax KItem ::= fgets(RValue, Int, K)
      context fgets(_, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
-
      rule fgets(Ptr::RValue, NMemb::Int, _) => Ptr
           requires NMemb <Int 1
           [structural]
@@ -566,44 +571,49 @@ module LIBC-STDIO
           ~> fgets(Ptr::RValue, NMemb::Int, FD:RValue)
           requires NMemb >Int 1
           [structural]
-     rule <k> tv(V::CValue, _) ~> fgets(tv(Loc:SymLoc, _), NMemb::Int, tv(opaque(FD::Int, _), _))
+     rule <k> V:RValue ~> fgets(tv(Loc:SymLoc, _), NMemb::Int, tv(opaque(FD::Int, _), _))
                => trapBuf(Loc, NMemb)
                ~> tv(NullPointer, utype(pointerType(type(char))))
           ...</k>
           <fid> FD </fid>
           <read-buffer> Buffer::String </read-buffer>
           <feof> Eof:Bool </feof>
-          requires V =/=K 1 andBool notBool (Buffer ==K "" andBool Eof)
+          requires V ==K eof andBool notBool (Buffer ==K "" andBool Eof)
           [structural]
-     rule <k> tv(V::CValue, _) ~> fgets(Ptr::RValue, NMemb::Int, tv(opaque(FD::Int, _), _))
-               => Ptr
+     rule <k> tv(V:Int, _) ~> fgets(tv(Loc:SymLoc, _), NMemb::Int, tv(opaque(FD::Int, _), _))
+               => trapBuf(Loc, NMemb)
+               ~> tv(NullPointer, utype(pointerType(type(char))))
           ...</k>
           <fid> FD </fid>
           <read-buffer> "" </read-buffer>
           <feof> true </feof>
-          requires V =/=K 1
+          requires V =/=Int 1
+          [structural]
+     rule <k> (tv(0, _) => str("")) ~> fgets(_, _, tv(opaque(FD::Int, _), _)) ...</k>
+          <fid> FD </fid>
+          <read-buffer> Buffer::String </read-buffer>
+          <feof> Eof:Bool </feof>
+          requires notBool (Buffer ==K "" andBool Eof)
           [structural]
      rule (tv(1, _) => getString(Ptr)) ~> fgets(Ptr::RValue, _, _)
           [structural]
      rule str(S::String) ~> fgets(Ptr::RValue, NMemb::Int, _)
           => Ptr
           requires lengthString(S) >=Int NMemb -Int 1
-               orBool S ==K "\n"
           [structural]
      rule (str(S::String) => readNewline(Ptr + lengthString(S), FD)) ~> fgets(Ptr::RValue, NMemb::Int, FD:RValue)
           requires lengthString(S) <Int NMemb -Int 1
           [structural]
+     rule doneReadNewline ~> fgets(Ptr::RValue, NMemb::Int, _) => Ptr
+          [structural]
 
      syntax KItem ::= readNewline(K, RValue)
+     syntax KResult ::= "doneReadNewline"
      context readNewline(HOLE:KItem => reval(HOLE), _) [result(RValue)]
-
      rule (.K => fscanf(FD, str("%1[\n]"), ListItem(Ptr)))
           ~> readNewline(Ptr:RValue, FD::RValue)
           [structural]
-     rule tv(1, _) ~> readNewline(Ptr:RValue, _) => str("\n")
-          [structural]
-     rule tv(V::CValue, _) ~> (readNewline(_, _) => .K)
-          requires V =/=K 1
+     rule _:RValue ~> readNewline(_, _) => doneReadNewline
           [structural]
 
      //////////////////////////
@@ -657,9 +667,9 @@ module LIBC-STDIO
           requires notBool isWritable(Mode)
           [structural]
      rule <k> fprintf(V:RValue, _) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      syntax KItem ::= fwrite(K, Int, K) [strict(1)]
@@ -681,19 +691,23 @@ module LIBC-STDIO
           requires notBool isWritable(Mode)
           [structural]
      rule <k> fwrite(_, _, V:RValue) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      rule [vprintf]:
           <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
-               ~> builtin("vprintf", _, tv(VaList::Int, _))
+               ~> builtin("vprintf", _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
           [structural]
+     rule (.K => errorUninitVaList)
+          ~> builtin("vprintf", _, tv(V::CValue, _))
+          requires getKLabel(V) =/=K #klabel(`opaque`)
+          [structural]
      rule <k> (.K => errorUninitVaList)
-               ~> builtin("vprintf", _, tv(VaList::Int, _))
+               ~> builtin("vprintf", _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool VaList in_keys(VaLists)
@@ -708,12 +722,16 @@ module LIBC-STDIO
 
      rule [vfprintf]:
           <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
-               ~> builtin("vfprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vfprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
           [structural]
+     rule (.K => errorUninitVaList)
+          ~> builtin("vfprintf", _, _, tv(V::CValue, _))
+          requires getKLabel(V) =/=K #klabel(`opaque`)
+          [structural]
      rule <k> (.K => errorUninitVaList)
-               ~> builtin("vfprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vfprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool VaList in_keys(VaLists)
@@ -745,12 +763,16 @@ module LIBC-STDIO
           [structural]
 
      rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
-               ~> builtin("vsprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vsprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
           [structural]
+     rule (.K => errorUninitVaList)
+          ~> builtin("vsprintf", _, _, tv(V::CValue, _))
+          requires getKLabel(V) =/=K #klabel(`opaque`)
+          [structural]
      rule <k> (.K => errorUninitVaList)
-               ~> builtin("vsprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vsprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool VaList in_keys(VaLists)
@@ -761,12 +783,16 @@ module LIBC-STDIO
           [structural]
 
      rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
-               ~> builtin("vasprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vasprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
           [structural]
+     rule (.K => errorUninitVaList)
+          ~> builtin("vasprintf", _, _, tv(V::CValue, _))
+          requires getKLabel(V) =/=K #klabel(`opaque`)
+          [structural]
      rule <k> (.K => errorUninitVaList)
-               ~> builtin("vasprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vasprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool VaList in_keys(VaLists)
@@ -793,12 +819,17 @@ module LIBC-STDIO
           [structural]
 
      rule [vsnprintf]:
-          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`)))) ~> builtin("vsnprintf", _, _, _, tv(VaList::Int, _))
+          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+               ~> builtin("vsnprintf", _, _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
           [structural]
+     rule (.K => errorUninitVaList)
+          ~> builtin("vsnprintf", _, _, _, tv(V::CValue, _))
+          requires getKLabel(V) =/=K #klabel(`opaque`)
+          [structural]
      rule <k> (.K => errorUninitVaList)
-               ~> builtin("vsnprintf", _, _, _, tv(VaList::Int, _))
+               ~> builtin("vsnprintf", _, _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool VaList in_keys(VaLists)
@@ -862,18 +893,23 @@ module LIBC-STDIO
      rule <k> fscanf(tv(opaque(FD:Int, _), _), str(S::String), VarArgs::List)
                => fscanf'(FD, VarArgs, parseFormat(stringToList(S)), 0, "", 0)
           ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> fscanf(tv(_, _) #as V:RValue, _, _) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
      rule <k> fscanf(str(FD::String), str(S::String), VarArgs::List)
                => fscanf'(FD, VarArgs, parseFormat(stringToList(S)), 0, "", 0)
           ...</k>
-          <open-files>... .Set => SetItem(FD) </open-files>
+          <open-files>... .Map => FD |-> printStackTrace(L, Tu, Sc, Loc, Env) </open-files>
+          <call-stack> L:List </call-stack>
+          <curr-tu> Tu::String </curr-tu>
+          <renv> Env::Map </renv>
+          <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+          <curr-scope> Sc:Scope </curr-scope>
           <files>...
                (.Bag =>
                     <file>...
@@ -930,7 +966,7 @@ module LIBC-STDIO
           [structural]
      rule <k> (.K => writeItem(D, Item, Arg, NRead))
                ~> fscanf'(FD::FD, (ListItem(Arg::RValue) => .List) _,
-                    (ListItem(%(true, _, _, _) #as D::Directive) => .List) _,
+                    (ListItem(%(Wr::WriteBehavior, _, _, _) #as D::Directive) => .List) _,
                     M::Int => #if isReadCountDirective(D) #then M #else M +Int 1 #fi,
                     Item::String => "",
                     NRead::Int)
@@ -939,9 +975,10 @@ module LIBC-STDIO
           <read-buffer> Buffer::String </read-buffer>
           <feof> Eof:Bool </feof>
           requires ((Buffer ==K "" andBool Eof) orBool atFieldWidth(Item, D)) andBool isCompleteItem(Item, D)
+               andBool (Wr ==K dirWrite orBool Wr ==K dirAlloc)
           [structural]
      rule <k> fscanf'(FD::FD, _,
-                    (ListItem(%(false, _, _, _) #as D::Directive) => .List) _,
+                    (ListItem(%(dirRead, _, _, _) #as D::Directive) => .List) _,
                     M::Int => M +Int 1,
                     Item::String => "",
                     _)
@@ -1004,15 +1041,16 @@ module LIBC-STDIO
      rule (.K => writeItem(D, Item, Arg, NRead))
           ~> str(C::String)
           ~> fscanf'(_, (ListItem(Arg::RValue) => .List) _,
-               (ListItem(%(true, _, _, _) #as D::Directive) => .List) _,
+               (ListItem(%(Wr::WriteBehavior, _, _, _) #as D::Directive) => .List) _,
                M::Int => #if isReadCountDirective(D) #then M #else M +Int 1 #fi,
                Item::String => "",
                NRead::Int)
           requires notBool inScanSet(C, D, Item) andBool isCompleteItem(Item, D)
+               andBool (Wr ==K dirWrite orBool Wr ==K dirAlloc)
           [structural]
      rule str(C::String)
           ~> fscanf'(_, _,
-               (ListItem(%(false, _, _, _) #as D::Directive) => .List) _,
+               (ListItem(%(dirRead, _, _, _) #as D::Directive) => .List) _,
                M::Int => M +Int 1,
                Item::String => "",
                _)
@@ -1055,63 +1093,86 @@ module LIBC-STDIO
      rule isReadCountDirective(%(_, _, _, "n")) => true
      rule isReadCountDirective(_) => false [owise]
 
-     syntax KItem ::= writeItem(Directive, String, RValue, Int) [function]
-     rule writeItem(%(true, _, "", "c"), Item::String, tv(Loc:SymLoc, _), _)
+     syntax KItem ::= writeItem(Directive, String, K, Int)
+     context writeItem(_, _, HOLE:KItem => reval(HOLE), _) [result(RValue)]
+
+     rule writeItem(%(dirAlloc, Width::Int, "", "c"), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item)))
+          ~> writeItem(%(dirWrite, Width, "", "c"), Item, (* Loc), N)
+     rule writeItem(%(dirAlloc, Width::Int, "l", "c"), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item) *Int byteSizeofType(type(cfg:wcharut))))
+          ~> writeItem(%(dirWrite, Width, "l", "c"), Item, (* Loc), N)
+
+     rule writeItem(%(dirAlloc, Width::Int, "", "s"), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item) +Int 1))
+          ~> writeItem(%(dirWrite, Width, "", "s"), Item, (* Loc), N)
+     rule writeItem(%(dirAlloc, Width::Int, "l", "s"), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item) *Int byteSizeofType(type(cfg:wcharut)) +Int 1))
+          ~> writeItem(%(dirWrite, Width, "l", "s"), Item, (* Loc), N)
+
+     rule writeItem(%(dirAlloc, Width::Int, "", D::String), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item) +Int 1))
+          ~> writeItem(%(dirWrite, Width, "", "s"), Item, (* Loc), N)
+          requires firstChar(D) ==String "["
+     rule writeItem(%(dirAlloc, Width::Int, "l", D::String), Item::String, Loc:RValue, N::Int)
+          => Computation((* Loc) := alignedAlloc(cfg:alignofMalloc, lengthString(Item) *Int byteSizeofType(type(cfg:wcharut)) +Int 1))
+          ~> writeItem(%(dirWrite, Width, "l", "s"), Item, (* Loc), N)
+          requires firstChar(D) ==String "["
+
+     rule writeItem(%(dirWrite, _, "", "c"), Item::String, tv(Loc:SymLoc, _), _)
           => writeChars(Loc, Item)
-     rule writeItem(%(true, _, "l", "c"), Item::String, tv(Loc:SymLoc, _), _)
+     rule writeItem(%(dirWrite, _, "l", "c"), Item::String, tv(Loc:SymLoc, _), _)
           => writeWChars(Loc, stringToList(Item))
 
-     rule writeItem(%(true, _, "", "s"), Item::String, tv(Loc:SymLoc, _), _)
+     rule writeItem(%(dirWrite, _, "", "s"), Item::String, tv(Loc:SymLoc, _), _)
           => writeString(Loc, Item)
-     rule writeItem(%(true, _, "l", "s"), Item::String, tv(Loc:SymLoc, _), _)
+     rule writeItem(%(dirWrite, _, "l", "s"), Item::String, tv(Loc:SymLoc, _), _)
           => writeWString(Loc, stringToList(Item))
 
-     rule writeItem(%(true, _, "", D::String), Item::String, tv(Loc:SymLoc, _), _)
+     rule writeItem(%(dirWrite, _, "", D::String), Item::String, tv(Loc:SymLoc, _), _)
           => writeString(Loc, Item)
           requires firstChar(D) ==String "["
-     rule writeItem(%(true, _, "l", D::String), Item::String, tv(Loc:SymLoc, _), _)
+     rule writeItem(%(dirWrite, _, "l", D::String), Item::String, tv(Loc:SymLoc, _), _)
           => writeWString(Loc, stringToList(Item))
           requires firstChar(D) ==String "["
 
-     rule writeItem(%(true, _, Length::String, "d"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "d"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 10), utype(getFormatType'("%d", Length)))))
-     rule writeItem(%(true, _, Length::String, "i"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "i"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 0), utype(getFormatType'("%i", Length)))))
           requires notBool has0xPrefix(Item)
-     rule writeItem(%(true, _, Length::String, "i"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "i"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%i", Length)))))
           requires has0xPrefix(Item)
-     rule writeItem(%(true, _, Length::String, "o"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "o"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 8), utype(getFormatType'("%o", Length)))))
-     rule writeItem(%(true, _, Length::String, "u"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "u"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 10), utype(getFormatType'("%u", Length)))))
-     rule writeItem(%(true, _, Length::String, "x"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "x"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 16), utype(getFormatType'("%x", Length)))))
           requires notBool has0xPrefix(Item)
-     rule writeItem(%(true, _, Length::String, "x"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "x"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%x", Length)))))
           requires has0xPrefix(Item)
 
-     rule writeItem(%(true, _, Length::String, "p"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "p"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(cfg:intToPointer(String2Base(Item, 16), utype(getFormatType'("%p", Length))), utype(getFormatType'("%p", Length)))))
           requires notBool has0xPrefix(Item)
                andBool toUpperCase(Item) =/=String "(NIL)"
-     rule writeItem(%(true, _, Length::String, "p"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "p"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(cfg:intToPointer(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%p", Length))), utype(getFormatType'("%p", Length)))))
           requires has0xPrefix(Item)
                andBool toUpperCase(Item) =/=String "(NIL)"
-     rule writeItem(%(true, _, Length::String, "p"), Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, "p"), Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(NullPointer, utype(getFormatType'("%p", Length)))))
           requires toUpperCase(Item) ==String "(NIL)"
 
-     rule writeItem(%(true, _, Length::String, D::String) #as D'::Directive, Item::String, Ptr::RValue, _)
+     rule writeItem(%(dirWrite, _, Length::String, D::String) #as D'::Directive, Item::String, Ptr:RValue, _)
           => Computation((* Ptr) := stringToFloat(Item, utype(innerType(type(Ptr))), utype(getFormatType'("%" +String D, Length))))
           requires isFloatDirective(D')
 
-     rule writeItem(%(true, _, Length::String, "n"), _, Ptr::RValue, M::Int)
+     rule writeItem(%(dirWrite, _, Length::String, "n"), _, Ptr:RValue, M::Int)
           => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(M, utype(int))))
-
-     rule writeItem(_, _, _, _) => .K [owise]
 
      syntax KItem ::= stringToFloat(String, UType, UType)
      rule stringToFloat(S::String, T::UType, ut(_, float))
@@ -1136,9 +1197,10 @@ module LIBC-STDIO
           => deleteObject(Base) ~> cast(T, V)
           [structural]
 
-     syntax Directive ::= "%" "(" Bool "," Int "," String "," String ")"
+     syntax Directive ::= "%" "(" WriteBehavior "," Int "," String "," String ")"
                         | "%%"
                         | String
+     syntax WriteBehavior ::= "dirWrite" | "dirAlloc" | "dirRead"
 
      // (Input char, current directive, item read so far.)
      syntax Bool ::= inScanSet(String, Directive, String) [function]
@@ -1243,9 +1305,8 @@ module LIBC-STDIO
           => ((substrString(D, 0, 2) ==String "[^")
                     andBool (findChar(D, C, 2) ==Int -1))
                orBool ((substrString(D, 0, 2) =/=String "[^")
-                    andBool (firstChar(D) ==String "[")
                     andBool (findChar(D, C, 1) =/=Int -1))
-          requires lengthString(D) >Int 1
+          requires firstChar(D) ==String "["
 
      rule inScanSet(_, _, _) => false [owise]
 
@@ -1401,17 +1462,17 @@ module LIBC-STDIO
      rule isSpaceSkipDirective(_) => true [owise]
 
      syntax Directive ::= normalizeDirective(Directive) [function]
-     rule normalizeDirective(%(Write::Bool, 0, Length::String, "c"))
+     rule normalizeDirective(%(Write::WriteBehavior, 0, Length::String, "c"))
           => %(Write, 1, Length, "c")
-     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "X"))
+     rule normalizeDirective(%(Write::WriteBehavior, Width::Int, Length::String, "X"))
           => %(Write, Width, Length, "x")
-     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "A"))
+     rule normalizeDirective(%(Write::WriteBehavior, Width::Int, Length::String, "A"))
           => %(Write, Width, Length, "a")
-     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "E"))
+     rule normalizeDirective(%(Write::WriteBehavior, Width::Int, Length::String, "E"))
           => %(Write, Width, Length, "e")
-     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "F"))
+     rule normalizeDirective(%(Write::WriteBehavior, Width::Int, Length::String, "F"))
           => %(Write, Width, Length, "f")
-     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "G"))
+     rule normalizeDirective(%(Write::WriteBehavior, Width::Int, Length::String, "G"))
           => %(Write, Width, Length, "g")
      rule normalizeDirective(D::Directive) => D [owise]
 
@@ -1426,14 +1487,21 @@ module LIBC-STDIO
           => parseResult(%%, L)
      rule parseDirective(ListItem("%") ListItem("*") L::List)
           => parseResult(%
-               ( false
+               ( dirRead
+               , parseDigits(L)
+               , parseLengthMod(eatDigits(L))
+               , parseConvSpec(eatLengthMod(eatDigits(L)))
+               ), eatConvSpec(eatLengthMod(eatDigits(L))))
+     rule parseDirective(ListItem("%") ListItem("m") L::List)
+          => parseResult(%
+               ( dirAlloc
                , parseDigits(L)
                , parseLengthMod(eatDigits(L))
                , parseConvSpec(eatLengthMod(eatDigits(L)))
                ), eatConvSpec(eatLengthMod(eatDigits(L))))
      rule parseDirective(ListItem("%") L::List)
           => parseResult(%
-               ( true
+               ( dirWrite
                , parseDigits(L)
                , parseLengthMod(eatDigits(L))
                , parseConvSpec(eatLengthMod(eatDigits(L)))
@@ -1567,14 +1635,14 @@ module LIBC-STDIO
                orBool C ==String "p"
                orBool C ==String "n"
      rule parseConvSpec'(ListItem("[") ListItem("^") ListItem("]") L::List)
-          => parseStrResult("[^]" +String parseString("]", L), tail(eatString("]", L)))
+          => parseStrResult("[^]" +String expandRanges(parseString("]", L)), tail(eatString("]", L)))
      rule parseConvSpec'(ListItem("[") ListItem("^") L::List)
-          => parseStrResult("[^" +String parseString("]", L), tail(eatString("]", L)))
+          => parseStrResult("[^" +String expandRanges(parseString("]", L)), tail(eatString("]", L)))
           requires notBool atHead("]", L)
      rule parseConvSpec'(ListItem("[") ListItem("]") L::List)
-          => parseStrResult("[]" +String parseString("]", L), tail(eatString("]", L)))
+          => parseStrResult("[]" +String expandRanges(parseString("]", L)), tail(eatString("]", L)))
      rule parseConvSpec'(ListItem("[") L::List)
-          => parseStrResult("[" +String parseString("]", L), tail(eatString("]", L)))
+          => parseStrResult("[" +String expandRanges(parseString("]", L)), tail(eatString("]", L)))
           requires notBool atHead("^", L) andBool notBool atHead("]", L)
      rule parseConvSpec'(L::List) => parseStrResult("", L) [owise]
 
@@ -1591,6 +1659,26 @@ module LIBC-STDIO
 
      syntax List ::= snd(ParseStrResult) [function, klabel(sndParseStr)]
      rule snd(parseStrResult(_, L::List)) => L
+
+     syntax String ::= expandRanges(String) [function]
+     rule expandRanges(S::String) => expandRanges'(firstChar(S), stringToList(butFirstChar(S)))
+          requires lengthString(S) >=Int 3
+     rule expandRanges(S::String) => S [owise]
+
+     syntax String ::= "expandRanges'" "(" String "," List ")" [function]
+     rule expandRanges'(C::String, ListItem(C'::String) L::List)
+          => C +String expandRanges'(C', L)
+          requires C' =/=String "-" orBool L ==K .List
+     rule expandRanges'(C::String, ListItem("-") ListItem(End::String) L::List)
+          => C +String expandRanges'(chrChar(ordChar(C) +Int 1), ListItem("-") ListItem(End) L)
+          requires ordChar(C) <Int (ordChar(End) -Int 1)
+     rule expandRanges'(C::String, ListItem("-") ListItem(End::String) L::List)
+          => C +String expandRanges'(End, L)
+          requires ordChar(C) >=Int (ordChar(End) -Int 1) andBool ordChar(C) <=Int ordChar(End)
+     rule expandRanges'(C::String, ListItem("-") ListItem(End::String) L::List)
+          => C +String "-" +String expandRanges'(End, L)
+          requires ordChar(C) >Int ordChar(End)
+     rule expandRanges'(C::String, .List) => C
 
      syntax KItem ::= formatter(K, List) [strict(1)]
      rule [format-start]:

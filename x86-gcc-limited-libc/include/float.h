@@ -1,6 +1,5 @@
 #ifndef _KCC_FLOAT_H
 #define _KCC_FLOAT_H
-#include <kcc_settings.h>
 
 #define FLT_RADIX 2
 #define FLT_ROUNDS 1

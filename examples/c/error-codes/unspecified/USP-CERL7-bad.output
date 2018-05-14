@@ -1,5 +1,7 @@
- Comparison of unspecified value.
-   at main(USP-CERL7-bad.c:9:2)
-  Unspecified value or behavior (USP-CERL7).
-   see C11 section 6.5.9 http://rvdoc.org/C11/6.5.9
-   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+Comparison of unspecified value:
+      > in main at USP-CERL7-bad.c:9:2
+
+    Unspecified value or behavior (USP-CERL7):
+        see C11 section 6.5.9 http://rvdoc.org/C11/6.5.9
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+

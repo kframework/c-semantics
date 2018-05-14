@@ -22,7 +22,6 @@ module C-TYPING-SYNTAX
      imports STRING-SYNTAX
      imports MAP
 
-     syntax CValue ::= Int // defined in C-DYNAMIC-SYNTAX
      syntax Qualifier // defined in C-SYNTAX
      syntax Storage // defined in C-SYNTAX
 
@@ -51,7 +50,7 @@ module C-TYPING-SYNTAX
      syntax FieldInfo ::= fieldInfo(List, Int, Map, Map, Set)
      syntax EnumInfo ::= enumInfo(enumAlias: SimpleType, ctMap: Map)
      syntax TagInfo ::= FieldInfo | EnumInfo
-     syntax SimpleType ::= getEnumAlias(TagId) [function]
+     syntax SimpleBasicType ::= getEnumAlias(TagId) [function]
      syntax FieldInfo ::= getFields(StructOrUnionType) [function]
      syntax FieldInfo ::= getFields(StructOrUnionUType) [function]
      syntax FieldInfo ::= getFlatFields(StructOrUnionType) [function]
@@ -66,6 +65,8 @@ module C-TYPING-SYNTAX
      syntax EffectiveType ::= mergeVariants(EffectiveType, EffectiveType) [function]
      syntax Type ::= clearActiveVariant(Type) [function]
      syntax Int  ::= floorBitOffset(Int, Type) [function]
+     syntax Int  ::= ceilBitOffset(Int, Type) [function]
+     syntax CId ::= getFieldAtOffset(Int, StructOrUnionType) [function]
      syntax Type ::= getFieldTypeAtOffset(Int, StructOrUnionType) [function]
      syntax StructOrUnionType ::= setFieldType(CId, Type, StructOrUnionType) [function]
      syntax StructOrUnionType ::= setFieldTypeAtOffset(Int, Type, StructOrUnionType) [function]
@@ -78,6 +79,7 @@ module C-TYPING-SYNTAX
      syntax List ::= findFieldNames(Type) [function]
      syntax Int  ::= findFieldOffset(CId, StructOrUnionType) [function]
      syntax Type ::= findFieldType(CId, Type) [function]
+     syntax List ::= findUnnamedBitfields(Type) [function]
 
      syntax Bool ::= isCompletePointerType(Type) [function]
                    | isCompleteType(Type) [function]
@@ -110,7 +112,7 @@ module C-TYPING-SYNTAX
      syntax SimpleUnsignedBitfieldType ::= bitfieldType(SimpleUnsignedType, Int)
 
      syntax SimpleSignedType ::= "short-int" | SimpleSignedIntType
-                               | "long-int" | "long-long-int"
+                               | "long-int" | "long-long-int" | "oversized-int"
                                | SimpleSignedCharType
                                | SimpleSignedBitfieldType
      syntax SimpleFloatType ::= "float" | "double" | "long-double"
@@ -121,6 +123,7 @@ module C-TYPING-SYNTAX
      syntax SimpleUnsignedType ::= SimpleBoolType | "unsigned-short-int"
                                  | SimpleUnsignedIntType | "unsigned-long-int"
                                  | "unsigned-long-long-int"
+                                 | "unsigned-oversized-int"
                                  | SimpleUnsignedCharType
                                  | SimpleUnsignedBitfieldType
      syntax SimpleUnsignedIntType ::= "unsigned-int"
@@ -277,7 +280,8 @@ module C-TYPING-SYNTAX
      syntax Int ::= max(UType) [function]
      syntax Float ::= fmax(UType) [function]
      syntax Float ::= fmin(UType) [function]
-     syntax Bool ::= inRange(CValue, UType) [function]
+     syntax Bool ::= intInRange(Int, IntegerUType) [function]
+     syntax Bool ::= floatInRange(Float, FloatUType) [function]
 
      syntax Modifier ::= Packed()
 
@@ -384,7 +388,9 @@ module C-TYPING-SYNTAX
      syntax Int ::= "maxFloatPrecision" [function]
      syntax Int ::= "maxFloatExponent" [function]
 
-     syntax UType ::= arrayToPtrType(Type) [function]
+     // Turn array and function types into pointers.
+     syntax Type ::= adjustParam(Type) [function]
+     syntax Type ::= arrayToPtrType(Type) [function]
 
      syntax String ::= showType(Type) [function]
      syntax String ::= showDType(DType) [function]

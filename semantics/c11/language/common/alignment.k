@@ -36,6 +36,7 @@ module C-ALIGNMENT
      rule byteAlignofType'(t(_, _, int)) => cfg:alignofInt
      rule byteAlignofType'(t(_, _, long-int)) => cfg:alignofLongInt
      rule byteAlignofType'(t(_, _, long-long-int)) => cfg:alignofLongLongInt
+     rule byteAlignofType'(t(_, _, oversized-int)) => cfg:alignofOversizedInt
      rule byteAlignofType'(t(_, _, float)) => cfg:alignofFloat
      rule byteAlignofType'(t(_, _, double)) => cfg:alignofDouble
      rule byteAlignofType'(t(_, _, long-double)) => cfg:alignofLongDouble
@@ -46,6 +47,7 @@ module C-ALIGNMENT
      rule byteAlignofType'(t(_, _, unsigned-int => int))
      rule byteAlignofType'(t(_, _, unsigned-long-int => long-int))
      rule byteAlignofType'(t(_, _, unsigned-long-long-int => long-long-int))
+     rule byteAlignofType'(t(_, _, unsigned-oversized-int => oversized-int))
      rule byteAlignofType'(T:ArrayType)  => byteAlignofType(innerType(T))
      rule byteAlignofType'(t(_, _, pointerType(_))) => cfg:alignofPointer
 

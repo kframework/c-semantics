@@ -248,18 +248,18 @@ module C-COMMON-EXPR-BITWISE
                orBool notBool isIntegerType(type(R))
           [structural]
 
-     syntax KItem ::= bitwiseInterpret(UType, NumValue, Bool)   [klabel(bitwiseInterpret3)]
-     rule bitwiseInterpret(T:UnsignedIntegerUType, N::NumValue, _) => arithInterpret(T, N)
-     rule bitwiseInterpret(T:SignedIntegerUType, N::NumValue, true) => arithInterpret(T, N)
-     rule bitwiseInterpret(T:SignedIntegerUType, N::NumValue, false)
-          => bitwiseInterpret(arithInterpret(T, N))
+     syntax KItem ::= bitwiseInterpret(UType, Int, Bool)   [klabel(bitwiseInterpret3)]
+     rule bitwiseInterpret(T:UnsignedIntegerUType, N::Int, _) => intArithInterpret(T, N)
+     rule bitwiseInterpret(T:SignedIntegerUType, N::Int, true) => intArithInterpret(T, N)
+     rule bitwiseInterpret(T:SignedIntegerUType, N::Int, false)
+          => bitwiseInterpret(intArithInterpret(T, N))
 
      syntax KItem ::= bitwiseInterpret(K) [strict]
      rule bitwiseInterpret(tv(N:Int, T::UType)) => tv(N, T)
           requires notBool isNegZero(N, T)
-     rule bitwiseInterpret(tv(N::NumValue, T::UType)) => tv(N, T)
+     rule bitwiseInterpret(tv(N::CValue, T::UType)) => tv(N, T)
           requires notBool isInt(N)
-     rule (.K => UNDEF("CEB12",
+     rule (.K => IMPLUB("CEB12",
                // TODO(chathhorn): this can result in false positives in cases
                // such as "~~INT_MIN" (where INT_MIN == ~INT_MAX) because
                // clearly INT_MIN can't be a trap representation.
@@ -282,21 +282,20 @@ module C-COMMON-EXPR-BITWISE
      rule isNegZero(N::Int, T::UType) => false
           requires N =/=Int min(T) andBool N =/=Int -1
 
-
-     rule tv(V:CValue, T::UType) ^ tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) ^ stripUnknown(tv(V', T')))
+     rule tv(V::CValue, T::UType) ^ tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) ^ tv(stripUnknown(V'), T'))
           requires (isUnknown(V) orBool isUnknown(V'))
-     rule tv(V:CValue, T::UType) & tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) & stripUnknown(tv(V', T')))
+     rule tv(V::CValue, T::UType) & tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) & tv(stripUnknown(V'), T'))
           requires (isUnknown(V) orBool isUnknown(V'))
-     rule tv(V:CValue, T::UType) | tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) | stripUnknown(tv(V', T')))
+     rule tv(V::CValue, T::UType) | tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) | tv(stripUnknown(V'), T'))
           requires (isUnknown(V) orBool isUnknown(V'))
-     rule tv(V:CValue, T::UType) >> tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) >> stripUnknown(tv(V', T')))
+     rule tv(V::CValue, T::UType) >> tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) >> tv(stripUnknown(V'), T'))
           requires (isUnknown(V) orBool isUnknown(V'))
-     rule tv(V:CValue, T::UType) << tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) << stripUnknown(tv(V', T')))
+     rule tv(V::CValue, T::UType) << tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) << tv(stripUnknown(V'), T'))
           requires (isUnknown(V) orBool isUnknown(V'))
 
 endmodule

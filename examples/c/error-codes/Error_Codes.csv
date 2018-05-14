@@ -23,7 +23,6 @@ UB-CEB2,The right operand in a bitwise shift is negative.,"6.5.7:3, J.2:1 item 5
 UB-CEB3,The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.,"6.5.7:3, J.2:1 item 51",Undefined Behavior,
 UB-CEB4,The left operand in a bitwise left-shift is negative.,"6.5.7:4, J.2:1 item 52",Undefined Behavior,
 UB-CEB6,The right operand in a bitwise shift is negative.,"6.5.7:3, J.2:1 item 51",Undefined Behavior,
-UB-CEB12,Potential negative zero produced via bitwise operations (this could be a false positive).,"6.2.6.2:4, J.2:1 item 14",Undefined Behavior,
 UB-CEB7,The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.,"6.5.7:3, J.2:1 item 51",Undefined Behavior,
 UB-CEE2,Indeterminate value used in an expression.,"6.2.4, 6.7.9, 6.8, J.2:1 item 11",Undefined Behavior,
 UB-CEE1,Address of an array declared with register storage class used in an expression.,"6.3.2.1:3, J.2:1 item 22",Undefined Behavior,
@@ -136,6 +135,9 @@ UB-PTHREAD5,Called lock on an object that was not initialized with pthread_mutex
 UB-PTHREAD6,Attempting to unlock a PTHREAD_MUTEX_DEFAULT or PTHREAD_MUTEX_NORMAL mutex which is not robust and which has not been locked by the current thread.,POSIX 2008 sec. pthread_mutex_lock,Undefined Behavior,X
 UB-PTHREAD7,Called unlock on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_unlock,Undefined Behavior,X
 UB-PTHREAD8,Called trylock on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_trylock,Undefined Behavior,X
+UB-PTHREAD10,"First argument of NULL, but required to be non-NULL",POSIX 2008,Undefined Behavior,X
+UB-PTHREAD12,Deleting an uncreated key.,POSIX 2008 sec. pthread_key_delete,Undefined Behavior,X
+UB-PTHREAD13,Setting an uncreated key.,POSIX 2008 sec. pthread_setspecific,Undefined Behavior,X
 USP-CEER6,Unspecified value returned from main function.,5.1.2.2.3:1,Unspecified Behavior,
 USP-CERL7,Comparison of unspecified value.,6.5.9,Unspecified Behavior,
 USP-CMR1,Trying to reinterpret integer bytes as floating bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior,
@@ -148,6 +150,7 @@ CV-CCV9,Conversion from pointer to floating point type or from floating point ty
 CV-CCV10,Conversion to or from non-scalar type.,6.5.4:2,Constraint Violation,
 CV-CDT3,Field has incomplete type or contains a flexible array member.,"6.7.2.1:3",Constraint Violation,
 CV-CDT4,Field has incomplete type.,"6.7.2.1:3",Constraint Violation,
+CV-CDT5,Declaration for zero-length bit-field has a declarator.,"6.7.2.1:4",Constraint Violation,
 CV-CEA7,Computing pointer addition of a pointer not to a complete object type.,6.5.6:2,Constraint Violation,
 CV-CEA8,Computing pointer minus integer of a pointer not to a complete object type.,6.5.6:3,Constraint Violation,
 CV-CEA3,Invalid operand types to addition.,6.5.6:2,Constraint Violation,
@@ -168,6 +171,8 @@ CV-CERL8,Invalid operand types to ==.,6.5.9:2,Constraint Violation,
 CV-CERL9,Invalid operand types to !=.,6.5.9:2,Constraint Violation,
 CV-CMW2,Trying to write through a const lvalue.,6.5.16.1:1,Constraint Violation,
 CV-TCANON1,"Alignas attribute specifying an alignment less strict than would otherwise be required.",6.7.5:4,Constraint Violation,
+CV-TCANON3,"Function declared without a return type.",6.9.1:3,Constraint Violation,
+CV-TCANON4,"Declaration with no type specifiers.",6.7.2:2,Constraint Violation,
 CV-TAL1,Trying to compute alignof of a type that is incomplete or a function type.,6.5.3.4:1,Constraint Violation,
 CV-TDG2,Declaration for identifier appears with multiple storage class specifiers.,6.7.1:2,Constraint Violation,
 CV-TDG4,Declaration appears with invalid storage class specifiers.,6.9:2,Constraint Violation,
@@ -185,11 +190,16 @@ CV-CDI5,Unexpected compound initializer (possibly attempting to directly initial
 CV-TDG15,"Redefinition of struct, union, or enum",6.7.2.3:1,Constraint Violation,
 CV-TDG18,Declaration for appears with invalid storage class specifiers.,6.7.1:3,Constraint Violation,
 CV-CDE1,Enum initializer not an integer constant expression.,6.7.2.2:2,Constraint Violation,
-CV-TEAS1,Incompatible types in assignment or function call arguments.,6.5.16.1:1,Constraint Violation,
-CV-TEAS2,Incompatible pointer types in assignment or function call arguments.,6.5.16.1:1,Constraint Violation,
+CV-TEAS1,Incompatible types in assignment.,6.5.16.1:1,Constraint Violation,
+CV-TEAS2,Incompatible pointer types in assignment.,6.5.16.1:1,Constraint Violation,
 CV-TEAS3,'lvalue' required as left operand in assignment.,6.5.16:2,Constraint Violation,
-CV-TEAS5,Non-constant static initializer.,6.7.9:4,Constraint Violation,
 CV-TEAS6,Trying to write through a const lvalue.,6.5.16.1:1,Constraint Violation,
+CV-TSE1,Incompatible types in initializer or function call arguments.,6.5.16.1:1,Constraint Violation,
+CV-TSE2,Incompatible pointer types in initializer or function call arguments.,6.5.16.1:1,Constraint Violation,
+CV-TSE3,Non-constant static initializer.,6.7.9:4,Constraint Violation,
+CV-TEG1,Generic selection with a controlling expression compatible with multiple types in the association list.,6.5.1.1:2,Constraint Violation,
+CV-TEG2,Generic selection with a controlling expression not compatible with any type in the association list (with no default).,6.5.1.1:2,Constraint Violation,
+CV-TEG3,Generic selection with multiple defaults.,6.5.1.1:2,Constraint Violation,
 CV-TTE2,"If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.",6.5.15:3,Constraint Violation,
 CV-TTE3,"If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.",6.5.15:3,Constraint Violation,
 CV-TTE4,"If one of a conditional expression's branches has void type, the other must also have void type.",6.5.15:3,Constraint Violation,
@@ -208,21 +218,30 @@ CV-CTI5,Structs containing a flexible array member must not be array elements.,6
 IMPL-CCV2,Conversion to signed integer outside the range that can be represented.,"6.3.1.3:3, J.3.5:1 item 4",Implementation Defined Behavior,
 IMPL-CCV13,Conversion from an integer to non-null pointer.,"6.3.2.3:5",Implementation Defined Behavior,
 IMPL-CEB8,The left operand in a bitwise right-shift is negative.,"6.5.7:5, J.3.5:1 item 5",Implementation Defined Behavior,
+IMPL-CEMX4,Modulus operator with a pointer value as an argument.,"6.3.2.3:6, J.3.7:1 item 1",Implementation Defined Behavior,
 IMPL-CTI4,"Bit-field with type other than signed int, unsigned int, or _Bool.","6.7.2.1:5, J.3.9:1 item 2",Implementation Defined Behavior,
 IMPL-EIO5,Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.,"6.2.4:4, 6.2.4:5, J.3.13:1 item 2",Implementation Defined Behavior,
 IMPL-EIO6,Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.,"6.2.4:4, 6.2.4:5, J.3.13:1 item 2",Implementation Defined Behavior,
+IMPLUB-CEB12,Potential negative zero produced via bitwise operations (this could be a false positive).,"6.2.6.2:4, J.2:1 item 14",Implementation-dependent undefined Behavior,
+IMPLUB-CEMX5,Division by an implementation-defined or unspecified value.,"6.5.5:5, J.2:1 item 45",Implementation-dependent undefined Behavior,
+IMPLUB-CEMX6,Modulus by an implementation-defined or unspecified value.,"6.5.5:5, J.2:1 item 45",Implementation-dependent undefined Behavior,
+UB-PTHREAD99,Unimplemented pthread function.,POSIX 2008,Implementation Defined Behavior,
 L-PTHREAD9,Terminating a thread while holding lock on mutexes.,,Possible unintended behavior,X
 L-STDLIBE1,Called free() on a null pointer.,,Possible unintended behavior,X
 L-STDLIBE2,"Malloc overflows memory bound, returning null pointer.",,Possible unintended behavior,X
 L-STDLIBE3,"Realloc overflows memory bound, returning null pointer.",,Possible unintended behavior,X
 L-UNISTD1,"Called sleep while holding lock on mutexes.",,Possible unintended behavior,X
+L-CEE6,"Dereferencing a pointer to FILE or directly using a FILE object.",,Possible unintended behavior,X
 L-CEIE1,Memory malloced but never freed.,,Possible unintended behavior,X
-L-CER7,Dereferencing a likely-invalid native pointer.,,Possible unintended behavior,X
+L-CEIE2,File opened but never closed.,,Possible unintended behavior,X
+L-CER7,Dereferencing a native pointer.,,Possible unintended behavior,X
 L-CCVE1,Unsigned integer overflow.,,Possible unintended behavior,X
 L-CCVE2,Conversion to unsigned integer outside the range that can be represented.,,Possible unintended behavior,X
 L-CMRE1,Reading a struct or union with uninitialized parts.,,Possible unintended behavior,X
 L-EFNCE1,"Stack might overflow specified bound on some compilers or ABIs.",,Possible unintended behavior,X
+L-EFNC3,"Recursive call to the function .",,Possible unintended behavior,X
 L-EIOE1,"Read a byte from a statically-allocated or thread-storage-allocated object that was initialized implicitly to 0.",,Possible unintended behavior,X
 L-EXC3,Comparing a function pointer to a null pointer constant.,,Possible unintended behavior,X
+L-TFD1,The function contains inline assembly or other language features unsupported by this tool. Using the natively-compiled implementation of this function during execution.,,Possible unintended behavior,X
 SE-CID1,"Trying to look up identifier , but no such identifier is in scope.",6.5.1:2,Syntax error,
 SE-TCANON2,"Unsupported reserved identifier  (reserved variant of restrict).",,Syntax error,X

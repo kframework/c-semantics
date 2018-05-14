@@ -4,8 +4,6 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      imports SYMLOC-SORTS
 
      syntax KItem ::= instantiate(SymLoc, Type)
-     syntax KItem ::= checkUse(K) [strict]
-     syntax KItem ::= checkLoc(SymLoc)
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -17,6 +15,7 @@ module C-COMMON-EXPR-EVAL
      imports BITS-SYNTAX
      imports SETTINGS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SYMLOC-SYNTAX
@@ -84,8 +83,8 @@ module C-COMMON-EXPR-EVAL
           <mem> Mem::Map </mem>
           requires base(Loc) in_keys(Mem)
           [structural]
-     rule <k> lvalConvert(Loc::SymLoc, T::Type, _)
-               => nclv(Loc, T)
+     rule <k> lvalConvert(Loc::SymLoc, T::Type, LAT:EffectiveType)
+               => nclv(updateLastAccessType(Loc, T, LAT), T)
           ...</k>
           <mem> Mem::Map </mem>
           requires notBool (base(Loc) in_keys(Mem))
@@ -103,7 +102,7 @@ module C-COMMON-EXPR-EVAL
 
      rule reval(nclv(Loc::SymLoc, T:ArrayType)
           => checkRegister(Loc)
-          ~> checkUse(tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))))
+          ~> checkUse(tv(arrayToPtrLoc(Loc, T), utype(arrayToPtrType(T)))))
           [structural]
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
@@ -129,67 +128,12 @@ module C-COMMON-EXPR-EVAL
           [structural]
 
      syntax KItem ::= checkRegister(SymLoc)
-     rule <k> checkRegister(_) => .K ...</k>
-          <initializing> true </initializing>
-          [structural]
-     rule <k> checkRegister(Loc:SymLoc) => .K ...</k>
-          <initializing> false </initializing>
+     rule checkRegister(Loc:SymLoc) => .K
           requires notBool isRegisterLoc(Loc)
           [structural]
-     rule <k> (.K => UNDEF("CEE1",
-                    "Address of an array declared with register storage class used in an expression."))
-              ~> checkRegister(Loc:SymLoc)
-          ...</k>
-          <initializing> false </initializing>
+     rule (.K => UNDEF("CEE1", "Address of an array declared with register storage class used in an expression."))
+          ~> checkRegister(Loc:SymLoc)
           requires isRegisterLoc(Loc)
-          [structural]
-
-     rule checkUse(V:KResult) => V
-          requires getKLabel(V) =/=K #klabel(`tv`)
-          [structural]
-     rule checkUse(tv(V::CValue, T::UType)) => tv(V, T)
-          requires notBool (isSymLoc(V) andBool isPointerUType(T))
-               andBool notBool isTrap(V)
-          [structural]
-     rule checkUse(tv(trap, T::UType)) => trap(T)
-          [structural]
-     rule <k> checkUse(tv(V:SymLoc, T:PointerUType))
-               => checkLoc(resolveLinking(V, Linkings))
-               ~> tv(resolveLinking(V, Linkings), T)
-          ...</k>
-          <linkings> Linkings::Map </linkings>
-          [structural]
-
-     syntax Error ::= "errorLocBounds"
-     syntax KItem ::= "errorLocInvalid"
-     rule checkLoc(NullPointer) => .K
-          [structural]
-     rule checkLoc(loc(_, _, _) #as Loc::SymLoc => stripProv(Loc))
-          [structural]
-     rule <k> checkLoc(loc(Base::SymBase, Offset::Int)) => .K ...</k>
-          <mem>... Base |-> object(_, Sz::Int, _) ...</mem>
-          requires (Offset <=Int Sz) andBool (Offset >=Int 0)
-          [structural]
-     rule <k> checkLoc(loc(Base::SymBase, Offset::Int))
-               => UNDEF("CEE3", "Found pointer that refers outside the bounds of an object + 1.")
-               ~> errorLocBounds
-          ...</k>
-          <mem>... Base |-> object(_, Sz::Int, _) ...</mem>
-          requires (Offset >Int Sz) orBool (Offset <Int 0)
-          [structural]
-     rule <k> checkLoc(loc(_, _) #as Loc::SymLoc) => .K ...</k>
-          <mem> Mem::Map </mem>
-          requires (isStaticDuration(Loc) orBool isNativeLoc(Loc))
-               andBool notBool (base(Loc) in_keys(Mem))
-          [structural]
-     rule <k> checkLoc(loc(_, _) #as Loc::SymLoc)
-               => UNDEF("CEE4", "Referring to an object outside of its lifetime.")
-               ~> errorLocInvalid
-          ...</k>
-          <mem> Mem::Map </mem>
-          requires notBool (base(Loc) in_keys(Mem))
-               andBool notBool isStaticDuration(Loc)
-               andBool notBool isNativeLoc(Loc)
           [structural]
 
 endmodule

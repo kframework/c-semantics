@@ -12,6 +12,7 @@ endmodule
 module C-TYPING-INTERPRETATION
      imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-CONFIGURATION
+     imports COLLECTIONS
      imports INT
      imports COMMON-SORTS
      imports COMPAT-SYNTAX
@@ -122,6 +123,8 @@ module C-TYPING-INTERPRETATION
           => t(Qs, Mods, incompleteArrayType(pushTypeDown(T, Lbl)))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, pointerType(T::Type)), Lbl:K)
           => t(Qs, Mods, pointerType(pushTypeDown(T, Lbl)))
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, functionType(T::UType, L:List)), Lbl:K)
+          => t(Qs, Mods, functionType'(pushTypeDown(type(T), Lbl), L))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, functionType'(T::Type, L:List)), Lbl:K)
           => t(Qs, Mods, functionType'(pushTypeDown(T, Lbl), L))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, structType(X::TagId)), Lbl:K)
@@ -147,8 +150,12 @@ module C-TYPING-INTERPRETATION
      rule applyTypeFunction(makeIncompleteArrayType, T::Type)
           => t(noQuals, getSpecifiers(T), incompleteArrayType(stripSpecifiers(T)))
 
-     rule applyTypeFunction(makeArrayType(tv(N:Int, T'::UType), Specifier(list(ListItem(Static())))), T::Type)
-          => t(noQuals, getSpecifiers(T) SetItem(arrayStatic(N)), arrayType(stripSpecifiers(T), N))
+     rule applyTypeFunction(makeArrayType(tv(N:Int, _), Specifier(list(Specs::List))), T::Type)
+          => t(toQuals(List2Set(Specs)), getSpecifiers(T) SetItem(arrayStatic(N)), arrayType(stripSpecifiers(T), N))
+          requires Static() in Specs
+     rule applyTypeFunction(makeArrayType(tv(N:Int, _), Specifier(list(Specs::List))), T::Type)
+          => t(toQuals(List2Set(Specs)), getSpecifiers(T), arrayType(stripSpecifiers(T), N))
+          requires notBool (Static() in Specs)
      // TODO(chathhorn): Other qualifiers?
      rule applyTypeFunction(makeArrayType(tv(N:Int, _), Specifier(list(.List))), T::Type)
           => t(noQuals, getSpecifiers(T), arrayType(stripSpecifiers(T), N))
@@ -226,13 +233,6 @@ module C-TYPING-INTERPRETATION
      rule defineType(typedDeclaration(T:Type, X:CId))
           => typedef(X, T)
           [structural]
-
-     // Turn array and function types into pointers.
-     syntax Type ::= adjustParam(Type) [function]
-     rule adjustParam(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
-          => type(pointerType(t(Qs, Mods, functionType(R, Params))))
-     rule adjustParam(T:ArrayType) => type(arrayToPtrType(T))
-     rule adjustParam(T::Type) => T [owise]
 
      rule numberUnnamed(ListItem(typedDeclaration(T::Type, _:NoName)) Fs::List)
           => ListItem(typedDeclaration(T, #NoName(!N:Int))) numberUnnamed(Fs)

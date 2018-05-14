@@ -2,7 +2,7 @@ module CPP-EXECUTION-INIT
      imports C-CONFIGURATION
      imports K-EQUAL
      imports K-IO
-     imports C-CHECK-LOC-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX

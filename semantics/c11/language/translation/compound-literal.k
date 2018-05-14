@@ -11,6 +11,7 @@ module C-COMPOUND-LITERAL
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
      // Compound literals at file scope get stored in global memory (i.e., the
@@ -49,11 +50,19 @@ module C-COMPOUND-LITERAL
      syntax KItem ::= #CompoundLiteral(CId, K, K) [strict(2)]
      // TODO(chathhorn): rather ugly, done this way to avoid clashes with the
      // initializer cells when a compound literal appears in an initializer.
+     rule <k> (.K => elaborateInit(declare(typedDeclaration(addStorage(Static(), T), X), Init)))
+               ~> #CompoundLiteral(X:CId, T:Type, Init:K)
+          ...</k>
+          <curr-scope> fileScope </curr-scope>
+          <env> Env:Map </env>
+          requires notBool (X in_keys(Env))
      rule <k> (.K => elaborateInit(declare(typedDeclaration(T, X), Init)))
                ~> #CompoundLiteral(X:CId, T:Type, Init:K)
           ...</k>
+          <curr-scope> Sc::Scope </curr-scope>
           <env> Env:Map </env>
           requires notBool (X in_keys(Env))
+               andBool Sc =/=K fileScope
      rule <k> (elaborateDone(K:K) => .K) ~> #CompoundLiteral(_, _, _) ...</k>
           <elab>... .K => K </elab>
      rule <k> #CompoundLiteral(X:CId, _, _) => X ...</k>
@@ -69,7 +78,7 @@ module C-COMPOUND-LITERAL
 
      }*/
 
-     rule <k> (.K => runInit(allocString(obj(0, 1, string(S)), S)))
+     rule <k> (.K => allocString(obj(0, 1, string(S)), S))
                ~> StringLiteral(S:String)
           ...</k>
           <mem> Mem:Map </mem>
@@ -85,7 +94,7 @@ module C-COMPOUND-LITERAL
      syntax KItem ::= wstringLiteral(List, Int)
      // TODO(chathhorn): possibly do string allocation lazily, although we'd
      // want to make sure all allocations got triggered statically.
-     rule <k> (.K => runInit(allocWString(obj(0, byteAlignofType(type(cfg:wcharut)), wstring(S)), S)))
+     rule <k> (.K => allocWString(obj(0, byteAlignofType(type(cfg:wcharut)), wstring(S)), S))
                ~> wstringLiteral(S:List, _)
           ...</k>
           <mem> Mem:Map </mem>

@@ -63,5 +63,8 @@ main (void)
   remove (inname);
   remove (outname);
 
+  fclose(stdout);
+  fclose(stderr);
+
   exit ((result != 0));
 }

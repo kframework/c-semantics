@@ -14,25 +14,20 @@ module C-TYPING-MISC
      imports C-SYNTAX
 
      //TODO(chathhorn): a lot of junk dumped here.
-
-     rule arrayToPtrType(T:ArrayType)
-          => ut(getModifiers(T), pointerType(innerType(T)))
-     rule arrayToPtrType(T::Type) => utype(T) [owise]
-
      rule simpleType(t(_, _, T::SimpleType)) => T
 
      rule correspondingUnsignedType(ut(S::Set, T:SimpleSignedType))
           => ut(S, flipSignedness(T))
           requires notBool isSimpleEnumType(T)
-     rule correspondingUnsignedType(ut(S::Set, enumType(_)))
-          => correspondingUnsignedType(ut(S, cfg:enumAlias))
+     rule correspondingUnsignedType(ut(S::Set, enumType(Tag::TagId)))
+          => correspondingUnsignedType(ut(S, getEnumAlias(Tag)))
      rule correspondingUnsignedType(T::UType) => T [owise]
 
      rule correspondingSignedType(ut(S::Set, T:SimpleUnsignedType))
           => ut(S, flipSignedness(T))
           requires notBool isSimpleEnumType(T)
-     rule correspondingSignedType(ut(S::Set, enumType(_)))
-          => correspondingSignedType(ut(S, cfg:enumAlias))
+     rule correspondingSignedType(ut(S::Set, enumType(Tag::TagId)))
+          => correspondingSignedType(ut(S, getEnumAlias(Tag)))
      rule correspondingSignedType(T::UType) => T [owise]
 
      syntax SimpleIntegerType ::= flipSignedness(SimpleIntegerType) [function]
@@ -44,20 +39,23 @@ module C-TYPING-MISC
      rule flipSignedness(unsigned-int) => int
      rule flipSignedness(unsigned-long-int) => long-int
      rule flipSignedness(unsigned-long-long-int) => long-long-int
+     rule flipSignedness(unsigned-oversized-int) => oversized-int
 
      rule flipSignedness(_:SimpleSignedCharType) => unsigned-char
      rule flipSignedness(short-int) => unsigned-short-int
      rule flipSignedness(int) => unsigned-int
      rule flipSignedness(long-int) => unsigned-long-int
      rule flipSignedness(long-long-int) => unsigned-long-long-int
+     rule flipSignedness(oversized-int) => unsigned-oversized-int
 
      rule flipSignedness(bool) => bool
 
-     rule inRange(V:Int, T:IntegerUType)
+     rule intInRange(V::Int, T::IntegerUType)
           => (V <=Int max(T)) andBool (V >=Int min(T))
-     rule inRange(V:Float, T:FloatUType)
+
+     rule floatInRange(V::Float, T::FloatUType)
           => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
-          orBool isInfinite(V) orBool isNaN(V)
+               orBool isInfinite(V) orBool isNaN(V)
 
      rule fmin(T:FloatUType) => zeroCFloat(T) -Float maxValueFloat(typePrecision(T), typeExponent(T))
      rule fmax(T:FloatUType) => maxValueFloat(typePrecision(T), typeExponent(T))
@@ -219,7 +217,17 @@ module C-TYPING-MISC
      rule findFieldNames(T:StructOrUnionType) => getFieldNames'(getFlatFields(T))
      rule findFieldNames(_) => .List [owise]
 
+     rule findUnnamedBitfields(T:StructOrUnionType) => getUnnamedBitfields'(getFlatFields(T))
+     rule findUnnamedBitfields(_) => .List [owise]
+
      rule getFieldTypes(T::StructOrUnionType) => getFieldTypes'(getFields(T))
+
+     syntax List ::= "getUnnamedBitfields'" "(" FieldInfo ")" [function]
+     rule getUnnamedBitfields'(fieldInfo(ListItem(typedDeclaration(_, F:NoName)) Decls::List, Sz::Int, Types::Map (F |-> T:BitfieldType), Offsets::Map, Padding::Set))
+          => ListItem(F) getUnnamedBitfields'(fieldInfo(Decls, Sz, Types, Offsets, Padding))
+     rule getUnnamedBitfields'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Decls::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set))
+          => getUnnamedBitfields'(fieldInfo(Decls, Sz, Types, Offsets, Padding)) [owise]
+     rule getUnnamedBitfields'(fieldInfo(.List, _, _, _, _)) => .List
 
      syntax List ::= "getFieldTypes'" "(" FieldInfo ")" [function]
      rule getFieldTypes'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Decls::List, Sz::Int, Types::Map (F |-> T::Type), Offsets::Map, Padding::Set))
@@ -299,6 +307,12 @@ module C-TYPING-MISC
           requires FOffset >Int Offset
      rule getFieldAtOffset'(_, fieldInfo(_ ListItem(typedDeclaration(_, F::CId)), _, _, _, _)) => F [owise]
 
+     syntax CId ::= "getFieldFollowingOffset'" "(" Int "," FieldInfo ")" [function]
+     rule getFieldFollowingOffset'(Offset::Int, fieldInfo((ListItem(typedDeclaration(_, F::CId)) => .List) _, _, _, _::Map (F |-> FOffset::Int => .Map), _))
+          requires FOffset <=Int Offset
+     rule getFieldFollowingOffset'(_, fieldInfo(.List, _, _, _, _)) => #NoName
+     rule getFieldFollowingOffset'(_, fieldInfo(ListItem(typedDeclaration(_, F::CId)) _, _, _, _, _)) => F [owise]
+
      rule floorBitOffset(Offset::Int, T:StructOrUnionType)
           => floorFieldOffset'(Offset, getFields(T))
           requires Offset >=Int 0
@@ -306,19 +320,38 @@ module C-TYPING-MISC
           => (Offset /Int bitSizeofType(innerType(T))) *Int bitSizeofType(innerType(T))
           requires Offset >=Int 0 andBool bitSizeofType(innerType(T)) >Int 0
 
+     rule ceilBitOffset(Offset::Int, T:StructOrUnionType)
+          => ceilFieldOffset'(Offset, getFields(T))
+          requires Offset >=Int 0
+     rule ceilBitOffset(Offset::Int, T:ArrayType)
+          => (Offset /Int bitSizeofType(innerType(T)) +Int 1) *Int bitSizeofType(innerType(T))
+          requires Offset >=Int 0 andBool bitSizeofType(innerType(T)) >Int 0
+
      rule lastFieldByteOffset(T::StructType)
           => getFieldOffset({(reverseList(getFieldNames(T)))[0]}:>CId, T) /Int cfg:bitsPerByte
 
      syntax Int ::= "floorFieldOffset'" "(" Int "," FieldInfo ")" [function]
+     rule floorFieldOffset'(Offset::Int, fieldInfo(.List, _, _, _, _)) => Offset
      rule floorFieldOffset'(Offset::Int, Fields::FieldInfo)
-          => getFieldOffset'(getFieldAtOffset'(Offset, Fields), Fields)
+          => getFieldOffset'(getFieldAtOffset'(Offset, Fields), Fields) [owise]
+
+     syntax Int ::= "ceilFieldOffset'" "(" Int "," FieldInfo ")" [function]
+     rule ceilFieldOffset'(Offset::Int, fieldInfo(.List, _, _, _, _)) => Offset
+     rule ceilFieldOffset'(Offset::Int, fieldInfo(Decls::List, Sz::Int, _, _, _) #as Fields::FieldInfo) => Sz
+          requires (Decls =/=K .List) andBool getFieldFollowingOffset'(Offset, Fields) ==K #NoName
+     rule ceilFieldOffset'(Offset::Int, Fields::FieldInfo)
+          => getFieldOffset'(getFieldFollowingOffset'(Offset, Fields), Fields) [owise]
 
      rule getFieldTypeAtOffset(Offset::Int, T::StructOrUnionType)
           => getFieldTypeAtOffset'(Offset, getFields(T))
 
      syntax Type ::= "getFieldTypeAtOffset'" "(" Int "," FieldInfo ")" [function]
+     rule getFieldTypeAtOffset'(Offset::Int, fieldInfo(.List, _, _, _, _)) => type(no-type)
      rule getFieldTypeAtOffset'(Offset::Int, Fields::FieldInfo)
-          => getFieldType'(getFieldAtOffset'(Offset, Fields), Fields)
+          => getFieldType'(getFieldAtOffset'(Offset, Fields), Fields) [owise]
+
+     rule getFieldAtOffset(Offset::Int, T::StructOrUnionType)
+          => getFieldAtOffset'(Offset, getFields(T))
 
      rule resizeFlexibleType(T::StructOrUnionType, F::CId, N::Int)
           => setFieldsSize((N *Int cfg:bitsPerByte) +Int getFieldOffset(F, T), clearPaddingAfter(F, T))

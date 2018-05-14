@@ -5,26 +5,39 @@ module C-MEMORY-WRITING-SYNTAX
      imports C-DYNAMIC-SORTS
      imports C-TYPING-SORTS
      imports SYMLOC-SORTS
+     imports BITS-SYNTAX
 
      // location, value
      syntax KItem ::= write(SymLoc, CValue, Type)
+     syntax KItem ::= init(SymLoc, CValue, Type)
 
      // Either buffered or unbuffered depending on whether we're executing.
-     syntax KItem ::= writeBytes(SymLoc, K, Type) [strict(2), klabel(writeBytes3)]
      syntax KItem ::= writeBytes(SymLoc, List)
+     syntax KItem ::= writeBytesFill(SymLoc, Int, Bits)
+     syntax KItem ::= initBytes(SymLoc, List)
+     syntax KItem ::= initBytesFill(SymLoc, Int, Bits)
 
-     syntax List ::= explodeToBits(List) [function]
+     // Traps padding and unnamed bit-fields in a struct or union.
+     syntax KItem ::= initPadding(SymLoc, StructOrUnionType, CId)
+
+     syntax KItem ::= setBytes(SymLoc, K, Int) [strict(2)]
 
      // TODO(chathhorn): For trans/symbolic-value.k
-     syntax DataList ::= splitBytes(RValue) [function, klabel(splitBytesC)]
+     syntax List ::= splitBytes(RValue) [function, klabel(splitBytesC)]
 
      // No null terminator.
      syntax KItem ::= writeChars(SymLoc, String)
      // Null terminates.
      syntax KItem ::= writeString(SymLoc, String)
+     syntax KItem ::= initString(SymLoc, String)
 
      syntax KItem ::= writeWChars(SymLoc, List)
      syntax KItem ::= writeWString(SymLoc, List)
+     syntax KItem ::= initWString(SymLoc, List)
+
+     syntax Quals ::= getQualsAtOffset(List) [function]
+     syntax Quals ::= getQualsAtOffset(EffectiveType, Int) [function, klabel(getQualsAtOffset2)]
+
 endmodule
 
 module C-MEMORY-WRITING
@@ -54,98 +67,90 @@ module C-MEMORY-WRITING
      imports MEMORY-SYNTAX
 
      // Write thread-local or auto.
-     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
-               => writeSpecific(Loc, V, T)
-          ...</k>
-          <initializing> false </initializing>
+     rule write(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, false)
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool notBool isConstType(T)
           [structural]
-     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
-               => writeSpecific(Loc, V, T)
-          ...</k>
-          <initializing> true </initializing>
-          requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
-          [structural]
      // Write global, shared data, or "allocated" duration.
-     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
-               => writeSpecific(Loc, V, T)
-          ...</k>
-          <initializing> false </initializing>
+     rule write(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, false)
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
                andBool notBool isConstType(T)
                andBool notBool isStringLoc(Loc)
                andBool notBool isLinkerLoc(Loc)
           [ndtrans]
-     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
-               => writeSpecific(Loc, V, T)
-          ...</k>
-          <initializing> true </initializing>
-          requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
-               andBool notBool isLinkerLoc(Loc)
-          [ndtrans]
-     rule write(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T)
+     rule write(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, false)
           requires isNativeLoc(Loc)
           [ndtrans]
-     rule <k> (.K => CV("CMW2", "Trying to write through a const lvalue.") )
-               ~> write(_, _, T:Type)
-          ...</k>
-          <initializing> false </initializing>
+     rule (.K => CV("CMW2", "Trying to write through a const lvalue.") )
+          ~> write(_, _, T:Type)
           requires isConstType(T)
           [structural]
-     rule <k> (.K => UNDEF("CMW1", "Trying to modify a string literal."))
-               ~> write(Loc:SymLoc, _, _)
-          ...</k>
-          <initializing> false </initializing>
+     rule (.K => UNDEF("CMW1", "Trying to modify a string literal."))
+          ~> write(Loc:SymLoc, _, _)
           requires isStringLoc(Loc)
           [structural]
 
-     syntax KItem ::= writeSpecific(SymLoc, CValue, Type)
-     rule <k> writeSpecific(Loc::SymLoc, V::CValue, T::Type)
+     rule init(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, true)
+          requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
+          [structural]
+     rule init(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, true)
+          requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
+               andBool notBool isLinkerLoc(Loc)
+          [ndtrans]
+
+     syntax KItem ::= writeSpecific(SymLoc, CValue, Type, Bool)
+     rule <k> writeSpecific(Loc::SymLoc, V::CValue, T::Type, IsInit::Bool)
                => updateEffectiveType(Loc)
                ~> makePaddingUnknown(base(Loc), bitOffset(Loc), getEffectiveType(base(Loc)))
-               ~> writeSpecific'(Loc, stripLastAccessType(V), T)
+               ~> checkVolatile(Loc, getEffectiveType(base(Loc)), T)
+               ~> writeSpecific'(Loc, stripLastAccessType(V), T, IsInit)
           ...</k>
           <mem> Mem::Map </mem>
           requires base(Loc) in_keys(Mem)
-     rule <k> writeSpecific(Loc::SymLoc, V::CValue, T::Type)
-               => writeSpecific'(Loc, stripLastAccessType(V), T)
+     rule <k> writeSpecific(Loc::SymLoc, V::CValue, T::Type, IsInit::Bool)
+               => writeSpecific'(Loc, stripLastAccessType(V), T, IsInit)
           ...</k>
           <mem> Mem::Map </mem>
           requires notBool (base(Loc) in_keys(Mem))
 
-     syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type ")"
-     rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type)
-          => writeBytes(Loc, splitBytes(tv(V, utype(T))), T)
-          requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
-               andBool (notBool isBitfieldType(T))
+     syntax KItem ::= checkVolatile(SymLoc, K, Type) [strict(2)]
+     rule (.K => UNDEF("EIO4", "Trying to modify an object declared with volatile type through a non-volatile lvalue."))
+          ~> checkVolatile(Loc::SymLoc, ObjT:EffectiveType, T::Type)
+          requires notBool isVolatileType(T)
+               andBool (Volatile() inQuals getQualsAtOffset(ObjT, offset(Loc)))
           [structural]
-     rule writeSpecific'(Loc::SymLoc, I:Int, T::Type)
-          => writeSpecific'(Loc, justBits(I, utype(T)), T)
-          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0 orBool isBitfieldType(T))
-               andBool (I <Int 0)
-          [structural]
-     rule writeSpecific'(Loc::SymLoc, V:Int, T::Type)
-          => writeBytes(Loc,
-               calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytesForWriting(stripProv(Loc), (bitOffsetIntoLastByte(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), bitOffsetIntoLastByte(Loc)), T)
-          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T))
-               andBool (V >=Int 0)
-          [structural]
-     rule writeSpecific'(Loc::SymLoc, V:Pieces, T::Type)
-          => writeBytes(Loc,
-               calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytesForWriting(stripProv(Loc), (bitOffsetIntoLastByte(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), bitOffsetIntoLastByte(Loc)), T)
-          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T)
+     rule checkVolatile(Loc::SymLoc, ObjT:EffectiveType, T::Type) => .K
+          requires isVolatileType(T)
+               orBool notBool (Volatile() inQuals getQualsAtOffset(ObjT, offset(Loc)))
           [structural]
 
-     syntax KItem ::= makeUnionUnknown(SymLoc, Type, Int)
-                    | makeStructUnknown(SymLoc, FieldInfo, Int)
+     syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type "," Bool ")"
+     rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type, false)
+          => writeBytes(Loc, splitBytes(tv(V, utype(T))))
+          requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
+               andBool (bitOffset(Loc) %Int cfg:bitsPerByte ==Int 0)
+          [structural]
+     rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type, true)
+          => initBytes(Loc, splitBytes(tv(V, utype(T))))
+          requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
+               andBool (bitOffset(Loc) %Int cfg:bitsPerByte ==Int 0)
+          [structural]
+     rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type, IsInit::Bool)
+          => writeUnalignedBits(Loc, toBits(V, T), IsInit)
+          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
+               orBool (bitOffset(Loc) %Int cfg:bitsPerByte =/=Int 0)
+          [structural]
+
+     syntax List ::= toBits(CValue, Type) [function]
+     rule toBits(V:Int, T::Type) => explodeToBits(ListItem(piece(justBits(V, utype(T)), bitSizeofType(T))))
+     rule toBits(V:Pieces, T::Type) => explodeToBits(ListItem(piece(V, bitSizeofType(T))))
+
+     syntax KItem ::= makeInactiveVariantUnknown(SymLoc, Type, Int)
                     | makePaddingUnknown(SymBase, Int, K) [strict(3)]
                     | makeStructUnionUnknown(SymBase, Int, Int, Type) [function]
 
      rule makePaddingUnknown(Base::SymBase, Offset::Int, EffT:Type)
-          => makeStructUnionUnknown(Base, 0, Offset , EffT)
+          => makeStructUnionUnknown(Base, 0, Offset, EffT)
      rule makePaddingUnknown(Base::SymBase, Offset::Int, dynamicType(EffT::Type))
           => makeStructUnionUnknown(Base, 0, Offset, EffT)
 
@@ -153,35 +158,83 @@ module C-MEMORY-WRITING
           => makeStructUnionUnknown(Base, Offset +Int floorBitOffset(RelOffset, T),
                RelOffset %Int bitSizeofType(innerType(T)), getElementType(RelOffset, T))
      rule makeStructUnionUnknown(Base::SymBase, Offset::Int, RelOffset::Int, T:StructType)
-          => allowInit(makeStructUnknown(loc(Base, Offset /Int cfg:bitsPerByte), getFields(T), 0))
+          => initStructPadding(loc(Base, Offset /Int cfg:bitsPerByte), getFields(T), false)
+          ~> initFieldPadding(loc(Base, Offset /Int cfg:bitsPerByte), T, getFieldAtOffset(RelOffset, T), false)
           ~> makeStructUnionUnknown(Base, Offset +Int floorBitOffset(RelOffset, T), RelOffset -Int floorBitOffset(RelOffset, T), getFieldTypeAtOffset(RelOffset, T))
      rule makeStructUnionUnknown(Base::SymBase, Offset::Int, RelOffset::Int, T:UnionType)
-          => allowInit(makeUnionUnknown(loc(Base, Offset /Int cfg:bitsPerByte), getActiveVariant(T), byteSizeofType(T)))
+          => initStructPadding(loc(Base, Offset /Int cfg:bitsPerByte), getFields(T), false)
+          ~> initFieldPadding(loc(Base, Offset /Int cfg:bitsPerByte), T, getFieldAtOffset(RelOffset, T), false)
+          ~> makeInactiveVariantUnknown(loc(Base, Offset /Int cfg:bitsPerByte), getActiveVariant(T), byteSizeofType(T))
           ~> makeStructUnionUnknown(Base, Offset, RelOffset, getActiveVariant(T))
      rule makeStructUnionUnknown(_, _, _, _) => .K [owise]
 
+     rule initPadding(Loc::SymLoc, T::StructOrUnionType, F::CId)
+          => initStructPadding(Loc, getFields(T), true)
+          ~> initFieldPadding(Loc, T, F, true)
+          ~> trapUnnamed(Loc, findUnnamedBitfields(T), T)
+
+     syntax KItem ::= trapUnnamed(SymLoc, List, StructOrUnionType) [function]
+     rule trapUnnamed(Loc::SymLoc, ListItem(F::CId) Fs::List, T::StructOrUnionType)
+          => initPaddingBits(Loc +bits findFieldOffset(F, T), bitSizeofType(findFieldType(F, T)), true)
+          ~> trapUnnamed(Loc, Fs, T)
+     rule trapUnnamed(_, .List, _) => .K
+
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
-     rule makeUnionUnknown(Loc::SymLoc, T::Type, Sz::Int)
-          => writeBytes(Loc +bytes byteSizeofType(T),
-               times(Sz -Int byteSizeofType(T),
-                    piece(unknown(max(utype(signed-char))), cfg:bitsPerByte)))
+     rule (.K => readBytesForWriting(Loc +bytes byteSizeofType(T), Sz -Int byteSizeofType(T)))
+          ~> makeInactiveVariantUnknown(Loc::SymLoc, T::Type, Sz::Int)
           requires Sz >Int byteSizeofType(T) andBool notBool isNoType(T)
           [structural]
-     rule makeUnionUnknown(_, T::Type, Sz::Int) => .K
+     rule dataList(Bytes::List) ~> makeInactiveVariantUnknown(Loc::SymLoc, T::Type, _)
+          => initBytes(Loc +bytes byteSizeofType(T), makeUnknownBytes(Bytes))
+          [structural]
+     rule makeInactiveVariantUnknown(_, T::Type, Sz::Int) => .K
           requires Sz <=Int byteSizeofType(T) orBool isNoType(T)
           [structural]
 
-     rule makeStructUnknown(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, _) #as Fields::FieldInfo, I::Int)
-          => writeBytes(Loc +bytes I,
-               ListItem(piece(unknown(max(utype(signed-char))), cfg:bitsPerByte)))
-          ~> makeStructUnknown(Loc, Fields, I +Int 1)
-          requires isPaddingOffset(I, Fields) andBool I *Int cfg:bitsPerByte <Int Sz
-     rule makeStructUnknown(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, _) #as Fields::FieldInfo, I::Int)
-          => makeStructUnknown(Loc, Fields, I +Int 1)
-          requires notBool isPaddingOffset(I, Fields) andBool I *Int cfg:bitsPerByte <Int Sz
-     rule makeStructUnknown(_, fieldInfo(_, Sz::Int, _, _, _), I::Int)
-          => .K
-          requires I *Int cfg:bitsPerByte >=Int Sz
+     syntax KItem ::= initStructPadding(SymLoc, FieldInfo, Bool)
+     rule (.K => initPaddingByte(Loc +bits I, Trap))
+          ~> initStructPadding(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, (SetItem(I::Int) => .Set) _), Trap::Bool)
+     rule initStructPadding(_, fieldInfo(_, _, _, _, .Set), _) => .K
+
+     syntax KItem ::= initFieldPadding(SymLoc, StructOrUnionType, CId, Bool) [function]
+     rule initFieldPadding(Loc::SymLoc, T::StructOrUnionType, F::CId, Trap::Bool)
+          => initPaddingByte(Loc +bits (getFieldOffset(F, T) +Int bitSizeofType(getFieldType(F, T))), Trap)
+          requires isBitfieldType(getFieldType(F, T))
+               andBool (getFieldOffset(F, T) +Int bitSizeofType(getFieldType(F, T))
+                    =/=Int ceilBitOffset(getFieldOffset(F, T), T))
+     rule initFieldPadding(_, _, _, _) => .K [owise]
+
+     // Set the bits at a certain offset into a byte to either unknown or trap.
+     // Loc (with bit offset set), true for trap, false for unknown.
+     syntax KItem ::= initPaddingByte(SymLoc, Bool)
+     rule initPaddingByte(Loc::SymLoc, Trap::Bool)
+          => initPaddingBits(Loc, cfg:bitsPerByte -Int bitOffsetIntoLastByte(Loc), Trap)
+
+     // Loc (with bit offset set), number of bits, true for trap, false for unknown
+     syntax KItem ::= initPaddingBits(SymLoc, Int, Bool)
+     rule (.K => readBytesForWriting(Loc, byteRange(Loc, N)))
+          ~> initPaddingBits(Loc::SymLoc, N::Int, false)
+     rule dataList(Bytes::List) ~> initPaddingBits(Loc::SymLoc, N::Int, _)
+          => initBytes(Loc, joinBitsToBytes(
+               calculateNewBits(
+                    range(explodeToBits(makeUnknownBytes(Bytes)), bitOffsetIntoLastByte(Loc),
+                         size(explodeToBits(Bytes)) -Int bitOffsetIntoLastByte(Loc) -Int N),
+                    explodeToBits(Bytes),
+                    bitOffsetIntoLastByte(Loc))
+          ))
+     rule initPaddingBits(Loc::SymLoc, N::Int, true)
+          => writeUnalignedBits(Loc, explodeToBits(ListItem(piece(trap, N))), true)
+
+     syntax KItem ::= ooga(Int, Int, List, List, List, List)
+
+     // Loc, list of bit values, true for init
+     syntax KItem ::= writeUnalignedBits(SymLoc, List, Bool)
+     rule (.K => readBytesForWriting(Loc, byteRange(Loc, size(Bits))))
+          ~> writeUnalignedBits(Loc::SymLoc, Bits::List, _)
+     rule dataList(Bytes::List) ~> writeUnalignedBits(Loc::SymLoc, Bits::List, false)
+          => writeBytes(Loc, joinBitsToBytes(calculateNewBits(Bits, explodeToBits(Bytes), bitOffsetIntoLastByte(Loc))))
+     rule dataList(Bytes::List) ~> writeUnalignedBits(Loc::SymLoc, Bits::List, true)
+          => initBytes(Loc, joinBitsToBytes(calculateNewBits(Bits, explodeToBits(Bytes), bitOffsetIntoLastByte(Loc))))
 
      syntax Int ::= justBits(Int, UType) [function]
      syntax Int ::= "justBits-aux" "(" Int "," UType ")" [function]
@@ -197,124 +250,55 @@ module C-MEMORY-WRITING
           => N +Int (1 <<Int (Len -Int 1))
           requires Len >Int 0 andBool N >=Int 0
 
-     syntax KItem ::= calculateNewBytes(Bits, K, Int)
-          [latex(\terminal{calcNewBytes(}{#1}, {#2}\terminal{)}), strict(2)]
-
-     rule calculateNewBytes(N::Bits, dataList(L:List), Offset::Int)
-          => calculateNewBytes-aux(dataList(explodeToBits(ListItem(N))),
-               dataList(explodeToBits(L)), .List, Offset)
-          [structural]
-
-     syntax KItem ::= "calculateNewBytes-aux" "(" DataList "," DataList "," List "," Int ")"
-     rule calculateNewBytes-aux(
-               dataList(L::List),
-               dataList(ListItem(piece(N::BitValue, 1)) L'::List),
-               Result::List, Offset::Int)
-          => calculateNewBytes-aux(
-               dataList(L),
-               dataList(L'),
-               Result ListItem(piece(N, 1)), Offset -Int 1)
+     syntax List ::= calculateNewBits(List, List, Int) [function]
+     rule calculateNewBits(L::List, ListItem(piece(N::BitValue, 1)) L'::List, Offset::Int)
+          => ListItem(piece(N, 1)) calculateNewBits(L, L', Offset -Int 1)
           requires Offset >Int 0
-     rule calculateNewBytes-aux(
-               dataList(ListItem(piece(N::BitValue, 1)) L::List),
-               dataList(ListItem(piece(_, 1)) L'::List),
-               Result::List, 0)
-          => calculateNewBytes-aux(
-               dataList(L),
-               dataList(L'),
-               Result ListItem(piece(N, 1)), 0)
-          [structural]
-     rule calculateNewBytes-aux(dataList(.List), dataList(L::List), Result::List, 0)
-          => joinBitsToBytes(Result L)
-          [structural]
+     rule calculateNewBits(ListItem(piece(N::BitValue, 1)) L::List, ListItem(piece(_, 1)) L'::List, 0)
+          => ListItem(piece(N, 1)) calculateNewBits(L, L', 0)
+     rule calculateNewBits(.List, L::List, 0) => L
 
-     syntax KItem ::= joinBitsToBytes(List) [function]
-     rule joinBitsToBytes(L:List)
-          => joinBitsToBytes-aux(dataList(L), dataList(.List))
-
-     syntax KItem ::= "joinBitsToBytes-aux" "(" K "," K ")" [function]
-     rule joinBitsToBytes-aux(
-               dataList(ListItem(piece(N::BitValue, Len:Int)) ListItem(piece(M::BitValue, 1)) L:List),
-               dataList(R:List))
-          => joinBitsToBytes-aux(
-               dataList(ListItem(piece(N, Len) bit:: piece(M, 1)) L),
-               dataList(R))
+     syntax List ::= joinBitsToBytes(List) [function]
+     rule joinBitsToBytes((ListItem(piece(N::BitValue, Len:Int)) ListItem(piece(M::BitValue, 1))
+               => ListItem(piece(N, Len) bit:: piece(M, 1))) _::List)
           requires Len <Int cfg:bitsPerByte
-     rule joinBitsToBytes-aux(
-               dataList(ListItem(piece(N::BitValue, Len:Int)) L:List), dataList(R:List))
-          => joinBitsToBytes-aux(
-               dataList(L), dataList(R ListItem(piece(N, Len))))
+     rule joinBitsToBytes(ListItem(piece(N::BitValue, Len:Int)) L:List)
+          => ListItem(piece(N, Len)) joinBitsToBytes(L)
           requires Len ==Int cfg:bitsPerByte
-     rule joinBitsToBytes-aux(dataList(.List), dataList(R:List))
-          => dataList(R)
+     rule joinBitsToBytes(.List) => .List
 
-     rule explodeToBits(ListItem(K:Bits) L::List)
-          => explodeToBits(ListItem(K)) explodeToBits(L)
-          requires L =/=K .List
-     rule explodeToBits(ListItem(piece(pieces(L::List), _)) L'::List)
-          => explodeToBits(L) explodeToBits(L')
-     rule explodeToBits(ListItem(piece(N::BitValue, Len::Int)))
-          => splinter(N, Len)
-          requires Len >Int 0 andBool notBool isPieces(N)
-     rule explodeToBits(ListItem(piece(_, 0))) => .List
-     rule explodeToBits(.List) => .List
-
-     syntax List ::= splinter(BitValue, Int) [function]
-     syntax List ::= "splinter-aux" "(" BitValue "," Int "," Int ")" [function]
-     rule splinter(N::BitValue, Len::Int) => splinter-aux(N, Len, 0)
-     rule splinter-aux(_, Len::Int, Len) => .List
-     rule splinter-aux(N::BitValue, Len::Int, Pos::Int)
-          => ListItem(encode(N, Pos, Pos +Int 1))
-               splinter-aux(N, Len, Pos +Int 1)
-          requires Pos <Int Len
-
-     // this general rule is useful for unknowns, abstracts, etc
-     rule splitBytes(tv(N:BitValue, T:UType))
-          => dataList(ListItem(piece(N, cfg:bitsPerByte)))
-          requires isCharType(type(T))
-               andBool notBool isInt(N)
+     rule splitBytes(tv(V:Encodable, T:UType))
+          => splitToBytes(encode(V, 0, bitSizeofType(T)))
+          requires notBool isUnknown(V)
+     rule splitBytes(tv(V:EncodedPtr, T:UType))
+          => splitToBytes(piece(V, bitSizeofType(T)))
+     rule splitBytes(tv(V:EncodedValue, T:UType))
+          => splitToBytes(piece(V, bitSizeofType(T)))
      rule splitBytes(tv(unknown(I:Int), T::UType))
-          => makeUnknown(splitBytes(tv(I, T)))
-     rule splitBytes(tv(I:Int, T::UType))
-          => splitBytes(I, byteSizeofType(T))
-     rule splitBytes(tv(F:Float, T::UType))
-          => splitBytes(F, byteSizeofType(T))
-     rule splitBytes(tv(Loc:SymLoc, T::UType))
-          => splitBytes(Loc, byteSizeofType(T))
-     rule splitBytes(tv(V:Opaque, T::UType))
-          => splitBytes(V, byteSizeofType(T))
-     rule splitBytes(tv(V:Trap, T::UType))
-          => splitBytes(V, byteSizeofType(T))
+          => makeUnknownBytes(splitBytes(tv(I, T)))
      rule splitBytes(tv(agg(L:List), T:StructOrUnionUType))
-          => splitStructBytes(dataList(L), T,
-               byteSizeofType(T))
+          => splitStructBytes(L, T, byteSizeofType(T))
 
-     syntax KItem ::= makeUnknownAux(List, List) [function]
-     rule makeUnknown(dataList(L::List)) => makeUnknownAux(L, .List)
-     rule makeUnknownAux((ListItem(piece(I:Int, PieceLen:Int)) => .List) L::List, _:List (.List => ListItem(piece(unknown(I), PieceLen))))
-     rule makeUnknownAux(.List, L::List) => dataList(L)
-     rule makeUnknownAux((ListItem(B::Bits) => .List) L::List, _:List (.List => ListItem(B))) [owise]
+     syntax List ::= makeUnknownBytes(List) [function]
+     rule makeUnknownBytes(ListItem(piece(I:Int, PieceLen:Int)) L::List)
+          => ListItem(piece(unknown(I), PieceLen)) makeUnknownBytes(L)
+     rule makeUnknownBytes(ListItem(B::Bits) L::List)
+          => ListItem(B) makeUnknownBytes(L) [owise]
+     rule makeUnknownBytes(.List) => .List
 
-     syntax DataList ::= splitStructBytes(K, StructOrUnionUType, Int) [function]
-     syntax DataList ::= #splitStructBytes(K, StructOrUnionUType, Int, List)  [function]
-
-     rule splitStructBytes(dataList(L:List), T::StructOrUnionUType, Len:Int)
-          => #splitStructBytes(dataList(L), T, Len, .List)
-     rule #splitStructBytes(
-          dataList(ListItem(piece(N::BitValue, PieceLen:Int)) Rest:List),
-               T::StructOrUnionUType, Len:Int, L:List)
-          => #splitStructBytes(dataList(Rest), T, Len -Int 1,
-               L ListItem(piece(N, PieceLen)))
+     syntax List ::= splitStructBytes(List, StructOrUnionUType, Int) [function]
+     rule splitStructBytes(ListItem(piece(N::BitValue, PieceLen:Int)) Rest:List,
+               T::StructOrUnionUType, Len:Int)
+          => ListItem(piece(N, PieceLen)) splitStructBytes(Rest, T, Len -Int 1)
           requires PieceLen ==Int cfg:bitsPerByte
                andBool Len >Int 0
                andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, getFields(T))
                     orBool isUnknown(N))
-     rule #splitStructBytes(
-          dataList(ListItem(piece((N::BitValue => unknown(#if isInt(N) #then N #else 0 #fi)), _)) _),
-               T::StructOrUnionUType, Len::Int, _)
+     rule splitStructBytes(ListItem(piece((N::BitValue => unknown(#if isInt(N) #then N #else 0 #fi)), _)) _,
+               T::StructOrUnionUType, Len::Int)
           requires isPaddingOffset(byteSizeofType(T) -Int Len, getFields(T))
                andBool notBool isUnknown(N)
-     rule #splitStructBytes(_, _, 0, L::List) => dataList(L)
+     rule splitStructBytes(_, _, 0) => .List
 
      syntax Bool ::= isPaddingOffset(Int, K) [function]
      rule isPaddingOffset(Offset::Int, fieldInfo(_, _, _, _, PaddingOffs::Set))
@@ -323,7 +307,7 @@ module C-MEMORY-WRITING
      rule writeChars(Loc::SymLoc, S::String)
           => Computation(
                * tv(Loc, utype(pointerType(type(char))))
-               := tv(ordChar(firstChar(S:String)), utype(char)))
+                    := tv(ordChar(firstChar(S:String)), utype(char)))
                ~> writeChars(Loc +bytes 1, butFirstChar(S:String))
           requires S:String =/=String ""
           [structural]
@@ -333,20 +317,33 @@ module C-MEMORY-WRITING
      rule writeString(Loc::SymLoc, S::String)
           => Computation(
                * tv(Loc, utype(pointerType(type(char))))
-               := tv(ordChar(firstChar(S)), utype(char)))
+                    := tv(ordChar(firstChar(S)), utype(char)))
                ~> writeString(Loc +bytes 1, butFirstChar(S))
           requires S =/=String ""
           [structural]
      rule writeString(Loc::SymLoc, "")
           => Computation(
                * tv(Loc, utype(pointerType(type(char))))
-               := tv(0, utype(char)))
+                    := tv(0, utype(char)))
+          [structural]
+
+     rule initString(Loc::SymLoc, S::String)
+          => Initializer(
+               * tv(Loc, utype(pointerType(type(char))))
+                    := tv(ordChar(firstChar(S)), utype(char)))
+               ~> initString(Loc +bytes 1, butFirstChar(S))
+          requires S =/=String ""
+          [structural]
+     rule initString(Loc::SymLoc, "")
+          => Initializer(
+               * tv(Loc, utype(pointerType(type(char))))
+                    := tv(0, utype(char)))
           [structural]
 
      rule writeWChars(Loc::SymLoc, ListItem(N:Int) S:List)
           => Computation(
                * tv(Loc, utype(pointerType(type(cfg:wcharut))))
-               := tv(N, utype(cfg:wcharut)))
+                    := tv(N, utype(cfg:wcharut)))
                ~> writeWChars(Loc +bytes byteSizeofType(type(cfg:wcharut)), S)
           [structural]
      rule writeWChars(_, .List) => .K
@@ -355,13 +352,34 @@ module C-MEMORY-WRITING
      rule writeWString(Loc::SymLoc, ListItem(N:Int) S:List)
           => Computation(
                * tv(Loc, utype(pointerType(type(cfg:wcharut))))
-               := tv(N, utype(cfg:wcharut)))
+                    := tv(N, utype(cfg:wcharut)))
                ~> writeWString(Loc +bytes byteSizeofType(type(cfg:wcharut)), S)
           [structural]
      rule writeWString(Loc::SymLoc, .List)
           => Computation(
                * tv(Loc, utype(pointerType(type(cfg:wcharut))))
-               := tv(0, utype(cfg:wcharut)))
+                    := tv(0, utype(cfg:wcharut)))
           [structural]
+
+     rule initWString(Loc::SymLoc, ListItem(N:Int) S:List)
+          => Initializer(
+               * tv(Loc, utype(pointerType(type(cfg:wcharut))))
+                    := tv(N, utype(cfg:wcharut)))
+               ~> initWString(Loc +bytes byteSizeofType(type(cfg:wcharut)), S)
+          [structural]
+     rule initWString(Loc::SymLoc, .List)
+          => Initializer(
+               * tv(Loc, utype(pointerType(type(cfg:wcharut))))
+                    := tv(0, utype(cfg:wcharut)))
+          [structural]
+
+     rule getQualsAtOffset(dynamicType(T::Type), Offset::Int) => getQualsAtOffset(T, Offset)
+     rule getQualsAtOffset(T:Type, Offset::Int)
+          => getQualsAtOffset(getTypesAtOffset(T, Offset *Int cfg:bitsPerByte))
+     rule getQualsAtOffset(_, _) => noQuals [owise]
+
+     rule getQualsAtOffset(ListItem(T:Type) Ts:List)
+          => getQualifiers(T) +Quals getQualsAtOffset(Ts)
+     rule getQualsAtOffset(.List) => noQuals
 
 endmodule

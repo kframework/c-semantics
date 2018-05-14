@@ -15,10 +15,9 @@ module COMMON
   imports ALIGNMENT
   imports BITS
   imports COMMON-BUILTIN
+  imports COMMON-INIT
   imports COMMON-RESOLUTION
   imports COMPAT
   imports ERROR
-  imports COMMON-INIT
-  imports MEMORY
   imports SYMLOC
 endmodule

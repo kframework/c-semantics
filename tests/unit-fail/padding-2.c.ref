@@ -1,6 +1,8 @@
- Printing an unspecified value.
-   at printf(padding-2.c:9:3)
-   by main(padding-2.c:9:3)
-  Unspecified value or behavior (USP-STDIO2).
-   see C11 section 7.21.6.1:8 http://rvdoc.org/C11/7.21.6.1
+Printing an unspecified value:
+      > in printf at padding-2.c:9:3
+        in main at padding-2.c:9:3
+
+    Unspecified value or behavior (USP-STDIO2):
+        see C11 section 7.21.6.1:8 http://rvdoc.org/C11/7.21.6.1
+
 Execution failed (configuration dumped)

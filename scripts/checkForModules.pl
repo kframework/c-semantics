@@ -5,6 +5,7 @@ my @requiredModules = qw(
 	Getopt::Declare
       MIME::Base64
       String::Escape
+      UUID::Tiny
 );
 my @missingPackages = ();
 

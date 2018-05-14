@@ -12,6 +12,7 @@ module C-ERROR-SYNTAX
      syntax KItem ::= CV(String, String)
      syntax KItem ::= SE(String, String)
      syntax KItem ::= IMPL(String, String)
+     syntax KItem ::= IMPLUB(String, String)
 
      syntax KResult ::= Bool
 
@@ -35,5 +36,7 @@ module C-ERROR
           => EXIT(ErrorMsg(Syntax(CLinkage), Title, Msg))
      rule IMPL(Title:String, Msg:String)
           => EXIT(ErrorMsg(Impl(CLinkage), Title, Msg))
+     rule IMPLUB(Title:String, Msg:String)
+          => EXIT(ErrorMsg(ImplUB(CLinkage), Title, Msg))
 
 endmodule

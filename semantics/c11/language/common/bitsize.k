@@ -38,9 +38,8 @@ module C-BITSIZE
      rule byteSizeofType(t(...) #as T::Type) => (bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
      rule byteSizeofType(ut(...) #as T::UType) => (bitSizeofType(type(T)) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
 
-     rule bitSizeofType(T:StructOrUnionType) => bitSizeofFields(getFields(T))
-     rule bitSizeofType(t(_, _, T'::SimpleType) #as T::Type) => bitSizeofSimpleType(T')
-          requires notBool isStructOrUnionType(T)
+     rule bitSizeofType(t(...) #as T::Type) => bitSizeofType(utype(T))
+     rule bitSizeofType(T:StructOrUnionUType) => bitSizeofFields(getFields(T))
      rule bitSizeofType(ut(_, T'::SimpleUType) #as T::UType) => bitSizeofSimpleType(T')
           requires notBool isStructOrUnionType(type(T))
 

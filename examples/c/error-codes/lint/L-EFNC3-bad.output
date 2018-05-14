@@ -1,0 +1,19 @@
+Recursive call to the function f:
+      > in f at L-EFNC3-bad.c:4:14
+        in g at L-EFNC3-bad.c:4:14
+        in f at L-EFNC3-bad.c:9:7
+        in main at L-EFNC3-bad.c:13:7
+
+    Possible unintended behavior (L-EFNC3):
+        see MISRA-C section 8.17:2 http://rvdoc.org/MISRA-C/8.17
+
+Recursive call to the function g:
+      > in g at L-EFNC3-bad.c:9:7
+        in f at L-EFNC3-bad.c:9:7
+        in g at L-EFNC3-bad.c:4:14
+        in f at L-EFNC3-bad.c:9:7
+        in main at L-EFNC3-bad.c:13:7
+
+    Possible unintended behavior (L-EFNC3):
+        see MISRA-C section 8.17:2 http://rvdoc.org/MISRA-C/8.17
+

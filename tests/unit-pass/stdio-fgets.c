@@ -25,6 +25,25 @@ int main (void)
   res |= bp != buf2;
   rewind(fp);
 
+  fp = tmpfile();
+  fprintf(fp, "%s", "hel\n\nlo");
+  rewind(fp);
+
+  bp = fgets (buf, sizeof (buf), fp);
+  printf ("fgets: %s\n", bp == buf ? "OK" : "ERROR");
+  res |= bp != buf;
+  rewind(fp);
+
+  bp = fgets (buf2, 5, fp);
+  printf ("fgets: %s\n", bp == buf2 ? "OK" : "ERROR");
+  res |= bp != buf2;
+  rewind(fp);
+
+  bp = fgets (buf2, sizeof (buf2), fp);
+  printf ("fgets: %s\n", bp == buf2 ? "OK" : "ERROR");
+  res |= bp != buf2;
+  rewind(fp);
+
   // bp = fgets_unlocked (buf, sizeof (buf), fp);
   // printf ("fgets_unlocked: %s\n", bp == buf ? "OK" : "ERROR");
   // res |= bp != buf;

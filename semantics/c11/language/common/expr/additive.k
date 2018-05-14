@@ -6,9 +6,9 @@ module C-COMMON-EXPR-ADDITIVE
      imports K-REFLECTION
      imports SET
      imports STRING-SYNTAX
-     imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-BITS-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -260,27 +260,27 @@ module C-COMMON-EXPR-ADDITIVE
           [structural]
 
      rule tv(I1:Int, T::UType) + tv(I2:Int, T'::UType)
-          => arithInterpret(T, (I1 +Int I2))
+          => intArithInterpret(T, (I1 +Int I2))
           requires isPromoted(T) andBool T ==Type T'
           [structural]
      rule tv(I1:Int, T::UType) - tv(I2:Int, T'::UType)
-          => arithInterpret(T, (I1 -Int I2))
+          => intArithInterpret(T, (I1 -Int I2))
           requires isPromoted(T) andBool T ==Type T'
           [structural]
      rule tv(F1:Float, T::UType) + tv(F2:Float, T'::UType)
-          => arithInterpret(T, F1 +Float F2)
+          => floatArithInterpret(T, F1 +Float F2)
           requires T ==Type T'
           [structural]
      rule tv(F1:Float, T::UType) - tv(F2:Float, T'::UType)
-          => arithInterpret(T, (F1 -Float F2))
+          => floatArithInterpret(T, (F1 -Float F2))
           requires T ==Type T'
           [structural]
 
-     rule tv(V:CValue, T::UType) + tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) + stripUnknown(tv(V', T')))
-          requires (isUnknown(V) orBool isUnknown(V'))
-     rule tv(V:CValue, T::UType) - tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) + stripUnknown(tv(V', T')))
-          requires (isUnknown(V) orBool isUnknown(V'))
+     rule tv(V::CValue, T::UType) + tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) + tv(stripUnknown(V'), T'))
+          requires isUnknown(V) orBool isUnknown(V')
+     rule tv(V::CValue, T::UType) - tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) + tv(stripUnknown(V'), T'))
+          requires isUnknown(V) orBool isUnknown(V')
 
 endmodule

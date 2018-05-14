@@ -5,6 +5,7 @@ module C-CONFIGURATION
      imports COMMON-CONFIGURATION
      imports COMMON-INIT-SYNTAX
      imports COMMON-SYNTAX
+     imports DEFAULT-STRATEGY
      imports INT-SYNTAX
      imports LIBC-IO-SYNTAX
      imports LIST
@@ -13,7 +14,8 @@ module C-CONFIGURATION
      imports SYMLOC-SYNTAX
 
      configuration
-<global/>
+<global />
+<s />
 <result-value color="red" exit=""> 139:EffectiveValue </result-value>
 <T>
 <exec multiplicity="?">
@@ -41,7 +43,6 @@ module C-CONFIGURATION
                     ~> pgmArgs($ARGV:List)
                     ~> callMain(size($ARGV:List), incomingArguments($ARGV:List))
                </k>
-               <initializing> false </initializing>
 
                <duration color="black"> auto(0) </duration>
                <final-computation multiplicity="?" color="lightgray">
@@ -49,6 +50,10 @@ module C-CONFIGURATION
                </final-computation>
                <thread-local>
                     <locks> .List </locks>
+                    <pthread-keys> .Map </pthread-keys>
+                    <pthread-active-keys> .Map </pthread-active-keys>
+                    // For detecting recursive calls.
+                    <called-functions> .Map </called-functions>
                     // stack of function-control cells
                     <call-stack color="violet"> .List </call-stack>
                     <function-control>
@@ -171,7 +176,7 @@ module C-CONFIGURATION
      // setjmp.h support.
      <jmp-bufs> .Map </jmp-bufs>
 
-     <open-files> .Set </open-files>
+     <open-files> .Map </open-files>
 
      <files color="lightgray">
           <file multiplicity="*" type="Set">
@@ -198,9 +203,9 @@ module C-CONFIGURATION
      <sig-handling-state> .K </sig-handling-state>
      // Cells to store pointers returned by these functions that are
      // invalidated by subsequent calls.
-     <setlocale> .K </setlocale>
-     <localeconv> .K </localeconv>
-     <getenv> .K </getenv>
+     <setlocale> NullPointerConstant </setlocale>
+     <localeconv> NullPointerConstant </localeconv>
+     <getenv> NullPointerConstant </getenv>
 </library>
 
 

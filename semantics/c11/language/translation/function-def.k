@@ -24,21 +24,22 @@ module C-FUNCTION-DEF
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-PROCESS-LABEL-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule FunctionDefinition(typedDeclaration(T:FunctionType, X:CId), Blk:K)
           => declare'(
                typedDeclaration(toPrototype(emptyToVoid(T)), X),
-               initializer(Computation(initFunction(
+               initializer(initFunction(
                     &(X),
                     X,
                     functionObject(X,
                          // The return and parameter types from the definition.
                          t(getQualifiers(T), getModifiers(T), functionType(utype(elideDeclParams(innerType(T))),
                               elideList(getParams(emptyToVoid(T))))), .List)
-               )))
+               ))
           )
           ~> processFunDef(X, Blk)
           requires notBool hasDupParams(T)
@@ -142,12 +143,11 @@ module C-FUNCTION-DEF
           => true
      rule isArgvType(_) => false [owise]
 
-     rule initFunction(tv(Loc:SymLoc, T::UType), X:CId, Fun:RValue)
-          => te(initFunction(&(X), X, Fun), T)
+     rule <k> initFunction(tv(Loc:SymLoc, T::UType), X:CId, Fun:RValue) => .K ...</k>
+          <elab>... .K => initFunction(&(X), X, Fun) </elab>
           requires isLinkerLoc(Loc)
-     rule <k> initFunction(
-               tv(Loc:SymLoc, ut(_, pointerType(_:FunctionType))), _, Fun:RValue)
-               => voidVal
+     rule <k> initFunction(tv(Loc:SymLoc, ut(_, pointerType(_:FunctionType))), _, Fun:RValue)
+               => .K
           ...</k>
           <functions> M:Map => M[base(Loc) <- Fun] </functions>
           requires notBool isLinkerLoc(Loc)
@@ -216,13 +216,39 @@ module C-FUNCTION-DEF
           requires notBool isVoidType(T)
           [structural]
 
-     rule <k> OtherStatement() => .K ...</k>
-          <external-defs>... X |-> _ => .Map ...</external-defs>
+     // Function with external linkage.
+     rule <k> OtherStatement() => lintFunElide(X) ...</k>
+          <external-defs>... X |-> Def::SymBase => .Map ...</external-defs>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> Env::Map => Env[X <- obj(0, 0, nativeSymbol(S))] </genv>
           <curr-scope> blockScope(Identifier(S::String) #as X::CId, _) </curr-scope>
           <block-stack>... ListItem(<block-control>... <env> Env::Map => Env[X <- obj(0, 0, nativeSymbol(S))] </env> ...</block-control>) </block-stack>
           <function-tus>... .Map => X |-> Tu </function-tus>
+          <options> Opts::Set </options>
+          requires notBool (NoNativeFallback() in Opts)
+     // Function with internal linkage.
+     rule <k> OtherStatement() => lintFunElide(X) ...</k>
+          <external-defs> Exts::Map </external-defs>
+          <external-types>... .Map => Identifier(S +String Uuid) |-> T </external-types>
+          <types>... X |-> T::Type ...</types>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <genv>... X |-> Def::SymBase ...</genv>
+          <curr-scope> blockScope(Identifier(S::String) #as X::CId, _) </curr-scope>
+          <linkings>... .Map => Def |-> obj(0, 0, nativeSymbol(S +String Uuid)) </linkings>
+          <function-tus>... .Map => Identifier(S +String Uuid) |-> Tu </function-tus>
+          <uuid> Uuid::String </uuid>
+          <options> Opts::Set </options>
+          requires notBool (X in_keys(Exts))
+               andBool notBool (NoNativeFallback() in Opts)
+     rule <k> OtherStatement() => lintFunElide(X) ...</k>
+          <options> Opts::Set </options>
+          <curr-scope> blockScope(X::CId, _) </curr-scope>
+          requires NoNativeFallback() in Opts
+
+     syntax KItem ::= lintFunElide(CId)
+     rule lintFunElide(_) => .K
+          requires notBool hasLint
 
 endmodule

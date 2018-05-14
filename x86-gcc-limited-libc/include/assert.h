@@ -1,7 +1,4 @@
-// #ifndef _KCC_ASSERT_H // these can't be here since assert is supposed to be redefined each time it is included
-// #define _KCC_ASSERT_H
-#include <kcc_settings.h>
-
+/* assert() should be redefined each time this header is included. */
 #undef assert
 #if defined NDEBUG
 #define assert(ignore) ((void)0)
@@ -12,5 +9,3 @@ void abort(void);
 #endif
 
 #define static_assert _Static_assert
-
-// #endif

@@ -148,6 +148,7 @@ let init_lexicon _ =
       ("inline", fun loc -> INLINE loc); 
       ("int", fun loc -> INT loc);
       ("long", fun loc -> LONG loc);
+      ("__kcc_oversized_int", fun loc -> OVERSIZED_INT loc);
       ("register", fun loc -> REGISTER loc);
       ("restrict", fun loc -> RESTRICT loc);
       ("__restrict", fun loc -> RESTRICT_RESERVED ("__restrict",loc));
@@ -178,10 +179,12 @@ let init_lexicon _ =
 
       ("__func__", fun loc -> FUNCTION__ loc); (* ISO 6.4.2.2 *)
 
-      ("__kcc_offsetof", fun loc -> OFFSETOF loc);
+      ("__kcc_offsetof", fun loc -> KCC_OFFSETOF loc);
 
       (* GCC Extensions *)
-      ("__kcc_typeof", fun loc -> TYPEOF loc);
+      ("__kcc_typeof", fun loc -> KCC_TYPEOF loc);
+      ("__kcc_auto_type", fun loc -> KCC_AUTO_TYPE loc);
+      ("__kcc_types_compatible_p", fun loc -> KCC_TYPES_COMPAT loc);
 
       (* Not in C11. *)
       ("__attribute__", fun loc -> ATTRIBUTE loc);

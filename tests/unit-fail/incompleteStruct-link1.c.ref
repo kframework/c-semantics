@@ -1,9 +1,11 @@
- Conversion to a pointer type with a stricter alignment requirement (possibly undefined).
-   at bar(incompleteStruct-link2.c:5:3)
-   by main(incompleteStruct-link1.c:5:14)
-  Undefined behavior (UB-CCV11).
-   see C11 section 6.3.2.3:7 http://rvdoc.org/C11/6.3.2.3
-   see C11 section J.2:1 item 25 http://rvdoc.org/C11/J.2
-   see CERT-C section EXP36-C http://rvdoc.org/CERT-C/EXP36-C
-   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+Conversion to a pointer type with a stricter alignment requirement (possibly undefined):
+      > in bar at incompleteStruct-link2.c:5:3
+        in main at incompleteStruct-link1.c:5:14
+
+    Undefined behavior (UB-CCV11):
+        see C11 section 6.3.2.3:7 http://rvdoc.org/C11/6.3.2.3
+        see C11 section J.2:1 item 25 http://rvdoc.org/C11/J.2
+        see CERT-C section EXP36-C http://rvdoc.org/CERT-C/EXP36-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
 Execution failed (configuration dumped)

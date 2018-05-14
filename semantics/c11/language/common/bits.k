@@ -7,7 +7,7 @@ module C-BITS-SYNTAX
      syntax KItem ::= "fillToBytes-aux" "(" K "," List ")" [function]
 
      syntax KItem ::= makeUnknown(K) [strict]
-     syntax KItem ::= stripUnknown(K) [function]
+     syntax CValue ::= stripUnknown(CValue) [function]
 
      syntax Int ::= maxIntPtrValue(IntPtr) [function]
 endmodule
@@ -51,10 +51,9 @@ module C-BITS
      rule makeUnknown(tv(V::CValue, T::UType)) => tv(V, T)
           requires notBool isInt(V)
 
-     rule stripUnknown(tv(unknown(I:Int), T::UType)) => tv(I, T)
-     rule stripUnknown(tv(V::CValue, T::UType)) => tv(V, T)
-          requires notBool isUnknown(V)
+     rule stripUnknown(unknown(V::CValue)) => V
+     rule stripUnknown(V::CValue) => V [owise]
 
      rule maxIntPtrValue(_:SymLoc) => (1 <<Int (cfg:bitsPerByte *Int cfg:ptrsize -Int 1)) -Int 1
-     rule maxIntPtrValue(encodedValue(_, N:Int, M:Int)) => (1 <<Int (cfg:bitsPerByte *Int (M -Int N +Int 1) -Int 1)) -Int 1
+     rule maxIntPtrValue(encodedPtr(_, N:Int, M:Int)) => (1 <<Int (cfg:bitsPerByte *Int (M -Int N +Int 1) -Int 1)) -Int 1
 endmodule

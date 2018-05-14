@@ -1,10 +1,12 @@
 module C-CONVERSION-SYNTAX
      imports BASIC-K
+     imports FLOAT
      imports C-DYNAMIC-SORTS
      imports C-TYPING-SORTS
 
      // interpret the result of arithmetic as in 6.5.4
-     syntax KItem ::= arithInterpret(UType, NumValue)
+     syntax KItem ::= intArithInterpret(UType, Int)
+     syntax KItem ::= floatArithInterpret(UType, Float)
      // as described in 6.3 // totype, fromvalue
      // change it to function in order
      // to solve anywhere rule
@@ -19,29 +21,28 @@ module C-CONVERSION
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule arithInterpret(T:IntegerUType, N:Int) => tv(N, T)
+     rule intArithInterpret(T:IntegerUType, N::Int) => tv(N, T)
           requires (min(T) <=Int N) andBool (max(T) >=Int N)
-     rule arithInterpret(T::UType, unknown(I:Int)) => makeUnknown(arithInterpret(T, I))
-     rule arithInterpret(T::UType, trap) => trap(T)
-     rule arithInterpret(T:FloatUType, F:Float) => tv(roundCFloat(T, F), T)
-          requires fmin(T) <=Float F andBool fmax(T) >=Float F
-     rule arithInterpret(T:UnsignedIntegerUType, N:Int) => tv(N modInt (max(T) +Int 1), T)
+     rule intArithInterpret(T:UnsignedIntegerUType, N::Int) => tv(N modInt (max(T) +Int 1), T)
           requires ((N >Int max(T)) orBool (N <Int min(T))) andBool notBool hasLint
-     rule (.K => UNDEF("CCV12", "Floating-point overflow."))
-          ~> arithInterpret(T:FloatUType, F:Float)
-          requires notBool (fmin(T) <=Float F andBool fmax(T) >=Float F)
      // unsigned arithmetic isn't supposed to overflow
      rule (.K => UNDEF("CCV1", "Signed integer overflow."))
-          ~> arithInterpret(T:SignedIntegerUType, I:Int)
+          ~> intArithInterpret(T:SignedIntegerUType, I::Int)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
           [structural]
+
+     rule floatArithInterpret(T:FloatUType, F::Float) => tv(roundCFloat(T, F), T)
+          requires fmin(T) <=Float F andBool fmax(T) >=Float F
+     rule (.K => UNDEF("CCV12", "Floating-point overflow."))
+          ~> floatArithInterpret(T:FloatUType, F::Float)
+          requires notBool (fmin(T) <=Float F andBool fmax(T) >=Float F)
 
      context cast(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
      rule cast(T'::UType, tv(V:CValue, T::UType)) => tv(V, castTypes(T', T))
@@ -74,10 +75,10 @@ module C-CONVERSION
      rule cast(T':IntegerUType, tv(V:Int, T:IntegerUType))
           => tv(V, castTypes(T', T))
           requires notBool isBoolUType(T')
-               andBool inRange(V, T')
+               andBool intInRange(V, T')
 
-     rule cast(T':IntegerUType, tv(encodedValue(L:SymLoc, N::Int, M::Int), T:IntegerUType))
-          => tv(encodedValue(L, N, M), T')
+     rule cast(T':IntegerUType, tv(encodedPtr(L:SymLoc, N::Int, M::Int), T:IntegerUType))
+          => tv(encodedPtr(L, N, M), T')
           requires notBool isBoolUType(T')
                andBool M -Int N <=Int bitSizeofType(T')
 
@@ -88,7 +89,7 @@ module C-CONVERSION
      type.
      }*/
      rule cast(T':UnsignedIntegerUType, tv(I:Int, T:IntegerUType))
-          => cast(T', tv(I +Int max(T') +Int 1, T))
+          => tv(I modInt (max(T') +Int 1), castTypes(T', T))
           requires (I <Int min(T')) andBool notBool hasLint
 
      rule cast(T':UnsignedIntegerUType, tv(I:Int, T:IntegerUType))
@@ -147,7 +148,7 @@ module C-CONVERSION
      rule (.K => IMPL("CCV2",
                "Conversion to signed integer outside the range that can be represented."))
           ~> cast(T':SignedIntegerUType, tv(I:Int, _:IntegerUType))
-          requires notBool inRange(I, T')
+          requires notBool intInRange(I, T')
           [structural]
 
      rule cast(T'::UType, tv(unknown(I:Int), T::UType))
@@ -162,13 +163,13 @@ module C-CONVERSION
      }*/
      rule cast(T':IntegerUType, tv(V:Float, T:FloatUType))
           => tv(Float2Int(V), castTypes(T', T))
-          requires inRange(Float2Int(V), T')
+          requires intInRange(Float2Int(V), T')
                andBool notBool isBoolUType (T')
 
      rule (.K => UNDEF("CCV3",
                "Conversion to integer from float outside the range that can be represented."))
           ~> cast(T':IntegerUType, tv(V:Float, _:FloatUType))
-          requires notBool inRange(Float2Int(V), T')
+          requires notBool intInRange(Float2Int(V), T')
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{2}}}{
@@ -185,7 +186,7 @@ module C-CONVERSION
      }*/
      rule cast(T':FloatUType, tv(V:Int, T:IntegerUType))
           => tv(Int2Float(V, typePrecision(T'), typeExponent(T')), castTypes(T', T))
-          requires inRange(Int2Float(V, maxFloatPrecision, maxFloatExponent), T')
+          requires floatInRange(Int2Float(V, maxFloatPrecision, maxFloatExponent), T')
 
      //TODO(traiansf): Shouldn't here be an undef rule for too large integers, too?
 
@@ -203,12 +204,12 @@ module C-CONVERSION
      }*/
      rule cast(T':FloatUType, tv(V:Float, T:FloatUType))
           => tv(roundCFloat(T', V), castTypes(T', T))
-          requires inRange(V, T')
+          requires floatInRange(V, T')
 
      rule (.K => UNDEF("CCV4",
                "Floating-point value outside the range of values that can be represented after conversion."))
           ~> cast(T':FloatUType, tv(V:Float, _:FloatUType))
-          requires notBool inRange(V, T')
+          requires notBool floatInRange(V, T')
           [structural]
 
 

@@ -1,1 +1,49 @@
-gcc -Wall -Wextra -Werror -Wno-error=comment -Wmissing-prototypes -x c -std=c11 -nostdlib -U __GNUC__ -D__KCC__ -include "$(dirname "$0")/include/kcc_settings.h" -E -I "$(dirname "$0")/include" "$@"
+#!/bin/bash
+options=()
+eoo=0
+
+while [[ $1 ]]
+do
+    if ! ((eoo)); then
+    case "$1" in
+        -D__GNUC__=*)
+            shift
+            ;;
+        -D__GNUC__)
+            shift
+            ;;
+        -D)
+            case "$2" in
+                  __GNUC__=*)
+                        shift
+                        ;;
+                  __GNUC__)
+                        shift
+                        ;;
+                  *)
+                        options+=("$1" "$2")
+                        shift
+                        ;;
+            esac
+            shift
+            ;;
+        -std=*)
+            shift
+            ;;
+        --)
+            eoo=1
+            options+=("$1")
+            shift
+            ;;
+        *)
+            options+=("$1")
+            shift
+            ;;
+      esac
+    else
+      options+=("$1")
+      shift
+    fi
+done
+
+gcc -Wall -Wextra -Wmissing-prototypes -x c -std=c11 -nostdlib -U __GNUC__ -D__KCC__ -include "$(dirname "$0")/include/kcc_settings.h" -E -I "$(dirname "$0")/include" "${options[@]}"

@@ -1,1 +1,2 @@
-int gaga = 1;
+int x = 3;
+int gaga = 3;

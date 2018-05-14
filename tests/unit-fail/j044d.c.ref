@@ -1,7 +1,9 @@
- Conversion to or from non-scalar type.
-   at main(j044d.c:6:7)
-  Constraint violation (CV-CCV10).
-   see C11 section 6.5.4:2 http://rvdoc.org/C11/6.5.4
-   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+Conversion to or from non-scalar type:
+      > in main at j044d.c:6:7
+
+    Constraint violation (CV-CCV10):
+        see C11 section 6.5.4:2 http://rvdoc.org/C11/6.5.4
+        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
 Execution failed (configuration dumped)

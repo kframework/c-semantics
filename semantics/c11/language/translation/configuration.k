@@ -1,14 +1,17 @@
 module C-CONFIGURATION
      imports BOOL-SYNTAX
-     imports INT-SYNTAX
-     imports MAP
-     imports SET
-     imports COMMON-SYNTAX
      imports C-LINKING-INIT-SYNTAX
      imports COMMON-CONFIGURATION
+     imports COMMON-SYNTAX
+     imports DEFAULT-STRATEGY
+     imports INT-SYNTAX
+     imports LIBC-SYNTAX
+     imports MAP
+     imports SET
 
      configuration
-<global/>
+<global />
+<s />
 <result-value color="red" exit=""> 1 </result-value>
 <T multiplicity="?">
 <exec>
@@ -44,10 +47,6 @@ module C-CONFIGURATION
      <elab> .K </elab>
 
      <elab-stack> .List </elab-stack>
-
-     // Toggle to allow writes and other special treatment
-     // for initializers.
-     <initializing> false </initializing>
 
      <curr-state>
           <curr-tu color="lightgray"> "" </curr-tu>
@@ -104,6 +103,8 @@ module C-CONFIGURATION
 <status> initializingTu </status>
 
 <options> $OPTIONS:Set </options>
+
+<uuid> $UUID:String </uuid>
 
 </T>
 

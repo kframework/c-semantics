@@ -1,7 +1,9 @@
 dup_params1.c:1:1: error: Redeclaration of x with no linkage.
-  Constraint violation (CV-TDL4).
-   see C11 section 6.7:3 http://rvdoc.org/C11/6.7
-   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
+    Constraint violation (CV-TDL4):
+        see C11 section 6.7:3 http://rvdoc.org/C11/6.7
+        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
 kcc -d -Werror -Wfatal-errors dup_params1.c

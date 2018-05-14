@@ -4,39 +4,54 @@ int a(void) {
 
 int b(void) {
       _Thread_local static int x;
-      return 0;
+      x = 0;
+      return x;
 }
 
 int c(void) {
       auto int x;
-      return 0;
+      x = 0;
+      return x;
 }
 
 int d(void) {
       static int x;
-      return 0;
+      x = 0;
+      return x;
 }
 
 int e(void) {
       const int x = 0;
-      return 0;
+      return x;
 }
 
 int f(void) {
-      int* restrict p;
+      int * restrict p;
       return 0;
 }
 
 int g(void) {
       volatile int x;
-      return 0;
+      volatile int * volatile y;
+      x = 0;
+      y = (volatile int * volatile) &x;
+      return x + *y;
 }
 
 int h(void) {
       _Atomic int x;
-      return 0;
+      _Atomic int * _Atomic y;
+      x = 0;
+      y = (_Atomic int * _Atomic) &x;
+      return x + *y;
+}
+
+int i(void) {
+      const _Atomic volatile int x = 0;
+      const _Atomic volatile int * const _Atomic volatile y = (const _Atomic volatile int * const _Atomic volatile) &x;
+      return x + *y;
 }
 
 int main(void) {
-      return 0;
+      return a() + b() + c() + d() + e() + f() + g() + h() + i();
 }

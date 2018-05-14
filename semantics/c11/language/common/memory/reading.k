@@ -8,7 +8,7 @@ module C-MEMORY-READING-SYNTAX
 
      // Returns the bytes in the order in which they are in memory.
      syntax KItem ::= readBytes(SymLoc, Int, Type)
-     syntax KItem ::= readBytesForWriting(SymLoc, Int, List, Type)
+     syntax KItem ::= readBytesForWriting(SymLoc, Int)
 
      syntax KItem ::= concretize(UType, K) [strict(2)]
 
@@ -77,7 +77,7 @@ module C-MEMORY-READING
                andBool notBool (hasTrap(L) andBool hasLint)
           [structural]
      rule concretize(T::UType, dataList(L::List))
-          => makeUnknown(concretize(T, stripUnknown(dataList(L))))
+          => makeUnknown(concretize(T, stripUnknownAux(L, .List)))
           requires (hasUnknown(L) andBool notBool isPointerUType(T))
                andBool (notBool hasTrap(L))
                andBool notBool isStructOrUnionType(type(T))
@@ -99,7 +99,6 @@ module C-MEMORY-READING
           [structural]
 
      syntax KItem ::= stripUnknownAux(List, List) [function]
-     rule stripUnknown(dataList(L::List)) => stripUnknownAux(L, .List)
      rule stripUnknownAux((ListItem(piece(unknown(I::Int), PieceLen::Int)) => .List) _, _::List (.List => ListItem(piece(I, PieceLen))))
      rule stripUnknownAux((ListItem(piece(pieces(L::List), _)) => L) _, _)
      rule stripUnknownAux((ListItem(B::Bits) => .List) _, _::List (.List => ListItem(B))) [owise]
@@ -114,21 +113,19 @@ module C-MEMORY-READING
      rule hasUnknown(.List) => false
      rule hasUnknown(ListItem(piece(B::BitValue, _) => B) _)
      rule hasUnknown((ListItem(pieces(L::List)) => L) _)
-     rule hasUnknown(ListItem(encodedValue(V::EffectiveValue, _, _) => V) _)
      rule hasUnknown(ListItem(unknown(_)) _) => true
+     rule hasUnknown(ListItem(encodedValue(V::EncodableValue, _, _) => V) _)
      rule hasUnknown(ListItem(_) L::List) => hasUnknown(L) [owise]
 
      rule hasTrap(.List) => false
      rule hasTrap(ListItem(piece(B::BitValue, _) => B) _)
      rule hasTrap((ListItem(pieces(L::List)) => L) _)
-     rule hasTrap(ListItem(encodedValue(V::EffectiveValue, _, _) => V) _)
      rule hasTrap(ListItem(trap) _) => true
      rule hasTrap(ListItem(_) L::List) => hasTrap(L) [owise]
 
      rule hasInt(.List) => false
      rule hasInt(ListItem(piece(B::BitValue, _) => B) _)
      rule hasInt((ListItem(pieces(L::List)) => L) _)
-     rule hasInt(ListItem(encodedValue(V::EffectiveValue, _, _) => V) _)
      rule hasInt(ListItem(B:Int) _) => true
           requires B =/=Int 0
      rule hasInt(ListItem(_) L::List) => hasInt(L) [owise]
@@ -136,20 +133,20 @@ module C-MEMORY-READING
      rule hasFloat(.List) => false
      rule hasFloat(ListItem(piece(B::BitValue, _) => B) _)
      rule hasFloat((ListItem(pieces(L::List)) => L) _)
-     rule hasFloat(ListItem(encodedValue(V::EffectiveValue, _, _) => V) _)
      rule hasFloat(ListItem(_:Float) _) => true
+     rule hasFloat(ListItem(encodedValue(_:Float, _, _)) _) => true
      rule hasFloat(ListItem(_) L::List) => hasFloat(L) [owise]
 
      rule hasOpaque(.List) => false
      rule hasOpaque(ListItem(piece(B::BitValue, _) => B) _)
      rule hasOpaque((ListItem(pieces(L::List)) => L) _)
-     rule hasOpaque(ListItem(encodedValue(V::EffectiveValue, _, _) => V) _)
+     rule hasOpaque(ListItem(encodedValue(V::EncodableValue, _, _) => V) _)
      rule hasOpaque(ListItem(_:Opaque) _) => true
      rule hasOpaque(ListItem(_) L::List) => hasOpaque(L) [owise]
 
      syntax KItem ::= extractBitsFromMem(SymLoc, Type)
      rule extractBitsFromMem(Loc:SymLoc, T::Type)
-          => extractBitsFromList(readBytes(Loc, (bitOffsetIntoLastByte(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, T),
+          => extractBitsFromList(readBytes(Loc, byteRange(Loc, bitSizeofType(T)), T),
                bitOffsetIntoLastByte(Loc), bitSizeofType(T))
           [structural]
 
@@ -178,16 +175,21 @@ module C-MEMORY-READING
      syntax RValue ::= interpret(UType, BitValue) [function]
      rule interpret(T:IntegerUType, I:Int)
           => #if max(T) >=Int I #then tv(I, T) #else interpret(T, I -Int (1 <<Int absInt(bitSizeofType(T)))) #fi
+     rule interpret(T:IntegerUType, encodedPtr(NullPointer, _, _)) => tv(unknown(0), T)
      rule interpret(T:PointerUType, I:Int) => tv(cfg:intToPointer(I, T), T)
-     rule interpret(T::UType, encodedValue(Loc:SymLoc, 0, To::Int)) => tv(Loc, T)
-          requires To ==Int (cfg:ptrsize *Int cfg:bitsPerByte)
      rule interpret(T:FloatUType, 0) => tv(zeroCFloat(T), T)
+     rule interpret(T:FloatUType, encodedPtr(NullPointer, _, _)) => tv(unknown(zeroCFloat(T)), T)
      rule interpret(T:FloatUType, I:Int) => tv(cfg:floatFromBits(I, T), T)
           requires I =/=Int 0
+     rule interpret(T::UType, encodedPtr(Loc:SymLoc, 0, To::Int)) => tv(Loc, T)
+          requires To ==Int (cfg:ptrsize *Int cfg:bitsPerByte)
+               andBool notBool ((isIntegerUType(T) orBool isFloatUType(T)) andBool Loc ==K NullPointer)
      rule interpret(T::UType, encodedValue(F:Float, 0, To::Int)) => tv(F, T)
           requires isFullFloat(F, To)
      rule interpret(T::UType, encodedValue(opaque(V::Int, T'::UType), 0, To::Int)) => tv(opaque(V, T'), T)
           requires To ==Int bitSizeofType(type(T'))
+     rule interpret(T::UType, encodedValue(unknown(V::EffectiveValue), 0, To::Int)) => tv(unknown(V), T)
+          requires To ==Int bitSizeofType(type(T))
      rule interpret(T::UType, V::BitValue) => tv(V, T) [owise]
 
 endmodule

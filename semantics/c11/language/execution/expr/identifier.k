@@ -1,6 +1,7 @@
 module C-EXPR-IDENTIFIER
-     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-CONFIGURATION
+     imports C-CHECK-USE-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX

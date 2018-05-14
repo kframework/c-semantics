@@ -1,7 +1,9 @@
- Function exited without calling 'va_end' after 'va_start' or 'va_copy'.
-   at f(UB-STDARG9-bad.c:7:7)
-   by main(UB-STDARG9-bad.c:10:7)
-  Undefined behavior (UB-STDARG9).
-   see C11 section 7.16.1:1 http://rvdoc.org/C11/7.16.1
-   see C11 section J.2:1 item 139 http://rvdoc.org/C11/J.2
-   see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
+Function exited without calling 'va_end' after 'va_start' or 'va_copy':
+      > in f at UB-STDARG9-bad.c:7:7
+        in main at UB-STDARG9-bad.c:10:7
+
+    Undefined behavior (UB-STDARG9):
+        see C11 section 7.16.1:1 http://rvdoc.org/C11/7.16.1
+        see C11 section J.2:1 item 139 http://rvdoc.org/C11/J.2
+        see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
+

@@ -36,7 +36,7 @@ module LIBC-IO-SYNTAX
 
      syntax RValue ::= str(String)
 
-     syntax Int ::= pointerToInt(CValue) [function]
+     syntax Int ::= pointerToInt(SymLoc) [function]
      syntax String ::= pointerToString(SymLoc) [function]
 
      syntax Int ::= "bufSiz" [function]
@@ -279,11 +279,11 @@ module LIBC-IO
           [structural]
 
      rule <k> close(FD:Int) => #close(FD) ...</k>
-          <open-files>... SetItem(FD) => .Set </open-files>
+          <open-files>... FD |-> _ => .Map </open-files>
           (<file>... <fid> FD </fid> ...</file> => .Bag)
           [structural]
      rule <k> close(FD:String) => .K ...</k>
-          <open-files>... SetItem(FD) => .Set </open-files>
+          <open-files>... FD |-> _ => .Map </open-files>
           (<file>... <fid> FD </fid> ...</file> => .Bag)
           [structural]
 
@@ -313,8 +313,8 @@ module LIBC-IO
           <last-op> _ => seekOp </last-op>
           [structural]
 
-     rule <k> flushAll => flushAll'(OpenFiles) ...</k>
-          <open-files> OpenFiles::Set </open-files>
+     rule <k> flushAll => flushAll'(keys(OpenFiles)) ...</k>
+          <open-files> OpenFiles::Map </open-files>
           [structural]
 
      syntax KItem ::= "flushAll'" "(" Set ")"
@@ -331,6 +331,11 @@ module LIBC-IO
           <write-buffer> S:String => "" </write-buffer>
           <sending>... .List => ListItem(S) </sending>
           [structural]
+     rule <k> flush(FD:Int) => .K ...</k>
+          <open-files> OpenFiles::Map </open-files>
+          requires notBool (FD in_keys(OpenFiles))
+          [structural]
+
 
      rule <k> tell(FD::FD) => Pos ...</k>
           <fid> FD </fid>
@@ -415,7 +420,7 @@ module LIBC-IO
      rule reval(tv(B:Int, _)) ~> getBytes'(Loc::SymLoc, N::Int, S::String)
           => getBytes'(Loc, N, S +String chrChar(B))
           [structural]
-     rule reval(tv(encodedValue(B:SymLoc, From::Int, To::Int), _)) ~> getBytes'(Loc::SymLoc, N::Int, S::String)
+     rule reval(tv(encodedPtr(B:SymLoc, From::Int, To::Int), _)) ~> getBytes'(Loc::SymLoc, N::Int, S::String)
           => getBytes'(Loc, N, S +String chrChar(bitsValue(pointerToInt(B), From, To)))
           [structural]
      rule getBytes'(_, 0, S::String) => str(S)
@@ -441,6 +446,7 @@ module LIBC-IO
 
      rule newFixedObject(tv(_, T::UType) #as V::RValue => getString(V))
           requires isCharType(innerType(T))
+               andBool notBool isNull(V)
           [structural]
      rule newFixedObject(str(Value::String))
           => newFixedString(bnew(!_:Int, arr(char, lengthString(Value) +Int 1), libcFixed), Value)
@@ -448,6 +454,10 @@ module LIBC-IO
      rule newFixedObject(tv(Loc:SymLoc, T::UType) #as V::RValue)
           => newFixedObject'(readBytes(Loc, byteSizeofType(innerType(T)), innerType(T)), innerType(T))
           requires notBool isCharType(innerType(T))
+               andBool notBool isNull(V)
+          [structural]
+     rule newFixedObject(V::RValue) => V
+          requires isNull(V)
           [structural]
 
      syntax KItem ::= "newFixedObject'" "(" K "," Type ")" [strict(1)]
@@ -458,14 +468,14 @@ module LIBC-IO
      syntax KItem ::= newFixedString(SymBase, String)
      rule newFixedString(Base::SymBase, Value::String)
           => alloc(Base, arr(char, lengthString(Value) +Int 1), lengthString(Value) +Int 1)
-          ~> allowInit(writeString(loc(Base, 0), Value))
+          ~> initString(loc(Base, 0), Value)
           ~> tv(loc(Base, 0), utype(ptr(char)))
           [structural]
 
      syntax KItem ::= newFixedBytes(SymBase, List, Type)
      rule newFixedBytes(Base::SymBase, Bytes::List, T::Type)
           => alloc(Base, T, byteSizeofType(utype(T)))
-          ~> allowInit(writeBytes(loc(Base, 0), dataList(Bytes), T))
+          ~> initBytes(loc(Base, 0), Bytes)
           ~> tv(loc(Base, 0), utype(ptr(T)))
           [structural]
 

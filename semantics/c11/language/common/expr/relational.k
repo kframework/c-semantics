@@ -295,75 +295,131 @@ module C-COMMON-EXPR-RELATIONAL
      an array of length one with the type of the object as its element type.
      }*/
      // if one of the pointers is null, it's straightforward
-     rule tv(NullPointer, T::UType) == tv(N:SymLoc, T'::UType)
+     rule tv(V::CValue, T::UType) == tv(N:SymLoc, T'::UType)
           => makeTruth(NullPointer ==K N, T, T')
-          requires notBool hasLint
+          requires notBool (isFunctionPointerType(type(T')) andBool isNullPointerConstant(tv(V, T)))
+               andBool (isNullPointerConstant(tv(V, T)) orBool V ==K NullPointer)
           [structural]
-     rule tv(NullPointer, T::UType) != tv(N:SymLoc, T'::UType)
+     rule tv(V::CValue, T::UType) != tv(N:SymLoc, T'::UType)
           => makeTruth(NullPointer =/=K N, T, T')
-          requires notBool hasLint
+          requires notBool (isFunctionPointerType(type(T')) andBool isNullPointerConstant(tv(V, T)))
+               andBool (isNullPointerConstant(tv(V, T)) orBool V ==K NullPointer)
           [structural]
-     rule tv(N:SymLoc, T::UType) == tv(NullPointer, T'::UType)
+     rule tv(N:SymLoc, T::UType) == tv(V::CValue, T'::UType)
           => makeTruth(NullPointer ==K N, T, T')
-          requires notBool hasLint
+          requires notBool (isFunctionPointerType(type(T)) andBool isNullPointerConstant(tv(V, T')))
+               andBool (isNullPointerConstant(tv(V, T')) orBool V ==K NullPointer)
           [structural]
-     rule tv(N:SymLoc, T::UType) != tv(NullPointer, T'::UType)
+     rule tv(N:SymLoc, T::UType) != tv(V::CValue, T'::UType)
           => makeTruth(NullPointer =/=K N, T, T')
+          requires notBool (isFunctionPointerType(type(T)) andBool isNullPointerConstant(tv(V, T')))
+               andBool (isNullPointerConstant(tv(V, T')) orBool V ==K NullPointer)
+          [structural]
+
+     rule tv(V::CValue, T::UType) == tv(N:SymLoc, T'::UType)
+          => lintNullFunPtrCompare ~> makeTruth(NullPointer ==K N, T, T')
+          requires isFunctionPointerType(type(T'))
+               andBool isNullPointerConstant(tv(V, T))
+          [structural]
+     rule tv(V::CValue, T::UType) != tv(N:SymLoc, T'::UType)
+          => lintNullFunPtrCompare ~> makeTruth(NullPointer =/=K N, T, T')
+          requires isFunctionPointerType(type(T'))
+               andBool isNullPointerConstant(tv(V, T))
+          [structural]
+     rule tv(N:SymLoc, T::UType) == tv(V::CValue, T'::UType)
+          => lintNullFunPtrCompare ~> makeTruth(NullPointer ==K N, T, T')
+          requires isFunctionPointerType(type(T))
+               andBool isNullPointerConstant(tv(V, T'))
+          [structural]
+     rule tv(N:SymLoc, T::UType) != tv(V::CValue, T'::UType)
+          => lintNullFunPtrCompare ~> makeTruth(NullPointer =/=K N, T, T')
+          requires isFunctionPointerType(type(T))
+               andBool isNullPointerConstant(tv(V, T'))
+          [structural]
+     syntax KItem ::= "lintNullFunPtrCompare"
+     rule lintNullFunPtrCompare => .K
           requires notBool hasLint
           [structural]
 
-     rule tv(encodedValue(Loc:SymLoc, N:Int, M:Int), T::UType) == tv(encodedValue(Loc':SymLoc, N:Int, M:Int), T'::UType)
+     rule tv(encodedPtr(Loc:SymLoc, N:Int, M:Int), T::UType) == tv(encodedPtr(Loc':SymLoc, N:Int, M:Int), T'::UType)
           => tv(Loc, T) == tv(Loc', T')
-     rule tv(encodedValue(Loc:SymLoc, N:Int, M:Int), T::UType) != tv(encodedValue(Loc':SymLoc, N:Int, M:Int), T'::UType)
+     rule tv(encodedPtr(Loc:SymLoc, N:Int, M:Int), T::UType) != tv(encodedPtr(Loc':SymLoc, N:Int, M:Int), T'::UType)
           => tv(Loc, T) != tv(Loc', T')
-     rule tv(encodedValue(Loc:SymLoc, N:Int, M:Int), T::UType) < tv(encodedValue(Loc':SymLoc, N:Int, M:Int), T'::UType)
+     rule tv(encodedPtr(Loc:SymLoc, N:Int, M:Int), T::UType) < tv(encodedPtr(Loc':SymLoc, N:Int, M:Int), T'::UType)
           => tv(Loc, T) < tv(Loc', T')
-     rule tv(encodedValue(Loc:SymLoc, N:Int, M:Int), T::UType) <= tv(encodedValue(Loc':SymLoc, N:Int, M:Int), T'::UType)
+     rule tv(encodedPtr(Loc:SymLoc, N:Int, M:Int), T::UType) <= tv(encodedPtr(Loc':SymLoc, N:Int, M:Int), T'::UType)
           => tv(Loc, T) <= tv(Loc', T')
-     rule tv(encodedValue(Loc:SymLoc, N:Int, M:Int), T::UType) > tv(encodedValue(Loc':SymLoc, N:Int, M:Int), T'::UType)
+     rule tv(encodedPtr(Loc:SymLoc, N:Int, M:Int), T::UType) > tv(encodedPtr(Loc':SymLoc, N:Int, M:Int), T'::UType)
           => tv(Loc, T) > tv(Loc', T')
-     rule tv(encodedValue(Loc:SymLoc, N:Int, M:Int), T::UType) >= tv(encodedValue(Loc':SymLoc, N:Int, M:Int), T'::UType)
+     rule tv(encodedPtr(Loc:SymLoc, N:Int, M:Int), T::UType) >= tv(encodedPtr(Loc':SymLoc, N:Int, M:Int), T'::UType)
           => tv(Loc, T) >= tv(Loc', T')
 
-     rule tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T::UType) == tv(I:Int, T'::UType)
-          requires L =/=K NullPointer
-     rule tv(I:Int, T::UType) == tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T'::UType)
-          requires L =/=K NullPointer
-     rule tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T::UType) != tv(I:Int, T'::UType)
-          requires L =/=K NullPointer
-     rule tv(I:Int, T::UType) != tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T'::UType)
-          requires L =/=K NullPointer
+     rule tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T::UType) == tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv((L:SymLoc => unknown(maxIntPtrValue(L))), T::UType) == tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv(I:Int, T::UType) == tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
+     rule tv(I:Int, T::UType) == tv((L:SymLoc => unknown(maxIntPtrValue(L))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
 
-     rule tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T::UType) < tv(I:Int, T'::UType)
-          requires L =/=K NullPointer
-     rule tv(I:Int, T::UType) < tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T'::UType)
-          requires L =/=K NullPointer
-     rule tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T::UType) <= tv(I:Int, T'::UType)
-          requires L =/=K NullPointer
-     rule tv(I:Int, T::UType) <= tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T'::UType)
-          requires L =/=K NullPointer
+     rule tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T::UType) != tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv((L:SymLoc => unknown(maxIntPtrValue(L))), T::UType) != tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv(I:Int, T::UType) != tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
+     rule tv(I:Int, T::UType) != tv((L:SymLoc => unknown(maxIntPtrValue(L))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
 
-     rule tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T::UType) > tv(I:Int, T'::UType)
-          requires L =/=K NullPointer
-     rule tv(I:Int, T::UType) > tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T'::UType)
-          requires L =/=K NullPointer
-     rule tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T::UType) >= tv(I:Int, T'::UType)
-          requires L =/=K NullPointer
-     rule tv(I:Int, T::UType) >= tv((encodedValue(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedValue(L, N, M)))), T'::UType)
-          requires L =/=K NullPointer
+     rule tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T::UType) < tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv((L:SymLoc => unknown(maxIntPtrValue(L))), T::UType) < tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv(I:Int, T::UType) < tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
+     rule tv(I:Int, T::UType) < tv((L:SymLoc => unknown(maxIntPtrValue(L))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
 
-     rule tv((encodedValue(NullPointer, _, _) => unknown(0)), _) == tv(_:Int, _)
-     rule tv((encodedValue(NullPointer, _, _) => unknown(0)), _) != tv(_:Int, _)
-     rule tv((encodedValue(NullPointer, _, _) => unknown(0)), _) < tv(_:Int, _)
-     rule tv((encodedValue(NullPointer, _, _) => unknown(0)), _) <= tv(_:Int, _)
-     rule tv((encodedValue(NullPointer, _, _) => unknown(0)), _) > tv(_:Int, _)
-     rule tv((encodedValue(NullPointer, _, _) => unknown(0)), _) >= tv(_:Int, _)
-     rule tv(_:Int, _) == tv((encodedValue(NullPointer, _, _) => unknown(0)), _)
-     rule tv(_:Int, _) != tv((encodedValue(NullPointer, _, _) => unknown(0)), _)
-     rule tv(_:Int, _) < tv((encodedValue(NullPointer, _, _) => unknown(0)), _)
-     rule tv(_:Int, _) <= tv((encodedValue(NullPointer, _, _) => unknown(0)), _)
-     rule tv(_:Int, _) > tv((encodedValue(NullPointer, _, _) => unknown(0)), _)
-     rule tv(_:Int, _) >= tv((encodedValue(NullPointer, _, _) => unknown(0)), _)
+     rule tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T::UType) <= tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv((L:SymLoc => unknown(maxIntPtrValue(L))), T::UType) <= tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv(I:Int, T::UType) <= tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
+     rule tv(I:Int, T::UType) <= tv((L:SymLoc => unknown(maxIntPtrValue(L))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
+
+     rule tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T::UType) > tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv((L:SymLoc => unknown(maxIntPtrValue(L))), T::UType) > tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv(I:Int, T::UType) > tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
+     rule tv(I:Int, T::UType) > tv((L:SymLoc => unknown(maxIntPtrValue(L))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
+
+     rule tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T::UType) >= tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv((L:SymLoc => unknown(maxIntPtrValue(L))), T::UType) >= tv(I:Int, T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T'))
+     rule tv(I:Int, T::UType) >= tv((encodedPtr(L:SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(encodedPtr(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
+     rule tv(I:Int, T::UType) >= tv((L:SymLoc => unknown(maxIntPtrValue(L))), T'::UType)
+          requires L =/=K NullPointer andBool notBool isNullPointerConstant(tv(I, T))
+
+     rule tv((encodedPtr(NullPointer, _, _) => unknown(0)), _) == tv(_:Int, _)
+     rule tv((encodedPtr(NullPointer, _, _) => unknown(0)), _) != tv(_:Int, _)
+     rule tv((encodedPtr(NullPointer, _, _) => unknown(0)), _) < tv(_:Int, _)
+     rule tv((encodedPtr(NullPointer, _, _) => unknown(0)), _) <= tv(_:Int, _)
+     rule tv((encodedPtr(NullPointer, _, _) => unknown(0)), _) > tv(_:Int, _)
+     rule tv((encodedPtr(NullPointer, _, _) => unknown(0)), _) >= tv(_:Int, _)
+     rule tv(_:Int, _) == tv((encodedPtr(NullPointer, _, _) => unknown(0)), _)
+     rule tv(_:Int, _) != tv((encodedPtr(NullPointer, _, _) => unknown(0)), _)
+     rule tv(_:Int, _) < tv((encodedPtr(NullPointer, _, _) => unknown(0)), _)
+     rule tv(_:Int, _) <= tv((encodedPtr(NullPointer, _, _) => unknown(0)), _)
+     rule tv(_:Int, _) > tv((encodedPtr(NullPointer, _, _) => unknown(0)), _)
+     rule tv(_:Int, _) >= tv((encodedPtr(NullPointer, _, _) => unknown(0)), _)
 
      // otherwise, there are a number of cases.
      // First, they are part of the same object

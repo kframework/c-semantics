@@ -10,9 +10,9 @@ module C-LITERAL
      imports C-TYPING-SYNTAX
      imports FLOAT
 
-     syntax Bool ::= withinRange(Int, SimpleUType) [function]
-     rule withinRange(I::Int, T::SimpleUType)
-          => inRange(I, utype(T))
+     syntax Bool ::= withinRange(Int, SimpleIntegerType) [function]
+     rule withinRange(I::Int, T::SimpleIntegerType)
+          => intInRange(I, {utype(T)}:>IntegerUType)
 
      syntax String ::= simplifyForHex(String) [function]
      rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S))

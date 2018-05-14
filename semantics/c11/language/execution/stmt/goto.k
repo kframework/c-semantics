@@ -4,7 +4,7 @@ module C-STMT-GOTO
      imports K-REFLECTION
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-IO-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.1}{2}}}{
      A \cinline{goto} statement causes an unconditional jump to the statement

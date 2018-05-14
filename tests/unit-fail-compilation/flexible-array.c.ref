@@ -1,7 +1,9 @@
 flexible-array.c:8:1: error: Field f has incomplete type or contains a flexible array member.
-  Constraint violation (CV-CDT3).
-   see C11 section 6.7.2.1:3 http://rvdoc.org/C11/6.7.2.1
-   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
+    Constraint violation (CV-CDT3):
+        see C11 section 6.7.2.1:3 http://rvdoc.org/C11/6.7.2.1
+        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
 kcc -d -Werror -Wfatal-errors flexible-array.c

@@ -9,12 +9,12 @@ module C-STMT-RETURN
      imports RETURN-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
-     imports C-CHECK-LOC-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-IO-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -113,9 +113,12 @@ module C-STMT-RETURN
                ~> K
           </k>
           (<function-control>
+               <curr-tu> Tu::String </curr-tu>
+               <curr-scope> blockScope(X::CId, _) </curr-scope>
                <live-va-lists> .Set </live-va-lists>
                <block-stack> .List </block-stack>
           ...</function-control> => <function-control> C </function-control>)
+          <called-functions> Calls::Map => decrementCalled(X, Tu, Calls) </called-functions>
           <call-stack>
                ListItem(
                     <call-stack-frame>
@@ -128,5 +131,12 @@ module C-STMT-RETURN
                ) => .List
           ...</call-stack>
           [structural]
+
+     syntax Map ::= decrementCalled(CId, String, Map) [function]
+     rule decrementCalled(X::CId, Tu::String, (kpair(X, Tu) |-> 1) Calls::Map)
+          => Calls
+     rule decrementCalled(X::CId, Tu::String, (kpair(X, Tu) |-> N::Int) Calls::Map)
+          => (kpair(X, Tu) |-> (N -Int 1)) Calls
+          [owise]
 
 endmodule

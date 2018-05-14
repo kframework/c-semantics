@@ -3,7 +3,7 @@ module CPP-EXPR-FUNCTION-CALL
      imports C-CONFIGURATION
      imports INT
      imports BITS-SYNTAX
-     imports C-CHECK-LOC-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
@@ -38,7 +38,7 @@ module CPP-EXPR-FUNCTION-CALL
      syntax Expr ::= prepareArguments(CabsLoc, SymBase, K, CPPType, Bool, List)
 
      rule prepareArguments(CurrLoc::CabsLoc, Base::SymBase, Fun:K, CallT::CPPType, IsVirtual::Bool, Args::List)
-          => evalArgs(CurrLoc, Base, Fun, CallT, IsVirtual, list(mapList(Args, #klabel(`allowInit`))))
+          => evalArgs(CurrLoc, Base, Fun, CallT, IsVirtual, list(Args))
 
      syntax Expr ::= evalArgs(CabsLoc, SymBase, fun: K, CPPType, Bool, args: StrictList)
 
@@ -68,7 +68,7 @@ module CPP-EXPR-FUNCTION-CALL
      rule isUnderConstructionOrDestruction(blockScope(_ :: DestructorId(_), _, _)) => true
      rule isUnderConstructionOrDestruction(_) => false [owise]
 
-     rule #computeFinalOverrider(C::Class :: VF::CId, T::CPPType, encodedValue(vtable(MostDerived::Class), 0, To::Int))
+     rule #computeFinalOverrider(C::Class :: VF::CId, T::CPPType, encodedPtr(vtable(MostDerived::Class), 0, To::Int))
           => getOverrides(C, VF, T, ListItem(MostDerived))
 
      rule getOverrides(C::Class, _, _, (ListItem(Candidate::Class) => .List) _)
@@ -141,7 +141,7 @@ module CPP-EXPR-FUNCTION-CALL
           ...</function-control>)
 
      rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T, 
-               Name(NoNNS(), X) := V, 
+               Name(NoNNS(), X) :=init V, 
                Var(CopyInit()), AutoStorage, .Set) ...</k>
           <curr-function-params>... .List => ListItem(X) </curr-function-params>       
           requires notBool isCPPRefType(T)

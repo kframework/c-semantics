@@ -1,5 +1,7 @@
- Reading outside the bounds of an object.
-   at ::main(empty-lval.C:4:11)
-  Behavior underspecified by standard (DR++-EIO1).
-   see C++ Defect Reports section 232 http://rvdoc.org/C++%20Defect%20Reports/232
+Reading outside the bounds of an object:
+      > in ::main at empty-lval.C:4:11
+
+    Behavior underspecified by standard (DR++-EIO1):
+        see C++ Defect Reports section 232 http://rvdoc.org/C++%20Defect%20Reports/232
+
 Execution failed (configuration dumped)

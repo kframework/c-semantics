@@ -2,10 +2,12 @@ module C-COMMON-EXPR-MULTIPLICATIVE
      imports BOOL
      imports FLOAT
      imports INT
+     imports C-BITS-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -28,59 +30,79 @@ module C-COMMON-EXPR-MULTIPLICATIVE
      }*/
 
      rule tv(I1:Int, T::UType) * tv(I2:Int, T'::UType)
-          => arithInterpret(T, I1 *Int I2)
+          => intArithInterpret(T, I1 *Int I2)
           requires isPromoted(T)
                andBool T ==Type T'
           [structural]
      rule tv(F1:Float, T::UType) * tv(F2:Float, T'::UType)
-          => arithInterpret(T, F1 *Float F2)
+          => floatArithInterpret(T, F1 *Float F2)
           requires T ==Type T'
           [structural]
+     rule tv(V::CValue, T::UType) * tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) * tv(stripUnknown(V'), T'))
+          requires isUnknown(V) orBool isUnknown(V')
 
      rule tv(I1:Int, T::UType) / tv(I2:Int, T'::UType)
-          => arithInterpret(T, I1 /Int I2)
-          requires isPromoted(T) andBool I2 =/=Int 0
-               andBool T ==Type T'
+          => intArithInterpret(T, I1 /Int I2)
+          requires isPromoted(T) andBool T ==Type T'
+               andBool notBool isZero(I2)
           [structural]
      rule tv(F1:Float, T::UType) / tv(F2:Float, T'::UType)
-          => arithInterpret(T, F1 /Float F2)
-          requires T ==Type T' andBool F2 =/=Float 0.0
+          => floatArithInterpret(T, F1 /Float F2)
+          requires T ==Type T' andBool notBool isZero(F2)
           [structural]
+     rule tv(V::CValue, T::UType) / tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) / tv(V', T'))
+          requires isUnknown(V) andBool notBool isUnknown(V')
      rule (.K => UNDEF("CEMX1", "Division by 0."))
-          ~> L:RValue / tv(0, T'::UType)
-          requires isIntegerUType(utype(L)) andBool isPromoted(utype(L))
-               andBool utype(L) ==Type T'
+          ~> L:RValue / tv(V'::CValue, T'::UType)
+          requires utype(L) ==Type T' andBool isZero(V')
           [structural]
-     rule (.K => UNDEF("CEMX1", "Division by 0.") )
-          ~> L:RValue / tv(Z:Float, T'::UType)
-          requires isFloatUType(utype(L))
-               andBool Z ==Float 0.0
-               andBool utype(L) ==Type T'
+     rule (.K => IMPLUB("CEMX5", "Division by an implementation-defined or unspecified value."))
+          ~> L:RValue / tv(V'::CValue, T'::UType)
+          requires utype(L) ==Type T' andBool isUnknown(V')
+               andBool notBool isZero(V')
           [structural]
 
 
      rule tv(I1:Int, T::UType) % tv(I2:Int, T'::UType)
-          => arithInterpret(T, I1 %Int I2)
-          requires isPromoted(T)
-               andBool (I2 =/=Int 0)
+          => intArithInterpret(T, I1 %Int I2)
+          requires isPromoted(T) andBool T ==Type T'
+               andBool notBool isZero(I2)
                andBool (min(T) <=Int I1 /Int I2)
                andBool (max(T) >=Int I1 /Int I2)
-               andBool T ==Type T'
+          [structural]
+     rule tv(V::CValue, T::UType) % tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) % tv(V', T'))
+          requires isUnknown(V) andBool notBool isUnknown(V')
+               andBool notBool isZero(V')
+     rule (.K => IMPL("CEMX4", "Modulus operator with a pointer value as an argument."))
+          ~> tv(I1:SymLoc, T::UType) % tv(V'::CValue, T'::UType)
+          requires isPromoted(T) andBool T ==Type T'
+               andBool notBool isZero(V')
           [structural]
      rule (.K => UNDEF("CEMX2", "Modulus by 0."))
-          ~> L:RValue % tv(0, T'::UType)
-          requires isIntegerUType(utype(L)) andBool isPromoted(utype(L))
-               andBool utype(L) ==Type T'
+          ~> L:RValue % tv(V'::CValue, T'::UType)
+          requires utype(L) ==Type T' andBool isZero(V')
+          [structural]
+     rule (.K => IMPLUB("CEMX6", "Modulus by an implementation-defined or unspecified value."))
+          ~> L:RValue % tv(V'::CValue, T'::UType)
+          requires utype(L) ==Type T' andBool isUnknown(V')
+               andBool notBool isZero(V')
           [structural]
      rule (.K => UNDEF("CEMX3", "Signed integer overflow.")) ~>
           tv(I1:Int, T:IntegerUType) % tv(I2:Int, T'::UType)
-          requires I2 =/=Int 0
+          requires isPromoted(T) andBool T ==Type T'
+               andBool notBool isZero(I2)
                andBool notBool (min(T) <=Int I1 /Int I2
                     andBool max(T) >=Int I1 /Int I2)
-               andBool isPromoted(T)
-               andBool I2 =/=Int 0
-               andBool T ==Type T'
           [structural]
+
+     syntax Bool ::= isZero(CValue) [function]
+     rule isZero(0) => true
+     rule isZero(V:Float) => V ==Float 0.0
+     rule isZero(unknown(V::CValue)) => isZero(V)
+     rule isZero(_) => false [owise]
 
 endmodule
 

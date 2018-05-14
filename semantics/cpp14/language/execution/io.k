@@ -9,25 +9,21 @@ module CPP-EXECUTION-IO
      imports SETTINGS-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-TYPING-EFFECTIVE-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-IO-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-COMMON-IO-SYNTAX
 
-     rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::CPPType)
-              => checkWrite(Loc, T)
-              ~> writeBytesBuffered(Loc, Bytes)
-          ...</k>
-          <initializing> false </initializing>
+     rule writeBytes(Loc::SymLoc, Bytes::List, T::CPPType)
+          => checkWrite(Loc, T)
+          ~> writeBytesBuffered(Loc, Bytes)
           requires notBool isLinkerLoc(Loc)
-
-     rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::CPPType)
-              => writeBytesBuffered(Loc, Bytes)
-          ...</k>
-          <initializing> true </initializing>
-          requires notBool isLinkerLoc(Loc)
-
      rule <k> writeBytes(loc((Base::SymBase => Base'), _), _, _) ...</k>
+          <linkings>... Base |-> Base'::SymBase ...</linkings>
+
+     rule initBytes(Loc::SymLoc, Bytes::List) => writeBytesBuffered(Loc, Bytes)
+          requires notBool isLinkerLoc(Loc)
+     rule <k> initBytes(loc((Base::SymBase => Base'), _), _) ...</k>
           <linkings>... Base |-> Base'::SymBase ...</linkings>
 
      syntax KItem ::= checkWrite(SymLoc, CPPType) [klabel(cppCheckWrite)]
@@ -75,5 +71,19 @@ module CPP-EXECUTION-IO
           <locs-written> Locs::Set </locs-written>
           <buffer> Mem::List </buffer>
           requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool notBool (Offset in_keys(M))
+
+     syntax Bits ::= getUninitializedBits(SymLoc, CPPType) [function, klabel(getUninitializedBitsCpp)]
+     rule getUninitializedBits(L::SymLoc, _) => piece(trap, cfg:bitsPerByte)
+          requires notBool (isStaticDuration(L) orBool isThreadDuration(L))
+     rule getUninitializedBits(L::SymLoc, _) => piece(0, cfg:bitsPerByte) [owise]
+
+     rule (.K => DRAFTING("EIO1",
+               "Reading outside the bounds of an object."))
+          ~> errorReadOutOfBounds
+          [structural]
+
+     rule <k> getEffectiveType(Base::SymBase) => convertTypeToC(T) ...</k>
+          <mem>... Base |-> object(T:CPPType, _, _) ...</mem>
+          [structural]
 
 endmodule

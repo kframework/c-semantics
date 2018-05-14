@@ -10,15 +10,15 @@ module CPP-TRANSLATION-IO
      imports CPP-COMMON-IO-SYNTAX
      imports SYMLOC-SYNTAX
 
-     rule <k> writeBytes(loc(Base::SymBase, Offset::Int), dataList(ListItem(V::Bits) L::List), T::CPPType)
-              => writeBytes(loc(Base, Offset +Int 1), dataList(L), T)
+     rule <k> initBytes(loc(Base::SymBase, Offset::Int), ListItem(V::Bits) L::List)
+              => initBytes(loc(Base, Offset +Int 1), L)
           ...</k>
           <mem>...
                Base |-> object(_, Len::Int, (M::Array => M[Offset <- V]))
           ...</mem>
           requires Offset <Int Len
 
-     rule writeBytes(_, dataList(.List), _) => .K
+     rule initBytes(_, .List) => .K
 
      rule <k> instantiate(loc(B::SymBase, _) #as Loc::SymLoc, Tr::Trace, T::CPPType)
           => pre(instantiate(Loc, Tr, T), Tr, prvalType(T)) ... </k>

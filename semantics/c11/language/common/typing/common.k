@@ -7,9 +7,12 @@ module C-TYPING-COMMON-SYNTAX
      // Function id, def return type, def params, local declarations.
      syntax RValue ::= functionObject(CId, Type, List)
 
+     syntax Type ::= adjustParams(Type) [function]
+
 endmodule
 
 module C-TYPING-COMMON
+     imports C-TYPING-COMMON-SYNTAX
      imports C-CONFIGURATION
      imports FLOAT
      imports K-REFLECTION
@@ -128,6 +131,7 @@ module C-TYPING-COMMON
      rule numBytes(int) => cfg:sizeofInt
      rule numBytes(long-int) => cfg:sizeofLongInt
      rule numBytes(long-long-int) => cfg:sizeofLongLongInt
+     rule numBytes(oversized-int) => cfg:sizeofOversizedInt
 
      rule numBytes(float) => cfg:sizeofFloat
      rule numBytes(double) => cfg:sizeofDouble
@@ -138,6 +142,7 @@ module C-TYPING-COMMON
      rule numBytes(unsigned-int) => numBytes(int)
      rule numBytes(unsigned-long-int) => numBytes(long-int)
      rule numBytes(unsigned-long-long-int) => numBytes(long-long-int)
+     rule numBytes(unsigned-oversized-int) => numBytes(oversized-int)
      rule numBytes(enumType(S::TagId)) => numBytes(getEnumAlias(S))
      rule numBytes(_) => 0 [owise]
 
@@ -183,6 +188,10 @@ module C-TYPING-COMMON
           => 0 -Int (1 <<Int absInt(numBits(long-long-int) -Int 1))
      rule max(ut(_, long-long-int))
           => (1 <<Int absInt(numBits(long-long-int) -Int 1)) -Int 1
+     rule min(ut(_, oversized-int))
+          => 0 -Int (1 <<Int absInt(numBits(oversized-int) -Int 1))
+     rule max(ut(_, oversized-int))
+          => (1 <<Int absInt(numBits(oversized-int) -Int 1)) -Int 1
 
      rule min(_:UnsignedIntegerUType) => 0
 
@@ -201,26 +210,40 @@ module C-TYPING-COMMON
           => (1 <<Int absInt(numBits(unsigned-long-int))) -Int 1
      rule max(ut(_, unsigned-long-long-int))
           => (1 <<Int absInt(numBits(unsigned-long-long-int))) -Int 1
+     rule max(ut(_, unsigned-oversized-int))
+          => (1 <<Int absInt(numBits(unsigned-oversized-int))) -Int 1
 
      rule min(ut(_, enumType(S::TagId))) => min(utype(getEnumAlias(S)))
      rule max(ut(_, enumType(S::TagId))) => max(utype(getEnumAlias(S)))
 
      rule innerType(T:UType) => innerType(type(T))
 
-     rule innerType(t(Qs::Quals, _, arrayType(T::Type, _))) => addQualifiers(Qs, T)
-     rule innerType(t(Qs::Quals, _, flexibleArrayType(T::Type))) => addQualifiers(Qs, T)
-     rule innerType(t(Qs::Quals, _, incompleteArrayType(T::Type))) => addQualifiers(Qs, T)
-     rule innerType(t(Qs::Quals, _, unspecifiedArrayType(T::Type))) => addQualifiers(Qs, T)
-     rule innerType(t(Qs::Quals, _, variableLengthArrayType(T::Type, _))) => addQualifiers(Qs, T)
+     rule innerType(t(_, _, arrayType(T::Type, _))) => T
+     rule innerType(t(_, _, flexibleArrayType(T::Type))) => T
+     rule innerType(t(_, _, incompleteArrayType(T::Type))) => T
+     rule innerType(t(_, _, unspecifiedArrayType(T::Type))) => T
+     rule innerType(t(_, _, variableLengthArrayType(T::Type, _))) => T
      rule innerType(t(_, _, bitfieldType(T::SimpleType, _))) => type(T)
      rule innerType(t(_, _, functionType(T::UType, _))) => type(T)
      rule innerType(t(_, _, pointerType(T::Type))) => T
 
+     // The qualifier slot on arrays has a special purpose: it is for
+     // qualifiers set in function parameters meant to qualify the pointer type
+     // after array-to-pointer conversion.
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)))
+          => t(Qs, Mods, arrayType(addQualifiers(Qs', T), N))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, flexibleArrayType(T::Type)))
+          => t(Qs, Mods, flexibleArrayType(addQualifiers(Qs', T)))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, incompleteArrayType(T::Type)))
+          => t(Qs, Mods, incompleteArrayType(addQualifiers(Qs', T)))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, unspecifiedArrayType(T::Type)))
+          => t(Qs, Mods, unspecifiedArrayType(addQualifiers(Qs', T)))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, variableLengthArrayType(T::Type, K:K)))
+          => t(Qs, Mods, variableLengthArrayType(addQualifiers(Qs', T), K))
      rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, T::SimpleType))
-          => t(Qs +Quals Qs', Mods, T)
+          => t(Qs +Quals Qs', Mods, T) [owise]
 
-     rule getQualifiers(t(Qs::Quals, _, T:SimpleArrayType))
-          => Qs +Quals getQualifiers(innerType(type(T)))
+     rule getQualifiers(t(_, _, _:SimpleArrayType) #as T::Type) => getQualifiers(innerType(T))
      rule getQualifiers(t(Qs::Quals, _, _)) => Qs [owise]
 
      syntax String ::= showTypeSpecifier(SimpleType) [function]
@@ -231,11 +254,13 @@ module C-TYPING-COMMON
      rule showTypeSpecifier(int) => "int"
      rule showTypeSpecifier(long-int) => "long"
      rule showTypeSpecifier(long-long-int) => "long long"
+     rule showTypeSpecifier(oversized-int) => "__kcc_oversized_int"
      rule showTypeSpecifier(unsigned-char) => "unsigned char"
      rule showTypeSpecifier(unsigned-short-int) => "unsigned short"
      rule showTypeSpecifier(unsigned-int) => "unsigned int"
      rule showTypeSpecifier(unsigned-long-int) => "unsigned long"
      rule showTypeSpecifier(unsigned-long-long-int) => "unsigned long long"
+     rule showTypeSpecifier(unsigned-oversized-int) => "__kcc_oversized_uint"
      rule showTypeSpecifier(float) => "float"
      rule showTypeSpecifier(double) => "double"
      rule showTypeSpecifier(long-double) => "long double"
@@ -300,5 +325,27 @@ module C-TYPING-COMMON
      rule showDType(typedDeclaration(T::Type, #NoName)) => showDeclarator("", T)
      rule showDType(typedDeclaration(T::Type, #NoName(_))) => showDeclarator("", T)
      rule showDType(typedDeclaration(T::Type, X::CId)) => showDeclarator(" " +String idToString(X), T) [owise]
+
+     rule adjustParams(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
+          => t(Qs, Mods, functionType(R, adjustParams'(Params)))
+     rule adjustParams(T::Type) => T [owise]
+
+     syntax List ::= "adjustParams'" "(" List ")" [function]
+     rule adjustParams'(ListItem(typedDeclaration(T::Type, X::CId)) Ds::List)
+          => ListItem(typedDeclaration(adjustParam(T), X)) adjustParams'(Ds)
+     rule adjustParams'(ListItem(t(...) #as T::Type) Ds::List)
+          => ListItem(adjustParam(T)) adjustParams'(Ds)
+     rule adjustParams'(ListItem(variadic) Ds::List)
+          => ListItem(variadic) adjustParams'(Ds)
+     rule adjustParams'(.List) => .List
+
+     rule adjustParam(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
+          => type(pointerType(t(Qs, Mods, functionType(R, Params))))
+     rule adjustParam(T:ArrayType) => arrayToPtrType(T)
+     rule adjustParam(T::Type) => T [owise]
+
+     rule arrayToPtrType(t(Qs::Quals, Mods::Set, _:SimpleArrayType) #as T::Type)
+          => t(Qs, Mods, pointerType(innerType(T)))
+     rule arrayToPtrType(T::Type) => T [owise]
 
 endmodule

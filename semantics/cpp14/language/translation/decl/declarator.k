@@ -298,12 +298,13 @@ module CPP-DECL-DECLARATOR
            requires notBool isVarDeclarationType(Type)
 
      // Static member declaration/definition, in the enclosing namespace.
-     rule <k> declareObject((N::Namespace :: _::ClassSpecifier) #as C:Class, C, X::CId, T:CPPType, Init::Expr, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
+     // Note that static member are not allowed in local classes
+     rule <k> declareObject((CQ::ClassQualifier :: _::ClassSpecifier) #as C:Class, C, X::CId, T:CPPType, Init::Expr, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
            => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type))
            ~> defineObject(C, X, T, Init, Type, StaticStorage, S)
           ...</k>
-          <curr-scope> namespaceScope(N) </curr-scope>
-          requires completeDeclaration(T, Init) ==K T
+          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
+          requires completeDeclaration(T, Init) ==K T andBool getClassNamespace(C) ==K N andBool notBool isLocalQualifier(CQ)
 
      rule <k> (.K => deduceAuto(T, Init)) 
               ~> declareObject(_, _, _, T::CPPTypeExpr, Init::Init, _, _, _, _) ...</k>
@@ -480,7 +481,7 @@ module CPP-DECL-DECLARATOR
 
      syntax Expr ::= getDefaultReturnOp(QualId, CPPTypeExpr) [function]
      rule getDefaultReturnOp(GlobalNamespace() :: Identifier("main"), T::CPPTypeExpr)
-          => le(temp(!I:Int, type(int)), noTrace, T) := prv(0, noTrace, type(int))
+          => le(temp(!I:Int, type(int)), noTrace, T) :=init prv(0, noTrace, type(int))
      rule getDefaultReturnOp(_, _) => prv(voidVal, noTrace, type(void)) [owise]
 
      syntax KItem ::= dummyBind(List)
@@ -512,18 +513,14 @@ module CPP-DECL-DECLARATOR
      rule isStaticInitialization(pre(BuiltinCallOp(...), _, _)) => false
      rule isStaticInitialization(le(beginConstruction(...), _, _)) => true
      rule isStaticInitialization(le(endConstruction(...), _, _)) => true
-     rule isStaticInitialization(le(_ := V::Expr, _, _)) => false
-          requires notBool isEvalVal(V)
-     rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => false
-          requires notBool isEvalVal(V)
+     rule isStaticInitialization(le(_ :=init V::Expr, _, _)) => isEvalVal(V)
+     rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => isEvalVal(V)
      rule isStaticInitialization(compoundInit(E1::Expr, E2::Expr)) => isStaticInitialization(E1) andBool isStaticInitialization(E2)
      rule isStaticInitialization(le(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(pre(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(xe(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
-     rule isStaticInitialization(le(_ := V::Expr, _, _)) => true
-          requires isEvalVal(V)
-     rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => true
-          requires isEvalVal(V)
+
+
      rule isStaticInitialization(lv(_, _, _)) => true
 
      syntax Expr ::= stripInitHolds(K) [function]

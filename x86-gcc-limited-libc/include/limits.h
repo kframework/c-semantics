@@ -1,9 +1,7 @@
 #ifndef _KCC_LIMITS_H
 #define _KCC_LIMITS_H
-#include <kcc_settings.h>
 
-// #define CHAR_BIT 8
-#define CHAR_BIT _KCC_BITS_PER_BYTE
+#define CHAR_BIT 8
 
 #define SCHAR_MIN (-128)
 #define SCHAR_MAX 127

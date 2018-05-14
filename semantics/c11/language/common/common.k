@@ -2,6 +2,7 @@ require "alignment.k"
 require "binding.k"
 require "bitsize.k"
 require "bits.k"
+require "check-use.k"
 require "conversion.k"
 require "dynamic.k"
 require "error.k"
@@ -42,6 +43,7 @@ module C-COMMON
      imports C-BINDING
      imports C-BITS
      imports C-BITSIZE
+     imports C-CHECK-USE
      imports C-COMMON-PROMOTION
      imports C-COMMON-PROMOTION-CONTEXT
      imports C-CONVERSION
