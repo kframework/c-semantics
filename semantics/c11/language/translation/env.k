@@ -14,7 +14,8 @@ module C-ENV-SYNTAX
      syntax KItem ::= "populateFromGlobal"
      syntax KItem ::= scope(Scope, K)
      syntax KItem ::= noEval(K)
-     syntax KItem ::= "recover"
+     syntax KItem ::= "skipToScopeExit"
+     syntax KItem ::= "popLocals"
 endmodule
 
 module C-ENV
@@ -129,7 +130,7 @@ module C-ENV
      rule <k> setEval(Eval:EvalContext) => .K ...</k>
           <curr-eval-context> _ => Eval </curr-eval-context>
 
-     syntax KItem ::= "pushLocals" | "popLocals"
+     syntax KItem ::= "pushLocals"
      rule <k> pushLocals => .K ...</k>
           <block-control> C::Bag <local-types> LocalTypes:Map => .Map </local-types> </block-control>
           <block-stack>
@@ -142,9 +143,9 @@ module C-ENV
                ListItem(L:BlockControlCell) => .List
           ...</block-stack>
 
-     rule recover ~> (K:KItem => .K)
+     rule skipToScopeExit ~> (K:KItem => .K)
           requires K =/=K popLocals
-     rule (recover => .K) ~> popLocals
+     rule (skipToScopeExit => .K) ~> popLocals
 
      rule <k> (.K => SE("CID1",
                "Trying to look up identifier " +String S +String

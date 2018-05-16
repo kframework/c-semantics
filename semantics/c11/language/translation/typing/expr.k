@@ -212,7 +212,7 @@ module C-TYPING-EXPR
      rule <k> elabResult(V:RValue) => .K ...</k>
           <elab> .K => V ...</elab>
 
-     rule <k> EXIT(_) => recover ...</k>
+     rule <k> EXIT(_) => skipToScopeExit ...</k>
           <curr-eval-context> noEval </curr-eval-context>
 
      context elaborateDone(_, _) ~> typeof(_ ? (HOLE:KItem => typeof(HOLE)) : _) [result(Type)]

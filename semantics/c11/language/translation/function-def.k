@@ -216,6 +216,8 @@ module C-FUNCTION-DEF
           requires notBool isVoidType(T)
           [structural]
 
+     // Falling back on native implementation of functions:
+
      // Function with external linkage.
      rule <k> OtherStatement() => lintFunElide(X) ...</k>
           <external-defs>... X |-> Def::SymBase => .Map ...</external-defs>
@@ -227,6 +229,7 @@ module C-FUNCTION-DEF
           <function-tus>... .Map => X |-> Tu </function-tus>
           <options> Opts::Set </options>
           requires notBool (NoNativeFallback() in Opts)
+               andBool S =/=String "main"
      // Function with internal linkage.
      rule <k> OtherStatement() => lintFunElide(X) ...</k>
           <external-defs> Exts::Map </external-defs>
@@ -242,10 +245,17 @@ module C-FUNCTION-DEF
           <options> Opts::Set </options>
           requires notBool (X in_keys(Exts))
                andBool notBool (NoNativeFallback() in Opts)
-     rule <k> OtherStatement() => lintFunElide(X) ...</k>
+               andBool S =/=String "main"
+     rule <k> OtherStatement() => .K ...</k>
           <options> Opts::Set </options>
-          <curr-scope> blockScope(X::CId, _) </curr-scope>
-          requires NoNativeFallback() in Opts
+          <curr-scope> S::Scope </curr-scope>
+          requires notBool isBlockScope(S)
+               orBool NoNativeFallback() in Opts
+               orBool isMainScope(S)
+
+     syntax Bool ::= isMainScope(Scope) [function]
+     rule isMainScope(blockScope(Identifier("main"), _)) => true
+     rule isMainScope(_) => false [owise]
 
      syntax KItem ::= lintFunElide(CId)
      rule lintFunElide(_) => .K
