@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 
+use v5.10;
 use File::Basename;
 use File::Temp qw(SEEK_END tempfile tempdir);
 use File::Spec::Functions qw(rel2abs catfile);
@@ -35,80 +36,117 @@ my @srcFiles = ();
 
 my $symbols;
 our @cppArgs = ();
-our @ld_lib = ();
-our @ldArgs = ('-lmpfr', '-lgmp', '-lffi', '-lm', '-ldl', '-Wl,--no-as-needed', '-u', $RVMAIN);
+our @ldLib = ();
+our @baseLibs = ('-lmpfr', '-lgmp', '-lffi', '-lm', '-ldl');
+our @ldArgs = (@baseLibs, '-Wl,--no-as-needed', '-u', $RVMAIN);
 
 if ((split /\./, `gcc -dumpversion`)[0] + 0 >= 5) { # gcc version >= 5
   push @ldArgs, '-no-pie';
 }
 
-my $distDirectory = dirname(rel2abs($0));
-if (defined $ENV{KCC_COMMAND_NAME}) {
-  $0 = $ENV{KCC_COMMAND_NAME};
-} else {
-  $0 = basename($0);
+my $cygwin = $^O eq "cygwin" || $^O eq "msys";
+
+sub distDir {
+  state $distDirectory = do {
+    my $d = dirname(rel2abs($0));
+    if ($cygwin) {
+      $d = `cygpath -w $d`;
+      chop($d);
+    }
+    $d;
+  };
+
+  return catfile($distDirectory, @_);
 }
 
-our $profile = do {
-  local $/ = undef;
-  open my $fh, '<', catfile($distDirectory, 'current-profile')
-    or error("Couldn't find current profile: please fix " . catfile($distDirectory, 'current-profile') . ".\n");
-  <$fh>;
-};
+sub commandName {
+  if (defined $ENV{KCC_COMMAND_NAME}) {
+    return $ENV{KCC_COMMAND_NAME};
+  } else {
+    return basename($0);
+  }
+}
 
-my $profileDirectory = catfile($distDirectory, $profile);
-my $use_interpreter = -e catfile($profileDirectory, 'cpp14-translation-kompiled', 'cpp14-translation-kompiled', 'interpreter');
-my $use_compile = -e catfile($profileDirectory, 'c11-cpp14-kompiled', 'c11-cpp14-kompiled', 'execution_partial.o');
+sub getProfiles {
+  state @profiles;
+  state $profilesInitialized;
+  if (!$profilesInitialized) {
+    @profiles = do {
+      opendir (my $DIR, distDir());
+      my @p = ();
+      while ( my $entry = readdir $DIR) {
+        next unless -d distDir($entry);
+        next if $entry eq '.' or $entry eq '..' or $entry eq 'licenses';
+        push(@p, $entry);
+      }
+      @p;
+    };
+    $profilesInitialized = 1;
+  }
+
+  return @profiles;
+}
+
+my $quoteString = "\"String\"";
+my $quoteInt = "\"Int\"";
+if ($cygwin) {
+  $quoteString = backslash($quoteString);
+  $quoteInt = backslash($quoteInt);
+}
+
+sub setProfile {
+  state $profile;
+  if (@_) {
+    $profile = shift;
+  }
+  $profile ||= do {
+    local $/ = undef;
+    open my $fh, '<', distDir('current-profile')
+      or error("Couldn't find current profile: please fix " . distDir('current-profile') . ".\n");
+    <$fh>;
+  };
+  return $profile;
+}
+
+sub profileDir {
+  state $profileDirectory = do {
+    my $d = distDir(setProfile());
+    if ($cygwin) {
+      $d = `cygpath -w $d`;
+      chop($d);
+    }
+    $d;
+  };
+
+  return catfile($profileDirectory, @_);
+}
+
+sub useInterpreter {
+  -e profileDir('cpp14-translation-kompiled', 'cpp14-translation-kompiled', 'interpreter');
+}
 
 our $buildNumber = do {
   local $/ = undef;
-  if (open my $fh, '<', catfile($distDirectory, 'build-number')) {
+  if (open my $fh, '<', distDir('build-number')) {
     <$fh>;
   } else { ''; }
 };
 
 our $isRelease = $buildNumber ne '';
 
-our $defaultProfile = do {
-  local $/ = undef;
-  open my $fh, '<', catfile($distDirectory, 'default-profile')
-    or error("Couldn't find default profile: please fix " . catfile($distDirectory, 'default-profile') . ".\n");
-  <$fh>;
-};
-
-opendir (my $DIR, $distDirectory);
-our @profiles = ();
-while ( my $entry = readdir $DIR) {
-  next unless -d $distDirectory . '/' . $entry;
-  next if $entry eq '.' or $entry eq '..' or $entry eq 'licenses';
-  push(@profiles, $entry);
-}
-
-my $ignoredFlagsRegex = "^(";
-{
+my $ignoredFlags = do {
+  my $ignoredFlagsRegex = "^(";
   my $sep = "";
-  open my $fh, '<', catfile($distDirectory, 'ignored-flags')
-    or error("Couldn't load ignored flag list. Please touch " . catfile($distDirectory, 'ignored-flags') . ".\n");
+  open my $fh, '<', distDir('ignored-flags')
+    or error("Couldn't load ignored flag list. Please touch " . distDir('ignored-flags') . ".\n");
   while (<$fh>) {
     chop($_);
     $ignoredFlagsRegex = "$ignoredFlagsRegex$sep(?:$_)";
     $sep = "|";
   }
   $ignoredFlagsRegex = "$ignoredFlagsRegex)\$";
-}
-my $ignoredFlags = qr/$ignoredFlagsRegex/;
-
-my $cygwin = $^O eq "cygwin" || $^O eq "msys";
-my $quoteString = "\"String\"";
-my $quoteInt = "\"Int\"";
-if ($cygwin) {
-  $distDirectory = `cygpath -w $distDirectory`;
-  $profileDirectory = `cygpath -w $profileDirectory`;
-  chop($distDirectory);
-  chop($profileDirectory);
-  $quoteString = backslash($quoteString);
-  $quoteInt = backslash($quoteInt);
-}
+  qr/$ignoredFlagsRegex/;
+};
 
 my $krun;
 my $printf;
@@ -119,14 +157,6 @@ if ($cygwin) {
   $krun = 'krun';
   $printf = 'printf %s';
 }
-
-our $ourDist = $distDirectory;
-
-my $cparser = catfile($distDirectory, 'cparser');
-my $cppparser = catfile($distDirectory, 'clang-kast');
-
-my $C_TRANS_DEF = catfile($profileDirectory, "c11-translation-kompiled");
-my $CPP_TRANS_DEF = catfile($profileDirectory, "cpp14-translation-kompiled");
 
 my @originalArgv;
 
@@ -210,7 +240,6 @@ our @ifdef = ();
 our $fatalErrors = "false";
 our $xLang = "none";
 my $hasStdin;
-my $hasBuiltins;
 
 our $oflag;
 
@@ -244,12 +273,22 @@ sub main {
   [strict]
   -version		Show version information. [undocumented]
     {
-      print("\n	" . $0 . ": version 1.0 GNU-compatible\n\n");
+      print("\n	" . main::commandName() . ": version 1.0 GNU-compatible\n\n");
       if ($main::isRelease) {
-            print("	Build number: $main::buildNumber\n");
+        print("	Build number: $main::buildNumber\n");
       }
-      my $profiles = join("\n	                    ", @main::profiles);
-      print("	Current profile: $main::profile\n	Installed profiles: $profiles\n	Default profile: $main::defaultProfile\n\n	To request additional profiles, contact runtimeverification.com/support.\n\n");
+      my $profile = main::setProfile();
+      my $defaultProfile = do {
+        local $/ = undef;
+        if (open my $fh, '<', main::distDir('default-profile')) {
+          <$fh>;
+        } else {
+          "<unknown>";
+        }
+      };
+
+      my $profiles = join("\n	                    ", main::getProfiles());
+      print("	Current profile: $profile\n	Installed profiles: $profiles\n	Default profile: $defaultProfile\n\n	To request additional profiles, contact runtimeverification.com/support.\n\n");
       exit 0;
     }
   -Version		[ditto] [undocumented]
@@ -303,7 +342,7 @@ sub main {
     { push(@main::cppArgs, '-include', $file); }
   -L <dir>		Look for shared libraries in <dir>.
     {
-      push(@main::ld_lib, $dir);
+      push(@main::ldLib, $dir);
       push(@main::ldArgs, "-L$dir");
     }
   -nodefaultlibs	Do not link against the standard library.
@@ -450,14 +489,23 @@ sub main {
   -Xmx<size>		Passed to underlying JVM. [undocumented]
   -profile <name>	Set KCC profile.
     {
-      if ( grep( /^$name$/, @main::profiles ) ) {
-         open(my $file, '>', "$main::ourDist/current-profile")
+      if ( grep( /^$name$/, main::getProfiles() ) ) {
+         open(my $file, '>', main::distDir("current-profile"))
            or error("Could not open profile file. Check OS permissions.\n");
          print $file $name;
          close $file;
          exit 0;
       } else {
-         print "Profile '$name' is not installed. See $0 -v for list of installed profiles.\n";
+         print "Profile '$name' is not installed. See ", main::commandName(), " -v for list of installed profiles.\n";
+         exit 1;
+      }
+    }
+  --use-profile <name>	Use a KCC profile for this run, but do not make it the current profile. [undocumented]
+    {
+      if ( grep( /^$name$/, main::getProfiles() ) ) {
+         main::setProfile($name);
+      } else {
+         print "Profile '$name' is not installed. See ", main::commandName(), " -v for list of installed profiles.\n";
          exit 1;
       }
     }
@@ -472,7 +520,7 @@ sub main {
   * Indicates flags that require RV-Match from
     http://www.runtimeverification.com/match to run.
 
-  For a complete list of other flags ignored by ) . "$0, refer to\n  $distDirectory" . q(/ignored-flags,
+  For a complete list of other flags ignored by ) . commandName() . ", refer to\n  " . distDir('ignored-flags') . q(/,
   which contains one regular expression per line.
 
   The following lines of output are added to this message for compatibility
@@ -480,9 +528,8 @@ sub main {
 
   : supported targets: elf
 =cut
-
- or error("Failed to parse the command line.\n");
-$args = $self;
+    or error("Failed to parse the command line.\n");
+  $args = $self;
 
   my $noLicense = exists($args->{'--no-license-message'})
     || defined($ENV{'KCC_NO_LICENSE_MESSAGE'});
@@ -586,15 +633,15 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     mergeObjs(1, 0);
     my $obj = tempFile('merge');
     execute('ld', '-r', '-o', $obj, @nativeObjFiles);
-    execute(catfile($distDirectory, 'merge-kcc-obj'), $obj, $objFiles[0], $trampolineFiles[0], $main::oflag || 'a.out');
+    execute(distDir('merge-kcc-obj'), $obj, $objFiles[0], $trampolineFiles[0], $main::oflag || 'a.out');
     return 0;
   }
 
   if (!$args->{'-nodefaultlibs'}) {
     $xLang = "none";
-    classify(catfile($profileDirectory, 'lib', 'libc.so'));
+    classify(profileDir('lib', 'libc.so'));
     if ($args->{'-Xk++'}) {
-      classify(catfile($profileDirectory, 'lib', 'libstdc++.so'));
+      classify(profileDir('lib', 'libstdc++.so'));
     }
   }
 
@@ -649,25 +696,28 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     push(@options, "`Heap`(#token($heapSize, $quoteInt))");
     push(@options, "`Stack`(#token($stackSize, $quoteInt))");
   }
-  my $opts = makeSet(@options);
 
-  if ($args->{'-frunner-script'} || !$use_compile) {
+  my $opts = makeSet(@options);
+  my $useCompile = -e profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled', 'execution_partial.o');
+
+  if ($args->{'-frunner-script'} || !$useCompile) {
     open(FILE, $programConfFile) or error("Couldn't open file: $!\n");
     my $programConf = join("", <FILE>);
     close(FILE);
     $programConf = encode_base64($programConf);
-    open(FILE, catfile($distDirectory, 'program-runner')) or error("Couldn't open file: $!\n");
+    open(FILE, distDir('program-runner')) or error("Couldn't open file: $!\n");
     my $template = join("", <FILE>);
     close(FILE);
 
-    $template =~ s?EXTERN_SCRIPTS_DIR?$profileDirectory?g;
+    my $profDir = profileDir();
+    $template =~ s?EXTERN_SCRIPTS_DIR?$profDir?g;
     $template =~ s?EXTERN_HEAP_SIZE?$heapSize?g;
 
     open(my $programRunner, '>', $oval) or error("Couldn't open file: $!\n");
     print $programRunner "$template\n";
     print $programRunner "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
-    if (@ldArgs) {
-      print $programRunner "sub nativeLibraries {\n return '@ldArgs';\n}\n";
+    if (@baseLibs) {
+      print $programRunner "sub nativeLibraries {\n return '@baseLibs';\n}\n";
     } else {
       print $programRunner "sub nativeLibraries {\n return '';\n}\n";
     }
@@ -696,7 +746,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     ($numFilesChanged == 1)
     or error("Call to chmod $oval failed.\n");
   } else {
-    my $dir = catfile($profileDirectory, 'c11-cpp14-kompiled', 'c11-cpp14-kompiled');
+    my $dir = profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled');
     my $tempDir = tempDir('res');
     $retval = execute(catfile($dir, 'marshalvalue'),
       catfile($dir, 'realdef.cma'),
@@ -724,12 +774,11 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
       $compiler = 'gcc';
     }
 
-
     if ($args->{'-fnative-binary'}) {
-      my $dir = catfile($profileDirectory, 'native-server');
-      execute("cat '$trampolineFiles[0]' | awk -F '\t' '{if (\$1!=\"\") print \$1; }' | " . catfile($distDirectory, "make-trampolines") . " > '$tempDir/trampolines.h'");
+      my $dir = profileDir('native-server');
+      execute("cat '$trampolineFiles[0]' | awk -F '\t' '{if (\$1!=\"\") print \$1; }' | " . distDir("make-trampolines") . " > '$tempDir/trampolines.h'");
       execute("cat '$trampolineFiles[0]' | awk -F '\t' '{if (\$2!=\"\") print \$2; }' > '$tempDir/used_symbols'");
-      execute("(cat '$trampolineFiles[0]' | awk -F '\t' '{if (\$1!=\"\") print \"__\" \$1; }'; comm -12 '$tempDir/used_symbols' '$symbols') | sort | uniq | " . catfile($distDirectory, "make-symbols") . " > '$tempDir/symbols.c'");
+      execute("(cat '$trampolineFiles[0]' | awk -F '\t' '{if (\$1!=\"\") print \"__\" \$1; }'; comm -12 '$tempDir/used_symbols' '$symbols') | sort | uniq | " . distDir("make-symbols") . " > '$tempDir/symbols.c'");
       my @cmd = ($compiler, '-fsanitize=undefined', '-o', "$tempDir/native_binary",
                          catfile($dir, 'main.o'),
                          catfile($dir, 'platform.o'),
@@ -753,7 +802,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     $retval = execute('ld', '-r', '-b', 'binary', '-o', 'native_binary.o', 'native_binary');
     checkError($retval, $programConfFile, 1);
     chdir($old_cwd);
-    
+
     my @cmd = ($compiler, catfile($dir, 'execution_partial.o'), '-o', $oval, '-Wl,-E',
                catfile($tempDir, 'kore_term.o'),
                catfile($tempDir, 'marshal_term.o'),
@@ -814,7 +863,7 @@ sub classifyLib {
   my $lib = shift;
   my @files = ();
   my $isK = 0;
-  for (@ld_lib) {
+  for (@ldLib) {
     my $candidate = catfile($_, "lib$lib.so");
     if (-e $candidate) {
       push(@files, $candidate);
@@ -876,7 +925,7 @@ sub classify {
       my $kast = tempFile('kast');
       my $obj = tempFile('obj');
       my $trampolines = tempFile('trampolines');
-      execute(catfile($distDirectory, 'split-kcc-obj'), $_, $obj, $kast, $trampolines);
+      execute(distDir('split-kcc-obj'), $_, $obj, $kast, $trampolines);
       push(@objFiles, $kast);
       push(@nativeObjFiles, $obj);
       push(@trampolineFiles, $trampolines);
@@ -915,7 +964,7 @@ sub extractStatic {
         my $kast = tempFile("ar-kast-$_");
         my $obj = tempFile("ar-obj-$_");
         my $trampolines = tempFile("ar-trampolines-$_");
-        execute(catfile($distDirectory, 'split-kcc-obj'), catfile($tempDir, $_), $obj, $kast, $trampolines);
+        execute(distDir('split-kcc-obj'), catfile($tempDir, $_), $obj, $kast, $trampolines);
         push(@objFiles, $kast);
         push(@trampolineFiles, $trampolines);
         push(@repackageObjs, $obj);
@@ -951,10 +1000,10 @@ sub compile {
     } else {
       $retval = execute($compiler, '-c', getStd($lang), '-x', $lang, $inputFile, '-o', $obj, @cppArgs);
       checkError($retval, $obj, 0);
-      execute(catfile($distDirectory, 'globalize-syms'), $uuid, $obj);
+      execute(distDir('globalize-syms'), $uuid, $obj);
     }
     execute('objcopy', '--redefine-sym', "main=$RVMAIN", $obj);
-    execute(catfile($distDirectory, 'merge-kcc-obj'), $obj, $kast, $trampolines, $oval);
+    execute(distDir('merge-kcc-obj'), $obj, $kast, $trampolines, $oval);
   } else {
     my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval, @cppArgs);
     checkError($retval, $oval, 0);
@@ -991,10 +1040,10 @@ sub initOptions {
   @options
 }
 
-sub add_arg {
+sub addArg {
   my ($name, $value, $category, @krun_args) = (@_);
 
-  if ($use_interpreter) {
+  if (useInterpreter()) {
     push(@krun_args, '-c', $name, $value, $category);
   } else {
     push(@krun_args, "-c$name=$value");
@@ -1011,10 +1060,13 @@ sub getKRunCommand {
   my ($output, $objsRef, $src, $link, $lang, $uuid, $trampolines) = (@_);
   my @objs = @$objsRef;
 
+  my $c_trans_def = profileDir("c11-translation-kompiled");
+  my $cpp_trans_def = profileDir("cpp14-translation-kompiled");
+
   my @krun_args;
   $symbols = $link ? dumpSymbols() : 'dummy';
-  if ($use_interpreter) {
-    my $dir = $lang eq 'c++' ? catfile($CPP_TRANS_DEF, 'cpp14-translation-kompiled') : catfile($C_TRANS_DEF, 'c11-translation-kompiled');
+  if (useInterpreter()) {
+    my $dir = $lang eq 'c++' ? catfile($cpp_trans_def, 'cpp14-translation-kompiled') : catfile($c_trans_def, 'c11-translation-kompiled');
     @krun_args = (
       catfile($dir, 'interpreter'),
       catfile($dir, 'realdef.cma'),
@@ -1026,7 +1078,7 @@ sub getKRunCommand {
       $krun,
       '--output', 'binary',
       '--output-file', $output,
-      '-d', $lang eq 'c++' ? $CPP_TRANS_DEF : $C_TRANS_DEF,
+      '-d', $lang eq 'c++' ? $cpp_trans_def : $c_trans_def,
       '-w', 'none',
       '--smt', 'none',
       '--argv', $symbols
@@ -1039,9 +1091,11 @@ sub getKRunCommand {
 
   if ($args->{'-ftranslation-depth='}) {
     push(@krun_args, '--depth');
-	push(@krun_args, $args->{'-ftranslation-depth='});
+    push(@krun_args, $args->{'-ftranslation-depth='});
   }
+
   my @options = initOptions();
+  state $hasBuiltins = 0;
   if (!$hasBuiltins && $args->{'-Xbuiltins'}) {
     push(@options, "`XBuiltins`(.KList)");
     $hasBuiltins = 1;
@@ -1053,15 +1107,15 @@ sub getKRunCommand {
   my $opts = makeSet(@options);
   my $json = "#token($encodedJson, $quoteString)";
 
-  @krun_args = add_arg("OPTIONS", $opts, 'text', @krun_args);
-  @krun_args = add_arg("JSON", $json, 'text', @krun_args);
+  @krun_args = addArg("OPTIONS", $opts, 'text', @krun_args);
+  @krun_args = addArg("JSON", $json, 'text', @krun_args);
 
   if (!defined $uuid) {
       $uuid = create_uuid_as_string();
   }
   my $encodedUuid = quote(backslash(quote($uuid)));
   my $uuidOpt = "#token($encodedUuid, $quoteString)";
-  @krun_args = add_arg("UUID", $uuidOpt, 'text', @krun_args);
+  @krun_args = addArg("UUID", $uuidOpt, 'text', @krun_args);
 
   if (scalar @objs) {
     my $allObjsFile = tempFile('all-objs');
@@ -1090,15 +1144,15 @@ sub getKRunCommand {
     print $file $objText;
     close $file;
 
-    @krun_args = add_arg("OBJS", $allObjsFile, 'binaryfile', @krun_args);
+    @krun_args = addArg("OBJS", $allObjsFile, 'binaryfile', @krun_args);
   } else {
-    @krun_args = add_arg("OBJS", ".K", 'text', @krun_args);
+    @krun_args = addArg("OBJS", ".K", 'text', @krun_args);
   }
   if (defined $src) {
     my $kast = parse($src, $lang, $trampolines);
-    @krun_args = add_arg("PGM", $kast, 'textfile', @krun_args);
+    @krun_args = addArg("PGM", $kast, 'textfile', @krun_args);
   } else {
-    @krun_args = add_arg("PGM", ".K", 'text', @krun_args);
+    @krun_args = addArg("PGM", ".K", 'text', @krun_args);
   }
 
   return @krun_args;
@@ -1106,7 +1160,7 @@ sub getKRunCommand {
 
 sub dumpSymbols {
   my $ret = tempFile('syms');
-  execute(catfile($distDirectory, 'gccsymdump') . " @ldArgs > $ret");
+  execute(distDir('gccsymdump') . " @ldArgs > $ret");
   return rel2abs($ret);
 }
 
@@ -1122,13 +1176,13 @@ sub preprocess {
     push(@main::cppArgs, '-pedantic');
   }
   if ($lang eq 'c++') {
-    my @ppArgs = (catfile($profileDirectory, 'cpp-pp'),
+    my @ppArgs = (profileDir('cpp-pp'),
       @main::cppArgs, getStd($lang), $inputFile, '-o', $output);
 
     return execPreprocess($output, $isStdout, $lang, $trampolines, @ppArgs);
   }
 
-  my @ppArgs = (catfile($profileDirectory, 'pp'),
+  my @ppArgs = (profileDir('pp'),
     @main::cppArgs, getStd($lang), $inputFile, '-o', $output);
 
   return execPreprocess($output, $isStdout, $lang, $trampolines, @ppArgs);
@@ -1139,7 +1193,7 @@ sub execPreprocess {
   my $retval = execute(@ppArgs);
   if (!$retval) {
     if ($args->{'-fnative-binary'}) {
-      my $cmd = "set -o pipefail && " . catfile($distDirectory, "call-sites") . " '$output' --char=sc -- -x $lang | sort | uniq > '$trampolines'";
+      my $cmd = "set -o pipefail && " . distDir("call-sites") . " '$output' --char=sc -- -x $lang | sort | uniq > '$trampolines'";
       my $callSitesRetval = execute("/bin/bash", "-c", $cmd);
       checkError($callSitesRetval, $output, 0);
     } else {
@@ -1203,11 +1257,13 @@ sub parse {
 
   if ($lang eq 'c++') {
     my $std = getStd('c++');
+    my $cppparser = distDir('clang-kast');
     my $cmd = ("$cppparser $ppResult -- -x c++-cpp-output $std > $kast");
     checkError(execute($cmd), $kast, 0);
 
     return $kast;
   }
+  my $cparser = distDir('cparser');
   my $cmd = ("$cparser $ppResult --trueName '$inputFile' > $kast");
   checkError(execute($cmd), $kast, 0);
 
@@ -1249,7 +1305,7 @@ sub checkError {
       exit $retval;
     } else {
       my $dir = basename(getcwd());
-      print STDERR "To repeat, run this command in directory $dir:\n$0 -d @originalArgv\n";
+      print STDERR "To repeat, run this command in directory $dir:\n", commandName(), " -d @originalArgv\n";
       exit $retval;
     }
   }

@@ -15,7 +15,7 @@ C11_FILES = $(wildcard *.k) \
 	$(wildcard language/common/*.k) $(wildcard language/common/*/*.k) \
 	$(wildcard library/*.k)
 
-.PHONY: default all fast nd thread clean .depend-translation .depend-execution .depend-nd .depend-nd-thread .depend-cpp
+.PHONY: default all fast nd thread clean .depend-$(PROFILE)-translation .depend-$(PROFILE)-execution .depend-$(PROFILE)-nd .depend-$(PROFILE)-nd-thread .depend-$(PROFILE)-cpp
 
 define timestamp_of
     $(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
@@ -60,26 +60,31 @@ nd: $(call timestamp_of,c11-nd)
 thread: $(call timestamp_of,c11-nd-thread)
 
 clean:
-	@-rm -rf */c11-translation-kompiled */cpp14-translation-kompiled */c11-cpp14-kompiled */c11-nd-kompiled */c11-nd-thread-kompiled
+	@-rm -rf */c11-translation-kompiled */cpp14-translation-kompiled */c11-cpp14-kompiled */c11-nd-kompiled */c11-nd-thread-kompiled .kompile-* .depend-*
 
-.depend-translation:
-	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/c11-translation-kompiled" -I $(PROFILE_DIR)/semantics -- c11/c11-translation.k > $@-tmp
-	mv $@-tmp $@
-.depend-cpp:
-	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/cpp14-translation-kompiled" -I $(PROFILE_DIR)/cpp-semantics -I $(PROFILE_DIR)/semantics -- cpp14/cpp14-translation.k > $@-tmp
-	mv $@-tmp $@
-.depend-execution:
-	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/c11-cpp14-kompiled" -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics -- c11-cpp14.k > $@-tmp
-	mv $@-tmp $@
-.depend-nd:
-	$(KDEP) -d "$(PROFILE)/c11-nd-kompiled" -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics -- c11-cpp14.k > $@-tmp
-	mv $@-tmp $@
-.depend-nd-thread:
-	$(KDEP) -d "$(PROFILE)/c11-nd-thread-kompiled" -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics -- c11-cpp14.k > $@-tmp
-	mv $@-tmp $@
+.depend-$(PROFILE)-translation:
+	$(eval TMP := $(shell mktemp))
+	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/c11-translation-kompiled" -I $(PROFILE_DIR)/semantics -- c11/c11-translation.k > $(TMP)
+	mv $(TMP) $@
+.depend-$(PROFILE)-cpp:
+	$(eval TMP := $(shell mktemp))
+	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/cpp14-translation-kompiled" -I $(PROFILE_DIR)/cpp-semantics -I $(PROFILE_DIR)/semantics -- cpp14/cpp14-translation.k > $(TMP)
+	mv $(TMP) $@
+.depend-$(PROFILE)-execution:
+	$(eval TMP := $(shell mktemp))
+	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/c11-cpp14-kompiled" -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics -- c11-cpp14.k > $(TMP)
+	mv $(TMP) $@
+.depend-$(PROFILE)-nd:
+	$(eval TMP := $(shell mktemp))
+	$(KDEP) -d "$(PROFILE)/c11-nd-kompiled" -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics -- c11-cpp14.k > $(TMP)
+	mv $(TMP) $@
+.depend-$(PROFILE)-nd-thread:
+	$(eval TMP := $(shell mktemp))
+	$(KDEP) -d "$(PROFILE)/c11-nd-thread-kompiled" -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics -- c11-cpp14.k > $(TMP)
+	mv $(TMP) $@
 
--include .depend-translation
--include .depend-cpp
--include .depend-execution
--include .depend-nd
--include .depend-nd-thread
+-include .depend-$(PROFILE)-translation
+-include .depend-$(PROFILE)-cpp
+-include .depend-$(PROFILE)-execution
+-include .depend-$(PROFILE)-nd
+-include .depend-$(PROFILE)-nd-thread

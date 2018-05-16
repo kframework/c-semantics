@@ -16,12 +16,6 @@ char* strncpy(char* restrict dest, const char* restrict src, size_t n) {
       return ret;
 }
 
-size_t strlen(const char * str) {
-      const char *s;
-      for (s = str; *s; ++s);
-      return(s - str);
-}
-
 // public domain implementation from http://en.wikibooks.org/wiki/C_Programming/Strings
 void *memchr(const void *s, int c, size_t n) {
       const unsigned char *src = s;
