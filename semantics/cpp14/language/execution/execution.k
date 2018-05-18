@@ -40,6 +40,7 @@ module CPP-EXECUTION
      imports CPP-EXECUTION-ERROR
      imports CPP-EXECUTION-INIT
      imports CPP-EXECUTION-IO
+     imports C-CPP-VAL-CONVERSION
 
      imports CPP-DECL-DECLARATOR
      imports CPP-DECL-INITIALIZER

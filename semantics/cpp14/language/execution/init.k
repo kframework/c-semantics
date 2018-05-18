@@ -3,6 +3,7 @@ module CPP-EXECUTION-INIT
      imports K-EQUAL
      imports K-IO
      imports C-CHECK-RESTRICT-SYNTAX
+     imports C-CPP-VAL-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
@@ -72,7 +73,10 @@ module CPP-EXECUTION-INIT
      rule <k> ExprLoc(L::CabsLoc, E::Expr) => #ExprLoc(L, E) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
 
+     syntax Expr ::= RValue
      syntax Expr ::= #ExprLoc(CabsLoc, Expr) [strict(2)]
+     rule <k> #ExprLoc(L::CabsLoc, V:RValue) => convertValToCPP(V) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
      rule <k> #ExprLoc(L::CabsLoc, V:Val) => V ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
 

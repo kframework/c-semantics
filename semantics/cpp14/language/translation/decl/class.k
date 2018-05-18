@@ -110,7 +110,7 @@ module CPP-DECL-CLASS
               #then FieldDecl(NoNNS(), unnamedObject(C), type(classType(C)), NoInit())
               #else 
               DeclaratorAndSpecifiers(
-                VarDecl(getNNSVal(Scope), unnamedObject(C), type(classType(C)), NoInit(), false),
+                VarDecl(getNNSVal(Scope), unnamedObject(C), #NoName, type(classType(C)), NoInit(), false),
                 #if isNamespaceScope(Scope)
                 #then SetItem(Static()) S // kast does not add Specifiers if in namespaceScope
                 #else S
@@ -205,7 +205,7 @@ module CPP-DECL-CLASS
 
      // TODO(dwightguth): implicit exception spec
      rule <k> (.K => AccessSpec(Public()) ~> Specifier(Inline(), 
-                   FunctionDefinition(NoNNS(), ConstructorId(X), 
+                   FunctionDefinition(NoNNS(), ConstructorId(X), #NoName,
                         MethodPrototype(false, true, type(pointerType(type(classType(C)))), 
                              FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false)),
                         .List, Defaulted())))
@@ -218,7 +218,7 @@ module CPP-DECL-CLASS
           requires notBool ConstructorId(X) in_keys(Env)
 
      rule <k> (.K => AccessSpec(Public()) ~> Specifier(Inline(),
-                   FunctionDefinition(NoNNS(), DestructorId(X),
+                   FunctionDefinition(NoNNS(), DestructorId(X), #NoName,
                         MethodPrototype(false, false, type(pointerType(type(classType(C)))),
                              FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false)),
                         .List, Defaulted())))
@@ -233,7 +233,7 @@ module CPP-DECL-CLASS
                andBool notBool some(Bases, #klabel(`hasVirtualDestructor`))
 
      rule <k> (.K => AccessSpec(Public()) ~> Specifier(Inline(),
-                   FunctionDefinition(NoNNS(), DestructorId(X),
+                   FunctionDefinition(NoNNS(), DestructorId(X), #NoName,
                         MethodPrototype(false, false, type(pointerType(type(classType(C)))),
                              Virtual(FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false))),
                         .List, Defaulted())))

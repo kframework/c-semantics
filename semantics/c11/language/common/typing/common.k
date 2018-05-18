@@ -85,7 +85,10 @@ module C-TYPING-COMMON
      rule stripQualifiers(T::Type) => type(utype(T))
 
      rule getModifiers(ut(S::Set, _)) => S
+     rule getModifiers(_::UType) => .Set [owise]
+
      rule getModifiers(t(_, S::Set, _)) => S
+     rule getModifiers(_::Type) => .Set [owise]
 
      rule getTag(tag(S:CId, _, _)) => S
 

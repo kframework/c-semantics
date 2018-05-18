@@ -91,10 +91,10 @@ module C-EXPR-FUNCTION-CALL
           ...</k>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
-     rule <k> Call(tv(loc(obj(0, 0, nativeSymbol(S::String)), _), ut(_, pointerType(_:FunctionType))),
+     rule <k> Call(tv(loc(obj(0, Align::Int, nativeSymbol(S::String)), _), ut(_, pointerType(_:FunctionType))),
                rvlist(L:List))
                => sequencePoint
-               ~> application(CurrLoc, obj(0, 0, nativeSymbol(S)), functionObject(Identifier(S), T, .List), T, CLinkage, krlist(L))
+               ~> application(CurrLoc, obj(0, Align, nativeSymbol(S)), functionObject(Identifier(S), T, .List), T, CLinkage, krlist(L))
           ...</k>
           <external-types>... Identifier(S) |-> T::Type ...</external-types>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
@@ -174,9 +174,9 @@ module C-EXPR-FUNCTION-CALL
           ...</function-control>)
           requires CallT ==Type toPrototype(DefT)
           [structural]
-     rule (.K => UNDEF("EFNC1", "Attempt to call the function " +String
-          idToString(X) +String " through a pointer with incompatible type."))
-          ~> application(_, _, functionObject(X:CId, DefT:Type, _), CallT:Type, _, _)
+     rule (.K => UNDEF("EFNC1", "Attempt to call the function "
+               +String idToString(X) +String " through a pointer with incompatible type."))
+          ~> application(_, _, functionObject(X::CId, DefT::Type, _), CallT:Type, _, _)
           requires CallT =/=Type toPrototype(DefT)
           [structural]
 

@@ -80,11 +80,13 @@ module C-LINKING-INIT
                => declareBuiltinFunction(B, T, Base)
           ...</k>
           <external-uses> Uses:Map </external-uses>
+          <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(B) ...</uses>
           requires (notBool (B in_keys(Defs)) andBool B in_keys(Uses))
+               orBool (notBool (B in_keys(Defs)) andBool (B in_keys(Types)))
                orBool AddAll
 
      rule <k> addBuiltin(B:CId, T:Type, Base:SymBase, AddAll:Bool)

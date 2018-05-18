@@ -1,6 +1,7 @@
 #define _XOPEN_SOURCE 700
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTContext.h"
+#include "clang/AST/Mangle.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendAction.h"
@@ -242,31 +243,31 @@ bool TraverseDecl(Decl *D) {
     nodes.push_back(node);
   }
 
- // backported from later version of clang into this binary because we need it to check
- // for anonymous unions
- template <typename T>
- inline T getTypeLocAsAdjusted(TypeLoc Cur) const {
-   while (!Cur.getAs<T>()) {
-     if (auto PTL = Cur.getAs<ParenTypeLoc>())
-       Cur = PTL.getInnerLoc();
-     else if (auto ATL = Cur.getAs<AttributedTypeLoc>())
-       Cur = ATL.getModifiedLoc();
-     else if (auto ETL = Cur.getAs<ElaboratedTypeLoc>())
-       Cur = ETL.getNamedTypeLoc();
-     else if (auto ATL = Cur.getAs<AdjustedTypeLoc>())
-       Cur = ATL.getOriginalLoc();
-     else
-       break;
-   }
-   return Cur.getAs<T>();
- }
+  // backported from later version of clang into this binary because we need it
+  // to check for anonymous unions
+  template <typename T>
+  inline T getTypeLocAsAdjusted(TypeLoc Cur) const {
+    while (!Cur.getAs<T>()) {
+      if (auto PTL = Cur.getAs<ParenTypeLoc>())
+        Cur = PTL.getInnerLoc();
+      else if (auto ATL = Cur.getAs<AttributedTypeLoc>())
+        Cur = ATL.getModifiedLoc();
+      else if (auto ETL = Cur.getAs<ElaboratedTypeLoc>())
+        Cur = ETL.getNamedTypeLoc();
+      else if (auto ATL = Cur.getAs<AdjustedTypeLoc>())
+        Cur = ATL.getOriginalLoc();
+      else
+        break;
+    }
+    return Cur.getAs<T>();
+  }
 
   bool isAnonymousUnionVarDecl(const clang::Decl *D) {
     if (const VarDecl *VD = dyn_cast<VarDecl>(D)) {
       TypeLoc TL = VD->getTypeSourceInfo()->getTypeLoc();
       if (RecordTypeLoc RTL = getTypeLocAsAdjusted<RecordTypeLoc>(TL)) {
         return RTL.getDecl()->isAnonymousStructOrUnion();
-      } 
+      }
     }
     return false;
   }
@@ -301,7 +302,6 @@ bool TraverseDecl(Decl *D) {
     for (Stmt::child_iterator iter = S->child_begin(), end = S->child_end(); iter != end; ++i, ++iter);
     AddKSequenceNode(i);
   }
-    
 
   bool VisitTranslationUnitDecl(TranslationUnitDecl *D) {
     AddKApplyNode("TranslationUnit", 2);
@@ -436,7 +436,7 @@ bool TraverseDecl(Decl *D) {
   bool TraverseDeclarationName(DeclarationName Name) {
     return TraverseDeclarationName(Name, 0);
   }
-  
+
   bool TraverseDeclarationName(DeclarationName Name, uintptr_t decl) {
     switch(Name.getNameKind()) {
     case DeclarationName::Identifier:
@@ -520,7 +520,7 @@ bool TraverseDecl(Decl *D) {
       } else if (FTSI->getTemplateSpecializationKind() != TSK_Undeclared &&
           FTSI->getTemplateSpecializationKind() != TSK_ImplicitInstantiation) {
         if (const ASTTemplateArgumentListInfo *TALI =
-                FTSI->TemplateArgumentsAsWritten) { 
+                FTSI->TemplateArgumentsAsWritten) {
           if (FTSI->getTemplateSpecializationKind() == TSK_ExplicitInstantiationDefinition) {
              AddKApplyNode("TemplateInstantiationDefinition", 2);
           } else {
@@ -552,14 +552,16 @@ bool TraverseDecl(Decl *D) {
     }
 
     if (D->isThisDeclarationADefinition() || D->isExplicitlyDefaulted()) {
-      AddKApplyNode("FunctionDefinition", 5);
+      AddKApplyNode("FunctionDefinition", 6);
     } else {
-      AddKApplyNode("FunctionDecl", 4);
+      AddKApplyNode("FunctionDecl", 5);
     }
 
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
-  
+
+    mangledIdentifier(D);
+
     if (TypeSourceInfo *TSI = D->getTypeSourceInfo()) {
       if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D)) {
         if (Method->isInstance()) {
@@ -664,10 +666,13 @@ bool TraverseDecl(Decl *D) {
     if (unsigned align = D->getMaxAlignment()) {
       AddSpecifier("Alignas", align / 8);
     }
-    AddKApplyNode("VarDecl", 5);
+    AddKApplyNode("VarDecl", 6);
 
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
+
+    mangledIdentifier(D);
+
     TRY_TO(TraverseTypeLoc(D->getTypeSourceInfo()->getTypeLoc()));
     if (D->getInit()) {
       TRY_TO(TraverseStmt(D->getInit()));
@@ -688,7 +693,7 @@ bool TraverseDecl(Decl *D) {
         // this is a hideously ugly hack but aside from using a different
         // version of clang and potentially fixing the issue ourselves,
         // there's not much else we can do.
-        
+
         const VarDecl *VD = dyn_cast<VarDecl>(D);
         TypeLoc TL = VD->getTypeSourceInfo()->getTypeLoc();
         RecordTypeLoc RTL = getTypeLocAsAdjusted<RecordTypeLoc>(TL);
@@ -729,8 +734,6 @@ bool TraverseDecl(Decl *D) {
     //TODO(other stuff)
     return TraverseVarHelper(D);
   }
-
-
 
   bool VisitFriendDecl(FriendDecl *D) {
     AddKApplyNode("FriendDecl", 1);
@@ -888,24 +891,24 @@ bool TraverseDecl(Decl *D) {
   }
 
   bool TraverseTemplateTemplateParmDecl(TemplateTemplateParmDecl *D) {
-    AddKApplyNode("TemplateTemplateParam", 4); 
+    AddKApplyNode("TemplateTemplateParam", 4);
     VisitBool(D->isParameterPack());
-    TRY_TO(TraverseDeclarationName(D->getDeclName())); 
+    TRY_TO(TraverseDeclarationName(D->getDeclName()));
     if(D->hasDefaultArgument() && !D->defaultArgumentWasInherited()) {
       TRY_TO(TraverseTemplateArgumentLoc(D->getDefaultArgument()));
     } else {
       AddKApplyNode("NoType", 0);
     }
-    TemplateParameterList *TPL = D->getTemplateParameters(); 
-    if (TPL) { 
-      int i = 0; 
-      for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++i, ++I); 
-      AddKSequenceNode(i); 
-      for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++I) { 
-        TRY_TO(TraverseDecl(*I)); 
-      } 
-    } 
-    return true; 
+    TemplateParameterList *TPL = D->getTemplateParameters();
+    if (TPL) {
+      int i = 0;
+      for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++i, ++I);
+      AddKSequenceNode(i);
+      for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++I) {
+        TRY_TO(TraverseDecl(*I));
+      }
+    }
+    return true;
 
   }
 
@@ -994,7 +997,7 @@ bool TraverseDecl(Decl *D) {
     if (D->isCompleteDefinition()) {
       int i = 0;
       for (const auto &I : D->bases()) {
-        i++; 
+        i++;
       }
       AddKSequenceNode(i);
       for (const auto &I : D->bases()) {
@@ -1598,7 +1601,7 @@ bool TraverseDecl(Decl *D) {
     }
     return true;
   }
-  
+
   bool TraverseUnresolvedMemberExpr(UnresolvedMemberExpr *E) {
     return TraverseMemberHelper(E);
   }
@@ -1659,7 +1662,7 @@ bool TraverseDecl(Decl *D) {
     return false; // no node created
   }
 
-  bool VisitSubstNonTypeTemplateParmExpr(SubstNonTypeTemplateParmExpr *E) { 
+  bool VisitSubstNonTypeTemplateParmExpr(SubstNonTypeTemplateParmExpr *E) {
     return false; // no node created
   }
 
@@ -1932,7 +1935,7 @@ bool TraverseDecl(Decl *D) {
     return TraverseCXXConstructHelper(E->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
 
-  bool TraverseCXXTemporaryObjectExpr(CXXTemporaryObjectExpr *E) { 
+  bool TraverseCXXTemporaryObjectExpr(CXXTemporaryObjectExpr *E) {
     AddKApplyNode("TemporaryObjectExpr", 2);
     return TraverseCXXConstructHelper(E->getTypeSourceInfo()->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
@@ -1992,12 +1995,12 @@ bool TraverseDecl(Decl *D) {
     if (E->isArray()) {
       TRY_TO(TraverseStmt(E->getArraySize()));
     } else {
-      AddKApplyNode("NoExpression", 0); 
+      AddKApplyNode("NoExpression", 0);
     }
     if (E->hasInitializer()) {
       TRY_TO(TraverseStmt(E->getInitializer()));
     } else {
-      AddKApplyNode("NoInit", 0); 
+      AddKApplyNode("NoInit", 0);
     }
     AddKSequenceNode(E->getNumPlacementArgs());
     for (unsigned i = 0; i < E->getNumPlacementArgs(); i++) {
@@ -2217,7 +2220,7 @@ bool TraverseDecl(Decl *D) {
     AddKSequenceNode(0);
     return false;
   }
-  
+
   bool VisitTypeTraitExpr(TypeTraitExpr *E) {
     AddKApplyNode("GnuTypeTrait", 2);
     switch(E->getTrait()) {
@@ -2359,6 +2362,20 @@ bool TraverseDecl(Decl *D) {
 private:
   ASTContext *Context;
   llvm::StringRef InFile;
+
+  void mangledIdentifier(NamedDecl* D) {
+    AddKApplyNode("Identifier", 1);
+    auto mangler = Context->createMangleContext();
+    std::string mangledName;
+    raw_string_ostream s(mangledName);
+    if (D->hasLinkage()) mangler->mangleName(D, s);
+    char *buf = new char[s.str().length() + 3];
+    buf[0] = '\"';
+    buf[s.str().length() + 1] = '\"';
+    buf[s.str().length() + 2] = 0;
+    memcpy(buf + 1, s.str().c_str(), s.str().length());
+    AddKTokenNode(buf, "String");
+  }
 };
 
 class GetKASTConsumer : public clang::ASTConsumer {

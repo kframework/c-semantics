@@ -331,17 +331,21 @@ module CPP-OVERLOADING
      // we need to add the odr-use to the external-uses cell if it is a use of an object or function
      // with C linkage, because we may need to be able to detect that the native entity associated with
      // this declaration needs to be linked in.
-     syntax Map ::= addOdrUse(Map, QualId, CPPType, CabsLoc) [function]
-     rule addOdrUse(EU::Map, X::QualId, T::CPPType, L::CabsLoc) => EU[getId(X) <- L]
-          requires isCLinkage(T)
-     rule addOdrUse(EU::Map, _, _, _) => EU [owise]
+     syntax Map ::= addOdrUse(Map, CId, CabsLoc) [function]
+     rule addOdrUse(EU::Map, #NoName, _) => EU
+     rule addOdrUse(EU::Map, X::CId, L::CabsLoc) => EU[X <- L] [owise]
+
+     syntax CId ::= fetchMangled(Set) [function]
+     rule fetchMangled(SetItem(odrDecl(_, _, Mangled::CId, _)) _::Set) => Mangled
+     rule fetchMangled(_) => #NoName [owise]
 
      // do not actually perform overload resolution, this was a function call
      // in which the postfix expression was a function pointer
      rule <k> #resolveOverload(cSet(... candidates: T:CPPPointerType |-> envEntry(... base: Base::SymBase), id: X::QualId), list(Args::List), _, _, E::Expr, _)
               => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T)))))) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
-          <external-uses> EU::Map => addOdrUse(EU, X, T, L) </external-uses>
+          <odr-decls> Decls::Map </odr-decls>
+          <external-uses> EU::Map => addOdrUse(EU, fetchMangled({Decls[Base]}:>Set), L) </external-uses>
           <curr-program-loc> L::CabsLoc </curr-program-loc>
           requires isCPPFunctionType(innerType(T)) andBool Base =/=K nonStatic
      rule #resolveOverload(cSet(... candidates: T:CPPPointerType |-> envEntry(... base: nonStatic)), list(Args::List), _, _, E::Expr, _)
@@ -352,7 +356,8 @@ module CPP-OVERLOADING
      rule <k> bestViable(T::CPPFunctionType, envEntry(... base: Base::SymBase, defaultArgs: defArgs(... vals: DArgs::StrictListResult))) ~> #resolveOverload(cSet(... id: X::QualId), list(Args::List), _, _, E::Expr, _) 
               => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), DArgs)) ...</k>
           <odr-uses>... .Set => #if isMethodPure(T) andBool isVirtualCall(hasTrace(E), T) #then .Set #else SetItem(Base) #fi ...</odr-uses>
-          <external-uses> EU::Map => addOdrUse(EU, X, T, L) </external-uses>
+          <odr-decls> Decls::Map </odr-decls>
+          <external-uses> EU::Map => addOdrUse(EU, fetchMangled({Decls[Base]}:>Set), L) </external-uses>
           <curr-program-loc> L::CabsLoc </curr-program-loc>
 
      rule bestViable(T::CPPFunctionType, builtinOp(E::Expr)) ~> #resolveOverload(...) => E
@@ -642,18 +647,20 @@ module CPP-OVERLOADING
 
      rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase), id: X::QualId), E::Expr, _) => lv(lnew(Base), hasTrace(E), T) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
-          <external-uses> EU::Map => addOdrUse(EU, X, T, L) </external-uses>
+          <odr-decls> Decls::Map </odr-decls>
+          <external-uses> EU::Map => addOdrUse(EU, fetchMangled({Decls[Base]}:>Set), L) </external-uses>
           <curr-program-loc> L::CabsLoc </curr-program-loc>
           requires Base =/=K nonStatic
-           andBool notBool isCPPRefType(T)
-           andBool notBool isMemberBase(Base)
+               andBool notBool isCPPRefType(T)
+               andBool notBool isMemberBase(Base)
      rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: nonStatic)), E::Expr, _) => le(E, hasTrace(E), T)
      // resolve anonymous union member lookup
-     rule resolveUniqueDecl(cSet(... candidates: _ |-> envEntry(... base: memberBase(unnamedObject(C::Class), X::CId, _))), _, _) => Name(NoNNS(), unnamedObject(C)) . no-template Name(NoNNS(), X)
+     rule resolveUniqueDecl(cSet(... candidates: _ |-> envEntry(... base: memberBase(unnamedObject(C::Class), X::CId, _))), _, _)
+          => Name(NoNNS(), unnamedObject(C)) . no-template Name(NoNNS(), X)
 
      rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId), E::Expr, false) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
      rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId), E::Expr, true)
-       => dataMemberValue(memberPointer(C, X, T), hasTrace(E), T)
+          => dataMemberValue(memberPointer(C, X, T), hasTrace(E), T)
 
      rule <k> resolveUniqueDecl(cSet(... candidates: T:CPPRefType |-> envEntry(... base: Base::SymBase)), E::Expr, _) => le(E, hasTrace(E), T) ...</k>
           <references> Refs::Map </references>
@@ -666,7 +673,8 @@ module CPP-OVERLOADING
 
      rule (.K => ILL("TOL1", "No declaration found for name '" +String idToString(X) +String "'.")) ~> resolveUniqueDecl(notFound(X::CId), _, _)
 
-     // NOTE: the category of the contrivedObject is defaulted to lvalue as its value does not matter, as  the conversion sequence for the implicit object parameter will be ignored in this case 
+     // NOTE: the category of the contrivedObject is defaulted to lvalue as its value does not matter, as the
+     // conversion sequence for the implicit object parameter will be ignored in this case.
      // See also 13.3.3.1.4:3 http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#1278
      rule catof(contrivedObject(_) => lvalue)
      rule typeof(contrivedObject(T::CPPType) => T)

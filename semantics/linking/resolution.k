@@ -22,22 +22,30 @@ module C-LINKING-RESOLUTION
      // Add the real location at which an external reference is defined to the
      // environment of every TU where it appears.
 
-     syntax KItem ::= resolveReference(CId)
-                    | resolveReferences(Map)
+     syntax KItem ::= resolveCReference(CId)
+                    | resolveCPPReferences(Set)
+                    | resolveCReferences(Map)
 
-     rule <k> resolveReferences => resolveReferences(Uses) ...</k>
-          <external-uses> Uses:Map => .Map </external-uses>
+     rule <k> resolveReferences
+               => resolveCPPReferences(OdrUses)
+               ~> resolveCReferences(Uses)
+          ...</k>
+          <odr-uses> OdrUses::Set => .Set </odr-uses>
+          <external-uses> Uses::Map => .Map </external-uses>
 
-     rule <k> (.K => resolveReference(X))
-               ~> resolveReferences((X:CId |-> L:CabsLoc => .Map) _)
+     rule (.K => resolveCPPReference(Base))
+          ~> resolveCPPReferences((SetItem(Base::SymBase) => .Set) _::Set)
+          [structural]
+     rule resolveCPPReferences(.Set) => .K
+          [structural]
+
+     rule <k> (.K => resolveCReference(X))
+               ~> resolveCReferences((X:CId |-> L:CabsLoc => .Map) _)
           ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
           [structural]
 
-     rule <k> (.K => resolveCPPReference(Base)) ~> resolveReferences(_) ...</k>
-          <odr-uses> SetItem(Base::SymBase) => .Set ...</odr-uses>
-
-     rule <k> resolveReference(X:CId) ...</k>
+     rule <k> resolveCReference(X:CId) ...</k>
           <external-decls>...
                X |-> (SetItem(Tu:String) => .Set) _::Set
           ...</external-decls>
@@ -46,8 +54,7 @@ module C-LINKING-RESOLUTION
           <genv>... X |-> (Base:LinkBase => Base') ...</genv>
           <linkings>... .Map => Base |-> Base' ...</linkings>
           [structural]
-
-     rule <k> resolveReference(X:CId) ...</k>
+     rule <k> resolveCReference(X:CId) ...</k>
           <external-decls>...
                X |-> (SetItem(Tu:String) => .Set) _::Set
           ...</external-decls>
@@ -55,19 +62,17 @@ module C-LINKING-RESOLUTION
           <tu-id> Tu </tu-id>
           <genv>... X |-> Base:DirectBase ...</genv>
           [structural]
-
-     rule <k> resolveReference(X:CId) => .K  ...</k>
+     rule <k> resolveCReference(X:CId) => .K  ...</k>
           <external-decls>...
                X:CId |-> .Set => .Map
           ...</external-decls>
           <external-defs>... X |-> _ ...</external-defs>
           <external-types>... X |-> _ ...</external-types>
           [structural]
-
      rule <k> (.K => EXT-UNDEF("TDR2",
                     "No definition for symbol with external linkage: "
                      +String idToString(X) +String "."))
-              ~> resolveReference(X:CId)
+              ~> resolveCReference(X:CId)
           ...</k>
           <external-defs> Defs:Map </external-defs>
           <external-types> Types:Map </external-types>
@@ -81,9 +86,7 @@ module C-LINKING-RESOLUTION
 
      // Now everything left in <external-uses> should be an unresolved
      // reference.
-     rule <k> resolveReferences(.Map) => resolveMain ...</k>
-          <external-uses> .Map </external-uses>
-          <odr-uses> .Set </odr-uses>
+     rule <k> resolveCReferences(.Map) => resolveMain ...</k>
           <curr-program-loc> _ => UnknownCabsLoc </curr-program-loc>
 
      // Remember which TU has the definition of main.

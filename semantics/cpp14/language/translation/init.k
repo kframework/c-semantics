@@ -77,7 +77,7 @@ module CPP-TRANSLATION-INIT
           ~> TypedefDecl(Identifier("__builtin_va_list"), type(ptrdiff_t))
 
      rule func(N::Namespace, X::CId, Ret::CPPType, Args::CPPTypes, E::ExceptionSet) 
-          => declareObject(N, N, X, type(functionType(Ret, Args, noMethod, CPPLinkage, E)), NoInit(), makeFunctionDeclarationType(N, Args), ExternalLinkage, StaticStorage, .Set)
+          => declareObject(N, N, X, X, type(functionType(Ret, Args, noMethod, CPPLinkage, E)), NoInit(), makeFunctionDeclarationType(N, Args), ExternalLinkage, StaticStorage, .Set)
 
      rule <k> makeNs(N::Namespace) => .K ...</k>
           <curr-tu> Tu::String </curr-tu>
@@ -131,7 +131,7 @@ module CPP-TRANSLATION-INIT
           <mem> Mem::Map => Mem[Base <- object(T, 0, makeEmptyArray(0))] </mem>
           <functions> Fun::Map => Fun[Base <- functionObject(N :: X, T, getDummyParams(T), callBuiltin)] </functions>
           <odr-defs> Defs::Map => Defs[N :: X, T <- Base] </odr-defs>
-          <odr-decls> Decls::Map => Decls[Base += ktriple("cpp-builtin", N :: X, T)] </odr-decls>
+          <odr-decls> Decls::Map => Decls[Base += odrDecl("cpp-builtin", N :: X, X, T)] </odr-decls>
 
      syntax List ::= getDummyParams(CPPType) [function]
      syntax List ::= #getDummyParams(CPPTypes, Int) [function]

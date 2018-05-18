@@ -98,8 +98,8 @@ module CPP-DYNAMIC-SYNTAX
      syntax Trace ::= combine(Trace, Trace, K) [function, klabel(combine2)]
      syntax Trace ::= combine(Trace, Trace, Trace, ValueCategory, CPPType) [function, klabel(combine3)]
  
-     syntax FunctionDeclarationType ::= "Function" "(" List ")" 
-     syntax VarDeclarationType ::= "Var" "(" InitType ")"
+     syntax FunctionDeclarationType ::= Function(List) 
+     syntax VarDeclarationType ::= Var(InitType)
      syntax InitType ::= CopyInit() | DirectInit()
      syntax DeclarationType ::= FunctionDeclarationType | VarDeclarationType
      syntax Decl ::= declareNonStaticObject(id: CId, t: CPPType, init: K, DeclarationType, Duration, Set)
@@ -242,6 +242,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax Ordering ::= K "|>" Ordering [right]
                        | ".Ordering"
 
+     syntax KItem ::= odrDecl(String, QualId, CId, CPPType)
 endmodule
 
 module CPP-DYNAMIC

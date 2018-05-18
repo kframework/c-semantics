@@ -1,5 +1,6 @@
 module MEMORY-SORTS
      syntax EffectiveType
+     syntax CPPType
 endmodule
 
 module MEMORY-SYNTAX

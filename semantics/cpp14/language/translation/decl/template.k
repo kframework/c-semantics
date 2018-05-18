@@ -53,7 +53,7 @@ module CPP-DECL-TEMPLATE
      syntax Name ::= getTemplateName(Decl) [function]
      rule getTemplateName(DeclLoc(_, D::Decl) => D)
      rule getTemplateName(TypeDecl(ElaboratedTypeSpecifier(_, X::CId, N::NNS))) => Name(N, X)
-     rule getTemplateName(NormalizedDecl(N::NNS, X::CId, _, _, _)) => Name(N, X)
+     rule getTemplateName(NormalizedDecl(N::NNS, X::CId, _, _, _, _)) => Name(N, X)
      rule getTemplateName(DeclaratorAndSpecifiers(D::Declarator, _) => D)
      rule getTemplateName(ClassDef(_, X::CId, N::NNS, _, _, _)) => Name(N, X)
 
@@ -110,12 +110,14 @@ module CPP-DECL-TEMPLATE
      // TODO(dwightguth): check the syntax of template definitions and generate
      // the "hypothetical instantantiation"
      // var or function declaration
-     rule <k> declareObject(N::Namespace, LN::Namespace, X::CId, T::CPPType, NoInit(), Type::DeclarationType, L::Linkage, D::Duration, S::Set) => declareTemplate(T) ...</k>
-          <elab>... .K => declareObject(N, LN, X, T, NoInit(), Type, L, D, S) </elab>
+     rule <k> declareObject(N::Namespace, LN::Namespace, X::CId, Mangled::CId, T::CPPType, NoInit(), Type::DeclarationType, L::Linkage, D::Duration, S::Set)
+               => declareTemplate(T)
+          ...</k>
+          <elab>... .K => declareObject(N, LN, X, Mangled, T, NoInit(), Type, L, D, S) </elab>
           <curr-template-context> templateInfo(...) </curr-template-context>
      // function definition
      rule <k> (.K => processFunDef(dependent, N :: X, T, Params, Init))
-              ~> declareObject(N::Namespace, _, X::CId, T::CPPType, Init::Stmt, Function(Params::List), _, _, _)
+              ~> declareObject(N::Namespace, _, X::CId, _, T::CPPType, Init::Stmt, Function(Params::List), _, _, _)
           ...</k>
           <curr-template-context> templateInfo(...) </curr-template-context>
           requires Init =/=K NoInit()
@@ -124,9 +126,9 @@ module CPP-DECL-TEMPLATE
           <curr-function> dependent </curr-function>
 
      rule <k> (elaborateDone(K:K) ~> calculateGotoMap => .K) ~> _:KItem ~> setScope(_)
-              ~> (declareObject(N::Namespace, LN::Namespace, X::CId, T::CPPType, _, Type::DeclarationType, L::Linkage, D::Duration, S::Set) => declareTemplate(T))
+              ~> (declareObject(N::Namespace, LN::Namespace, X::CId, Mangled::CId, T::CPPType, _, Type::DeclarationType, L::Linkage, D::Duration, S::Set) => declareTemplate(T))
           ...</k>
-          <elab>... .K => declareObject(N, LN, X, T, TemplateDefinitionStmt(K), Type, L, D, S) </elab>
+          <elab>... .K => declareObject(N, LN, X, Mangled, T, TemplateDefinitionStmt(K), Type, L, D, S) </elab>
 
 
      syntax KItem ::= declareTemplate(CPPType)
@@ -144,8 +146,8 @@ module CPP-DECL-TEMPLATE
 
      // template instantiation
 
-     rule <k> TemplateInstantiationDefinition(TemplateSpecializationType(X::CId), NormalizedDecl(NoNNS(), X::CId, A::AType, _, _)) 
-              => instantiateTemplate(deduceTemplateFromDecl(nameLookup(X, NoTag(), defaultMask), A)) ~> finishExplicitInstantiation ...</k>
+     rule TemplateInstantiationDefinition(TemplateSpecializationType(X::CId), NormalizedDecl(NoNNS(), X::CId, _, A::AType, _, _)) 
+          => instantiateTemplate(deduceTemplateFromDecl(nameLookup(X, NoTag(), defaultMask), A)) ~> finishExplicitInstantiation
 
      syntax KItem ::= "finishExplicitInstantiation"
      rule _:LVal ~> finishExplicitInstantiation => .K

@@ -19,6 +19,7 @@ module CPP-TYPING-SORTS
      syntax CPPClassType
      syntax CPPRefType
      syntax IncompleteInfo
+     syntax RValue
 endmodule
 
 module CPP-DEPENDENT-SYNTAX
@@ -63,7 +64,7 @@ module CPP-TYPING-SYNTAX
                                    | CPPSimpleCharType
                                    | CPPSimpleBoolType
                                    | CPPSimpleWideCharType
-     syntax CPPSimpleFundamentalType ::= CPPSimpleIntegerType 
+     syntax CPPSimpleFundamentalType ::= CPPSimpleIntegerType
                                        | CPPSimpleFloatingType
                                        | CPPSimpleVoidType
                                        | CPPSimpleNullPtrTType
@@ -106,7 +107,7 @@ module CPP-TYPING-SYNTAX
                             | CPPSimpleLVRefType
                             | CPPSimpleRVRefType
 
-     syntax CPPSimpleTypeExpr ::= CPPSimpleType 
+     syntax CPPSimpleTypeExpr ::= CPPSimpleType
                                 | CPPSimpleDependentType
                                 | CPPSimpleAutoType
                                 | CPPSimpleArrayTypeExpr
@@ -175,7 +176,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPUnscopedEnumType ::= t(q: Quals, m: Set, st: CPPSimpleUnscopedEnumType) [klabel(tcpp)]
 
      syntax CPPType ::= CPPScalarType
-                      | CPPArrayType 
+                      | CPPArrayType
                       | CPPFundamentalType
                       | CPPBitfieldType
 
@@ -288,7 +289,7 @@ module CPP-TYPING-SYNTAX
                    | hasVirtualMembers(CPPClassType) [function]
                    | isUnionLikeClass(Class) [function]
                    | isVirtualCall(Trace, CPPFunctionType) [function]
-     
+
      syntax CPPType ::= getMostDerivedArrayElement(CPPType) [function]
 
      syntax IncompleteInfo ::= "#incomplete"
@@ -402,7 +403,7 @@ module CPP-TYPING
      syntax MethodInfo ::= setMICVSQuals(MethodInfo, Quals) [function]
      rule setMICVSQuals(methodInfo(...) #as MI::MethodInfo, CVS::Quals) => #fun(methodInfo(... cvQuals: _ => CVS))(MI)
      rule setMICVSQuals(noMethod => defaultMethodInfo(), CVS::Quals)
-     
+
      rule isMethodStatic(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIStatic(MI)
      rule setMethodStatic(T::CPPFunctionType)
       => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIStatic(MI))))(T)
@@ -468,7 +469,7 @@ module CPP-TYPING
      syntax MethodInfo ::= setMIExplicit(MethodInfo) [function]
      rule setMIExplicit(methodInfo(...) #as MI::MethodInfo) => #fun(methodInfo(... explicit: _ => true))(MI)
      rule setMIExplicit(noMethod => defaultMethodInfo())
-     
+
      rule getMethodClass(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIClass(MI)
      rule setMethodClass(T::CPPFunctionType, C::Class)
           => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIClass(MI, C))))(T)
@@ -582,7 +583,7 @@ module CPP-TYPING
      rule T1::CPPType ==Type T2::CPPType => stripType(T1) ==K stripType(T2)
      rule T1::CPPType =/=Type T2::CPPType => notBool (T1 ==Type T2)
 
-     rule overrides(t(... st: functionType(... paramTypes: P1::CPPTypes, methodInfo: MI1::MethodInfo)), 
+     rule overrides(t(... st: functionType(... paramTypes: P1::CPPTypes, methodInfo: MI1::MethodInfo)),
                     t(... st: functionType(... paramTypes: P2::CPPTypes, methodInfo: MI2::MethodInfo)))
           => stripTypes(toTemplateArgs(P1)) ==K stripTypes(toTemplateArgs(P2)) andBool stripMI(MI1) ==K stripMI(MI2)
      rule overrides(...) => false [owise]
@@ -620,7 +621,7 @@ module CPP-TYPING
 
      syntax Int ::= #min(CPPType) [function]
                   | #max(CPPType) [function]
- 
+
      rule #min(T:CPPSignedType) => 0 -Int (1 <<Int ((bitSizeofType(T)) -Int 1))
      rule #max(T:CPPSignedType) => (1 <<Int ((bitSizeofType(T)) -Int 1)) -Int 1
 
@@ -662,11 +663,10 @@ module CPP-TYPING
           => isCPPLVRefType(T) orBool (isCPPRVRefType(T) andBool isCPPFunctionType(innerType(T)))
      rule isUnnamedXValue(T::CPPType)
           => isCPPRVRefType(T) andBool isObjectType(innerType(T))
-     rule isUnnamedPRValue(T::CPPType) 
+     rule isUnnamedPRValue(T::CPPType)
           => notBool isUnnamedLValue(T) andBool notBool isUnnamedXValue(T)
-    
-     rule getBaseClassSubobject(lv(L::SymLoc, Tr::Trace, D::CPPClassType), B::CPPClassType) => lv(baseClassSubobject(L, B, D), Tr, B)
 
+     rule getBaseClassSubobject(lv(L::SymLoc, Tr::Trace, D::CPPClassType), B::CPPClassType) => lv(baseClassSubobject(L, B, D), Tr, B)
      rule getBaseClassOffset(Base::Class, Derived::Class)
          => getAllBaseClassOffsets(Derived)[ Base ]
 
@@ -706,14 +706,14 @@ module CPP-TYPING
                    | #isDirectBaseClassOf(base: Class, derived: Class, K) [function]
      rule #isBaseClassOf(B::Class, ListItem(B) _, _) => true
      rule #isBaseClassOf(_, .List, _) => false
-     rule #isBaseClassOf(B::Class, (ListItem(D::Class) => BC) _, 
-            <generatedTop>... 
+     rule #isBaseClassOf(B::Class, (ListItem(D::Class) => BC) _,
+            <generatedTop>...
               <class-id> D </class-id>
               <base-classes> BC::List </base-classes>
             ...</generatedTop>)
          requires D =/=K B
      rule #isDirectBaseClassOf(B::Class, D::Class,
-            <generatedTop>... 
+            <generatedTop>...
               <class-id> D </class-id>
               <base-classes> BC::List </base-classes>
             ...</generatedTop>)
@@ -767,7 +767,8 @@ module C-CPP-TYPING
      imports CPP-TYPING
      imports SETTINGS-SYNTAX
 
-     rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(... returnType: Ret::CPPType, paramTypes: Args::CPPTypes, linkage: CLinkage))) => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertTypeToC`))))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(... returnType: Ret::CPPType, paramTypes: Args::CPPTypes)))
+          => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertTypeToC`))))
      rule convertTypeToC(t(Q::Quals, Mods::Set, void::CPPSimpleVoidType)) => t(Q, Mods, void::SimpleVoidType)
      rule convertTypeToC(t(Q::Quals, Mods::Set, bool::CPPSimpleBoolType)) => t(Q, Mods, bool::SimpleBoolType)
      rule convertTypeToC(t(Q::Quals, Mods::Set, signed-char::CPPSimpleSignedCharType)) => t(Q, Mods, signed-char::SimpleSignedCharType)
@@ -786,11 +787,24 @@ module C-CPP-TYPING
      rule convertTypeToC(t(Q::Quals, Mods::Set, long-double::CPPSimpleFloatingType)) => t(Q, Mods, long-double::SimpleFloatType)
      rule convertTypeToC(variadic::CPPVariadic) => variadic::Variadic
      rule convertTypeToC(t(Q::Quals, Mods::Set, pointerType(T::CPPType))) => t(Q, Mods, pointerType(convertTypeToC(T)))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, nullptr_t)) => t(Q, Mods, pointerType(type(void::SimpleVoidType)))
      rule convertTypeToC(t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int))) => t(Q, Mods, arrayType(convertTypeToC(T), N))
-     rule convertTypeToC(t(Q::Quals, Mods::Set, classType(GlobalNamespace() :: Class(Struct(), X::CId, .TemplateArgs))) #as C::CPPClassType) => t(Q, Mods, structType(tag(X, "C++", global)))
-     rule convertTypeToC(t(Q::Quals, Mods::Set, classType(GlobalNamespace() :: Class(Union(), X::CId, .TemplateArgs))) #as C::CPPClassType) => t(Q, Mods, unionType(tag(X, "C++", global)))
-     rule convertTypeToC(t(Q::Quals, Mods::Set, wchar_t)) => convertTypeToC(t(Q, Mods, underlyingType(wchar_t)))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType))) => t(Q, Mods, incompleteArrayType(convertTypeToC(T)))
+     // TODO(chathhorn): struct/union namespace, memberPointerType, classes, template args
+     rule convertTypeToC(t(Q::Quals, Mods::Set, classType(_::Namespace :: Class(Struct(), X::CId, _))) #as C::CPPClassType) => t(Q, Mods, structType(tag(X, "C++", global)))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, classType(_::Namespace :: Class(Union(), X::CId, _))) #as C::CPPClassType) => t(Q, Mods, unionType(tag(X, "C++", global)))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, classType(_::Namespace :: Class(Class(), X::CId, _))) #as C::CPPClassType) => t(Q, Mods, structType(tag(X, "C++", global)))
 
+     rule convertTypeToC(t(Q::Quals, Mods::Set, lvRefType(T::CPPType))) => t(Q, Mods, pointerType(convertTypeToC(T)))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, rvRefType(T::CPPType))) => t(Q, Mods, pointerType(convertTypeToC(T)))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, memberPointerType(_, T::CPPType))) => t(Q, Mods, pointerType(convertTypeToC(T)))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, wchar_t)) => convertTypeToC(t(Q, Mods, underlyingType(wchar_t)))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, unscopedEnum(_, T::CPPIntegerType, _))) => convertTypeToC(t(Q, Mods, simpleType(T)::CPPSimpleType))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, scopedEnum(_, T::CPPIntegerType))) => convertTypeToC(t(Q, Mods, simpleType(T)::CPPSimpleType))
+
+     // TODO(chathhorn): make configurable
+     rule convertTypeToC(t(Q::Quals, Mods::Set, char16_t)) => t(Q, Mods, unsigned-short-int)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, char32_t)) => t(Q, Mods, unsigned-int)
 
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, pointerType(T::Type))) => t(Q, Mods, pointerType(convertTypeToCPP(T)))
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, void::SimpleVoidType)) => t(Q, Mods, void::CPPSimpleVoidType)
@@ -811,5 +825,14 @@ module C-CPP-TYPING
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, long-double::SimpleFloatType)) => t(Q, Mods, long-double::CPPSimpleFloatingType)
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, structType(tag(X::CId, _, global)))) => t(Q, Mods, classType(GlobalNamespace() :: Class(Struct(), X, .TemplateArgs)))
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, unionType(tag(X::CId, _, global)))) => t(Q, Mods, classType(GlobalNamespace() :: Class(Union(), X, .TemplateArgs)))
- 
+
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, functionType(Ret::UType, Args::List)))
+          => t(Q, Mods, functionType(convertTypeToCPP(type(Ret)), toCPPTypes(mapList(Args, #klabel(`convertTypeToCPP`))), noMethod, CLinkage, noexcept(false)))
+
+     rule utype(T:CPPType)::UType => utype(convertTypeToC(T))
+     rule utype(V:Val)::UType => utype(convertTypeToC(type(V)::CPPType))
+
+     rule type(V:Val)::Type => convertTypeToC(type(V))
+     rule type(V:TExpr)::Type => convertTypeToC(type(V))
+
 endmodule

@@ -69,9 +69,9 @@ module CPP-ABSTRACT-SYNTAX
      syntax CtorInit ::= ConstructorBase(AType, Bool, Bool, Init)
                       | ConstructorMember(CId, Init)
 
-     syntax Declarator ::= FunctionDefinition(NNS, CId, AType, List, AStmt)
-                         | FunctionDecl(NNS, CId, AType, List)
-                         | VarDecl(NNS, CId, AType, Init, isDirect: Bool)
+     syntax Declarator ::= FunctionDefinition(NNS, CId, CId, AType, List, AStmt)
+                         | FunctionDecl(NNS, CId, CId, AType, List)
+                         | VarDecl(NNS, CId, CId, AType, Init, isDirect: Bool)
                          | FieldDecl(NNS, CId, AType, Init)
                          | BitFieldDecl(NNS, CId, AType, Expr) [strict(3)]
 
