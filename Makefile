@@ -112,12 +112,12 @@ $(LIBSTDCXX_SO): $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR
 
 $(LIBC_SO): $(call timestamp_of,cpp14-translation) $(call timestamp_of,c11-translation) $(wildcard $(PROFILE_DIR)/native/*.c) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/native/*.c)) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_DIR)/$(PROFILE)
 	@echo "$(PROFILE): Translating the C standard library..."
-	if [ -d "$(PROFILE_DIR)/native" ]; \
+	@if [ -d "$(PROFILE_DIR)/native" ]; \
 		then cd $(PROFILE_DIR)/native && $(CC) -c *.c -I . && cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(LIBC_SO) *.c $(PROFILE_DIR)/native/*.o $(KCCFLAGS) -I .; \
 		else cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(LIBC_SO) *.c $(KCCFLAGS) -I .; fi
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		if [ -d "$(d)/native" ]; \
-			then cd $(d)/native && $(CC) -c *.c -I . && cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_DIR)/$(shell basename $(d))/lib/libc.so *.c $(d)/native/*.o $(KCCFLAGS) -I .; \
+			then cd $(d)/native && $(CC) -c *.c -I . && cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_DIR)/$(shell basename $(d))/lib/libc.so *.c $(d)/native/*.o $(KCCFLAGS) -I .; \
 			else cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_DIR)/$(shell basename $(d))/lib/libc.so *.c $(KCCFLAGS) -I .; fi)
 	@echo "$(PROFILE): Done translating the C standard library."
 
@@ -161,7 +161,7 @@ $(CPPPARSER_DIR)/clang-kast:
 scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 	flock -n $< sh -c 'cd scripts && tar xvf cdecl-$*.tar.gz && cd cdecl-$* && ./configure --without-readline && $(MAKE)' || true
 
-translation-semantics: check-vars 
+translation-semantics: check-vars
 	@$(MAKE) -C $(SEMANTICS_DIR) translation
 
 execution-semantics: check-vars

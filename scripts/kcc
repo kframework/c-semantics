@@ -94,7 +94,7 @@ if ($cygwin) {
   $quoteInt = backslash($quoteInt);
 }
 
-sub setProfile {
+sub currentProfile {
   state $profile;
   if (@_) {
     $profile = shift;
@@ -108,9 +108,23 @@ sub setProfile {
   return $profile;
 }
 
+sub defaultProfile {
+  state $profile;
+  if (@_) {
+    $profile = shift;
+  }
+  $profile ||= do {
+    local $/ = undef;
+    open my $fh, '<', distDir('default-profile')
+      or error("Couldn't find default profile: please fix " . distDir('default-profile') . ".\n");
+    <$fh>;
+  };
+  return $profile;
+}
+
 sub profileDir {
   state $profileDirectory = do {
-    my $d = distDir(setProfile());
+    my $d = distDir(currentProfile());
     if ($cygwin) {
       $d = `cygpath -w $d`;
       chop($d);
@@ -277,15 +291,8 @@ sub main {
       if ($main::isRelease) {
         print("	Build number: $main::buildNumber\n");
       }
-      my $profile = main::setProfile();
-      my $defaultProfile = do {
-        local $/ = undef;
-        if (open my $fh, '<', main::distDir('default-profile')) {
-          <$fh>;
-        } else {
-          "<unknown>";
-        }
-      };
+      my $profile = main::currentProfile();
+      my $defaultProfile = main::defaultProfile();
 
       my $profiles = join("\n	                    ", main::getProfiles());
       print("	Current profile: $profile\n	Installed profiles: $profiles\n	Default profile: $defaultProfile\n\n	To request additional profiles, contact runtimeverification.com/support.\n\n");
@@ -503,7 +510,7 @@ sub main {
   --use-profile <name>	Use a KCC profile for this run, but do not make it the current profile. [undocumented]
     {
       if ( grep( /^$name$/, main::getProfiles() ) ) {
-         main::setProfile($name);
+         main::currentProfile($name);
       } else {
          print "Profile '$name' is not installed. See ", main::commandName(), " -v for list of installed profiles.\n";
          exit 1;
@@ -836,11 +843,7 @@ sub mergeObjs {
   }
 
   my $trampolines = tempFile('trampolines');
-  my $cmd = "cat @trampolineFiles | sort | uniq > '$trampolines'";
-  if ($args->{'-d'}) {
-    print("$cmd\n");
-  }
-  execute($cmd);
+  execute("cat @trampolineFiles | sort | uniq > '$trampolines'");
   @trampolineFiles = ($trampolines);
 }
 
@@ -1122,11 +1125,14 @@ sub getKRunCommand {
     my @catArgs = ();
     my @objTexts = ();
     for (my $i = 0; $i < scalar @objFiles; $i++) {
-      my $thisObj = do {
-        local $/ = undef;
-        open my $fh, '<', $objFiles[$i];
-        <$fh>;
-      };
+      my $thisObj = "";
+      if (-e $objFiles[$i]) {
+        $thisObj = do {
+          local $/ = undef;
+          open my $fh, '<', $objFiles[$i];
+          <$fh>;
+        };
+      }
       if (length $thisObj) {
         # push(@objTexts, "`unwrapObj`($thisObj)");
         $thisObj = substr($thisObj, 8, -1);

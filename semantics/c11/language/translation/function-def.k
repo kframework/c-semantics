@@ -233,19 +233,28 @@ module C-FUNCTION-DEF
      // Function with internal linkage.
      rule <k> OtherStatement() => lintFunElide(X) ...</k>
           <external-defs> Exts::Map </external-defs>
-          <external-types>... .Map => Identifier(S +String Uuid) |-> T </external-types>
+          <external-types> ExtTypes::Map => ExtTypes[Identifier(S +String Uuid) <- T] </external-types>
           <types>... X |-> T::Type ...</types>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv>... X |-> Def::SymBase ...</genv>
           <curr-scope> blockScope(Identifier(S::String) #as X::CId, _) </curr-scope>
-          <linkings>... .Map => Def |-> obj(0, 0, nativeSymbol(S +String Uuid)) </linkings>
-          <function-tus>... .Map => Identifier(S +String Uuid) |-> Tu </function-tus>
+          <linkings> Linkings::Map => Linkings[Def <- obj(0, 0, nativeSymbol(S +String Uuid))] </linkings>
+          <function-tus> FunctionTUs::Map => FunctionTUs[Identifier(S +String Uuid) <- Tu] </function-tus>
           <uuid> Uuid::String </uuid>
           <options> Opts::Set </options>
           requires notBool (X in_keys(Exts))
+               andBool notBool (Identifier(S +String Uuid) in_keys(ExtTypes))
+               andBool notBool isNativeLoc(Def)
                andBool notBool (NoNativeFallback() in Opts)
                andBool S =/=String "main"
+     rule <k> OtherStatement() => .K ...</k>
+          <external-types> ExtTypes::Map </external-types>
+          <genv>... X |-> Def::SymBase ...</genv>
+          <curr-scope> blockScope(Identifier(S::String) #as X::CId, _) </curr-scope>
+          <uuid> Uuid::String </uuid>
+          requires isNativeLoc(Def)
+               orBool (Identifier(S +String Uuid) in_keys(ExtTypes))
      rule <k> OtherStatement() => .K ...</k>
           <options> Opts::Set </options>
           <curr-scope> S::Scope </curr-scope>
