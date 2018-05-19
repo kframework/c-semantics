@@ -88,19 +88,19 @@ $(DIST_DIR)/$(PROFILE): $(DIST_DIR)/kcc $(wildcard $(PROFILE_DIR)/include/* $(PR
 $(PROFILE_DIR)/cpp-pp:
 
 $(call timestamp_of,c11-cpp14): execution-semantics $(DIST_DIR)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-cpp14-kompiled $(DIST_DIR)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/c11-cpp14-kompiled $(DIST_DIR)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/c11-cpp14-kompiled $(DIST_DIR)/$(shell basename $(d)))
+		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/c11-cpp14-kompiled $(DIST_DIR)/$(shell basename $(d)))
 
 $(call timestamp_of,c11-translation): translation-semantics $(DIST_DIR)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(shell basename $(d)))
+		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(shell basename $(d)))
 
 $(call timestamp_of,cpp14-translation): cpp-semantics $(DIST_DIR)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/cpp14-translation-kompiled $(DIST_DIR)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/cpp14-translation-kompiled $(DIST_DIR)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/cpp14-translation-kompiled $(DIST_DIR)/$(shell basename $(d)))
+		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/cpp14-translation-kompiled $(DIST_DIR)/$(shell basename $(d)))
 
 $(LIBSTDCXX_SO): $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) $(DIST_DIR)/$(PROFILE)
 	@echo "$(PROFILE): Translating the C++ standard library..."
