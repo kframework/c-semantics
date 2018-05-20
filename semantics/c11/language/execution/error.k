@@ -20,8 +20,6 @@ module C-EXECUTION-ERROR
      imports SETTINGS-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
-     rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
-
      rule <k> EXIT(E:ErrorMsg) => reportError(E, Tu, S, Loc, REnv, L) ~> HALT ...</k>
           <curr-tu> Tu::String </curr-tu>
           <curr-scope> S::Scope </curr-scope>

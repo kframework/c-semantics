@@ -3,16 +3,16 @@ module CPP-EXECUTION-IO
      imports CPP-MEMORY-WRITING-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
-     imports INT
      imports BITS-SYNTAX
      imports MEMORY-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports SETTINGS-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-IO-SYNTAX
      imports CPP-BITSIZE-SYNTAX
-     imports CPP-ERROR-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-COMMON-IO-SYNTAX
 
      rule writeBytes(Loc::SymLoc, Bytes::List, T::CPPType)
           => checkWrite(Loc, T)
@@ -28,12 +28,6 @@ module CPP-EXECUTION-IO
 
      syntax KItem ::= checkWrite(SymLoc, CPPType) [klabel(cppCheckWrite)]
      rule checkWrite(loc(Base::SymBase, Offset::Int), T::CPPType) => .K
-
-     syntax Error ::= "errorReadOutOfBounds"
-     syntax K ::= assertInBounds(Int, Int) [klabel(cppAssertInBounds)]
-
-     rule assertInBounds(Offset::Int, Len::Int)
-          => assert(Offset <Int Len, errorReadOutOfBounds) [macro]
 
      syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List "," CPPType ")"
 
@@ -54,8 +48,20 @@ module CPP-EXECUTION-IO
                Base |-> object(_, Len::Int, M::Array)
           ...</mem>
           <locs-written> Locs::Set </locs-written>
+          <buffer> .List </buffer>
+          requires Size >Int 0 andBool Offset in_keys(M)
+
+     rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::CPPType)
+              => assertInBounds(Offset, Len)
+              ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(M[Offset]) Aux, T)
+          ...</k>
+          <mem>...
+               Base |-> object(_, Len::Int, M::Array)
+          ...</mem>
+          <locs-written> Locs::Set </locs-written>
           <buffer> Mem::List </buffer>
           requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M)
+
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::CPPType)
               => assertInBounds(Offset, Len)
               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(getUninitializedBits(loc(Base, Offset), ObjT)) Aux, T) ...</k>

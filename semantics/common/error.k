@@ -47,4 +47,6 @@ module ERROR
 
      rule errorFuncResult(K1:K, K2:K) => K1 ~> K2
 
+     rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
+
 endmodule
