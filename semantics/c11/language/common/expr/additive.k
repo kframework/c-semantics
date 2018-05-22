@@ -280,7 +280,7 @@ module C-COMMON-EXPR-ADDITIVE
           => makeUnknown(tv(stripUnknown(V), T) + tv(stripUnknown(V'), T'))
           requires isUnknown(V) orBool isUnknown(V')
      rule tv(V::CValue, T::UType) - tv(V'::CValue, T'::UType)
-          => makeUnknown(tv(stripUnknown(V), T) + tv(stripUnknown(V'), T'))
+          => makeUnknown(tv(stripUnknown(V), T) - tv(stripUnknown(V'), T'))
           requires isUnknown(V) orBool isUnknown(V')
 
 endmodule
