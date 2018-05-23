@@ -1,4 +1,4 @@
-#include<stdlib.h>
+extern "C" void abort();
 struct A {
   int x;
   void foo() {

@@ -1,4 +1,4 @@
-#include <stdlib.h>
+extern "C" void abort();
 namespace A {
   void f(int) {}
 }
