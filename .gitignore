@@ -11,4 +11,5 @@ parser/cparser.ml
 parser/cparser.mli
 semantics/.depend*
 semantics/.lock
+semantics/build
 scripts/cdecl-*

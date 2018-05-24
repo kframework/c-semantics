@@ -39,7 +39,7 @@ define timestamp_of
     $(DIST_DIR)/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
-.PHONY: default check-vars semantics clean fast cpp-semantics translation-semantics execution-semantics $(DIST_DIR) test-build pass fail fail-compile parser/cparser $(CPPPARSER_DIR)/clang-kast $(PROFILE)-native-server
+.PHONY: default check-vars semantics clean fast cpp-semantics translation-semantics execution-semantics test-build pass fail fail-compile parser/cparser $(CPPPARSER_DIR)/clang-kast $(PROFILE)-native-server
 
 default: test-build
 
@@ -153,10 +153,12 @@ parser/cparser:
 
 $(CPPPARSER_DIR)/call-sites: $(CPPPARSER_DIR)/clang-kast
 
-$(CPPPARSER_DIR)/clang-kast:
+$(CPPPARSER_DIR)/clang-kast: $(CPPPARSER_DIR)/Makefile
 	@echo "Building the C++ parser..."
-	@cd $(CPPPARSER_DIR) && cmake .
 	@$(MAKE) -C $(CPPPARSER_DIR)
+
+$(CPPPARSER_DIR)/Makefile:
+	@cd $(CPPPARSER_DIR) && cmake .
 
 scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 	flock -n $< sh -c 'cd scripts && tar xvf cdecl-$*.tar.gz && cd cdecl-$* && ./configure --without-readline && $(MAKE)' || true
