@@ -2368,7 +2368,14 @@ private:
     auto mangler = Context->createMangleContext();
     std::string mangledName;
     raw_string_ostream s(mangledName);
-    if (D->hasLinkage()) mangler->mangleName(D, s);
+    if (D->hasLinkage()) {
+		if (CXXConstructorDecl *CtorDecl = dyn_cast<CXXConstructorDecl>(D))
+			mangler->mangleCXXCtor(CtorDecl, Ctor_Complete, s);
+		else if (CXXDestructorDecl *DtorDecl = dyn_cast<CXXDestructorDecl>(D))
+			mangler->mangleCXXDtor(DtorDecl, Dtor_Complete, s);
+		else
+			mangler->mangleName(D, s);
+	}
     char *buf = new char[s.str().length() + 3];
     buf[0] = '\"';
     buf[s.str().length() + 1] = '\"';
