@@ -335,6 +335,7 @@ sub main {
     { push(@main::cppArgs, "-U$name"); }
   -P			Inhibit preprocessor line numbers.
     { push(@main::cppArgs, "-P"); }
+  -e <symbol>	Use <symbol> as the program entry point instead of main.
   -E			Preprocess only.
   -I <dir>		Look for headers in <dir>.
     { push(@main::cppArgs, '-I', $dir); }
@@ -702,6 +703,11 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     }
     push(@options, "`Heap`(#token($heapSize, $quoteInt))");
     push(@options, "`Stack`(#token($stackSize, $quoteInt))");
+  }
+
+  if ($args->{'-e'}) {
+    my $entry = quote(backslash(quote($args->{'-e'})));
+    push(@options, "`EntryPoint`(#token($entry, $quoteString))");
   }
 
   my $opts = makeSet(@options);

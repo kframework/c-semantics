@@ -16,22 +16,22 @@ module CPP-EXECUTION-INIT
      rule xe(E::Expr, _, _) => E
      rule le(E::Expr, _, _) => E
 
-     rule <k> callMain(N:Int, Args:K)
-               => enterRestrictTU ~> K ~> reval(#callMain(T, getBase(Entry), N, mainArguments, Args)) ~> callAtExit
+     rule <k> callEntryPoint(EP::String, N:Int, Args:K)
+               => enterRestrictTU ~> K ~> reval(#callCppEntryPoint(T, getBase(Entry), N, mainArguments, Args)) ~> callAtExit
           ...</k>
           <dynamic-init> K:K </dynamic-init>
           <uncaught-exception> _ => true </uncaught-exception>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> GlobalNamespace() </ns-id>
-          <nenv>... Identifier("main") |-> (T::CPPType |-> Entry::EnvEntry) ...</nenv>
+          <nenv>... Identifier(EP) |-> (T::CPPType |-> Entry::EnvEntry) ...</nenv>
           <status> _ => mainCalled </status>
 
-     syntax Expr ::= "#callMain" "(" K "," SymBase "," Int "," CId "," K ")"
-     rule #callMain(T::CPPFunctionType, Base::SymBase, _, _, _)
+     syntax Expr ::= #callCppEntryPoint(CPPType, SymBase, Int, CId, K)
+     rule #callCppEntryPoint(T::CPPFunctionType, Base::SymBase, _, _, _)
           => BuiltinCallOp(lv(lnew(Base), noTrace, T), false, .List)
           requires getParams(T) ==K .List
-     rule #callMain(T::CPPFunctionType, Base::SymBase, Argc:Int, X:CId, Args:K)
+     rule #callCppEntryPoint(T::CPPFunctionType, Base::SymBase, Argc:Int, X:CId, Args:K)
           => Args ~> setupCppEnv(Argc) ~> BuiltinCallOp(lv(lnew(Base), noTrace, T), false, ListItem(prv(Argc, noTrace, type(int))) ListItem(Name(NoNNS(), X)))
           requires size(getParams(T)) ==Int 2
 
@@ -54,7 +54,6 @@ module CPP-EXECUTION-INIT
      rule <k> reval(V:PRVal) ~> callAtQuickExit => reval(V) ...</k>
           <at-quick-exit> .K </at-quick-exit>
           <status> _ => mainExited </status>
-
 
      rule <exec>...
                (<thread>...
@@ -79,6 +78,5 @@ module CPP-EXECUTION-INIT
           <curr-program-loc> _ => L </curr-program-loc>
      rule <k> #ExprLoc(L::CabsLoc, V:Val) => V ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
-
 
 endmodule

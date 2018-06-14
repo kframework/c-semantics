@@ -1,11 +1,14 @@
 module C-EXECUTION-INIT-SYNTAX
      imports LIST
+     imports STRING
+     imports SET
      syntax KItem ::= pgmArgs(List) [function]
      syntax KItem ::= incomingArguments(List)
-     syntax KItem ::= callMain(Int, K)
+     syntax KItem ::= callEntryPoint(String, Int, K)
      syntax KItem ::= "initMainThread"
      syntax KItem ::= "callAtExit" | "callAtQuickExit"
      syntax RValue ::= "NullPointerConstant" [function]
+     syntax String ::= getEntryPoint(Set) [function]
 endmodule
 
 module C-EXECUTION-INIT
@@ -184,37 +187,37 @@ module C-EXECUTION-INIT
 
      /*@ this bit of indirection is used to check that the main prototype is
       correct, and to call it with the appropriate arguments */
-     rule [call-main]:
-          <k> callMain(N:Int, Args:K)
+     rule <k> callEntryPoint(EP::String, N::Int, Args:K)
                => enterRestrictTU
-               ~> reval(#callMain(T, N, mainArguments, Args))
+               ~> reval(#callEntryPoint(EP, N, mainArguments, Args, T))
                ~> callAtExit
           ...</k>
-          <types>... Identifier("main") |-> T::Type ...</types>
+          <types>... Identifier(EP) |-> T::Type ...</types>
           <status> _ => mainCalled </status>
           [ndtrans]
 
+     syntax ExecOpts ::= EntryPoint(String)
+     rule getEntryPoint(_ SetItem(EntryPoint(EP::String))) => EP
+     rule getEntryPoint(_) => "main" [owise]
+
      // int main(void) -- also, int main() gets normalized to main(void)
-     syntax KItem ::= #callMain(K, Int, CId, K) [strict(1)]
-     rule #callMain(t(quals(.Set), .Set,
-          functionType(ut(.Set, int), ListItem(typedDeclaration(t(quals(.Set), .Set, void), _)))), _, _, _)
-          => Call(Identifier("main"), list(.List))
-          [structural]
+     syntax KItem ::= #callEntryPoint(String, Int, CId, K, Type)
+     rule #callEntryPoint(Entry::String, _, _, _,
+               t(quals(.Set), .Set, functionType(ut(.Set, int),
+                    ListItem(typedDeclaration(t(quals(.Set), .Set, void), _)))))
+          => Call(Identifier(Entry), list(.List))
      // int main(int argc, char* argv[])
-     rule #callMain(t(quals(.Set), .Set, functionType(ut(.Set, int),
-               ListItem(typedDeclaration(t(quals(.Set), .Set, int), _))
-               ListItem(typedDeclaration(t(quals(.Set), .Set, incompleteArrayType(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, char))) #as T::Type)), _)))),
-               N:Int, X:CId, Args:K)
-          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
-          [structural]
+     rule #callEntryPoint(Entry::String, N::Int, X::CId, Args:K,
+               t(quals(.Set), .Set, functionType(ut(.Set, int),
+                    ListItem(typedDeclaration(t(quals(.Set), .Set, int), _))
+                    ListItem(typedDeclaration(t(quals(.Set), .Set, incompleteArrayType(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, char))) #as T::Type)), _)))))
+          => Args ~> Call(Identifier(Entry), list(ListItem(N) ListItem(X)))
      // int main(int argc, char** argv)
-     rule #callMain(t(quals(.Set), .Set,
-               functionType(ut(.Set, int),
-               ListItem(typedDeclaration(t(quals(.Set), .Set, int), _))
-               ListItem(typedDeclaration(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, char))) #as T::Type)), _)))),
-               N:Int, X:CId, Args:K)
-          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
-          [structural]
+     rule #callEntryPoint(Entry::String, N::Int, X::CId, Args:K,
+               t(quals(.Set), .Set, functionType(ut(.Set, int),
+                    ListItem(typedDeclaration(t(quals(.Set), .Set, int), _))
+                    ListItem(typedDeclaration(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, char))) #as T::Type)), _)))))
+          => Args ~> Call(Identifier(Entry), list(ListItem(N) ListItem(X)))
 
      rule <k> reval(V:RValue) ~> callAtExit => AtExit ~> reval(V) ~> callAtExit ...</k>
           <atexit> AtExit:KItem => .K ...</atexit>

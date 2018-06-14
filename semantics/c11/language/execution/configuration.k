@@ -41,7 +41,7 @@ module C-CONFIGURATION
                     loadObj(unwrapObj($PGM:K))
                     ~> initMainThread
                     ~> pgmArgs($ARGV:List)
-                    ~> callMain(size($ARGV:List), incomingArguments($ARGV:List))
+                    ~> callEntryPoint(getEntryPoint($OPTIONS:Set), size($ARGV:List), incomingArguments($ARGV:List))
                </k>
 
                <duration color="black"> auto(0) </duration>
