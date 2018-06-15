@@ -71,7 +71,12 @@ module C-TYPING-MISC
           => intersectSet(getModifiers(T), storageSpecifiers)
 
      rule getFunctionSpecifiers(T::Type)
-          => intersectSet(getModifiers(T), functionSpecifiers)
+          => getFunctionSpecifiers'(getModifiers(T))
+
+     syntax Set ::= "getFunctionSpecifiers'" "(" Set ")" [function]
+     rule getFunctionSpecifiers'((SetItem(S:K) => .Set) _)
+          requires notBool isFunctionSpecifier(S)
+     rule getFunctionSpecifiers'(S::Set) => S [owise]
 
      rule getSpecifiers(T::Type)
           => getStorageSpecifiers(T) getFunctionSpecifiers(T)
@@ -95,10 +100,6 @@ module C-TYPING-MISC
           SetItem(Packed()) // Pseudo-storage specifier.
           // Also typedef, technically.
 
-     rule functionSpecifiers =>
-          SetItem(Noreturn())
-          SetItem(Inline())
-
      syntax Set ::= "constantModifiers" [function]
      rule constantModifiers =>
           SetItem(IntegerConstant)
@@ -107,7 +108,11 @@ module C-TYPING-MISC
           => t(Qs, Mods -Set storageSpecifiers, T)
 
      rule stripFunctionSpecifiers(t(Qs::Quals, Mods::Set, T::SimpleType))
-          => t(Qs, Mods -Set functionSpecifiers, T)
+          => t(Qs, stripFunctionSpecifiers'(Mods), T)
+
+     syntax Set ::= "stripFunctionSpecifiers'" "(" Set ")" [function]
+     rule stripFunctionSpecifiers'((SetItem(_:FunctionSpecifier) => .Set) _)
+     rule stripFunctionSpecifiers'(S::Set) => S [owise]
 
      rule stripSpecifiers(T:UType) => utype(stripSpecifiers(type(T)))
      rule stripSpecifiers(T:Type) => stripStorageSpecifiers(stripFunctionSpecifiers(T))

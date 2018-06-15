@@ -135,19 +135,17 @@ module C-EXPR-FUNCTION-CALL
                     functionObject(X:CId, DefT:Type, Locals:List),
                     CallT:Type, CallingLang::LanguageLinkage, krlist(L:List))
                ~> K:K
-               => sequencePoint
-               ~> #if (getTU(Base) =/=String OldTu) #then enterRestrictTU #else .K #fi
+               => enterNewTu(X, Base, DefT)
+               ~> sequencePoint
                ~> enterRestrictBlock(blockScope(X, 0))
                ~> populateFromGlobal(DefT)
                ~> declareInternalVariable(funLabel, type(no-type), initValue(funLabel, type(no-type), .K))
                ~> bind(getParams(DefT), getParams(CallT), L)
                ~> sequencePoint
-               ~> checkStackDepth
-               ~> checkRecursion(X, getTU(Base), Calls)
                ~> #if isNativeLoc(Base) orBool isBuiltinLoc(Base)
                   #then callBuiltin #else Goto(funLabel) #fi
           </k>
-          <called-functions> Calls::Map => incrementCalled(X, getTU(Base), Calls) </called-functions>
+          <external-defs> Defs::Map </external-defs>
           <call-stack> (.List => ListItem(
                <call-stack-frame>
                     <continuation> K:K </continuation>
@@ -167,7 +165,7 @@ module C-EXPR-FUNCTION-CALL
                <stack-depth> OldStackDepth:Int </stack-depth>
           </function-control>
           => <function-control>...
-               <curr-tu> getTU(Base) </curr-tu>
+               <curr-tu> OldTu </curr-tu>
                <curr-scope> blockScope(X, 0) </curr-scope>
                <curr-program-loc> CurrLoc </curr-program-loc>
                <stack-depth> OldStackDepth +Int cfg:stackSize(mapList(L, #klabel(`type`)), Locals) </stack-depth>
@@ -179,6 +177,42 @@ module C-EXPR-FUNCTION-CALL
           ~> application(_, _, functionObject(X::CId, DefT::Type, _), CallT:Type, _, _)
           requires CallT =/=Type toPrototype(DefT)
           [structural]
+
+     syntax KItem ::= enterNewTu(CId, SymBase, Type)
+     rule <k> enterNewTu(F::CId, _, t(_, SetItem(SpecExtendsTuOf(X::CId)) _, _))
+               => extendTu(F, G, GT)
+               ~> #if (getTU(Base) =/=String OldTu) #then enterRestrictTU #else .K #fi
+               ~> checkStackDepth
+               ~> checkRecursion(F, getTU(Base), Calls)
+          ...</k>
+          <called-functions> Calls::Map => incrementCalled(F, getTU(Base), Calls) </called-functions>
+          <external-defs>... X |-> Base::SymBase ...</external-defs>
+          <curr-tu> OldTu::String => getTU(Base) </curr-tu>
+          <tu-id> OldTu </tu-id>
+          <goto-map>... F |-> G::Map ... </goto-map>
+          <gtypes>... F |-> GT::Type ... </gtypes>
+          [structural]
+     rule <k> enterNewTu(F::CId, Base::SymBase, T::Type)
+               => #if (getTU(Base) =/=String OldTu) #then enterRestrictTU #else .K #fi
+               ~> checkStackDepth
+               ~> checkRecursion(F, getTU(Base), Calls)
+          ...</k>
+          <called-functions> Calls::Map => incrementCalled(F, getTU(Base), Calls) </called-functions>
+          <curr-tu> OldTu::String => getTU(Base) </curr-tu>
+          requires notBool extendsTu(T)
+          [structural]
+
+     syntax KItem ::= extendTu(CId, Map, Type)
+     rule <k> extendTu(F::CId, G'::Map, GT'::Type) => .K ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <goto-map> G::Map => G[F <- G'] </goto-map>
+          <gtypes> GT::Map => GT[F <- GT'] </gtypes>
+          [structural]
+
+     syntax Bool ::= extendsTu(Type) [function]
+     rule extendsTu(t(_, SetItem(SpecExtendsTuOf(X::CId)) _, _)) => true
+     rule extendsTu(_) => false [owise]
 
      rule <k> bindParam(X:CId, T:Type, V:RValue)
                => declareInternalVariable(X, T, initValue(X, T, Initializer(X := V)))

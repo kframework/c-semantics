@@ -81,8 +81,10 @@ module C-SYNTAX
      // the following are because I flattened SpecifierElem
      syntax SpecifierElem ::= Modifier
 
-     syntax Modifier ::= Inline()
-     syntax Modifier ::= Noreturn()
+     syntax Modifier ::= FunctionSpecifier
+     syntax FunctionSpecifier ::= Inline()
+     syntax FunctionSpecifier ::= Noreturn()
+     syntax FunctionSpecifier ::= SpecExtendsTuOf(CId)
 
      /*
      | IF of expression * statement * statement * cabsloc
