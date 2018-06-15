@@ -2,10 +2,12 @@ module C-EXECUTION-INIT-SYNTAX
      imports LIST
      imports STRING
      imports SET
+     imports COMMON-SORTS
      syntax KItem ::= pgmArgs(List) [function]
      syntax KItem ::= incomingArguments(List)
      syntax KItem ::= callEntryPoint(String, Int, K)
-     syntax KItem ::= "initMainThread"
+     syntax KItem ::= initMainThread(String)
+     syntax KItem ::= "initMainThread'" "(" String ")"
      syntax KItem ::= "callAtExit" | "callAtQuickExit"
      syntax RValue ::= "NullPointerConstant" [function]
      syntax String ::= getEntryPoint(Set) [function]
@@ -116,10 +118,8 @@ module C-EXECUTION-INIT
      rule stdinStr => "stdin:/" +String "/" +String "/"
      rule stdoutStr => "stdout:/" +String "/" +String "/"
 
-     syntax KItem ::= "initMainThread'" "(" String ")"
-
-     rule <k> initMainThread => initMainThread'(MainTU) ...</k>
-          <main-tu> SetItem(MainTU:String) </main-tu>
+     rule <k> initMainThread(EP::String) => initMainThread'(getTU(Base)) ...</k>
+          <external-defs>... Identifier(EP) |-> Base::SymBase ...</external-defs>
           [structural]
 
      rule <threads>

@@ -16,6 +16,9 @@ module CPP-EXECUTION-INIT
      rule xe(E::Expr, _, _) => E
      rule le(E::Expr, _, _) => E
 
+     rule <k> initMainThread(EP::String) => initMainThread'(getTU(Base)) ...</k>
+          <odr-defs>... GlobalNamespace() :: Identifier(EP) |-> (_::CPPType |-> Base::SymBase) ...</odr-defs>
+
      rule <k> callEntryPoint(EP::String, N:Int, Args:K)
                => enterRestrictTU ~> K ~> reval(#callCppEntryPoint(T, getBase(Entry), N, mainArguments, Args)) ~> callAtExit
           ...</k>
