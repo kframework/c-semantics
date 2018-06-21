@@ -46,7 +46,7 @@ comparison: ${TEST_COMPARISON}
 
 %.cmp: %.out %.output
 	@echo -n "Comparing $^... "
-	@diff --strip-trailing-cr $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
+	@diff -a --strip-trailing-cr $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
 clean:
 	rm -rf *.out *.kcc *.tmp *.gcc *-good.output *.cmp

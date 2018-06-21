@@ -425,6 +425,9 @@ module LIBC-IO
           [structural]
      rule getBytes'(_, 0, S::String) => str(S)
           [structural]
+     rule (.K => UNSPEC("IO3", "Reading an unspecified value."))
+          ~> reval(tv(unknown(_), _)) ~> getBytes'(_, _, _)
+          [structural]
 
      rule pointerToInt(Loc::SymLoc) => unknownToInt(cfg:pointerToInt(Loc, utype(int)))
 
