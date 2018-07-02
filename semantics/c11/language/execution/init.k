@@ -247,9 +247,15 @@ module C-EXECUTION-INIT
           [ndtrans]
 
      rule <thread>...
-            <thread-id> 0 </thread-id>
-            <k> (.K => UNSPEC("CEER6", "Unspecified value returned from main function."))
-                ~> reval(tv(unknown(I:Int), _)) </k>
+               <thread-id> 0 </thread-id>
+               <k> reval(tv(V::CValue => unknown(V), _)) </k>
+          ...</thread>
+          requires notBool isInt(V) andBool notBool isUnknown(V)
+     rule <thread>...
+               <thread-id> 0 </thread-id>
+               <k> (.K => UNSPEC("CEER6", "Unspecified value returned from main function."))
+                    ~> reval(tv(unknown(_), _))
+               </k>
           ...</thread>
 
      rule <k> L:CabsLoc => .K ...</k>
