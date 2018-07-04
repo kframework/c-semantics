@@ -14,6 +14,7 @@ FAIL_TESTS_DIR = tests/unit-fail
 FAIL_COMPILE_TESTS_DIR = tests/unit-fail-compilation
 
 FILES_TO_DIST = \
+	$(SCRIPTS_DIR)/kcc \
 	$(SCRIPTS_DIR)/k++ \
 	$(SCRIPTS_DIR)/kranlib \
 	$(SCRIPTS_DIR)/merge-kcc-obj \
@@ -32,11 +33,17 @@ FILES_TO_DIST = \
 	LICENSE \
 	licenses
 
-LIBC_SO = $(DIST_DIR)/$(PROFILE)/lib/libc.so
-LIBSTDCXX_SO = $(DIST_DIR)/$(PROFILE)/lib/libstdc++.so
+PERL_MODULES = \
+	$(SCRIPTS_DIR)/RV_Kcc/Opts.pm \
+	$(SCRIPTS_DIR)/RV_Kcc/Files.pm \
+	$(SCRIPTS_DIR)/RV_Kcc/Shell.pm
+
+DIST_PROFILES = $(DIST_DIR)/profiles
+LIBC_SO = $(DIST_PROFILES)/$(PROFILE)/lib/libc.so
+LIBSTDCXX_SO = $(DIST_PROFILES)/$(PROFILE)/lib/libstdc++.so
 
 define timestamp_of
-    $(DIST_DIR)/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
+    $(DIST_PROFILES)/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
 .PHONY: default check-vars semantics clean fast cpp-semantics translation-semantics execution-semantics test-build pass fail fail-compile parser/cparser $(CPPPARSER_DIR)/clang-kast $(PROFILE)-native-server
@@ -52,87 +59,92 @@ check-vars:
 	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-$(DIST_DIR)/kcc: $(SCRIPTS_DIR)/kcc $(FILES_TO_DIST)
+$(DIST_DIR)/writelong: $(SCRIPTS_DIR)/writelong.c
+	@$(CC) $(SCRIPTS_DIR)/writelong.c -o $(DIST_DIR)/writelong
+
+$(DIST_DIR)/RV_Kcc/Opts.pm: $(SCRIPTS_DIR)/getopt.pl $(PERL_MODULES)
+	@mkdir -p $(DIST_DIR)/RV_Kcc
+	@cp -RLp $(SCRIPTS_DIR)/RV_Kcc/*.pm $(DIST_DIR)/RV_Kcc
+	@cat $(SCRIPTS_DIR)/RV_Kcc/Opts.pm | perl $(SCRIPTS_DIR)/getopt.pl > $(DIST_DIR)/RV_Kcc/Opts.pm
+
+$(DIST_DIR)/kcc: $(DIST_DIR)/RV_Kcc/Opts.pm $(DIST_DIR)/writelong $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
 	@cp -RLp $(FILES_TO_DIST) $(DIST_DIR)
-	@cat $(SCRIPTS_DIR)/kcc | perl $(SCRIPTS_DIR)/getopt.pl > $(DIST_DIR)/kcc
-	@chmod --reference=$(SCRIPTS_DIR)/kcc $(DIST_DIR)/kcc
-	@$(CC) $(SCRIPTS_DIR)/writelong.c -o $(DIST_DIR)/writelong
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
-$(DIST_DIR)/$(PROFILE): $(DIST_DIR)/kcc $(wildcard $(PROFILE_DIR)/include/* $(PROFILE_DIR)/pp $(PROFILE_DIR)/cpp-pp) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/include/*) $(d)/pp $(d)/cpp-pp) $(PROFILE)-native-server | check-vars
-	@mkdir -p $(DIST_DIR)/$(PROFILE)/lib
+$(DIST_PROFILES)/$(PROFILE): $(DIST_DIR)/kcc $(wildcard $(PROFILE_DIR)/include/* $(PROFILE_DIR)/pp $(PROFILE_DIR)/cpp-pp) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/include/*) $(d)/pp $(d)/cpp-pp) $(PROFILE)-native-server | check-vars
+	@mkdir -p $(DIST_PROFILES)/$(PROFILE)/lib
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/current-profile
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/default-profile
-	@cp -Lp $(PROFILE_DIR)/pp $(DIST_DIR)/$(PROFILE)
-	@-cp -Lp $(PROFILE_DIR)/cpp-pp $(DIST_DIR)/$(PROFILE)
-	@cp -RLp $(PROFILE_DIR)/include $(DIST_DIR)/$(PROFILE)
-	@cp -RLp $(PROFILE_DIR)/src $(DIST_DIR)/$(PROFILE)
-	@if [ -d "$(PROFILE_DIR)/native" ]; then cp -RLp $(PROFILE_DIR)/native $(DIST_DIR)/$(PROFILE); fi
-	@cp -RLp $(PROFILE_DIR)/compiler-src $(DIST_DIR)/$(PROFILE)
+	@cp -Lp $(PROFILE_DIR)/pp $(DIST_PROFILES)/$(PROFILE)
+	@-cp -Lp $(PROFILE_DIR)/cpp-pp $(DIST_PROFILES)/$(PROFILE)
+	@cp -RLp $(PROFILE_DIR)/include $(DIST_PROFILES)/$(PROFILE)
+	@cp -RLp $(PROFILE_DIR)/src $(DIST_PROFILES)/$(PROFILE)
+	@if [ -d "$(PROFILE_DIR)/native" ]; then cp -RLp $(PROFILE_DIR)/native $(DIST_PROFILES)/$(PROFILE); fi
+	@cp -RLp $(PROFILE_DIR)/compiler-src $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		mkdir -p $(DIST_DIR)/$(shell basename $(d))/lib)
+		mkdir -p $(DIST_PROFILES)/$(shell basename $(d))/lib)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -Lp $(d)/pp $(DIST_DIR)/$(shell basename $(d)))
+		cp -Lp $(d)/pp $(DIST_PROFILES)/$(shell basename $(d)))
 	@-$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -Lp $(d)/cpp-pp $(DIST_DIR)/$(shell basename $(d)))
+		cp -Lp $(d)/cpp-pp $(DIST_PROFILES)/$(shell basename $(d)))
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(d)/include $(DIST_DIR)/$(shell basename $(d)))
+		cp -RLp $(d)/include $(DIST_PROFILES)/$(shell basename $(d)))
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(d)/src $(DIST_DIR)/$(shell basename $(d)))
+		cp -RLp $(d)/src $(DIST_PROFILES)/$(shell basename $(d)))
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		if [ -d "$(d)/native" ]; then cp -RLp $(d)/native $(DIST_DIR)/$(shell basename $(d)); fi)
+		if [ -d "$(d)/native" ]; then cp -RLp $(d)/native $(DIST_PROFILES)/$(shell basename $(d)); fi)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(d)/compiler-src $(DIST_DIR)/$(shell basename $(d)))
+		cp -RLp $(d)/compiler-src $(DIST_PROFILES)/$(shell basename $(d)))
 
 $(PROFILE_DIR)/cpp-pp:
 
-$(call timestamp_of,c11-cpp14): execution-semantics $(DIST_DIR)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/c11-cpp14-kompiled $(DIST_DIR)/$(PROFILE)
+$(call timestamp_of,c11-cpp14): execution-semantics $(DIST_PROFILES)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/c11-cpp14-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/c11-cpp14-kompiled $(DIST_DIR)/$(shell basename $(d)))
+		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/c11-cpp14-kompiled $(DIST_PROFILES)/$(shell basename $(d)))
 
-$(call timestamp_of,c11-translation): translation-semantics $(DIST_DIR)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(PROFILE)
+$(call timestamp_of,c11-translation): translation-semantics $(DIST_PROFILES)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/c11-translation-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(shell basename $(d)))
+		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/c11-translation-kompiled $(DIST_PROFILES)/$(shell basename $(d)))
 
-$(call timestamp_of,cpp14-translation): cpp-semantics $(DIST_DIR)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/cpp14-translation-kompiled $(DIST_DIR)/$(PROFILE)
+$(call timestamp_of,cpp14-translation): cpp-semantics $(DIST_PROFILES)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/cpp14-translation-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/cpp14-translation-kompiled $(DIST_DIR)/$(shell basename $(d)))
+		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/cpp14-translation-kompiled $(DIST_PROFILES)/$(shell basename $(d)))
 
-$(LIBSTDCXX_SO): $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) $(DIST_DIR)/$(PROFILE)
+$(LIBSTDCXX_SO): $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) $(DIST_PROFILES)/$(PROFILE)
 	@echo "$(PROFILE): Translating the C++ standard library..."
 	@cd $(PROFILE_DIR)/compiler-src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(LIBSTDCXX_SO) *.C $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/compiler-src && \
-		$(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_DIR)/$(shell basename $(d))/lib/libstdc++.so *.C $(KCCFLAGS) -I .)
+		$(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libstdc++.so *.C $(KCCFLAGS) -I .)
 	@echo "$(PROFILE): Done translating the C++ standard library."
 
-$(LIBC_SO): $(call timestamp_of,cpp14-translation) $(call timestamp_of,c11-translation) $(wildcard $(PROFILE_DIR)/native/*.c) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/native/*.c)) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_DIR)/$(PROFILE)
+$(LIBC_SO): $(call timestamp_of,cpp14-translation) $(call timestamp_of,c11-translation) $(wildcard $(PROFILE_DIR)/native/*.c) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/native/*.c)) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_PROFILES)/$(PROFILE)
 	@echo "$(PROFILE): Translating the C standard library..."
 	@if [ -d "$(PROFILE_DIR)/native" ]; \
 		then cd $(PROFILE_DIR)/native && $(CC) -c *.c -I . && cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(LIBC_SO) *.c $(PROFILE_DIR)/native/*.o $(KCCFLAGS) -I .; \
 		else cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(LIBC_SO) *.c $(KCCFLAGS) -I .; fi
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		if [ -d "$(d)/native" ]; \
-			then cd $(d)/native && $(CC) -c *.c -I . && cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_DIR)/$(shell basename $(d))/lib/libc.so *.c $(d)/native/*.o $(KCCFLAGS) -I .; \
-			else cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_DIR)/$(shell basename $(d))/lib/libc.so *.c $(KCCFLAGS) -I .; fi)
+			then cd $(d)/native && $(CC) -c *.c -I . && cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libc.so *.c $(d)/native/*.o $(KCCFLAGS) -I .; \
+			else cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libc.so *.c $(KCCFLAGS) -I .; fi)
 	@echo "$(PROFILE): Done translating the C standard library."
 
-$(PROFILE)-native-server: $(DIST_DIR)/$(PROFILE)/native-server/main.o $(DIST_DIR)/$(PROFILE)/native-server/server.c $(DIST_DIR)/$(PROFILE)/native-server/platform.o $(DIST_DIR)/$(PROFILE)/native-server/platform.h $(DIST_DIR)/$(PROFILE)/native-server/server.h
+$(PROFILE)-native-server: $(DIST_PROFILES)/$(PROFILE)/native-server/main.o $(DIST_PROFILES)/$(PROFILE)/native-server/server.c $(DIST_PROFILES)/$(PROFILE)/native-server/platform.o $(DIST_PROFILES)/$(PROFILE)/native-server/platform.h $(DIST_PROFILES)/$(PROFILE)/native-server/server.h
 
-$(DIST_DIR)/$(PROFILE)/native-server/main.o: native-server/main.c native-server/server.h
+$(DIST_PROFILES)/$(PROFILE)/native-server/main.o: native-server/main.c native-server/server.h
 	mkdir -p $(dir $@)
 	gcc -c $< -o $@ -Wall -Wextra -pedantic -Werror -g
-$(DIST_DIR)/$(PROFILE)/native-server/%.h: native-server/%.h
+$(DIST_PROFILES)/$(PROFILE)/native-server/%.h: native-server/%.h
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
-$(DIST_DIR)/$(PROFILE)/native-server/server.c: native-server/server.c
+$(DIST_PROFILES)/$(PROFILE)/native-server/server.c: native-server/server.c
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
-$(DIST_DIR)/$(PROFILE)/native-server/platform.o: $(PROFILE_DIR)/native-server/platform.c native-server/platform.h
+$(DIST_PROFILES)/$(PROFILE)/native-server/platform.o: $(PROFILE_DIR)/native-server/platform.c native-server/platform.h
 	mkdir -p $(dir $@)
 	gcc -c $< -o $@ -Wall -Wextra -pedantic -Werror -I native-server -g
 
