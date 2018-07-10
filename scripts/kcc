@@ -524,14 +524,14 @@ sub preprocess {
                   my $cmd = "set -o pipefail && " . distDir("call-sites") . " '$output' --char=sc -- -x $lang | sort | uniq";
                   shell('/bin/bash', '-c', $cmd)->stdout($trampolines)->run();
             } else {
-                  shell("touch $trampolines")->run();
+                  shell('touch', $trampolines)->run();
             }
-            shell("rv-ifdefclear $output")->run();
+            shell("rv-ifdefclear $output || true")->run();
             for (ifdefs()) {
-                  shell("rv-ifdefall $output @$_")->run();
+                  shell("rv-ifdefall $output @$_ || true")->run();
             }
             if ($isStdout) {
-                  shell("cat $output")->verbose()->run();
+                  shell('cat', $output)->verbose()->run();
             }
       }
       return $retval;
