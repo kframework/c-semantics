@@ -22,10 +22,6 @@ module LIBC-BUILTIN-SYNTAX
 
      syntax KItem ::= "initBuiltins"
 
-     // Using "fixed" to mean objects returned by library functions that
-     // cause UB if the user tries to modify them.
-     syntax Bool ::= isLibcFixedDuration(SymBase) [function]
-
 endmodule
 
 module LIB-BUILTIN-SYNTAX
@@ -165,9 +161,6 @@ module LIBC-BUILTIN
 
      rule isAllocatedDuration(obj(... d: libc)) => true
      rule isAllocatedDuration(obj(... d: libcFixed)) => true
-
-     rule isLibcFixedDuration(obj(... d: libcFixed)) => true
-     rule isLibcFixedDuration(_) => false [owise]
 
      rule initBuiltins => initStdio ~> initErrno
 

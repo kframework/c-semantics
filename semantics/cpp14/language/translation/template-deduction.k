@@ -1,6 +1,6 @@
-module CPP-TEMPLATE-DEDUCTION-SYNTAX
+module CPP-TRANSLATION-TEMPLATE-DEDUCTION-SYNTAX
      imports LIST
-     imports CPP-DECL-TEMPLATE-SORTS
+     imports CPP-TRANSLATION-DECL-TEMPLATE-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-SORTS
      imports CPP-TYPING-SORTS
@@ -11,20 +11,20 @@ module CPP-TEMPLATE-DEDUCTION-SYNTAX
                     | "finishAutoDeduction"
 endmodule
 
-module CPP-TEMPLATE-DEDUCTION
-     imports CPP-TEMPLATE-DEDUCTION-SYNTAX
+module CPP-TRANSLATION-TEMPLATE-DEDUCTION
+     imports CPP-TRANSLATION-TEMPLATE-DEDUCTION-SYNTAX
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports COMMON-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
-     imports CPP-DECL-DECLARATOR-SYNTAX
-     imports CPP-DECL-TEMPLATE-SYNTAX
-     imports CPP-OVERLOADING-SYNTAX
+     imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
+     imports CPP-TRANSLATION-DECL-TEMPLATE-SYNTAX
+     imports CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
 
      syntax DeductionContext ::= "FunctionCall" | "FunctionDecl"
       
@@ -70,7 +70,7 @@ module CPP-TEMPLATE-DEDUCTION
 
      // TODO(traiansf): default Args for template functions
      rule <k> deduceTemplateFromCall(t(Q::Quals, Mods::Set, functionType(Ret::CPPType, .CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), _, Params::List, X::QualId) => finishDeduction(T) ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <templates>... X |-> (_::TypeMap t(Q, Mods, functionType(Ret, toCPPTypes(Params), MI, L, E)) |-> T:TemplateInfo) ...</templates>
 
@@ -88,12 +88,12 @@ module CPP-TEMPLATE-DEDUCTION
      syntax KItem ::= locateReturns(CPPTypeExpr, List)
      // TODO(dwightguth): replace this with a generic visitor of syntax
      rule locateReturns(_, (ListItem(BlockStmt(_, L::List)) => L) _)
-     rule locateReturns(_, (ListItem(LabelStmt(_, L::List)) => L) _)
-     rule locateReturns(_, (ListItem(GotoStmt(_)) => .List) _)
-     rule locateReturns(_, (ListItem(ExpressionStmt(_)) => .List) _)
-     rule locateReturns(_, (ListItem(IfStmt(_::Expr, S1::Stmt, S2::Stmt)) => ListItem(S1) ListItem(S2)) _)
+     rule locateReturns(_, (ListItem(TLabelStmt(_, L::List)) => L) _)
+     rule locateReturns(_, (ListItem(TGotoStmt(_)) => .List) _)
+     rule locateReturns(_, (ListItem(TExpressionStmt(_)) => .List) _)
+     rule locateReturns(_, (ListItem(IfTStmt(_::Expr, S1::Stmt, S2::Stmt)) => ListItem(S1) ListItem(S2)) _)
      rule locateReturns(_, (ListItem(DeclStmt(_)) => .List) _)
-     rule locateReturns(_, (ListItem(BreakStmt()) => .List) _)
+     rule locateReturns(_, (ListItem(TBreakStmt()) => .List) _)
      rule locateReturns(_, (ListItem(NullStmt()) => .List) _)
 
      rule (.K => getTypesForDeduction(P, I, I))

@@ -1,8 +1,8 @@
-module CPP-EXPR-ALIGNOF
+module CPP-TRANSLATION-EXPR-ALIGNOF
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-ALIGNMENT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule (.K => typeof(E)) ~> AlignofExpr(E::Expr)

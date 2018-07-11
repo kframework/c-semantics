@@ -5,6 +5,7 @@ require "env.k"
 require "error.k"
 require "init.k"
 require "io.k"
+require "races.k"
 require "sequence-point.k"
 
 require "stmt/block.k"
@@ -29,16 +30,19 @@ require "decl/local.k"
 require "decl/typedef.k"
 
 require "c-extensions-execution.k"
+require "../../../common/execution/execution.k"
 
 module C-EXECUTION
      imports C-CONFIGURATION
      imports C-ENV
      imports C-EXECUTION-ERROR
      imports C-EXECUTION-INIT
+     imports COMMON-EXECUTION
 
      imports C-CHECK-EFFECTIVE
      imports C-CHECK-RESTRICT
      imports C-IO
+     imports C-RACES
      imports C-SEQUENCE-POINT
 
      imports C-STMT-BLOCK

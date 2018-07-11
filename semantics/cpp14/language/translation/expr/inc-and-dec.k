@@ -1,4 +1,4 @@
-module CPP-EXPR-INC-AND-DEC
+module CPP-TRANSLATION-EXPR-INC-AND-DEC
      imports BOOL
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
@@ -15,6 +15,7 @@ module CPP-EXPR-INC-AND-DEC
 
      context postOp(_, (HOLE:Expr => reval(HOLE)), _) [result(PRVal)]
      rule postOp(LV:LVal, Op:PRVal, Tr::Trace) => pre(postOp(LV, Op, Tr), Tr, utype(LV))
+          requires Translation()
 
      rule ++ LV:LVal
           => LV += prv(1, noTrace, type(int))

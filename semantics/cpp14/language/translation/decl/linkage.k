@@ -1,4 +1,4 @@
-module CPP-DECL-LINKAGE
+module CPP-TRANSLATION-DECL-LINKAGE
      imports C-CONFIGURATION
      imports STRING
      imports COMPAT-SYNTAX
@@ -14,7 +14,7 @@ module CPP-DECL-LINKAGE
               ~> listToK(Decls)
               ~> setLinkage(OldLinkage, OldExtern)
           ...</k>
-          <curr-scope> N:NamespaceScope </curr-scope>
+          <curr-tr-scope> N:NamespaceScope </curr-tr-scope>
           <curr-lang-linkage> OldLinkage:LanguageLinkage </curr-lang-linkage>
           <curr-extern> OldExtern::Bool </curr-extern>
 

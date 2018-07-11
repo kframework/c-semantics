@@ -1,8 +1,9 @@
-module CPP-STMT-GOTO
+module CPP-TRANSLATION-STMT-GOTO
      imports CPP-SYNTAX
+     imports CPP-ABSTRACT-SYNTAX
      imports C-CONFIGURATION
 
-     rule <k> GotoStmt(Lbl::CId) => .K ...</k>
+     rule <k> TGotoStmt(Lbl::CId) => .K ...</k>
           <elab>... .K => GotoStmt(Lbl) </elab>
 
 endmodule

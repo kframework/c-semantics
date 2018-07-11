@@ -1,7 +1,9 @@
 module CPP-DYNAMIC-SORTS
      syntax LVal
      syntax XVal
-     syntax PRVal
+     syntax PRV
+     syntax PRVal ::= PRV
+     syntax EPRVal
      syntax GLVal ::= LVal | XVal
      syntax RVal ::= XVal | PRVal
      syntax Val ::= GLVal | RVal
@@ -69,7 +71,7 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax LVal ::= lv(v: SymLoc, tr: Trace, t: CPPTypeExpr) [klabel(lvcpp)]
      syntax XVal ::= xv(v: SymLoc, tr: Trace, t: CPPTypeExpr)
-     syntax PRVal ::= prv(v: CPPValue, tr: Trace, t: CPPTypeExpr)
+     syntax PRV ::= prv(v: CPPValue, tr: Trace, t: CPPTypeExpr)
 
      syntax LExpr ::= le(v: Expr, tr: Trace, t: CPPTypeExpr) [klabel(lecpp)]
      syntax XExpr ::= xe(v: Expr, tr: Trace, t: CPPTypeExpr)
@@ -89,6 +91,9 @@ module CPP-DYNAMIC-SYNTAX
      syntax ValueCategory ::= NoInitValueCategory
      syntax NoInitValueCategory ::= NoInitCat()
 
+     syntax Bool ::= Execution() [function]
+                   | Translation() [function]
+
      syntax Expr ::= stripHold(Expr) [function, klabel(stripHoldCpp)]
 
      syntax Bool ::= isEvalVal(K) [function]
@@ -103,6 +108,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax InitType ::= CopyInit() | DirectInit()
      syntax DeclarationType ::= FunctionDeclarationType | VarDeclarationType
      syntax Decl ::= declareNonStaticObject(id: CId, t: CPPType, init: K, DeclarationType, Duration, Set)
+     syntax Decl ::= declareNonStaticObjectExec(id: CId, t: CPPType, init: K, DeclarationType, Duration, Set)
      syntax Decl ::= declareLocalStaticObject(CId, SymBase, CPPType)
      syntax KItem ::= frozenDeclaration(Int, Int, Decl) [klabel(frozenDeclarationCpp)]
      syntax Expr ::= compoundInit(Expr, Expr) [strict(1)]
@@ -337,7 +343,7 @@ module CPP-DYNAMIC
      rule ofSPRValList(.SPRValList) => .List
      rule ofSPRValList(K:K prval:: L::SPRValList) => ListItem(K) ofSPRValList(L) [owise]
 
-     context (HOLE:Expr => reval(HOLE)) prval:: _ [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) prval:: _ [result(EPRVal)]
      context K:KResult prval:: HOLE:SPRValList
 
      syntax STypeStrictList ::= toSTypeStrictList(List) [function]
@@ -528,7 +534,7 @@ module CPP-DYNAMIC
 
      rule _:KResult ~> discard => .K
 
-     context makePRVal(HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context makePRVal(HOLE:Expr => reval(HOLE)) [result(EPRVal)]
      context makeXVal(HOLE:Expr) [result(LVal)]
      rule makePRVal(R:PRVal) => R
      rule makeXVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType)) => xv(Loc, Tr, T)
@@ -548,4 +554,15 @@ module CPP-DYNAMIC
      rule cat(xv(...)) => xvalue
      rule cat(xe(...)) => xvalue
 
+     rule pre(E::Expr, _, _) => E
+          requires Execution()
+     rule xe(E::Expr, _, _) => E
+          requires Execution()
+     rule le(E::Expr, _, _) => E
+          requires Execution()
+
+     rule Translation() => notBool Execution()
+
+     // is given prval fully evaluated?
+     rule isEPRVal(E:PRVal) => Translation() orBool isPRV(E)
 endmodule

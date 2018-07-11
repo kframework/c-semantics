@@ -5,6 +5,7 @@ module CPP-EXECUTION-INIT
      imports C-CHECK-RESTRICT-SYNTAX
      imports C-CPP-VAL-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-EXECUTION-EXPR-EXPRLOC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
@@ -12,9 +13,7 @@ module CPP-EXECUTION-INIT
 
      imports LIBC-IO-SYNTAX
 
-     rule pre(E::Expr, _, _) => E
-     rule xe(E::Expr, _, _) => E
-     rule le(E::Expr, _, _) => E
+     rule Execution() => true
 
      rule <k> initMainThread(EP::String) => initMainThread'(getTU(Base)) ...</k>
           <odr-defs>... GlobalNamespace() :: Identifier(EP) |-> (_::CPPType |-> Base::SymBase) ...</odr-defs>
@@ -35,7 +34,7 @@ module CPP-EXECUTION-INIT
           => BuiltinCallOp(lv(lnew(Base), noTrace, T), false, .List)
           requires getParams(T) ==K .List
      rule #callCppEntryPoint(T::CPPFunctionType, Base::SymBase, Argc:Int, X:CId, Args:K)
-          => Args ~> setupCppEnv(Argc) ~> BuiltinCallOp(lv(lnew(Base), noTrace, T), false, ListItem(prv(Argc, noTrace, type(int))) ListItem(Name(NoNNS(), X)))
+          => Args ~> setupCppEnv(Argc) ~> BuiltinCallOp(lv(lnew(Base), noTrace, T), false, ListItem(prv(Argc, noTrace, type(int))) ListItem(ExecName(NoNNS(), X)))
           requires size(getParams(T)) ==Int 2
 
      syntax KItem ::= setupCppEnv(Int)
@@ -72,14 +71,7 @@ module CPP-EXECUTION-INIT
      rule combine(_, _::Trace, _) => noTrace
      rule combine(_, _, _::Trace, _, _) => noTrace
 
-     rule <k> ExprLoc(L::CabsLoc, E::Expr) => #ExprLoc(L, E) ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
-
      syntax Expr ::= RValue
-     syntax Expr ::= #ExprLoc(CabsLoc, Expr) [strict(2)]
-     rule <k> #ExprLoc(L::CabsLoc, V:RValue) => convertValToCPP(V) ...</k>
+     rule <k> #ExecExprLoc(L::CabsLoc, V:RValue) => convertValToCPP(V) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
-     rule <k> #ExprLoc(L::CabsLoc, V:Val) => V ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
-
 endmodule

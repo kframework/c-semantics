@@ -92,3 +92,9 @@ zeroinit-class-padding.C.cmp:
 
 clean:
 	rm -rf *.out *.kcc *.tmp *.gcc *.ref *.cmp
+
+clean-c:
+	rm -f *.c.*
+
+clean-cpp:
+	rm -f *.C.*

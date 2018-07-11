@@ -1,16 +1,17 @@
-module CPP-EXPR-LITERAL
+module CPP-TRANSLATION-EXPR-LITERAL
      imports C-CONFIGURATION
      imports FLOAT
      imports STRING
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-ALIGNMENT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
-     imports CPP-ELABORATOR-SYNTAX
+     imports CPP-TRANSLATION-ELABORATOR-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
      imports CPP-MEMORY-WRITING-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
+     imports CPP-SYNTAX
 
      syntax Expr ::= StringLiteral(String, TypeExpr) [klabel(StringLiteral2)]
      context StringLiteral(_, (HOLE:TypeExpr => typeof(HOLE)))
@@ -57,5 +58,17 @@ module CPP-EXPR-LITERAL
           => allocObject(Base, T, lengthString(S))
           ~> initString(lnew(Base), S)
           ~> lv(lnew(Base), hasTrace(StringLiteral(S, T)), T)
+
+     syntax KItem ::= initString(SymLoc, String) [klabel(initStringCpp)]
+
+     rule initString(Loc::SymLoc, S::String)
+          => TExpressionStmt(
+               lv(Loc, noTrace, type(unsigned-char))
+               :=init prv(ordChar(firstChar(S)), noTrace, type(unsigned-char)))
+               ~> initString(Loc +bytes 1, butFirstChar(S))
+          requires S =/=String ""
+
+     rule initString(Loc::SymLoc, "")
+          => .K
 
 endmodule

@@ -1,9 +1,11 @@
+require "constant.k"
 require "conversion.k"
 require "elaborator.k"
 require "env.k"
 require "error.k"
 require "init.k"
 require "io.k"
+require "linking-interface.k"
 require "name.k"
 require "operators.k"
 require "overloading.k"
@@ -60,65 +62,83 @@ require "typing/expr.k"
 
 require "cpp-extensions-translation.k"
 
+require "../../../common/execution/execution.k"
+
+require "../execution/simple-execution.k"
+
+require "../../../c11/language/execution/sequence-point.k"
+require "../../../c11/language/execution/check-restrict.k"
+require "../../../c11/language/common/error.k"
+
+
 module CPP-TRANSLATION
+     imports COMMON-EXECUTION
+     imports CPP-SIMPLE-EXECUTION
+
+     imports C-SEQUENCE-POINT
+     imports C-CHECK-RESTRICT
+     imports C-ERROR
+
      imports CPP-TRANSLATION-CONVERSION
-     imports CPP-ELABORATOR
-     imports CPP-ENV
+     imports CPP-TRANSLATION-ELABORATOR
+     imports CPP-TRANSLATION-ENV
+     imports CPP-LINKING-INTERFACE
+     imports CPP-TRANSLATION-CONSTANT
      imports CPP-TRANSLATION-ERROR
      imports CPP-TRANSLATION-INIT
      imports CPP-TRANSLATION-IO
      imports CPP-TRANSLATION-NAME
-     imports CPP-OPERATORS
-     imports CPP-OVERLOADING
-     imports CPP-PROCESS-LABEL
-     imports CPP-PROMOTION
-     imports CPP-ABSTRACT-REWRITING
-     imports CPP-TEMPLATE-DEDUCTION
-     imports CPP-VALUE-CATEGORY
+     imports CPP-TRANSLATION-OPERATORS
+     imports CPP-TRANSLATION-OVERLOADING
+     imports CPP-TRANSLATION-PROCESS-LABEL
+     imports CPP-TRANSLATION-PROMOTION
+     imports CPP-TRANSLATION-ABSTRACT-REWRITING
+     imports CPP-TRANSLATION-TEMPLATE-DEDUCTION
+     imports CPP-TRANSLATION-VALUE-CATEGORY
 
-     imports CPP-DECL-CLASS
-     imports CPP-DECL-ENUM
-     imports CPP-DECL-DECLARATOR
-     imports CPP-DECL-INITIALIZER
-     imports CPP-DECL-LINKAGE
-     imports CPP-DECL-NAMESPACE
-     imports CPP-DECL-TEMPLATE
-     imports CPP-DECL-TYPEDEF
-     imports CPP-DECL-USING
+     imports CPP-TRANSLATION-DECL-CLASS
+     imports CPP-TRANSLATION-DECL-ENUM
+     imports CPP-TRANSLATION-DECL-DECLARATOR
+     imports CPP-TRANSLATION-DECL-INITIALIZER
+     imports CPP-TRANSLATION-DECL-LINKAGE
+     imports CPP-TRANSLATION-DECL-NAMESPACE
+     imports CPP-TRANSLATION-DECL-TEMPLATE
+     imports CPP-TRANSLATION-DECL-TYPEDEF
+     imports CPP-TRANSLATION-DECL-USING
 
      imports CPP-TRANSLATION-EXPR-ADDITIVE
-     imports CPP-EXPR-ALIGNOF
-     imports CPP-EXPR-ASSIGNMENT
+     imports CPP-TRANSLATION-EXPR-ALIGNOF
+     imports CPP-TRANSLATION-EXPR-ASSIGNMENT
      imports CPP-TRANSLATION-EXPR-BITWISE
      imports CPP-TRANSLATION-EXPR-CAST
-     imports CPP-EXPR-COMMA
-     imports CPP-EXPR-CONDITIONAL
+     imports CPP-TRANSLATION-EXPR-COMMA
+     imports CPP-TRANSLATION-EXPR-CONDITIONAL
      imports CPP-TRANSLATION-EXPR-EVAL
-     imports CPP-EXPR-FUNCTION-CALL
-     imports CPP-EXPR-INC-AND-DEC
-     imports CPP-EXPR-LITERAL
-     imports CPP-EXPR-LOGICAL
+     imports CPP-TRANSLATION-EXPR-FUNCTION-CALL
+     imports CPP-TRANSLATION-EXPR-INC-AND-DEC
+     imports CPP-TRANSLATION-EXPR-LITERAL
+     imports CPP-TRANSLATION-EXPR-LOGICAL
      imports CPP-TRANSLATION-EXPR-MEMBERS
      imports CPP-TRANSLATION-EXPR-MULTIPLICATIVE
-     imports CPP-EXPR-NEW
-     imports CPP-EXPR-REFERENCE
+     imports CPP-TRANSLATION-EXPR-NEW
+     imports CPP-TRANSLATION-EXPR-REFERENCE
      imports CPP-TRANSLATION-EXPR-RELATIONAL
-     imports CPP-EXPR-SIZEOF
+     imports CPP-TRANSLATION-EXPR-SIZEOF
      imports CPP-TRANSLATION-EXPR-UNARY
 
-     imports CPP-STMT-BLOCK
-     imports CPP-STMT-CANONICALIZATION
-     imports CPP-STMT-EXPR
-     imports CPP-STMT-GOTO
-     imports CPP-STMT-IF
-     imports CPP-STMT-LABELED
-     imports CPP-STMT-LOOP
-     imports CPP-STMT-RETURN
-     imports CPP-STMT-TRY
+     imports CPP-TRANSLATION-STMT-BLOCK
+     imports CPP-TRANSLATION-STMT-CANONICALIZATION
+     imports CPP-TRANSLATION-STMT-EXPR
+     imports CPP-TRANSLATION-STMT-GOTO
+     imports CPP-TRANSLATION-STMT-IF
+     imports CPP-TRANSLATION-STMT-LABELED
+     imports CPP-TRANSLATION-STMT-LOOP
+     imports CPP-TRANSLATION-STMT-RETURN
+     imports CPP-TRANSLATION-STMT-TRY
 
-     imports CPP-TYPING-CANONICALIZATION
-     imports CPP-TYPING-DEPENDENT
-     imports CPP-TYPING-EXPR
+     imports CPP-TRANSLATION-TYPING-CANONICALIZATION
+     imports CPP-TRANSLATION-TYPING-DEPENDENT
+     imports CPP-TRANSLATION-TYPING-EXPR
 
      imports CPP-TRANSLATION-EXTENSIONS
 endmodule

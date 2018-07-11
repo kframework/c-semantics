@@ -12,6 +12,7 @@ module C-TRANSLATION-INIT
      imports C-LINKING-INIT-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
      imports C-SYNTAX
+     imports COMMON-TRANSLATION-UNIT-SYNTAX
 
      rule ToIdentifier("___missing_field_name") => #NoName
      rule ToIdentifier(S:String) => Identifier(S)
@@ -78,5 +79,7 @@ module C-TRANSLATION-INIT
      rule AttributeWrapper(K:K, _) => K
 
      rule NothingExpression() => {emptyValue}:>Expression
+
+     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tu>TU::String</curr-tu> ...</generatedTop>) => TU
 
 endmodule

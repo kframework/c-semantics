@@ -4,6 +4,7 @@ module C-STMT-BLOCK
      imports C-CHECK-RESTRICT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-IO-SYNTAX
+     imports DELETE-OBJECT-SYNTAX
 
      rule <k> pushBlock(Tag:Int)
                => enterRestrictBlock(blockScope(F, Tag))

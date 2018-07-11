@@ -1,16 +1,16 @@
-module CPP-OPERATORS-SYNTAX
+module CPP-TRANSLATION-OPERATORS-SYNTAX
      imports CPP-SORTS
      syntax Expr ::= builtinOperator(OpId, Expr, Init) [function]
                    | builtinOperator(OpId, Expr) [function, klabel(builtinOperator2)]
 endmodule
 
-module CPP-OPERATORS
-     imports CPP-OPERATORS-SYNTAX
+module CPP-TRANSLATION-OPERATORS
+     imports CPP-TRANSLATION-OPERATORS-SYNTAX
      imports BASIC-K
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule BinaryOperator(O::OpId, E1::Expr, E2::Init)

@@ -6,6 +6,7 @@ module LIBC-LOCALE
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
+     imports DELETE-OBJECT-SYNTAX
 
      rule (.K => newFixedObject(nativeCall("setlocale", ListItem(Cat) ListItem(Locale), .List)))
           ~> builtin("setlocale", Cat::RValue, Locale::RValue)

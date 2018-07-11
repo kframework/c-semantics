@@ -1,4 +1,4 @@
-module CPP-DECL-ENUM-SYNTAX
+module CPP-TRANSLATION-DECL-ENUM-SYNTAX
      imports BOOL-SYNTAX
      imports LIST
      imports COMMON-SORTS
@@ -6,14 +6,15 @@ module CPP-DECL-ENUM-SYNTAX
      imports CPP-TYPING-SYNTAX
 endmodule
 
-module CPP-DECL-ENUM
-     imports CPP-DECL-ENUM-SYNTAX
+module CPP-TRANSLATION-DECL-ENUM
+     imports CPP-TRANSLATION-DECL-ENUM-SYNTAX
      imports C-CONFIGURATION
      imports COMMON-SYNTAX
      imports COMPAT-SYNTAX
+     imports CPP-TRANSLATION-CONSTANT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-ENV-SYNTAX
+     imports CPP-TRANSLATION-ENV-SYNTAX
      imports CPP-ERROR-SYNTAX
      imports CPP-SYNTAX
      imports CPP-BITSIZE-SYNTAX
@@ -22,8 +23,8 @@ module CPP-DECL-ENUM
 
      rule <k> EnumDef(X::CId, NoNNS(), Scoped::Bool, Fixed::Bool, UT::CPPIntegerType, Enumerators::List)
           => enumContext(X, declareEnumName(createEnumName(X, Sc), UT, Scoped, Fixed), Enumerators, Fixed, UT, false) ...</k>
-          <curr-scope> Sc::Scope </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> Sc::Scope </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
 
      syntax Enum ::= createEnumName(CId, Scope) [function]
@@ -45,17 +46,17 @@ module CPP-DECL-ENUM
 
      syntax KItem ::= #addEnumToEnv(CId, NNSVal, CPPEnumType)
      rule <k> #addEnumToEnv(X::CId, N::Namespace, E::CPPEnumType) => . ... </k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <ntypes> NT::Map => NT[X <- E] </ntypes>
      rule <k> #addEnumToEnv(X::CId, C::Class, E::CPPEnumType) => . ... </k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <ctypes> NT::Map => NT[X <- E] </ctypes>
      rule <k> #addEnumToEnv(X::CId, NoNamespace(), E::CPPEnumType) => . ... </k>
-          <types> NT::Map => NT[X <- E] </types>
+          <tr-types> NT::Map => NT[X <- E] </tr-types>
 
 
      syntax KItem ::= enumContext(CId, CPPEnumType, List, fixed: Bool, ut: CPPIntegerType, opaque: Bool) [strict(2)]
@@ -67,13 +68,13 @@ module CPP-DECL-ENUM
 
      syntax KItem ::= inEnumScope(CPPEnumType, K)
      rule <k> inEnumScope(E::CPPEnumType, K:K) => K ~> setScope(OldScope) ... </k>
-          <curr-scope> OldScope::Scope => enumScope(getEnumId(E))  </curr-scope>
+          <curr-tr-scope> OldScope::Scope => enumScope(getEnumId(E))  </curr-tr-scope>
 
 
      syntax KItem ::= newEnum(Enum, CPPEnumType, fixed: Bool, opaque: Bool)
 
      rule <k> newEnum(EI::Enum, E:CPPEnumType, true, Opaque::Bool) => . ... </k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           (.Bag => <cppenum>...
                <enum-id> EI </enum-id>
@@ -87,7 +88,7 @@ module CPP-DECL-ENUM
           requires getEnumInfo(E) ==K #incomplete
 
      rule <k> newEnum(EI::Enum, E:CPPUnscopedEnumType, false, false) => . ... </k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           (.Bag => <cppenum>...
                <enum-id> EI </enum-id>
@@ -99,7 +100,7 @@ module CPP-DECL-ENUM
 
      // Redeclaration
      rule <k> newEnum(EI::Enum, E1:CPPEnumType, true, Opaque:Bool) => . ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <enum-id> EI </enum-id>
           <enum-type> E2:CPPEnumType </enum-type>
@@ -108,7 +109,7 @@ module CPP-DECL-ENUM
 
      rule <k> (.K => ILL("TDE5", "A scoped/unscoped enumeration shall not be later redeclared as unscoped/scoped or with a different underlying type")) ~>
                newEnum(EI::Enum, E1:CPPEnumType, true, _) ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <enum-id> EI </enum-id>
           <enum-type> E2:CPPEnumType </enum-type>
@@ -150,7 +151,12 @@ module CPP-DECL-ENUM
           requires notBool inRange(Next, type(PrevType)) andBool firstSuitableType(Next, Next, allIntegralTypes) ==K no-type
 
      rule declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, prv(_, _, T:CPPUnscopedEnumType => underlyingType(T)))) _::List, _, _)
-     context declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, HOLE:Expr)) _::List, _, _)
+
+     context declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, HOLE:Expr => reval(HOLE))) _::List, _, _) [result(PRVal)]
+     context declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, HOLE:PRVal => evalCoreConstantExpressionUntil(reval(HOLE), #klabel(`isRevalDone`)))) _::List, _, _) [result(PRV)]
+     syntax Bool ::= isRevalDone(K) [function]
+     rule isRevalDone(reval(prv(...))) => true
+     rule isRevalDone(_) => false [owise]
 
      // Type of an enumerator inside the declaration is enum's underlying type
      // if it is fixed, and type of initializing expression otherwise,
@@ -190,7 +196,7 @@ module CPP-DECL-ENUM
           <scoped> true </scoped>
 
      rule <k> addEnumeratorToEnv(Q::ClassQualifier :: Enum(_) #as EId::Enum, X::CId) => addUnscopedEnumerator(X, EId, Q) ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <enum-id> EId </enum-id>
           <scoped> false </scoped>
@@ -198,13 +204,13 @@ module CPP-DECL-ENUM
      syntax KItem ::= addUnscopedEnumerator(CId, Enum, ClassQualifier)
 
      rule <k> addUnscopedEnumerator(X::CId, E::Enum, N::Namespace) => . ... </k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <nenums>... .Map => X |-> E ...</nenums>
 
      rule <k> addUnscopedEnumerator(X::CId, E::Enum, C::Class) => . ... </k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <cenums>... .Map => X |-> E ...</cenums>
@@ -282,14 +288,14 @@ module CPP-DECL-ENUM
 
      // 7.2/3: ... An opaque-enum-declaration is either a redeclaration of an enumeration in the current scope...
      rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPIntegerType) => . ...</k>
-          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
+          <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
           <enum-id> N::Namespace :: Enum(X) </enum-id>
 
      // 7.2/3 ... or a declaration of a new enumeration.
      rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPIntegerType) 
      => enumContext(X, declareEnumName(createEnumName(X, Sc), UT, Scoped, true), .List, true, UT, true) ...</k>
-          <curr-scope> Sc::Scope </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> Sc::Scope </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
 
 endmodule

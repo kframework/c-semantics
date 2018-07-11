@@ -1,4 +1,4 @@
-module CPP-STMT-LOOP
+module CPP-EXECUTION-STMT-LOOP
      imports C-CONFIGURATION
      imports INT
      imports CPP-DYNAMIC-SYNTAX

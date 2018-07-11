@@ -10,7 +10,7 @@ module CPP-BINDING-SYNTAX
      syntax KItem ::= setThis(Expr) [strict]
 endmodule
 
-module CPP-BINDING
+module CPP-EXECUTION-BINDING
      imports CPP-BINDING-SYNTAX
      imports C-CONFIGURATION
      imports INT

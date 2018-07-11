@@ -1,8 +1,8 @@
-module CPP-EXPR-SIZEOF
+module CPP-TRANSLATION-EXPR-SIZEOF
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule (.K => typeof(E)) ~> SizeofExpr(E::Expr)

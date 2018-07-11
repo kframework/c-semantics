@@ -31,7 +31,7 @@ module LIBCPP-BOOTSTRAP
           <curr-function-params> P::List </curr-function-params>
 
      syntax Name ::= makeNamesFromCIds(CId) [function]
-     rule makeNamesFromCIds(X::CId) => Name(NoNNS(), X)
+     rule makeNamesFromCIds(X::CId) => ExecName(NoNNS(), X)
 
      rule prepareBuiltin(Q::QualId, false, krlist(.List), krlist(.List))
           => builtin(Q)

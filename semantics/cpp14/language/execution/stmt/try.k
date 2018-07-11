@@ -1,12 +1,12 @@
-module CPP-STMT-TRY
+module CPP-EXECUTION-STMT-TRY
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports C-CHECK-RESTRICT-SYNTAX
-     imports C-IO-SYNTAX
+     imports DELETE-OBJECT-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-ENV-SYNTAX
+     imports CPP-EXECUTION-ENV-SYNTAX
      imports CPP-ERROR-SYNTAX
      imports CPP-SETTINGS-SYNTAX
      imports CPP-SYNTAX
@@ -146,7 +146,7 @@ module CPP-STMT-TRY
               ~> deactivateHandler
           ...</k>
           <block-history> ListItem(I) ...</block-history>
-     rule <k> catchWithHandler(CatchOp(_, {pushBlock(N::Int) ~> declareNonStaticObject(... id: X::CId) #as D:KItem ~> Rest:K}:>Stmt), V::LVal) 
+     rule <k> catchWithHandler(CatchOp(_, {pushBlock(N::Int) ~> declareNonStaticObjectExec(... id: X::CId) #as D:KItem ~> Rest:K}:>Stmt), V::LVal) 
               ~> tryMark(I::Int)
               => popBlock 
               ~> pushBlock(N) 
@@ -162,6 +162,7 @@ module CPP-STMT-TRY
           <current-exception> _ => V </current-exception>
      rule <k> exceptionObject(_) => V ...</k>
           <current-exception> V::LVal </current-exception>
+          requires Execution()
 
      syntax KItem ::= "activateHandler"
                     | "deactivateHandler"

@@ -1,4 +1,4 @@
-module CPP-TYPING-CANONICALIZATION
+module CPP-TRANSLATION-TYPING-CANONICALIZATION
      imports C-CONFIGURATION
      imports COLLECTIONS
      imports K-REFLECTION
@@ -6,12 +6,12 @@ module CPP-TYPING-CANONICALIZATION
      imports SYMLOC-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-CONVERSION-SYNTAX
-     imports CPP-ELABORATOR-SYNTAX
-     imports CPP-ENV-SYNTAX
+     imports CPP-TRANSLATION-ELABORATOR-SYNTAX
+     imports CPP-TRANSLATION-ENV-SYNTAX
      imports CPP-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
 
      rule BuiltinType(Void()) => type(void)
      rule BuiltinType(Bool()) => type(bool)

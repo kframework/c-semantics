@@ -34,10 +34,12 @@ module CPP-CLASS
      imports K-REFLECTION
      imports C-CONFIGURATION
      imports CPP-TYPING-SYNTAX
+     imports COMMON-TRANSLATION-UNIT-SYNTAX
+
      syntax ClassInfo ::= #getClassInfo(Class, K) [function]
 
      rule getClassInfo(t(... st: classType(C::Class))) => getClassInfo(C)
-     rule getClassInfo(C::Class) => #getClassInfo(C, #configuration)
-     rule #getClassInfo(C::Class, <generatedTop>... <curr-tu> Tu::String </curr-tu> <tu-id> Tu </tu-id> <class> <class-id> C </class-id> B::Bag </class> ...</generatedTop>) => <class> <class-id> C </class-id> B </class>
+     rule getClassInfo(C::Class) => #getClassInfo(C, getCurrentTranslationUnit())
+     rule #getClassInfo(C::Class, <tu>... <class> <class-id> C </class-id> B::Bag </class> ...</tu>) => <class> <class-id> C </class-id> B </class>
      rule #getClassInfo(_, _) => #incomplete [owise]
  endmodule

@@ -1,4 +1,4 @@
-module CPP-STMT-IF
+module CPP-EXECUTION-STMT-IF
      imports INT
      imports K-EQUAL
      imports BITS-SYNTAX

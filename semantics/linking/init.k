@@ -25,6 +25,8 @@ module C-LINKING-INIT
      imports COMPAT-SYNTAX
      imports COMMON-BUILTIN-SYNTAX
      imports COMMON-INIT-SYNTAX
+     imports COMMON-LINKING-INTERFACE-SYNTAX
+     imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports ERROR-SYNTAX
      imports MEMORY-SYNTAX
      imports SYMLOC-SYNTAX
@@ -45,8 +47,7 @@ module C-LINKING-INIT
           <options> Opts:Set </options>
           requires notBool (NoLink() in Opts)
 
-     rule <k> makeTu(TU:String) => .K ...</k>
-          <curr-tu> _ => TU </curr-tu>
+     rule <k> makeTu(TU:String) => setTranslationUnit(TU) ...</k>
           <translation-units>...
                (.Bag => <tu>...
                     <tu-id> TU </tu-id>
@@ -76,32 +77,35 @@ module C-LINKING-INIT
      rule addNativeSymbols(.Map) => .K
 
      syntax KItem ::= addBuiltin(CId, Type, SymBase, Bool)
-     rule <k> addBuiltin(B:CId, T:FunctionType, Base:SymBase, AddAll:Bool)
-               => declareBuiltinFunction(B, T, Base)
+     syntax KItem ::= addBuiltin2(CId, Type, SymBase, Bool, tu: String)
+
+     rule addBuiltin(B::CId, T::Type, Base::SymBase, AddAll::Bool)
+          => addBuiltin2(B, T, Base, AddAll, nameOfCurrentTranslationUnit())
+
+     rule <k> addBuiltin2(B:CId, T:FunctionType, Base:SymBase, AddAll:Bool, Tu::String)
+               => declareBuiltinFunction(B, T, Base, Tu)
           ...</k>
           <external-uses> Uses:Map </external-uses>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
-          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(B) ...</uses>
           requires (notBool (B in_keys(Defs)) andBool B in_keys(Uses))
                orBool (notBool (B in_keys(Defs)) andBool (B in_keys(Types)))
                orBool AddAll
 
-     rule <k> addBuiltin(B:CId, T:Type, Base:SymBase, AddAll:Bool)
-               => declareBuiltinConstant(B, T, Base)
+     rule <k> addBuiltin2(B:CId, T:Type, Base:SymBase, AddAll:Bool, Tu::String)
+               => declareBuiltinConstant(B, T, Base, Tu)
           ...</k>
           <external-uses> Uses:Map </external-uses>
           <external-defs> Defs:Map </external-defs>
-          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(B) ...</uses>
           requires ((notBool (B in_keys(Defs)) andBool B in_keys(Uses))
                orBool AddAll)
                andBool notBool isFunctionType(T)
 
-     rule <k> addBuiltin(B::CId, _, _, false) => .K ...</k>
+     rule <k> addBuiltin2(B::CId, _, _, false, _) => .K ...</k>
           <external-defs> Defs:Map </external-defs>
           <external-uses> Uses:Map </external-uses>
           requires (B in_keys(Defs))
@@ -113,27 +117,25 @@ module C-LINKING-INIT
      rule getIds(.Set) => .Set
 
      // compare against declare()
-     syntax KItem ::= declareBuiltinFunction(CId, Type, SymBase)
-                    | declareBuiltinConstant(CId, Type, SymBase)
+     syntax KItem ::= declareBuiltinFunction(CId, Type, SymBase, String)
+                    | declareBuiltinConstant(CId, Type, SymBase, String)
 
-     rule <k> declareBuiltinFunction(B:CId, T::Type, Base:SymBase) => .K ...</k>
+     rule <k> declareBuiltinFunction(B:CId, T::Type, Base:SymBase, Tu::String) => .K ...</k>
           <mem> Mem::Map => Mem[Base <- object(T, 1, makeEmptyArray(1))] </mem>
           <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List)] </functions>
           <external-decls> Decls::Map => Decls[B += Tu] </external-decls>
           <external-decls-loc> DeclLocs::Map => DeclLocs[B <- UnknownCabsLoc] </external-decls-loc>
           <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
           <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
-          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> Env::Map => Env[B <- Base] </genv>
           <gtypes> Types::Map => Types[B <- T] </gtypes>
 
-     rule <k> declareBuiltinConstant(B:CId, T::Type, Base:SymBase) => .K ...</k>
+     rule <k> declareBuiltinConstant(B:CId, T::Type, Base:SymBase, Tu::String) => .K ...</k>
           <external-decls> Decls::Map => Decls[B += Tu] </external-decls>
           <external-decls-loc> DeclLocs::Map => DeclLocs[B <- UnknownCabsLoc] </external-decls-loc>
           <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
           <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
-          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> Env::Map => Env[B <- Base] </genv>
           <gtypes> Types::Map => Types[B <- T] </gtypes>
@@ -186,37 +188,28 @@ module C-LINKING-INIT
      rule checkExtTypes(.K => X, (SetItem(X::CId) => .Set) _, _, _, _, _)
      rule checkExtTypes(X:KItem => .K, _, _, Ids':Set, _, _)
           requires notBool (X in Ids')
-     rule <k> (.K => checkExtType(areDeclCompat(T, T'))) ~> checkExtTypes(X:KItem,
+     rule (.K => setTranslationLoc(L) ~> checkExtType(areDeclCompat(T, T'))) ~> checkExtTypes(X:KItem,
                _, X |-> T:Type _,
                _, X |-> T':Type _,
                X |-> L::CabsLoc _)
-          ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
-     rule <k> (.K => checkExtType(areDeclCompat(T, T'))) ~> checkExtTypes(X:KItem,
+     rule (.K => setTranslationLoc(UnknownCabsLoc) ~> checkExtType(areDeclCompat(T, T'))) ~> checkExtTypes(X:KItem,
                _, X |-> T:Type _,
                _, X |-> T':Type _,
                Locs::Map)
-          ...</k>
-          <curr-program-loc> _ => UnknownCabsLoc </curr-program-loc>
           requires notBool (X in_keys(Locs))
      rule (checkExtType(true) => .K) ~> checkExtTypes(X:KItem => .K, _, _, _, _, _)
-     rule <k> (.K => EXT-UNDEF("TIN1",
+     rule (.K => setTranslationLoc(L) ~> EXT-UNDEF("TIN1",
                "Identifier " +String idToString({X}:>CId) +String " declared with incompatible types in different translation units."))
                ~> checkExtType(false) ~> checkExtTypes(X:KItem, _, _, _, _, X |-> L::CabsLoc _)
-          ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
-     rule <k> checkExtTypes(.K, .Set, _, _, _, _) => .K ...</k>
-          <curr-program-loc> _ => UnknownCabsLoc </curr-program-loc>
+     rule checkExtTypes(.K, .Set, _, _, _, _) => setTranslationLoc(UnknownCabsLoc)
 
      rule checkExtDefs(.K => X, (SetItem(X::CId) => .Set) _, _, _)
      rule checkExtDefs(X:KItem => .K, _, Defs':Set, _)
           requires notBool (X in Defs')
      rule checkExtDefs(.K, .Set, _, _) => .K
-     rule <k> (.K => EXT-UNDEF("TIN2",
+     rule (.K => setTranslationLoc(L) ~> EXT-UNDEF("TIN2",
                "Multiple external definitions for " +String idToString({X}:>CId) +String "."))
                ~> checkExtDefs(X:KItem, _, SetItem(X) _, X |-> L::CabsLoc _)
-          ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
 
      syntax K ::= mergeObj(K, K) [function]
      syntax Map ::= mergeDecls(Map, Map) [function]

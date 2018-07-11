@@ -6,14 +6,6 @@ module C-IO-SYNTAX
 
      syntax KItem ::= realloc(SymBase, SymBase, Int, Int)
 
-     // deletes the base object from memory, given a location
-     syntax KItem ::= deleteObject(SymBase)
-     syntax KItem ::= deleteObjects(Set)
-
-     syntax Set ::= locations(List) [function]
-
-     syntax KItem ::= writeBytesBuffered(SymLoc, List)
-
 endmodule
 
 module C-IO
@@ -32,7 +24,8 @@ module C-IO
      imports C-MEMORY-WRITING-SYNTAX
      imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
-     imports LIBC-BUILTIN-SYNTAX
+     imports DELETE-OBJECT-SYNTAX
+     imports COMMON-IO-BUFFERED-SYNTAX
 
      rule writeBytes(Loc::SymLoc, Bytes::List)
           => checkRestrict(true, Loc)
@@ -51,6 +44,7 @@ module C-IO
           => writeBytesBuffered(stripProv(Loc), Bytes)
      rule initBytesFill(Loc::SymLoc, N::Int, V::Bits)
           => fillBytesBuffered(stripProv(Loc), N, V)
+
 
      syntax KItem ::= checkSeq(SymLoc)
      rule <k> checkSeq(Loc::SymLoc) => .K ...</k>
@@ -120,32 +114,13 @@ module C-IO
           requires Offset +Int Size -Int 1 >=Int Len orBool Offset <Int 0
           [structural]
 
-     rule <k> writeBytesBuffered(Loc::SymLoc, L::List) => .K ...</k>
-          <buffer>... .List => ListItem(bwrite(Loc, L)) </buffer>
-          [structural]
-
      syntax KItem ::= fillBytesBuffered(SymLoc, Int, Bits)
      rule <k> fillBytesBuffered(Loc::SymLoc, N::Int, V::Bits) => .K ...</k>
           <buffer>... .List => ListItem(bfill(Loc, N, V)) </buffer>
           [structural]
 
-     //TODO(dwightguth): when we do symbolic execution we need to rework this stuff to obey the C11 memory model
-     syntax KItem ::= bwrite(SymLoc, List)
+     rule writeNativeByte(L::SymLoc, K::K) => #writeNativeByte(L, K)
      syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure]
-     rule <buffer>
-               ListItem(bwrite(loc(Base::SymBase, Offset::Int), L::List)) => .List
-          ...</buffer>
-          <mem> M::Map => bufferWrite(M, Base, M[Base], Offset, L) </mem>
-          requires notBool isNativeLoc(loc(Base, Offset))
-          [structural]
-     rule <buffer>
-               ListItem(bwrite((Loc::SymLoc => Loc +bytes 1), ((ListItem(V:K) => #writeNativeByte(Loc, V)) _::List)))
-          ...</buffer>
-          requires isNativeLoc(Loc)
-     rule <buffer>
-               ListItem(bwrite(Loc::SymLoc, .List)) => .List
-          ...</buffer>
-          requires isNativeLoc(Loc)
 
      syntax KItem ::= bfill(SymLoc, Int, Bits)
      syntax List ::= #fillNativeBytes(SymLoc, Int, K) [function, hook(C_SEMANTICS.fillNativeBytes), impure]
@@ -160,21 +135,9 @@ module C-IO
           ...</buffer>
           requires isNativeLoc(Loc)
 
-     syntax Map ::= bufferWrite(Map, SymBase, K, Int, List) [function]
-     rule bufferWrite(M::Map, Base::SymBase, object(T::EffectiveType, Len::Int, Bytes::Array), Offset::Int, Buffer::List)
-          => M[Base <- object(T, Len, updateArray(Bytes, Offset, Buffer))]
-
      syntax Map ::= bufferFill(Map, SymBase, K, Int, Int, Bits) [function]
      rule bufferFill(M::Map, Base::SymBase, object(T::EffectiveType, Len::Int, Bytes::Array), Offset::Int, N::Int, V::Bits)
           => M[Base <- object(T, Len, fillArray(Bytes, Offset, N, V))]
-
-     rule locations(.List) => .Set
-     rule locations(ListItem(bwrite(Loc::SymLoc, Bytes::List)) L::List)
-          => #locations(Loc, size(Bytes)) locations(L)
-     syntax Set ::= #locations(SymLoc, Int) [function]
-     rule #locations(Loc::SymLoc, I:Int) => SetItem(Loc) #locations(Loc +bytes 1, I -Int 1)
-          requires I >Int 0
-     rule #locations(Loc::SymLoc, 0) => .Set
 
      rule readBytes(loc(Base::SymBase, Offset::Int) => loc(Base, Offset, .Set), _, _)
           [structural]
@@ -430,24 +393,9 @@ module C-IO
                New |-> object((_ => T), _, _)
           ...</mem>
 
+     rule freeNativeObject(B::SymBase) => #freeNativeObject(B)
      syntax K ::= #freeNativeObject(SymBase) [function, hook(C_SEMANTICS.freeNativeObject)]
      rule #freeNativeObject(_) => .K [owise]
-
-     rule deleteObjects(SetItem(Base::SymBase) Locals::Set)
-          => deleteObject(Base) ~> deleteObjects(Locals)
-          [structural]
-     rule deleteObjects(.Set) => .K
-          [structural]
-
-     rule <k> deleteObject(Base:SymBase) => #freeNativeObject(Base) ...</k>
-          <mem> M::Map => M[Base <- undef] </mem>
-          <buffer> L::List => filterBuffer(L, Base) </buffer>
-          [structural]
-
-     syntax List ::= filterBuffer(List, SymBase) [function]
-     rule filterBuffer(.List, _) => .List
-     rule filterBuffer(ListItem(bwrite(loc(Base::SymBase, _), _)) L::List, Base) => filterBuffer(L, Base)
-     rule filterBuffer(ListItem(K:K) L::List, Base::SymBase) => ListItem(K) filterBuffer(L, Base) [owise]
 
      rule readBytesForWriting(loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset), _)
      rule (.K => dataList(.List)) ~> readBytesForWriting(loc(_, _), Size::Int)
@@ -476,36 +424,5 @@ module C-IO
           (.K => UNDEF("CEER1", "Trying to read through a null pointer.") ) ~>
           read(NullPointer, _)
           [structural]
-
-     // TODO(chathhorn): Silly way to do things. Probably need to allow
-     // multiple error cells at least. Also, add more details (loc?).
-     // FIXME possible to miss dataraces with bitfields
-     rule [read-write-race]:
-          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.")) ~>
-               read(Loc:SymLoc, T:Type)
-          ...</k>
-          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.")) ~>
-               write(Loc':SymLoc, _, T':Type)
-          ...</k>
-          requires sameBase(Loc, Loc') andBool
-               ((Loc <=bytes Loc'
-                    andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
-               orBool (Loc >bytes Loc'
-                    andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
-          [computational]
-
-      rule [write-write-race]:
-          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.")) ~>
-               write(Loc:SymLoc, _, T:Type)
-          ...</k>
-          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.")) ~>
-               write(Loc':SymLoc, _, T':Type)
-          ...</k>
-          requires sameBase(Loc, Loc') andBool
-               ((Loc <=bytes Loc'
-                    andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
-               orBool (Loc >bytes Loc'
-                    andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
-          [computational]
 
 endmodule

@@ -9,6 +9,8 @@ endmodule
 module C-LINKING-RESOLUTION
      imports C-LINKING-RESOLUTION-SYNTAX
      imports COMMON-RESOLUTION-SYNTAX
+     imports COMMON-LINKING-INTERFACE-SYNTAX
+     imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports C-CONFIGURATION
      imports COLLECTIONS
      imports LIST
@@ -39,10 +41,8 @@ module C-LINKING-RESOLUTION
      rule resolveCPPReferences(.Set) => .K
           [structural]
 
-     rule <k> (.K => resolveCReference(X))
+     rule (.K => setTranslationLoc(L) ~> resolveCReference(X))
                ~> resolveCReferences((X:CId |-> L:CabsLoc => .Map) _)
-          ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
           [structural]
 
      rule <k> resolveCReference(X:CId) ...</k>
@@ -69,7 +69,7 @@ module C-LINKING-RESOLUTION
           <external-defs>... X |-> _ ...</external-defs>
           <external-types>... X |-> _ ...</external-types>
           [structural]
-     rule <k> (.K => EXT-UNDEF("TDR2",
+     rule <k> (.K => setTranslationLoc(L) ~> EXT-UNDEF("TDR2",
                     "No definition for symbol with external linkage: "
                      +String idToString(X) +String "."))
               ~> resolveCReference(X:CId)
@@ -79,15 +79,13 @@ module C-LINKING-RESOLUTION
           <external-decls-loc>...
                X |-> L::CabsLoc
           ...</external-decls-loc>
-          <curr-program-loc> _ => L </curr-program-loc>
           requires notBool (X in_keys(Defs))
                orBool notBool (X in_keys(Types))
           [structural]
 
      // Now everything left in <external-uses> should be an unresolved
      // reference.
-     rule <k> resolveCReferences(.Map) => resolveMain ...</k>
-          <curr-program-loc> _ => UnknownCabsLoc </curr-program-loc>
+     rule resolveCReferences(.Map) => setTranslationLoc(UnknownCabsLoc) ~> resolveMain
 
      // Remember which TU has the definition of main.
      rule <k> resolveMain => .K ...</k>
@@ -101,7 +99,7 @@ module C-LINKING-RESOLUTION
           ...</external-types>
           <functions>... Main |-> _ ...</functions>
           [structural]
-     rule <k> (.K => EXT-UNDEF("TDR3", "Main is not a function."))
+     rule <k> (.K => setTranslationLoc(L) ~> EXT-UNDEF("TDR3", "Main is not a function."))
                ~> resolveMain
           ...</k>
           <external-defs>...
@@ -110,15 +108,16 @@ module C-LINKING-RESOLUTION
           <external-defs-loc>...
                Identifier("main") |-> L::CabsLoc
           ...</external-defs-loc>
-          <curr-program-loc> _ => L </curr-program-loc>
           <functions> Functions:Map </functions>
           requires notBool (Main in_keys(Functions))
           [structural]
 
-     syntax KItem ::= removeFromExternalDecls(List)
+     syntax KItem ::= removeFromExternalDecls(List, tu: String)
+     syntax KItem ::= removeUnusedIdentifiers2(tu: String)
 
-     rule <k> removeUnusedIdentifiers => removeFromExternalDecls(Set2List(keys(Env) -Set Uses)) ...</k>
-          <curr-tu> Tu:String </curr-tu>
+     rule removeUnusedIdentifiers => removeUnusedIdentifiers2(nameOfCurrentTranslationUnit())
+
+     rule <k> removeUnusedIdentifiers2(Tu::String) => removeFromExternalDecls(Set2List(keys(Env) -Set Uses), Tu) ...</k>
           <tu-id> Tu </tu-id>
           <genv> Env:Map => removeAll(Env, (keys(Env) -Set Uses)) </genv>
           <gtypes> Types:Map => removeAll(Types, (keys(Types) -Set Uses)) </gtypes>
@@ -126,20 +125,17 @@ module C-LINKING-RESOLUTION
                <uses> Uses:Set </uses>
           ...</tu-linking-state> => .Bag)
 
-     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _) ...</k>
-          <curr-tu> Tu:String </curr-tu>
+     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _, Tu::String) ...</k>
           <tu-id> Tu </tu-id>
           <external-decls>... X |-> (SetItem(Tu) S::Set => S) ...</external-decls>
           requires S =/=K .Set
-     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _) ...</k>
-          <curr-tu> Tu:String </curr-tu>
+     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _, Tu::String) ...</k>
           <tu-id> Tu </tu-id>
           <external-decls>... X |-> SetItem(Tu) => .Map ...</external-decls>
-     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _) ...</k>
-          <curr-tu> Tu:String </curr-tu>
+     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _, Tu::String) ...</k>
           <tu-id> Tu </tu-id>
           <external-decls> Decls:Map </external-decls>
           requires notBool (X in_keys(Decls))
-     rule removeFromExternalDecls(.List) => .K
+     rule removeFromExternalDecls(.List, _) => .K
 
 endmodule

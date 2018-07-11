@@ -1,10 +1,3 @@
-module RETURN-SYNTAX
-     imports BASIC-K
-
-     syntax KItem ::= return(K)
-
-endmodule
-
 module C-STMT-RETURN
      imports RETURN-SYNTAX
      imports C-CONFIGURATION
@@ -18,6 +11,7 @@ module C-STMT-RETURN
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports DELETE-OBJECT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.4}{2}}}{
      A \cinline{return} statement terminates execution of the current function

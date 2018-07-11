@@ -188,11 +188,20 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax AStmt ::= Stmt
      syntax Stmt ::= DeclStmt(List)
-                  // GotoStmt(CId)
+                   | TGotoStmt(CId)
+                   | TExpressionStmt(Expr) [strict]
+                   | TLabelStmt(CId, List)
+                   | TCatchAnyOp(Stmt)
+                   | TBreakStmt()
                    | ReturnStmt(Init)
+                   | IfTStmt(Decl, Stmt, Stmt)
+                   | IfTStmt(Expr, Stmt, Stmt)
+                   | WhileTStmt(Decl, Stmt)
+                   | WhileTStmt(Expr, Stmt)
                    | NullStmt()
-                   | ForStmt(Stmt, Expr, Stmt, Stmt)
-                   | ForStmt(Stmt, Decl, Stmt, Stmt)
+                   | ForTStmt(Stmt, Expr, Stmt, Stmt)
+                   | ForTStmt(Stmt, Decl, Stmt, Stmt)
+                   | ForTStmt(Expr, Stmt, Stmt)
                    | TemplateDefinitionStmt(K) // synthetic statement created by the body of a function template definition when it's evaluted before instantiation
       
      syntax AStmt ::= NoStatement()
@@ -244,6 +253,7 @@ module CPP-ABSTRACT-SYNTAX
                    | Noexcept(Expr)
                    | NewExpr(Bool, AType, AExpr, Init, List) [strict(2)]
                    | DeleteExpr(Bool, Bool, Expr)
+                   | TReturnOp(Expr)
 
      syntax ResolvedExpr ::= CallExpr(Expr, StrictList, StrictListResult)
 
@@ -290,10 +300,10 @@ module CPP-ABSTRACT-SYNTAX
 
 endmodule
 
-module CPP-ABSTRACT-REWRITING
+module CPP-TRANSLATION-ABSTRACT-REWRITING
      imports CPP-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
-     imports CPP-DECL-DECLARATOR-SYNTAX
+     imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
 
      rule MemberExpr(false, false, N::Name, E::Expr) 
@@ -334,5 +344,7 @@ module CPP-ABSTRACT-REWRITING
           requires notBool isDependentInScope(T)
      rule prd(E::Expr, _, _, T:CPPTypeExpr) => E
           requires notBool isDependentInScope(T)
+
+     context IfTStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
 
 endmodule

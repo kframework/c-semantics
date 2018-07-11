@@ -6,14 +6,20 @@ module CPP-EXECUTION-EXPR-MEMBERS
      imports CPP-EXPR-MEMBERS-SYNTAX
      imports CPP-TYPING-SYNTAX
 
+     rule <k> This() => Obj ...</k>
+          <this> Obj::Expr </this>
+          requires Execution()
+
      rule contrivedObject(_) => noObject()
+          requires Execution()
 
      rule <k> evalBraceOrEqualInitializer(C::Class, lv(Loc::SymLoc, Tr::Trace, T::CPPType) #as Base::LVal, E::Expr) => setThis(prv(Loc, Tr, type(pointerType(type(classType(C)))))) ~> E ~> returnFromBraceOrEqualInitializer(Base, OldScope) ~> setThis(OldThis) ...</k>
           <curr-scope> OldScope::Scope => classScope(C, true) </curr-scope>
           <this> OldThis::PRVal </this>
+          requires Execution()
 
      rule <k> V:Val ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) ~> setThis(OldThis::PRVal) => .K) ...</k>
           <curr-scope> _ => Scope </curr-scope>
           <this> _ => OldThis </this>
-          requires notBool (isLExpr(V) orBool isPRExpr(V))
+          requires Execution() andBool notBool (isLExpr(V) orBool isPRExpr(V))
 endmodule

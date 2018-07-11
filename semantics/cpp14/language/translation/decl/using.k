@@ -1,4 +1,4 @@
-module CPP-DECL-USING
+module CPP-TRANSLATION-DECL-USING
      imports C-CONFIGURATION
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
@@ -11,8 +11,8 @@ module CPP-DECL-USING
 
      // using an object
      rule <k> UsingDecl(false, UsingN::Namespace, X::CId) => .K ...</k>
-          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns>...
             <ns-id> N </ns-id>
@@ -25,8 +25,8 @@ module CPP-DECL-USING
 
      // using a type
      rule <k> UsingDecl(false, UsingN::Namespace, X::CId) => .K ...</k>
-          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns>...
             <ns-id> N </ns-id>

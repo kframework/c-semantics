@@ -1,6 +1,7 @@
 module C-CONFIGURATION
      imports C-LINKING-INIT-SYNTAX
      imports COMMON-CONFIGURATION
+     imports COMMON-THREAD-LOCAL
      imports CPP-DYNAMIC-SYNTAX
      imports DEFAULT-STRATEGY
      imports MAP
@@ -37,29 +38,33 @@ module C-CONFIGURATION
 
      <deferred-class-actions> .K </deferred-class-actions>
 
+     <compile-time-evaluation> false </compile-time-evaluation>
+     <thread-local/>
+
      <curr-state>
-         <curr-tu color="lightgray"> "" </curr-tu>
+         <curr-tr-tu color="lightgray"> "" </curr-tr-tu>
          <curr-lang-linkage> CPPLinkage </curr-lang-linkage>
          <curr-extern> false </curr-extern>
-         <curr-scope> namespaceScope(GlobalNamespace()):Scope </curr-scope>
+         <curr-tr-scope> namespaceScope(GlobalNamespace()):Scope </curr-tr-scope>
          <curr-eval-context color="lightgray"> eval </curr-eval-context>
          <curr-template-context> noTemplate </curr-template-context>
-         <curr-program-loc color="black">
+         <curr-template-depth> 0 </curr-template-depth>
+         <curr-tr-program-loc color="black">
                UnknownCabsLoc
-         </curr-program-loc>
+         </curr-tr-program-loc>
          <curr-function> .K </curr-function>
      </curr-state>
 
-     <block-stack color="violet"> .List </block-stack>
-     <block-control>
-          <env color="red"> .Map </env>
-          <types color="lightgray"> .Map </types>
+     <tr-block-stack color="violet"> .List </tr-block-stack>
+     <tr-block-control>
+          <tr-env color="red"> .Map </tr-env>
+          <tr-types color="lightgray"> .Map </tr-types>
           // CId |-> Enum
           <enums> .Map </enums>
           <using-namespaces> .Set </using-namespaces>
-          <block-history> .List </block-history>
-          <this> .K </this>
-     </block-control>
+          <tr-block-history> .List </tr-block-history>
+          <tr-this> .K </tr-this>
+     </tr-block-control>
 
      <template-deduction> .Map </template-deduction>
      <template-arguments> .Map </template-arguments>

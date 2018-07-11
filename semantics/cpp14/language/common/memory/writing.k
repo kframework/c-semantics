@@ -9,7 +9,6 @@ module CPP-MEMORY-WRITING-SYNTAX
                     | init(SymLoc, K, CPPType) [klabel(initCpp)]
                     | writeBytes(SymLoc, List, CPPType) [klabel(writeBytesCpp)]
                     | initBytes(SymLoc, List) [klabel(initBytesCpp)]
-                    | initString(SymLoc, String) [klabel(initStringCpp)]
 
      syntax List ::= splitBytes(PRVal) [function, klabel(splitBytesCpp)]
 
@@ -36,15 +35,5 @@ module CPP-MEMORY-WRITING
 
      rule splitBytes(prv(V:Encodable, _, T::CPPType))
           => splitToBytes(encode(V, 0, bitSizeofType(T)))
-
-     rule initString(Loc::SymLoc, S::String)
-          => ExpressionStmt(
-               lv(Loc, noTrace, type(unsigned-char))
-               :=init prv(ordChar(firstChar(S)), noTrace, type(unsigned-char)))
-               ~> initString(Loc +bytes 1, butFirstChar(S))
-          requires S =/=String ""
-
-     rule initString(Loc::SymLoc, "")
-          => .K
 
 endmodule

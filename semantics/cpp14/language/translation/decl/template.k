@@ -1,9 +1,9 @@
-module CPP-DECL-TEMPLATE-SORTS
+module CPP-TRANSLATION-DECL-TEMPLATE-SORTS
      syntax TemplateInfo
 endmodule
 
-module CPP-DECL-TEMPLATE-SYNTAX
-     imports CPP-DECL-TEMPLATE-SORTS
+module CPP-TRANSLATION-DECL-TEMPLATE-SYNTAX
+     imports CPP-TRANSLATION-DECL-TEMPLATE-SORTS
      imports BASIC-K
      imports LIST
      imports MAP
@@ -27,19 +27,19 @@ module CPP-DECL-TEMPLATE-SYNTAX
      syntax KResult ::= TemplateSpecialization
 endmodule
 
-module CPP-DECL-TEMPLATE
-     imports CPP-DECL-TEMPLATE-SYNTAX
+module CPP-TRANSLATION-DECL-TEMPLATE
+     imports CPP-TRANSLATION-DECL-TEMPLATE-SYNTAX
      imports C-CONFIGURATION
      imports K-EQUAL
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
-     imports CPP-DECL-CLASS-SYNTAX
-     imports CPP-DECL-DECLARATOR-SYNTAX
-     imports CPP-ELABORATOR-SYNTAX
-     imports CPP-ENV-SYNTAX
+     imports CPP-TRANSLATION-DECL-CLASS-SYNTAX
+     imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
+     imports CPP-TRANSLATION-ELABORATOR-SYNTAX
+     imports CPP-TRANSLATION-ENV-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
-     imports CPP-TEMPLATE-DEDUCTION-SYNTAX
+     imports CPP-TRANSLATION-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
@@ -58,25 +58,27 @@ module CPP-DECL-TEMPLATE
      rule getTemplateName(ClassDef(_, X::CId, N::NNS, _, _, _)) => Name(N, X)
 
      rule <k> declareTemplate(Name(NoNNS(), X::CId), D::Decl, Params:K) => templateContext(N :: X, Params, D) ...</k>
-          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
 
-     syntax KItem ::= setTemplateContext(TemplateInfo)
-     rule <k> templateContext(Q::QualId, Params:K, D::Decl) => scope(templateParameterScope, Params ~> setScope(S) ~> elaborate(D) ~> finishTemplate) ~> setTemplateContext(Old) ...</k>
-          <curr-template-context> Old::TemplateInfo => templateInfo(Q, .List, .Map, .Map, NoType(), .K) </curr-template-context>
-          <curr-scope> S::Scope </curr-scope>
+     syntax KItem ::= restoreTemplateContext(TemplateInfo, Int)
+     rule <k> templateContext(Q::QualId, Params:K, D::Decl) => scope(templateParameterScope, Params ~> setScope(S) ~> elaborate(D) ~> finishTemplate) ~> restoreTemplateContext(OldInfo, OldDepth) ...</k>
+          <curr-template-context> OldInfo::TemplateInfo => templateInfo(Q, .List, .Map, .Map, NoType(), .K) </curr-template-context>
+          <curr-template-depth> OldDepth::Int => OldDepth +Int 1 </curr-template-depth>
+          <curr-tr-scope> S::Scope </curr-tr-scope>
 
      syntax KItem ::= "finishTemplate"
      rule <k> elaborateDone(K:K) ~> finishTemplate => .K ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <templates>... Q |-> (T |-> templateInfo(... body: (_ => K))) ...</templates>
           <curr-template-context> templateInfo(...id: Q::QualId, type: T::CPPType) </curr-template-context>
 
 
-     rule <k> setTemplateContext(Old::TemplateInfo) => .K ...</k>
-          <curr-template-context> _ => Old </curr-template-context>
+     rule <k> restoreTemplateContext(OldInfo::TemplateInfo, OldDepth::Int) => .K ...</k>
+          <curr-template-depth> _ => OldDepth </curr-template-depth>
+          <curr-template-context> _ => OldInfo </curr-template-context>
 
      // template parameters
      rule TypeTemplateParam(_, false, TemplateParameterType(#NoName), NoType()) => addTemplateParam(#NoName, TypeParam, .K)
@@ -125,7 +127,7 @@ module CPP-DECL-TEMPLATE
      rule <k> addParam(X::CId) => .K ...</k>
           <curr-function> dependent </curr-function>
 
-     rule <k> (elaborateDone(K:K) ~> calculateGotoMap => .K) ~> _:KItem ~> setScope(_)
+     rule <k> (elaborateDone(K:K) ~> calculateGotoMap => .K) ~> _:KItem ~> setScope(_) ~> _:KItem
               ~> (declareObject(N::Namespace, LN::Namespace, X::CId, Mangled::CId, T::CPPType, _, Type::DeclarationType, L::Linkage, D::Duration, S::Set) => declareTemplate(T))
           ...</k>
           <elab>... .K => declareObject(N, LN, X, Mangled, T, TemplateDefinitionStmt(K), Type, L, D, S) </elab>
@@ -163,7 +165,7 @@ module CPP-DECL-TEMPLATE
      rule instantiateTemplate(templateSpecialization(T:CPPFunctionType, I::TemplateInfo, Args::Map)) => instantiateObjectTemplate(templateSpecialization(T, I, Args))
      rule <k> instantiateObjectTemplate(templateSpecialization(T::CPPType, templateInfo(Q::QualId, Decls::List, _, _, _, Body:K), Args:Map)) => scope(templateParameterScope, declareTemplateArgs(Decls, Args, 0) ~> setScope(S) ~> Body) ~> setTemplateArgs(Q, T, Old) ...</k>
           <template-arguments> Old::Map => updateMap(Old, Args) </template-arguments>
-          <curr-scope> S::Scope </curr-scope>
+          <curr-tr-scope> S::Scope </curr-tr-scope>
 
      syntax KItem ::= declareTemplateArgs(List, Map, Int)
      rule (.K => TypedefDecl(Identifier(S), T)) ~> declareTemplateArgs((ListItem(Identifier(S::String)) => .List) _, _ dependentType(S, I) |-> T:CPPType, I::Int => I +Int 1)
@@ -174,7 +176,7 @@ module CPP-DECL-TEMPLATE
      syntax KItem ::= setTemplateArgs(QualId, CPPTypeExpr, Map)
      rule <k> setTemplateArgs(N::Namespace :: X::CId, T::CPPType, Old::Map) => lv(lnew(getBase(Entry)), noTrace, T) ...</k>
           <template-arguments> _ => Old </template-arguments>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <nenv>... X |-> (_::TypeMap T |-> Entry::EnvEntry) ...</nenv>

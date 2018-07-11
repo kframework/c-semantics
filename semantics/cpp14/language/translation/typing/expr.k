@@ -1,9 +1,9 @@
-module CPP-TYPING-EXPR-SORTS
+module CPP-TRANSLATION-TYPING-EXPR-SORTS
      syntax TypeExpr
 endmodule
 
-module CPP-TYPING-EXPR-SYNTAX
-     imports CPP-TYPING-EXPR-SORTS
+module CPP-TRANSLATION-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SORTS
      imports COMPAT-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-SORTS
@@ -15,8 +15,8 @@ module CPP-TYPING-EXPR-SYNTAX
 
 endmodule
 
-module CPP-TYPING-EXPR
-     imports CPP-TYPING-EXPR-SYNTAX
+module CPP-TRANSLATION-TYPING-EXPR
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports STRING
@@ -25,12 +25,12 @@ module CPP-TYPING-EXPR
      imports CPP-BITSIZE-SYNTAX
      imports CPP-CLASS-SYNTAX
      imports CPP-CONVERSION-SYNTAX
-     imports CPP-EXPR-CONDITIONAL-SYNTAX
+     imports CPP-TRANSLATION-EXPR-CONDITIONAL-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
 
      syntax STypeList ::= toSTypeList(List) [function]
      syntax List ::= ofSTypeList(STypeList) [function]
@@ -86,7 +86,7 @@ module CPP-TYPING-EXPR
      rule typeof(T:Typed => type(T))
 
      rule <k> typeof(This() => type(V)) ...</k>
-          <this> V:PRVal </this>
+          <tr-this> V:PRVal </tr-this>
 
      rule typeof(SizeofExpr(_) => type(size_t))
      rule typeof(SizeofType(_) => type(size_t))

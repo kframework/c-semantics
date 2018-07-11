@@ -1,7 +1,7 @@
-module CPP-EXPR-CONDITIONAL-SYNTAX
+module CPP-TRANSLATION-EXPR-CONDITIONAL-SYNTAX
     imports CPP-DYNAMIC-SORTS
-    imports CPP-VALUE-CATEGORY-SORTS
-    imports CPP-TYPING-EXPR-SORTS
+    imports CPP-TRANSLATION-VALUE-CATEGORY-SORTS
+    imports CPP-TRANSLATION-TYPING-EXPR-SORTS
     imports CPP-TYPING-SORTS
 
     syntax KItem ::= typeAndCatOfConditional(Expr, Expr) [function]
@@ -9,17 +9,17 @@ module CPP-EXPR-CONDITIONAL-SYNTAX
 
 endmodule
 
-module CPP-EXPR-CONDITIONAL
-     imports CPP-EXPR-CONDITIONAL-SYNTAX
+module CPP-TRANSLATION-EXPR-CONDITIONAL
+     imports CPP-TRANSLATION-EXPR-CONDITIONAL-SYNTAX
      imports K-REFLECTION
      imports COMMON-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
 
      context ConditionalOperator((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
 

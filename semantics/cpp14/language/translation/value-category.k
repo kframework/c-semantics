@@ -1,9 +1,9 @@
-module CPP-VALUE-CATEGORY-SORTS
+module CPP-TRANSLATION-VALUE-CATEGORY-SORTS
      syntax CatExpr
 endmodule
 
-module CPP-VALUE-CATEGORY-SYNTAX
-     imports CPP-VALUE-CATEGORY-SORTS
+module CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRANSLATION-VALUE-CATEGORY-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-SORTS
 
@@ -18,17 +18,17 @@ module CPP-VALUE-CATEGORY-SYNTAX
      syntax ValueCategory ::= unnamedCat(CPPType) [function]
 endmodule
 
-module CPP-VALUE-CATEGORY
-     imports CPP-VALUE-CATEGORY-SYNTAX
+module CPP-TRANSLATION-VALUE-CATEGORY
+     imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
      imports BOOL-SYNTAX
      imports K-REFLECTION
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-EXPR-CONDITIONAL-SYNTAX
+     imports CPP-TRANSLATION-EXPR-CONDITIONAL-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      syntax SCatList ::= toSCatList(List) [function]

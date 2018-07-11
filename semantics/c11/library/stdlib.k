@@ -20,6 +20,7 @@ module LIBC-STDLIB
      imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-SYNTAX
+     imports DELETE-OBJECT-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
 

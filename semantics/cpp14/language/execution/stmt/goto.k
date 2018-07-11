@@ -1,4 +1,4 @@
-module CPP-STMT-GOTO
+module CPP-EXECUTION-STMT-GOTO
      imports C-CONFIGURATION
      imports BOOL
      imports CPP-SYNTAX

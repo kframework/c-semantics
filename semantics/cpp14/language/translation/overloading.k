@@ -1,8 +1,8 @@
-module CPP-OVERLOADING-SYNTAX
+module CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports COMPAT-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPE-MAP-SORTS 
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
 
      syntax ValResult ::= CandidateSet
      syntax CandidateSet ::= cSet(candidates: TypeMap, id: QualId)
@@ -23,8 +23,8 @@ module CPP-OVERLOADING-SYNTAX
 
 endmodule
 
-module CPP-OVERLOADING
-     imports CPP-OVERLOADING-SYNTAX
+module CPP-TRANSLATION-OVERLOADING
+     imports CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports C-CONFIGURATION
      imports COLLECTIONS
      imports INT
@@ -35,19 +35,19 @@ module CPP-OVERLOADING
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-CLASS-SYNTAX
      imports CPP-CONVERSION-SYNTAX
-     imports CPP-DECL-CLASS-SYNTAX
-     imports CPP-DECL-INITIALIZER-SYNTAX
-     imports CPP-DECL-TEMPLATE-SYNTAX
+     imports CPP-TRANSLATION-DECL-CLASS-SYNTAX
+     imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
+     imports CPP-TRANSLATION-DECL-TEMPLATE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-ENV-SYNTAX
+     imports CPP-TRANSLATION-ENV-SYNTAX
      imports CPP-REFERENCE-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
-     imports CPP-TEMPLATE-DEDUCTION-SYNTAX
+     imports CPP-TRANSLATION-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
      imports ERROR-SYNTAX
 
      // access checking stub (not implemented yet)
@@ -75,7 +75,7 @@ module CPP-OVERLOADING
                    list(getArgs(Args, Q, E, Obj)),
                    E, O)
           ...</k>
-          <this> Obj:K </this>
+          <tr-this> Obj:K </tr-this>
 
      syntax Expr ::= #resolveOverload(cands: CandidateSet, args: StrictList, types: StrictList, cats: StrictList, trace: Expr, ot: OverloadType)
      syntax List ::= getArgs(List, QualId, Expr, K) [function]
@@ -346,7 +346,7 @@ module CPP-OVERLOADING
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           <odr-decls> Decls::Map </odr-decls>
           <external-uses> EU::Map => addOdrUse(EU, fetchMangled({Decls[Base]}:>Set), L) </external-uses>
-          <curr-program-loc> L::CabsLoc </curr-program-loc>
+          <curr-tr-program-loc> L::CabsLoc </curr-tr-program-loc>
           requires isCPPFunctionType(innerType(T)) andBool Base =/=K nonStatic
      rule #resolveOverload(cSet(... candidates: T:CPPPointerType |-> envEntry(... base: nonStatic)), list(Args::List), _, _, E::Expr, _)
           => checkAccess(CallExpr(le(E, hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T))))))
@@ -358,7 +358,7 @@ module CPP-OVERLOADING
           <odr-uses>... .Set => #if isMethodPure(T) andBool isVirtualCall(hasTrace(E), T) #then .Set #else SetItem(Base) #fi ...</odr-uses>
           <odr-decls> Decls::Map </odr-decls>
           <external-uses> EU::Map => addOdrUse(EU, fetchMangled({Decls[Base]}:>Set), L) </external-uses>
-          <curr-program-loc> L::CabsLoc </curr-program-loc>
+          <curr-tr-program-loc> L::CabsLoc </curr-tr-program-loc>
 
      rule bestViable(T::CPPFunctionType, builtinOp(E::Expr)) ~> #resolveOverload(...) => E
 
@@ -649,7 +649,7 @@ module CPP-OVERLOADING
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           <odr-decls> Decls::Map </odr-decls>
           <external-uses> EU::Map => addOdrUse(EU, fetchMangled({Decls[Base]}:>Set), L) </external-uses>
-          <curr-program-loc> L::CabsLoc </curr-program-loc>
+          <curr-tr-program-loc> L::CabsLoc </curr-tr-program-loc>
           requires Base =/=K nonStatic
                andBool notBool isCPPRefType(T)
                andBool notBool isMemberBase(Base)
@@ -680,4 +680,5 @@ module CPP-OVERLOADING
      rule typeof(contrivedObject(T::CPPType) => T)
 
      rule contrivedObject(T::CPPType) => noObject()
+          requires Translation()
 endmodule

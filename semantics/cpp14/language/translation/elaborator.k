@@ -1,4 +1,4 @@
-module CPP-ELABORATOR-SYNTAX
+module CPP-TRANSLATION-ELABORATOR-SYNTAX
      imports BASIC-K
 
      syntax KItem ::= elaborate(K) [klabel(elaborate1)]
@@ -6,12 +6,15 @@ module CPP-ELABORATOR-SYNTAX
                     | elaborateDone(K) [klabel(elaborateDone1)]
                     | elaborateDone(K, K)
                     | elaborateTemplateBody(K)
+                    | elaborateThen(K)
 
      syntax KItem ::= runInit(K)
+
+     syntax K ::= toExecution(K) [function]
 endmodule
 
-module CPP-ELABORATOR
-     imports CPP-ELABORATOR-SYNTAX
+module CPP-TRANSLATION-ELABORATOR
+     imports CPP-TRANSLATION-ELABORATOR-SYNTAX
      imports C-CONFIGURATION
 
      syntax KItem ::= elabFrame(K, K)
@@ -40,6 +43,14 @@ module CPP-ELABORATOR
           <elab-stack>
                ListItem(elabTemplateFrame(Cont:K, OldElab:K, I::TemplateInfo)) => .List
           ...</elab-stack>
+
+     syntax K ::= #toExecution(Int, K) [function]
+     rule #toExecution(0, K::K) => toExecution(K)
+     rule #toExecution(_, K::K) => K [owise]
+
+     rule <k> elaborateThen(K::K) => .K ...</k>
+          <elab>... .K => #toExecution(Depth, K) </elab>
+          <curr-template-depth> Depth::Int </curr-template-depth>
 
      rule (.K => K) ~> runInit(K:K)
      rule K:Val ~> runInit(_) => .K

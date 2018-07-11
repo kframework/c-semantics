@@ -27,6 +27,7 @@ module C-EXECUTION-INIT
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports K-EQUAL
      imports K-IO
      imports LIBC-BUILTIN-SYNTAX
@@ -268,5 +269,6 @@ module C-EXECUTION-INIT
      rule Nop() => .K
           [structural]
 
+     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tu>TU::String</curr-tu> ...</generatedTop>) => TU
 endmodule
 

@@ -1,4 +1,4 @@
-module CPP-ENV-SYNTAX
+module CPP-TRANSLATION-ENV-SYNTAX
      imports BASIC-K
      imports BOOL-SYNTAX
      imports COMPAT-SORTS
@@ -26,8 +26,8 @@ module CPP-ENV-SYNTAX
 
 endmodule
 
-module CPP-ENV
-    imports CPP-ENV-SYNTAX
+module CPP-TRANSLATION-ENV
+    imports CPP-TRANSLATION-ENV-SYNTAX
     imports C-CONFIGURATION
     imports BOOL
     imports K-EQUAL
@@ -44,14 +44,14 @@ module CPP-ENV
     rule <k> addToEnv(N:Namespace :: X::CId, T:CPPFunctionType, Base::SymBase, IsUsing::Bool) 
              => .K
          ...</k>
-         <curr-tu> Tu::String </curr-tu>
+         <curr-tr-tu> Tu::String </curr-tr-tu>
          <tu-id> Tu </tu-id>
          <ns-id> N </ns-id>
          <nenv> NE::Map => NE[X <- updateFnEnv(NE, X, T, Base, IsUsing)] </nenv>
          requires N =/=K NoNamespace()
 
     rule <k> updateDefaultArguments(N:Namespace :: X::CId, T:CPPFunctionType, A1:DefaultArgumentsResult) => .K ...</k>
-         <curr-tu> Tu::String </curr-tu>
+         <curr-tr-tu> Tu::String </curr-tr-tu>
          <tu-id> Tu </tu-id>
          <ns-id> N </ns-id>
          <nenv>... X |-> (_::TypeMap T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</nenv>
@@ -60,7 +60,7 @@ module CPP-ENV
     rule <k> addToEnv(N:Namespace :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
              => .K
          ...</k>
-         <curr-tu> Tu::String </curr-tu>
+         <curr-tr-tu> Tu::String </curr-tr-tu>
          <tu-id> Tu </tu-id>
          <ns-id> N </ns-id>
          <nenv> NE::Map => NE[X <- T |-> envEntry(Base, IsUsing, NoDefArgs())] </nenv>
@@ -69,15 +69,15 @@ module CPP-ENV
     rule <k> addToEnv(NoNamespace() :: X::CId, T:CPPFunctionType, Base::SymBase, IsUsing::Bool) 
              => .K
          ...</k>
-         <env> NE::Map => NE[X <- updateFnEnv(NE, X, T, Base, IsUsing)] </env>
+         <tr-env> NE::Map => NE[X <- updateFnEnv(NE, X, T, Base, IsUsing)] </tr-env>
 
     rule <k> updateDefaultArguments(NoNamespace() :: X::CId, T:CPPFunctionType, A1:DefaultArgumentsResult) => .K ...</k>
-         <env>... X |-> (_::TypeMap T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</env>
+         <tr-env>... X |-> (_::TypeMap T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</tr-env>
 
     rule <k> addToEnv(NoNamespace() :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
              => .K
          ...</k>
-         <env> NE::Map => NE[X <- T |-> envEntry(Base, IsUsing, NoDefArgs())] </env>
+         <tr-env> NE::Map => NE[X <- T |-> envEntry(Base, IsUsing, NoDefArgs())] </tr-env>
          requires notBool isCPPFunctionType(T)
 
     rule <k> addToEnv(C:Class :: X::CId, T:CPPFunctionType, Base::SymBase, IsUsing::Bool) 
@@ -150,22 +150,22 @@ module CPP-ENV
      rule <k> scope(Scope::Scope, K:K)
               => pushLocals ~> K ~> popLocals ~> setScope(OldScope)
           ...</k>
-          <curr-scope> OldScope::Scope => Scope </curr-scope>
+          <curr-tr-scope> OldScope::Scope => Scope </curr-tr-scope>
 
      rule <k> setScope(Scope::Scope) => .K ...</k>
-          <curr-scope> _ => Scope </curr-scope>
+          <curr-tr-scope> _ => Scope </curr-tr-scope>
 
      rule <k> pushLocals => .K ...</k>
-          <block-control> C::Bag </block-control>
-          <block-stack>
-               .List => ListItem(<block-control> C </block-control>)
-          ...</block-stack>
+          <tr-block-control> C::Bag </tr-block-control>
+          <tr-block-stack>
+               .List => ListItem(<tr-block-control> C </tr-block-control>)
+          ...</tr-block-stack>
 
      rule <k> popLocals => .K ...</k>
-          (_:BlockControlCell => L)
-          <block-stack>
-               ListItem(L:BlockControlCell) => .List
-          ...</block-stack>
+          (_:TrBlockControlCell => L)
+          <tr-block-stack>
+               ListItem(L:TrBlockControlCell) => .List
+          ...</tr-block-stack>
 
      rule <k> noEval(K:K)
               => setEval(noEval) ~> pushLocals ~> K ~> popLocals ~> setEval(OldEval)

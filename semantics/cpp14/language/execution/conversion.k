@@ -10,7 +10,7 @@ module C-CPP-VAL-CONVERSION-SYNTAX
      syntax PRVal ::= convertValToCPP(RValue) [function]
 endmodule
 
-module C-CPP-VAL-CONVERSION
+module C-CPP-EXECUTION-VAL-CONVERSION
      imports C-CPP-VAL-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX

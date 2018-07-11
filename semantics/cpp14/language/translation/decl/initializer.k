@@ -1,4 +1,4 @@
-module CPP-DECL-INITIALIZER-SYNTAX
+module CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
      imports BASIC-K
      imports LIST
      imports SYMLOC-SORTS
@@ -16,8 +16,8 @@ module CPP-DECL-INITIALIZER-SYNTAX
      syntax TypeMap ::= stripExplicit(TypeMap) [function]
 endmodule
 
-module CPP-DECL-INITIALIZER
-     imports CPP-DECL-INITIALIZER-SYNTAX
+module CPP-TRANSLATION-DECL-INITIALIZER
+     imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports STRING
@@ -26,16 +26,16 @@ module CPP-DECL-INITIALIZER
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-CLASS-SYNTAX
      imports CPP-CONVERSION-SYNTAX
-     imports CPP-DECL-CLASS-SYNTAX
+     imports CPP-TRANSLATION-DECL-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-ELABORATOR-SYNTAX
+     imports CPP-TRANSLATION-ELABORATOR-SYNTAX
      imports CPP-MEMORY-READING-SYNTAX
-     imports CPP-OVERLOADING-SYNTAX
+     imports CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
-     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
      imports CPP-EXPR-MEMBERS-SYNTAX
      imports C-SETTINGS
 
@@ -63,7 +63,7 @@ module CPP-DECL-INITIALIZER
      context #figureInit(... srcCat: HOLE:CatExpr => catof(HOLE)) [result(ValueCategory)]
 
      rule <k> #figureInit(... init: ExprLoc(L::CabsLoc, I::Init) => I) ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
 
 
 
@@ -352,7 +352,7 @@ module CPP-DECL-INITIALIZER
      rule <k> (.K => resolveOverload(cSet(#if Type ==K DirectInit() #then M #else stripExplicit(M) #fi, C :: ConstructorId(X)), list(L), constructor)) 
               ~> constructorInit(Base::LVal, Type::InitType, _ :: Class(_, X::CId, _) #as C::Class, L::List, _)
           ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <cenv>... ConstructorId(X) |-> M::TypeMap ...</cenv>

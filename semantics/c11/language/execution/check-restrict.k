@@ -2,7 +2,8 @@ module C-CHECK-RESTRICT-SYNTAX
      imports INT-SYNTAX
      imports MAP
      imports STRING
-     imports C-DYNAMIC-SORTS
+//     imports C-DYNAMIC-SORTS
+     imports COMMON-SORTS
      imports SYMLOC-SORTS
 
      syntax KItem ::= enterRestrictBlock(Scope)
@@ -21,7 +22,7 @@ module C-CHECK-RESTRICT
      imports K-EQUAL
      imports MEMORY-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 
      syntax RestrictStatus ::= restrictStatus(Scope, Map)

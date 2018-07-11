@@ -63,7 +63,7 @@ module CPP-CONVERSION
 
      rule isExpr(errorFuncResult(_, _:Expr)) => true
 
-     context ConvertType(_, (HOLE:Expr => reval(HOLE))) [result(PRVal)]
+     context ConvertType(_, (HOLE:Expr => reval(HOLE))) [result(EPRVal)]
      rule ConvertType(T::CPPType, R:PRVal) => convertType(T, R)
 
      rule arithInterpret(T:CPPIntegerType, N:Int, Tr::Trace) => prv(N, Tr, T)

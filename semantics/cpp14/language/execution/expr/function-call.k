@@ -1,18 +1,17 @@
-module CPP-EXPR-FUNCTION-CALL
+module CPP-EXECUTION-EXPR-FUNCTION-CALL
      imports FUNCTION-CALL-SYNTAX
      imports C-CONFIGURATION
      imports INT
      imports BITS-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-CHECK-RESTRICT-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
      imports CPP-BINDING-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-ENV-SYNTAX
+     imports CPP-EXECUTION-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
      imports CPP-MEMORY-READING-SYNTAX
      imports CPP-SYNTAX
@@ -23,6 +22,7 @@ module CPP-EXPR-FUNCTION-CALL
      rule BuiltinCallOp(lv(_, _, T:CPPPointerType) #as L::LVal => * L, false, _)
           requires isCPPFunctionType(innerType(T))
      context BuiltinCallOp((* _) #as HOLE:Expr, false, _)
+          requires Execution()
 
      // Function call (from C++ function)
      rule BuiltinCallOp(lv((loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset)), _, _:CPPFunctionType), _, _)
@@ -142,28 +142,20 @@ module CPP-EXPR-FUNCTION-CALL
                <most-derived-class> MDC </most-derived-class>
           ...</function-control>)
 
-     rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T, 
-               Name(NoNNS(), X) :=init V, 
+     rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObjectExec(X, T,
+               ExecName(NoNNS(), X) :=init V,
                Var(CopyInit()), AutoStorage, .Set) ...</k>
           <curr-function-params>... .List => ListItem(X) </curr-function-params>       
           requires notBool isCPPRefType(T)
                andBool X =/=K #NoName
-     rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T,
-               bindReference(Name(NoNNS(), X), V),
+     rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObjectExec(X, T,
+               bindReference(ExecName(NoNNS(), X), V),
                Var(CopyInit()), AutoStorage, .Set) ...</k>
           <curr-function-params>... .List => ListItem(X) </curr-function-params>       
           requires isCPPRefType(T)
                andBool X =/=K #NoName
 
-     rule bindParam(#NoName, T::CPPType, V:Val) => declareNonStaticObject(#NoName, T, V,
+     rule bindParam(#NoName, T::CPPType, V:Val) => declareNonStaticObjectExec(#NoName, T, V,
                Var(CopyInit()), AutoStorage, .Set)
-
-     // Function call conversion (C linkage)
-     rule application(_, _, functionObject(X::CId, _, _),
-               (T:CPPFunctionType => convertTypeToC(T)), _, krlist(L::List => mapList(L, #klabel(`convertValToC`))))
-
-     syntax RValue ::= convertValToC(PRVal) [function]
-     rule convertValToC(prv(V::CPPValue, _, T::CPPType)) => tv({V}:>CValue, utype(convertTypeToC(T)))
-          requires isCValue(V)
 
 endmodule

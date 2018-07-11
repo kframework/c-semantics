@@ -114,6 +114,18 @@ module SYMLOC-SYNTAX
      // Given a loc (with a bit offset) and a size in bits, calculate the
      // number of bytes from the loc's byte offset required to cover all bits.
      syntax Int ::= byteRange(SymLoc, Int) [function]
+
+     syntax Set ::= getBases(SymLoc) [function, klabel(getBases)]
+     syntax Set ::= getBases(Set) [function]
+
+     // Used for detecting violations of aliasing restictions on
+     // restrict-qualified pointers.
+     syntax Provenance ::= basedOn(SymBase, Scope)
+
+     // Using "fixed" to mean objects returned by library functions that
+     // cause UB if the user tries to modify them.
+     syntax Bool ::= isLibcFixedDuration(SymBase) [function]
+
 endmodule
 
 module SYMLOC
@@ -303,6 +315,17 @@ module SYMLOC
 
      rule byteRange(Loc::SymLoc, Bits::Int)
           => (bitOffsetIntoLastByte(Loc) +Int Bits +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
+
+     rule getBases(Loc:SymLoc) => getBases(prov(Loc))
+
+     rule getBases(Prov:Set) => filterSet(Prov, #klabel(`isBase`))
+
+     syntax Bool ::= isBase(Provenance) [function]
+     rule isBase(basedOn(_, _)) => true
+     rule isBase(_) => false [owise]
+
+     rule isLibcFixedDuration(obj(... d: libcFixed)) => true
+     rule isLibcFixedDuration(_) => false [owise]
 
 endmodule
 

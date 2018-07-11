@@ -1,4 +1,4 @@
-module CPP-DECL-CLASS-SYNTAX
+module CPP-TRANSLATION-DECL-CLASS-SYNTAX
      imports BOOL-SYNTAX
      imports LIST
      imports SET
@@ -34,8 +34,8 @@ module CPP-DECL-CLASS-SYNTAX
      syntax Map ::= getDataMembersInitializers(ClassInfo) [function]
 endmodule
 
-module CPP-DECL-CLASS
-     imports CPP-DECL-CLASS-SYNTAX
+module CPP-TRANSLATION-DECL-CLASS
+     imports CPP-TRANSLATION-DECL-CLASS-SYNTAX
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports MAP
@@ -46,20 +46,21 @@ module CPP-DECL-CLASS
      imports CPP-ALIGNMENT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-CLASS-SYNTAX
-     imports CPP-DECL-DECLARATOR-SYNTAX
-     imports CPP-DECL-INITIALIZER-SYNTAX
+     imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
+     imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-ENV-SYNTAX
-     imports CPP-EXPR-NEW-SYNTAX
-     imports CPP-OVERLOADING-SYNTAX
+     imports CPP-TRANSLATION-ELABORATOR-SYNTAX
+     imports CPP-TRANSLATION-ENV-SYNTAX
+     imports CPP-TRANSLATION-EXPR-NEW-SYNTAX
+     imports CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
 
      rule TypeDecl(ElaboratedTypeSpecifier(T:ClassKey, X::CId, NoNNS()) => declareClassName(T, X, true))
 
@@ -74,19 +75,19 @@ module CPP-DECL-CLASS
      rule isClassNameElabSpecifier(_) => false [owise]
      
      rule <k> declareClassName(T::Tag, X::CId, true) => t(noQuals, .Set, classType(N :: Class(T, X, .TemplateArgs))) ...</k>
-          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
+          <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
      rule <k> declareClassName(T::Tag, X::CId, true) => t(noQuals, .Set, classType(C :: Class(T, X, .TemplateArgs))) ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
 
      rule <k> TypeDecl(t(_, _, classType(N::Namespace :: Class(ClassKey::Tag, X::CId, _))) #as T::CPPType) => .K ...</k>
           <curr-template-context> noTemplate </curr-template-context>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <ntypes> NT::Map => NT[X <- T] </ntypes>
      rule <k> TypeDecl(t(_, _, classType(C::Class :: Class(ClassKey::Tag, X::CId, _))) #as T::CPPType) => .K ...</k>
           <curr-template-context> noTemplate </curr-template-context>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <ctypes> CT::Map => CT[X <- T] </ctypes>
@@ -117,7 +118,7 @@ module CPP-DECL-CLASS
                 #fi
               )
               #fi ...</k>
-          <curr-scope> Scope::Scope </curr-scope>
+          <curr-tr-scope> Scope::Scope </curr-tr-scope>
 
      syntax KItem ::= addMembersToScope(Class)
      rule <k> addMembersToScope(C::Class) => addMembersToScope(C, Members) ...</k>
@@ -130,7 +131,7 @@ module CPP-DECL-CLASS
      rule <k> (.K => addToEnv(getNNSVal(Scope) :: X, T, memberBase(unnamedObject(C), X, T), false))
            ~> addMembersToScope(C::Class, (ListItem(kpair(X::CId, T::CPPType)) => .List) _)
           ...</k>
-          <curr-scope> Scope::Scope </curr-scope>
+          <curr-tr-scope> Scope::Scope </curr-tr-scope>
 
      syntax NNSVal ::= getNNSVal(Scope) [function]
      rule getNNSVal(namespaceScope(N::Namespace)) => N
@@ -148,8 +149,8 @@ module CPP-DECL-CLASS
           ...</k>
           <deferred-class-actions> OldClass:K => layoutBases(.List, .List) |> layoutVirtualBases(.List) |> .K |> .Ordering </deferred-class-actions>
           <curr-template-context> noTemplate </curr-template-context>
-          <curr-scope> OldScope::Scope </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> OldScope::Scope </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <ntypes> NT::Map => NT[X <- T] </ntypes>
@@ -173,8 +174,8 @@ module CPP-DECL-CLASS
           ...</k>
           <deferred-class-actions> OldClass:K => layoutBases(.List, .List) |> layoutVirtualBases(.List) |> .K |> .Ordering </deferred-class-actions>
           <curr-template-context> noTemplate </curr-template-context>
-          <curr-scope> OldScope::Scope </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> OldScope::Scope </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           (<class-id> C2 </class-id>
           <ctypes> CT::Map => CT[X <- T] </ctypes>)
@@ -196,8 +197,8 @@ module CPP-DECL-CLASS
      syntax KItem ::= implicitDeclarations()
      // no implicit constructor if one was already declared
      rule <k> implicitDeclarations() => .K...</k>
-          <curr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <cenv>... ConstructorId(X) |-> M::TypeMap DestructorId(X) |-> _ ...</cenv>
@@ -210,8 +211,8 @@ module CPP-DECL-CLASS
                              FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false)),
                         .List, Defaulted())))
               ~> implicitDeclarations() ...</k>
-          <curr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <cenv> Env::Map </cenv>
@@ -223,8 +224,8 @@ module CPP-DECL-CLASS
                              FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false)),
                         .List, Defaulted())))
               ~> implicitDeclarations() ...</k>
-          <curr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <cenv> Env::Map </cenv>
@@ -238,8 +239,8 @@ module CPP-DECL-CLASS
                              Virtual(FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false))),
                         .List, Defaulted())))
               ~> implicitDeclarations() ...</k>
-          <curr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <cenv> Env::Map </cenv>
@@ -250,19 +251,19 @@ module CPP-DECL-CLASS
      syntax Bool ::= hasVirtualDestructor(Class) [function]
      rule hasVirtualDestructor(C::Class) => hasDestructorThat(type(classType(C)), #klabel(`isVirtualDestructor`))
 
-     rule <k> writeVTables => .K ...</k>
-          <elab>... .K => writeVTables </elab>
+     syntax Stmt ::= "TwriteVTables"
+     rule toExecution(TwriteVTables) => writeVTables
 
-     rule <k> Constructor(Ctor::List, S::Stmt) => figureConstruct(Ctor, .Map, Bases, NSDM, S, writeVTables, false) ...</k>
-          <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+     rule <k> Constructor(Ctor::List, S::Stmt) => figureConstruct(Ctor, .Map, Bases, NSDM, S, elaborateThen(TwriteVTables), false) ...</k>
+          <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <base-classes> Bases::List </base-classes>
           <non-static-data-members> NSDM::List </non-static-data-members>
 
      rule <k> Defaulted() => Constructor(.List, BlockStmt(!N:Int, .List)) ...</k>
-          <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
+          <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
 
      syntax Stmt ::= figureConstruct(ctors: List, processedCtors: Map, bases: List, dataMembers: List, body: Stmt, result: K, hasNonConstVariantMember: Bool)
 
@@ -272,9 +273,9 @@ module CPP-DECL-CLASS
 
      // 12.1:4
      rule <k> figureConstruct(.List, _, .List, ListItem(kpair(X::CId, T::CPPType)) _, _, _, _) => Deleted() ...</k>
-          <curr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-scope>
+          <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
@@ -282,20 +283,20 @@ module CPP-DECL-CLASS
           requires isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
      // 12.1:4.6-4.7
      rule <k> (.K => checkCtorAndDtor(MemInit[X] orDefault .K, X, T, true, I, getMostDerivedArrayElement(T))) ~> figureConstruct(.List, MemInit::Map, .List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
-          <curr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-scope>
+          <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           requires notBool isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
      rule <k> (.K => checkCtorAndDtor(MemInit[C] orDefault .K, baseClass(C), type(classType(C)), false, NoInit(), type(classType(C)))) ~> figureConstruct(.List, MemInit::Map, (ListItem(C::Class) => .List) _, _, _, _, _) ...</k>
-          <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
+          <curr-tr-scope> blockScope(_, Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires notBool isMethodUserProvided(FuncT)
      rule <k> (.K => figureConstructItem(MemInit[C] orDefault .K, baseClass(C), type(classType(C)), false)) ~> figureConstruct(.List, MemInit::Map, (ListItem(C::Class) => .List) _, _, _, _, _) ...</k>
-          <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
+          <curr-tr-scope> blockScope(_, Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires isMethodUserProvided(FuncT)
 
@@ -313,7 +314,7 @@ module CPP-DECL-CLASS
      rule <k> (.K => resolve(resolveOverload(cSet(Candidates, M :: ConstructorId(X)), list(.List), constructor)))
               ~> checkCtor(_ :: Class(_, X::CId, _) #as M::Class)
           ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> M </class-id>
           <cenv>... ConstructorId(X) |-> Candidates::TypeMap ...</cenv>
@@ -322,7 +323,7 @@ module CPP-DECL-CLASS
      rule <k> (.K => resolve(checkAccess(CallExpr(lv(lnew(Base), hasTrace(Name(NoNNS(), DestructorId(X))), T), list(.List), krlist(.List)))))
               ~> checkDtor(_ :: Class(_, X::CId, _) #as M::Class)
           ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> M </class-id>
           <cenv>... DestructorId(X) |-> (T::CPPType |-> envEntry(... base: Base::SymBase)) ...</cenv>
@@ -347,7 +348,7 @@ module CPP-DECL-CLASS
 
      // 12.1:4.4 (4.5 is implicit when constructing the anonymous union)
      rule <k> figureConstruct(.List, _, .List, .List, _, _, false) => Deleted() ...</k>
-          <curr-scope> blockScope((_::ClassQualifier :: Class(Union(), _, _)) #as C::Class :: ConstructorId(_), Base::SymBase, _) </curr-scope>
+          <curr-tr-scope> blockScope((_::ClassQualifier :: Class(Union(), _, _)) #as C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires notBool isUserProvidedConstructor(FuncT, .K)
  
@@ -356,10 +357,10 @@ module CPP-DECL-CLASS
 
      // 12.6.2:7
      rule <k> (figureConstructItem(I::Init, X::CId, T::CPPType, IsMember:Bool) => .K) ~> figureConstruct(.List, _, _, _, _,
-                   (Res:K => Res ~> ExpressionStmt(figureConstructorInit(Name(C, X), T, I, notBool IsMember))),
+                   (Res:K => Res ~> TExpressionStmt(figureConstructorInit(Name(C, X), T, I, notBool IsMember))),
                    B:Bool => B orBool (IsMember andBool X in VM andBool notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
-          <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
@@ -369,10 +370,10 @@ module CPP-DECL-CLASS
      // TODO(dwightguth): ctor-initializers and base classes
      // TODO(traiansf): unions
      rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, .Map, _, _, _, 
-                   (Res:K => Res ~> ExpressionStmt(figureConstructorInit(Name(C, X), T, I, false))),
+                   (Res:K => Res ~> TExpressionStmt(figureConstructorInit(Name(C, X), T, I, false))),
                    B:Bool => B orBool (X in VM andBool notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
-          <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
@@ -382,8 +383,8 @@ module CPP-DECL-CLASS
      // TODO(traiansf): anonymous unions
      rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _, _,
                    B:Bool => B orBool (notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
-          <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
@@ -392,21 +393,21 @@ module CPP-DECL-CLASS
 
      // 12.6.2:8.3
      rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _, 
-                   (Res:K => Res ~> ExpressionStmt(defaultConstructorInit(Name(C, X), T, false))), _) ...</k>
-          <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+                   (Res:K => Res ~> TExpressionStmt(defaultConstructorInit(Name(C, X), T, false))), _) ...</k>
+          <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           <variant-members> VM::Set </variant-members>
           requires I ==K NoInit() andBool notBool X in VM
      rule <k> (figureConstructItem(.K, X::CId, T::CPPType, false) => .K) ~> figureConstruct(.List, _, _, _, _, 
-                   (Res:K => Res ~> ExpressionStmt(defaultConstructorInit(Name(C, X), T, true))), _) ...</k>
-          <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
+                   (Res:K => Res ~> TExpressionStmt(defaultConstructorInit(Name(C, X), T, true))), _) ...</k>
+          <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
 
      rule <k> figureConstruct(.List, _, .List, .List, Body::Stmt, Res:K, HasNonConst:Bool) => Res ~> Body ...</k>
-          <curr-scope> blockScope(_::ClassQualifier :: Class(T::Tag, _, _) #as C::Class :: ConstructorId(_), _, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> blockScope(_::ClassQualifier :: Class(T::Tag, _, _) #as C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <base-classes> Bases::List </base-classes>
@@ -448,40 +449,40 @@ module CPP-DECL-CLASS
      rule isDeletedDefaultConstructor(T::CPPFunctionType, K:K) => isDeleted(T, K) andBool isDefaultConstructor(T, K)
 
      rule <k> Destructor() => figureDestruct(Bases, NSDM, .K) ...</k>
-          <curr-scope> blockScope(C::Class :: DestructorId(_), _, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> blockScope(C::Class :: DestructorId(_), _, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <base-classes> Bases::List </base-classes>
           <non-static-data-members> NSDM::List </non-static-data-members>
 
      rule <k> Defaulted() => .K ...</k>
-          <curr-scope> blockScope(C::Class :: DestructorId(_), _, _) </curr-scope>
+          <curr-tr-scope> blockScope(C::Class :: DestructorId(_), _, _) </curr-tr-scope>
 
      syntax Stmt ::= figureDestruct(bases: List, dataMembers: List, result: K)
 
      // 12.4:5
      rule <k> figureDestruct(.List, ListItem(kpair(X::CId, T::CPPType)) _, _) => Deleted() ...</k>
-          <curr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-scope>
+          <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
           requires isDeletedDefaultDestructor(X, T, C, FuncT, VM)
      // 12.4:5.2
      rule <k> (.K => checkDtor(X, T, getMostDerivedArrayElement(T), VM, FuncT)) ~> figureDestruct(.List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _) ...</k>
-          <curr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-scope>
+          <curr-tr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
           requires notBool isDeletedDefaultDestructor(X, T, C, FuncT, VM)
      rule <k> (.K => checkDtor(baseClass(M), type(classType(M)), type(classType(M)), VM, FuncT)) ~> figureDestruct((ListItem(M::Class) => .List) _, _, _) ...</k>
-          <curr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-scope>
+          <curr-tr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
@@ -509,16 +510,16 @@ module CPP-DECL-CLASS
           requires notBool isCPPClassType(getMostDerivedArrayElement(T))
                orBool X in VM
      rule (figureDestructItem(X::CId, T::CPPType, VM::Set) => .K)
-          ~> figureDestruct(... result: Res:K => Res ~> addToConstructed(Name(NoNNS(), X), T))
+          ~> figureDestruct(... result: Res:K => Res ~> TaddToConstructed(Name(NoNNS(), X), T))
           requires notBool X in VM andBool isCPPClassType(getMostDerivedArrayElement(T))
 
      rule <k> figureDestruct(.List, .List, Res:K) => Res ...</k>
-          <curr-scope> blockScope(_ :: DestructorId(_), Base::SymBase, _) </curr-scope>
+          <curr-tr-scope> blockScope(_ :: DestructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires notBool isMethodVirtual(FuncT)
 
      rule <k> (.K => lookupAllocationFunction(operatordelete, type(classType(C)), false)) ~> figureDestruct(.List, .List, _) ...</k>
-          <curr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-scope>
+          <curr-tr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires isMethodVirtual(FuncT)
 
@@ -527,7 +528,8 @@ module CPP-DECL-CLASS
      rule resolve(E:ResolvedExpr) ~> figureDestruct(.List, .List, Res:K) => Res
           requires notBool isNotFoundNameRef(E)
 
-     rule <k> addToConstructed(L:LVal, T::CPPType) => .K ...</k>
+     syntax KItem ::= TaddToConstructed(Expr, CPPType) [strict(1)]
+     rule <k> TaddToConstructed(L:LVal, T::CPPType) => .K ...</k>
           <elab>... .K => addToConstructed(L, T) </elab>
 
      syntax Bool ::= #isTrivialDestructor(ClassInfo) [function]
@@ -642,8 +644,8 @@ module CPP-DECL-CLASS
 
      rule (.K => nameLookup(X, NoTag(), typeMask)) ~> BaseClass(_, false, _, Name(NoNNS(), X::CId))
      rule <k> t(... st: classType(D::Class)) #as T:KItem ~> BaseClass(false, false, AS::AccessSpecifier, _) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -654,8 +656,8 @@ module CPP-DECL-CLASS
           ...</class>
           <deferred-class-actions> layoutBases(_::List (.List => ListItem(D)), _) |> _ |> _ |> .Ordering </deferred-class-actions>
      rule <k> t(... st: classType(D::Class)) #as T:KItem ~> BaseClass(true, false, AS::AccessSpecifier, _) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -667,8 +669,8 @@ module CPP-DECL-CLASS
           <deferred-class-actions> layoutBases(_, _::List (.List => ListItem(D))) |> layoutVirtualBases(_::List (.List => ListItem(D))) |> _ |> _ |> .Ordering </deferred-class-actions>
 
      rule <k> declareField(X::CId, T::CPPType, Init::Init) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-type> Key::ClassKey </class-type>
@@ -685,8 +687,8 @@ module CPP-DECL-CLASS
           requires notBool (X in_keys(CE)) andBool X =/=K #NoName
 
      rule <k> declareField(#NoName, T:CPPBitfieldType, NoInit()) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-type> Key::ClassKey </class-type>
@@ -696,8 +698,8 @@ module CPP-DECL-CLASS
 
      // POD layout
      rule <k> layoutField(X::CId, T::CPPType) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -710,8 +712,8 @@ module CPP-DECL-CLASS
 
      // non-POD-layout, non-wide bitfield
      rule <k> layoutField(X::CId, T:CPPBitfieldType) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -726,8 +728,8 @@ module CPP-DECL-CLASS
 
      // non-POD-layout, wide bitfield
      rule <k> layoutField(X::CId, T::CPPType) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -751,8 +753,8 @@ module CPP-DECL-CLASS
 
      // non-POD-layout union, non-bitfield, data member
      rule <k> layoutField(X::CId, T::CPPType) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -767,8 +769,8 @@ module CPP-DECL-CLASS
 
      // non-POD-layout non-union, non-bitfield, non-empty-base-class
      rule <k> layoutField(X::CId, T::CPPType) => tryLayoutField(X, T, V, padTo(V, #if isBaseClass(X) #then nvAlignof(T) #else byteAlignofType(T) #fi), false) ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -792,8 +794,8 @@ module CPP-DECL-CLASS
 
      syntax KItem ::= tryLayoutField(CId, CPPType, naoffset: Int, offset: Int, isEmptyBase: Bool)
      rule <k> tryLayoutField(X::CId, T::CPPType, NaOffset::Int, Offset::Int, false) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -805,8 +807,8 @@ module CPP-DECL-CLASS
           ...</class>
           requires size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), Offset))) ==Int 0
      rule <k> tryLayoutField(X::CId, T::CPPType, NaOffset::Int, Offset::Int, true) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -818,13 +820,13 @@ module CPP-DECL-CLASS
           requires size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), Offset))) ==Int 0
 
      rule <k> tryLayoutField(X::CId, T::CPPType, _, Offset::Int => Offset +Int #if isBaseClass(X) #then nvAlignof(T) #else byteAlignofType(T) #fi *Int cfg:bitsPerByte, _) ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
           requires size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), Offset))) >Int 0
 
      // non-POD-layout non-union, empty base class, layout at 0
      rule <k> layoutField(baseClass(D::Class), T::CPPType) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -840,8 +842,8 @@ module CPP-DECL-CLASS
 
      // non-POD-layout non-union, empty base class, type conflict at 0
      rule <k> layoutField(baseClass(D::Class), T::CPPType) => tryLayoutField(baseClass(D), T, V, padTo(V, nvAlignof(T)), true) ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -936,11 +938,11 @@ module CPP-DECL-CLASS
      rule getTypesAtOffsetForLayoutInUnion(...) => .Set [owise]
 
      rule <k> layoutBases(.List, .List) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
           requires isPODLayoutType(type(classType(C)))
      rule <k> layoutVirtualBases(.List) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -953,8 +955,8 @@ module CPP-DECL-CLASS
 
           
      rule <k> layoutVirtualBases(.List) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -966,7 +968,7 @@ module CPP-DECL-CLASS
           requires notBool isPOD03Type(type(classType(C)))
 
      rule <k> layoutBases(Bases::List, VirtualBases::List) => computePrimaryBase(Bases, VirtualBases, .List, .K) ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
           requires hasVirtualMembers(type(classType(C)))
 
      rule <k> computePrimaryBase((ListItem(Base::Class) => .List) _, _, _::List (.List => ListItem(Base)), Primary:K) ...</k>
@@ -974,8 +976,8 @@ module CPP-DECL-CLASS
      rule <k> computePrimaryBase((ListItem(Base::Class) => .List) _, _, _, .K => Base) ...</k>
           requires hasVirtualMembers(type(classType(Base)))
      rule <k> computePrimaryBase(.List, .List, NonPrimary::List, .K) => #layoutBases(NonPrimary) ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -986,19 +988,19 @@ module CPP-DECL-CLASS
      rule computePrimaryBase(.List, .List, NonPrimary::List, Primary:Class) => #layoutBases(ListItem(Primary) NonPrimary)
 
      rule <k> layoutBases(Bases::List, .List) => #layoutBases(Bases) ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
           requires notBool hasVirtualMembers(type(classType(C)))
 
      rule <k> (.K => layoutField(baseClass(B), type(classType(B))))
               ~> #layoutBases((ListItem(B::Class) => .List) _) ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
 
      rule <k> #layoutBases(.List) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
 
      rule <k> AccessSpec(AS::AccessSpecifier) => .K ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
@@ -1041,36 +1043,37 @@ module CPP-DECL-CLASS
 
      // brace-or-equal initializers need to be evalauted in class scope
      rule <k> evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E ~> returnFromBraceOrEqualInitializer(Base, OldScope) ...</k>
-          <curr-scope> OldScope::Scope => classScope(C, true) </curr-scope>
+          <curr-tr-scope> OldScope::Scope => classScope(C, true) </curr-tr-scope>
+          requires Translation()
      rule <k> le(E::Expr => evalBraceOrEqualInitializer(C, Base, E), _, _)
            ~> (returnFromBraceOrEqualInitializer(Base::LVal, Scope::Scope) => .K)
           ...</k>
-          <curr-scope> classScope(C::Class, _) => Scope </curr-scope>
+          <curr-tr-scope> classScope(C::Class, _) => Scope </curr-tr-scope>
      rule <k> xe(E::Expr => evalBraceOrEqualInitializer(C, Base, E), _, _)
            ~> (returnFromBraceOrEqualInitializer(Base::LVal, Scope::Scope) => .K)
           ...</k>
-          <curr-scope> classScope(C::Class, _) => Scope </curr-scope>
+          <curr-tr-scope> classScope(C::Class, _) => Scope </curr-tr-scope>
      rule <k> pre(E::Expr => evalBraceOrEqualInitializer(C, Base, E), _, _)
            ~> (returnFromBraceOrEqualInitializer(Base::LVal, Scope::Scope) => .K)
           ...</k>
-          <curr-scope> classScope(C::Class, _) => Scope </curr-scope>
+          <curr-tr-scope> classScope(C::Class, _) => Scope </curr-tr-scope>
 
      rule <k> V:Val ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
-          <curr-scope> _ => Scope </curr-scope>
+          <curr-tr-scope> _ => Scope </curr-tr-scope>
           requires notBool (isLExpr(V) orBool isPRExpr(V))
 
      rule <k> typeof(evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E)
            ~> (.K => returnFromBraceOrEqualInitializer(Base, OldScope))
           ...</k>
-          <curr-scope> OldScope::Scope => classScope(C, true) </curr-scope>
+          <curr-tr-scope> OldScope::Scope => classScope(C, true) </curr-tr-scope>
      rule <k> typeof(V:CPPType) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
-          <curr-scope> _ => Scope </curr-scope>
+          <curr-tr-scope> _ => Scope </curr-tr-scope>
      rule <k> catof(evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E)
            ~> (.K => returnFromBraceOrEqualInitializer(Base, OldScope))
           ...</k>
-          <curr-scope> OldScope::Scope => classScope(C, true) </curr-scope>
+          <curr-tr-scope> OldScope::Scope => classScope(C, true) </curr-tr-scope>
      rule <k> catof(V:ValueCategory) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
-          <curr-scope> _ => Scope </curr-scope>
+          <curr-tr-scope> _ => Scope </curr-tr-scope>
 
      rule getNonStaticDataMembers(<class>... <non-static-data-members> L::List </non-static-data-members> ...</class>) => L
      rule getDataMembersInitializers(<class>... <initializers> M::Map </initializers> ...</class>) => M

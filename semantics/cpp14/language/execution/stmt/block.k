@@ -1,12 +1,12 @@
-module CPP-STMT-BLOCK
+module CPP-EXECUTION-STMT-BLOCK
      imports C-CONFIGURATION
      imports INT
      imports C-CHECK-RESTRICT-SYNTAX
-     imports C-IO-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
+     imports DELETE-OBJECT-SYNTAX
      imports CPP-BUILTIN-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-ENV-SYNTAX
+     imports CPP-EXECUTION-ENV-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX

@@ -26,7 +26,7 @@ module CPP-EXPR-CAST
      imports CPP-TYPING-SYNTAX
 
      context ConstCast(T:CPPType, (HOLE:Expr => reval(HOLE)))
-             requires isUnnamedPRValue(T) [result(PRVal)]
+             requires isUnnamedPRValue(T) [result(EPRVal)]
      rule ConstCast(T:CPPType, V:PRVal) => convertConst(T, V)
      rule ConstCast(T:CPPType, V:Val) => convertConst(T, V)
           requires notBool isUnnamedPRValue(T)
@@ -122,7 +122,7 @@ module CPP-EXPR-CAST
           requires notBool isCPPRefType(T) [owise]
 
      context ReinterpretCast(T:CPPType, (HOLE:Expr => reval(HOLE)))
-             requires isUnnamedPRValue(T) [result(PRVal)]
+             requires isUnnamedPRValue(T) [result(EPRVal)]
      rule ReinterpretCast(T:CPPType, V:PRVal) => convertReinterpret(T, V)
      rule ReinterpretCast(T:CPPType, V:Val) => convertReinterpret(T, V)
           requires notBool isUnnamedPRValue(T)

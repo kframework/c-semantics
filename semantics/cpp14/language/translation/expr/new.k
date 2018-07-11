@@ -1,4 +1,4 @@
-module CPP-EXPR-NEW-SYNTAX
+module CPP-TRANSLATION-EXPR-NEW-SYNTAX
      imports BOOL-SYNTAX
      imports INT-SYNTAX
      imports MAP
@@ -10,16 +10,16 @@ module CPP-EXPR-NEW-SYNTAX
      syntax List ::= getSecondDeleteArg(TypeMap, PRVal) [function]
 endmodule
 
-module CPP-EXPR-NEW
-     imports CPP-EXPR-NEW-SYNTAX
+module CPP-TRANSLATION-EXPR-NEW
+     imports CPP-TRANSLATION-EXPR-NEW-SYNTAX
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-BUILTIN-SYNTAX
-     imports CPP-DECL-CLASS-SYNTAX
-     imports CPP-DECL-INITIALIZER-SYNTAX
+     imports CPP-TRANSLATION-DECL-CLASS-SYNTAX
+     imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-OVERLOADING-SYNTAX
+     imports CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
@@ -48,11 +48,11 @@ module CPP-EXPR-NEW
           requires getId(Q) ==K operatornew
 
      rule R:PRExpr ~> I:Int ~> NewExpr(_, T:CPPType, Size:PRExpr, Init::Init, _) #as E:Expr
-          => computeNewInit(R, T, Size, E, I, figureInit(le(Name(NoNNS(), #NoName(I)), noTrace, t(noQuals, .Set, dynamicArrayType(T, newSize(I)))), t(noQuals, .Set, dynamicArrayType(T, newSize(I))), Init, DirectInit()))
+          => computeNewInit(R, T, Size, E, I, figureInit(le(ExecName(NoNNS(), #NoName(I)), noTrace, t(noQuals, .Set, dynamicArrayType(T, newSize(I)))), t(noQuals, .Set, dynamicArrayType(T, newSize(I))), Init, DirectInit()))
      rule R:PRExpr ~> I:Int ~> NewExpr(_, T:CPPType, prv(Size:Int, Tr::Trace, SizeT::CPPType), Init::Init, _) #as E:Expr
-          => computeNewInit(R, T, prv(Size, Tr, SizeT), E, I, figureInit(le(Name(NoNNS(), #NoName(I)), noTrace, t(noQuals, .Set, arrayType(T, Size))), t(noQuals, .Set, arrayType(T, Size)), Init, DirectInit()))
+          => computeNewInit(R, T, prv(Size, Tr, SizeT), E, I, figureInit(le(ExecName(NoNNS(), #NoName(I)), noTrace, t(noQuals, .Set, arrayType(T, Size))), t(noQuals, .Set, arrayType(T, Size)), Init, DirectInit()))
      rule R:PRExpr ~> NewExpr(_, T:CPPType, NoExpression(), Init::Init, _) #as E:Expr
-          => computeNewInit(R, T, NoExpression(), E, !I, figureInit(le(Name(NoNNS(), #NoName(!I:Int)), noTrace, T), T, Init, DirectInit()))
+          => computeNewInit(R, T, NoExpression(), E, !I, figureInit(le(ExecName(NoNNS(), #NoName(!I:Int)), noTrace, T), T, Init, DirectInit()))
 
      syntax Expr ::= computeNewInit(Expr, CPPType, AExpr, Expr, Int, K) [strict(6)]
 
@@ -69,7 +69,7 @@ module CPP-EXPR-NEW
      context DeleteExpr(_, _, (HOLE:Expr => reval(HOLE))) [result(PRVal)]
      rule (.K => lookupAllocationFunction(operatordelete, innerType(type(V)), IsGlobal)) ~> DeleteExpr(IsGlobal::Bool, false, V:PRVal)
           requires isCPPPointerType(type(V)) andBool #fun(InnerT::CPPType => notBool isCPPClassType(InnerT) orBool notBool hasDestructorThat({InnerT}:>CPPClassType, #klabel(`isVirtualDestructor`)))(innerType(type(V)))
-     rule (cSet(Cands::TypeMap, Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(le(Name(NoNNS(), #NoName(!I:Int)), noTrace, type(V))) getSecondDeleteArg(Cands, pre(newSize(!I), noTrace, type(size_t)))), Name(NoNNS(), operatordelete))
+     rule (cSet(Cands::TypeMap, Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(le(ExecName(NoNNS(), #NoName(!I:Int)), noTrace, type(V))) getSecondDeleteArg(Cands, pre(newSize(!I), noTrace, type(size_t)))), Name(NoNNS(), operatordelete))
           ~> !I:Int)
           ~> DeleteExpr(_, false, V::PRVal)
      rule R:PRExpr ~> I:Int ~> DeleteExpr(IsGlobal::Bool, false, V:PRVal) => pre(DeleteOp(V, R, .K, I), hasTrace(DeleteExpr(IsGlobal, false, V)), type(void))

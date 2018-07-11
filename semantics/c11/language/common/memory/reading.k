@@ -33,7 +33,6 @@ module C-MEMORY-READING
      imports FLOAT-SYNTAX
      imports INT
      imports K-EQUAL
-     imports LIBC-SYNTAX
      imports SYMLOC-SYNTAX
 
      /*@ These rules figure out whether the read should be structural or

@@ -5,6 +5,7 @@ module CPP-TRANSLATION-INIT-SYNTAX
 endmodule
 
 module CPP-TRANSLATION-INIT
+     imports K-REFLECTION
      imports CPP-TRANSLATION-INIT-SYNTAX
      imports STRING
      imports COMMON-BUILTIN-SYNTAX
@@ -12,9 +13,10 @@ module CPP-TRANSLATION-INIT
      imports MEMORY-SYNTAX
      imports C-LINKING-INIT-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
+     imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BUILTIN-SYNTAX
-     imports CPP-DECL-DECLARATOR-SYNTAX
+     imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ERROR-SYNTAX
      imports CPP-SYMLOC-SYNTAX
@@ -23,7 +25,13 @@ module CPP-TRANSLATION-INIT
 
      imports C-CONFIGURATION
 
-     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType)) => notBool isCPPRefType(T)
+     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tr-tu>TU::String</curr-tr-tu> ...</generatedTop>) => TU
+
+     syntax Bool ::= #Execution(K) [function]
+     rule Execution() => #Execution(#configuration)
+     rule #Execution(<generatedTop>... <compile-time-evaluation> B::Bool </compile-time-evaluation> ...</generatedTop>) => B
+
+     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType) #as V::Val) => (notBool isCPPRefType(T)) andBool ((notBool Execution()) orBool isEvalVal(V))
           requires isTExprKLabel(#klabel(Lbl))
      rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, _:KItem, T:CPPTypeExpr)) => isDependentInScope(T)
           requires isDepKLabel(#klabel(Lbl))
@@ -80,7 +88,7 @@ module CPP-TRANSLATION-INIT
           => declareObject(N, N, X, X, type(functionType(Ret, Args, noMethod, CPPLinkage, E)), NoInit(), makeFunctionDeclarationType(N, Args), ExternalLinkage, StaticStorage, .Set)
 
      rule <k> makeNs(N::Namespace) => .K ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <namespaces>...
                (.Bag => <ns>...
@@ -156,26 +164,32 @@ module CPP-TRANSLATION-INIT
 
      rule <k> L:CabsLoc => .K ...</k>
           <elab>... .K => L </elab>
+          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
+          requires Translation()
+
+     rule <k> L:CabsLoc => .K ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
+          requires Execution()
 
      rule <k> ExprLoc(L::CabsLoc, E::Expr) => #ExprLoc(L, E) ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
+          requires Translation()
 
      syntax Expr ::= #ExprLoc(CabsLoc, Expr) [strict(2)]
      rule <k> #ExprLoc(L::CabsLoc, V:Val) => V ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
           requires isEvalVal(V)
      rule <k> #ExprLoc(L::CabsLoc, V:PRExpr) => pre(ExprLoc(L, stripHold(V)), trace(V), type(V)) ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
      rule <k> #ExprLoc(L::CabsLoc, V:XExpr) => xe(ExprLoc(L, stripHold(V)), trace(V), type(V)) ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
      rule <k> #ExprLoc(L::CabsLoc, V:LExpr) => le(ExprLoc(L, stripHold(V)), trace(V), type(V)) ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
      rule <k> #ExprLoc(L::CabsLoc, V:PRDep) => prd(ExprLoc(L, stripHold(V)), trace(V), type(V), param(V)) ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
      rule <k> #ExprLoc(L::CabsLoc, V:XDep) => xd(ExprLoc(L, stripHold(V)), trace(V), type(V), param(V)) ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
      rule <k> #ExprLoc(L::CabsLoc, V:LDep) => ld(ExprLoc(L, stripHold(V)), trace(V), type(V), param(V)) ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
      
 endmodule

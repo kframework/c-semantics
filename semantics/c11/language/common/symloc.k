@@ -11,13 +11,6 @@ module C-SYMLOC-SYNTAX
      syntax SymLoc ::= lnew(SymBase) [function]
      syntax SymLoc ::= restrictedNew(SymBase, Scope) [function]
 
-     syntax Set ::= getBases(SymLoc) [function, klabel(getBases)]
-     syntax Set ::= getBases(Set) [function]
-
-     // Used for detecting violations of aliasing restictions on
-     // restrict-qualified pointers.
-     syntax Provenance ::= basedOn(SymBase, Scope)
-
      syntax Bool ::= hasUnionMarker(SymLoc) [function]
      syntax Bool ::= ifFromArrayInBounds(SymLoc, UType, Int) [function]
 
@@ -43,14 +36,6 @@ module C-SYMLOC
      rule lnew(Base::SymBase) => loc(Base, 0)
 
      rule restrictedNew(Base:SymBase, Tag:Scope) => addProv(basedOn(Base, Tag), lnew(Base))
-
-     rule getBases(Loc:SymLoc) => getBases(prov(Loc))
-
-     rule getBases(Prov:Set) => filterSet(Prov, #klabel(`isBase`))
-
-     syntax Bool ::= isBase(Provenance) [function]
-     rule isBase(basedOn(_, _)) => true
-     rule isBase(_) => false [owise]
 
      rule stripBases(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripBases(loc(Base:SymBase, Offset:Int, Prov:Set))

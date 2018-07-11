@@ -1,4 +1,4 @@
-module CPP-STMT-LABELED
+module CPP-EXECUTION-STMT-LABELED
      imports COMPAT-SYNTAX
      imports CPP-SYNTAX
 

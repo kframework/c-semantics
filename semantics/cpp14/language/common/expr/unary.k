@@ -22,7 +22,7 @@ module CPP-EXPR-UNARY
      rule &(dataMemberValue(memberPointer(C::Class, X::CId, T::CPPType), Tr::Trace, _))
           => prv(memberPointer(C, X, T), Tr, t(noQuals, .Set, memberPointerType(t(noQuals, .Set, classType(C)),T)))
 
-     context - (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context - (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
      rule - prv(I:Int, Tr::Trace, T::CPPType)
           => arithInterpret(T, 0 -Int I, combine(Tr, #klabel(`-__CPP-SYNTAX`)))
           requires isPromoted(T)
@@ -30,7 +30,7 @@ module CPP-EXPR-UNARY
           => arithInterpret(T, --Float F, combine(Tr, #klabel(`-__CPP-SYNTAX`)))
           requires isPromoted(T)
 
-     context + (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context + (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
      rule + prv(I:Int, Tr::Trace, T::CPPType)
           => arithInterpret(T, I, combine(Tr, #klabel(`+__CPP-SYNTAX`)))
           requires isPromoted(T)

@@ -3,17 +3,17 @@ module CPP-STMT-RETURN-SYNTAX
      syntax KItem ::= "Return''" "(" K ")" [strict]
 endmodule
 
-module CPP-STMT-RETURN
+module CPP-EXECUTION-STMT-RETURN
      imports RETURN-SYNTAX
      imports CPP-STMT-RETURN-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
      imports C-CHECK-RESTRICT-SYNTAX
-     imports C-IO-SYNTAX
+     imports DELETE-OBJECT-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-ENV-SYNTAX
+     imports CPP-EXECUTION-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
@@ -35,16 +35,16 @@ module CPP-STMT-RETURN
 
      // compute value category of result
      rule Return'(lv(Loc::SymLoc, Tr::Trace, T::CPPType), DeclT::CPPType) => 
-          Return''(makeCall(Loc, Tr, T, DeclT))
+          Return''(makeCall2(Loc, Tr, T, DeclT))
 
-     syntax Val ::= makeCall(SymLoc, Trace, CPPType, CPPType) [function]
-     rule makeCall(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
+     syntax Val ::= makeCall2(SymLoc, Trace, CPPType, CPPType) [function]
+     rule makeCall2(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
           => lv(Loc, Tr, T)
           requires isUnnamedLValue(DeclT)
-     rule makeCall(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
+     rule makeCall2(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
           => xv(Loc, Tr, T)
           requires isUnnamedXValue(DeclT)
-     rule makeCall(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
+     rule makeCall2(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
           => makePRVal(lv(Loc, Tr, T)) [owise]
 
      /* recursively exits each Block wrapped in BlockStatement */
@@ -78,22 +78,6 @@ module CPP-STMT-RETURN
                          <stack-lang-linkage> CPPLinkage </stack-lang-linkage>
                     </call-stack-frame>
                ) => .List
-          ...</call-stack>
-
-endmodule
-
-module C-CPP-STMT-RETURN
-     imports CPP-STMT-RETURN
-     imports C-CPP-VAL-CONVERSION-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-
-     rule <k> return(V:RValue => convertValToCPP(V)) ...</k>
-          <call-stack>
-               ListItem(
-                    <call-stack-frame>...
-                         <stack-lang-linkage> CPPLinkage </stack-lang-linkage>
-                    ...</call-stack-frame>
-               )
           ...</call-stack>
 
 endmodule

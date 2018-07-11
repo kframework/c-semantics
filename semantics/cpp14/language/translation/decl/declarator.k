@@ -1,4 +1,4 @@
-module CPP-DECL-DECLARATOR-SYNTAX
+module CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports LIST
      imports SET
      imports COMMON-SORTS
@@ -23,8 +23,8 @@ module CPP-DECL-DECLARATOR-SYNTAX
      syntax KItem ::= addParam(CId)
 endmodule
 
-module CPP-DECL-DECLARATOR
-     imports CPP-DECL-DECLARATOR-SYNTAX
+module CPP-TRANSLATION-DECL-DECLARATOR
+     imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports STRING
@@ -32,19 +32,21 @@ module CPP-DECL-DECLARATOR
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-CLASS-SYNTAX
-     imports CPP-DECL-CLASS-SYNTAX
-     imports CPP-DECL-INITIALIZER-SYNTAX
-     imports CPP-ELABORATOR-SYNTAX
-     imports CPP-ENV-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
+     imports CPP-TRANSLATION-DECL-CLASS-SYNTAX
+     imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
+     imports CPP-TRANSLATION-ELABORATOR-SYNTAX
+     imports CPP-TRANSLATION-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
-     imports CPP-PROCESS-LABEL-SYNTAX
+     imports CPP-TRANSLATION-PROCESS-LABEL-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
-     imports CPP-TEMPLATE-DEDUCTION-SYNTAX
+     imports CPP-TRANSLATION-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
-     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRANSLATION-CONSTANT-SYNTAX
 
      rule FunctionDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPFunctionType, Params::List) => NormalizedDecl(N, X, Mangled, T, NoInit(), Function(Params)) [anywhere]
      rule VarDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Init::Expr, IsDirect:Bool) => NormalizedDecl(N, X, Mangled, T, Init, Var(#if IsDirect #then DirectInit() #else CopyInit() #fi)) [anywhere]
@@ -65,11 +67,11 @@ module CPP-DECL-DECLARATOR
              [result(NNSVal)]
 
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl((NoNNS() => N), _, _, _, _, _), _) ...</k>
-          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
+          <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl((NoNNS() => NoNamespace()), _, _, _, _, _), _) ...</k>
-          <curr-scope> _:BlockScope </curr-scope>
+          <curr-tr-scope> _:BlockScope </curr-tr-scope>
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl((NoNNS() => C), _, _, _, _, _), _) ...</k>
-          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
 
      context DeclaratorAndSpecifiers(NormalizedDecl(_, _, _, HOLE:AType, _, _), _) [result(CPPTypeExpr)]
      context DeclaratorAndSpecifiers(NormalizedDecl(_, _, _, HOLE:CPPTypeExpr, _, _), _)
@@ -78,9 +80,9 @@ module CPP-DECL-DECLARATOR
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl(N:NNSVal, X::CId, Mangled::CId, t(Q::Quals, _, _) #as T::CPPType, Body::Init, Type::DeclarationType), S::Set)
                => declareObject(N, getInnermostNamespace(N, Scope), X, Mangled, T, Body, Type, getLinkage(S, N, Scope, Q, getPreviousLinkage(getInnermostNamespace(N, Scope) :: X, T, Exts, Ints), Type), getDuration(S, Scope), S)
           ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
-          <curr-scope> Scope::Scope </curr-scope>
+          <curr-tr-scope> Scope::Scope </curr-tr-scope>
           <externals> Exts:Map </externals>
           <internals> Ints:Map </internals>
           <curr-extern> IsExtern:Bool </curr-extern>
@@ -186,10 +188,11 @@ module CPP-DECL-DECLARATOR
      // ExternalLinkage, StaticStorage, not previously declared
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, Mangled::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
+              ~> markAsConstexpr(bnew(!I, T, S, link(Tu)), S)
               ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
               ~> defineObject(N, X, getCName(T, X, Mangled, Opts), T, Init, Type, StaticStorage, S)
           ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <externals>
               Exts::Map
@@ -199,7 +202,7 @@ module CPP-DECL-DECLARATOR
           <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, Opts), convertTypeToC(T)) </external-types>
           <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, Opts), Loc) </external-decls-loc>
           <curr-template-context> noTemplate </curr-template-context>
-          <curr-program-loc> Loc::CabsLoc </curr-program-loc>
+          <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
           <options> Opts::Set </options>
           requires notBool LN :: X, T in_keys(Exts)
                andBool completeDeclaration(T, Init) ==K T
@@ -207,10 +210,11 @@ module CPP-DECL-DECLARATOR
      // InternalLinkage, StaticStorage, not previously declared
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, Mangled::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
+              ~> markAsConstexpr(bnew(!I, T, S, link(Tu)), S)
               ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
               ~> defineObject(N, X, getInternalCName(T, X, Mangled, Uuid, Opts), T, Init, Type, StaticStorage, S)
           ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <uuid> Uuid::String </uuid>
           <internals>
@@ -221,15 +225,15 @@ module CPP-DECL-DECLARATOR
           <external-types> ET::Map => addOdrDecl(ET, getInternalCName(T, X, Mangled, Uuid, Opts), convertTypeToC(T)) </external-types>
           <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getInternalCName(T, X, Mangled, Uuid, Opts), Loc) </external-decls-loc>
           <curr-template-context> noTemplate </curr-template-context>
-          <curr-scope> Scope::Scope </curr-scope>
-          <curr-program-loc> Loc::CabsLoc </curr-program-loc>
+          <curr-tr-scope> Scope::Scope </curr-tr-scope>
+          <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
           <options> Opts::Set </options>
           requires notBool LN :: X, T in_keys(Ints)
                andBool completeDeclaration(T, Init) ==K T
 
      // ExternalLinkage, StaticStorage, redeclare incomplete array
      rule <k> declareObject(N::Namespace, LN::Namespace, X::CId, _, T:CPPArrayType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set) ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <externals>... LN :: X |-> ((T':CPPArrayType => T) |-> declState(Base::SymBase, _)) ...</externals>
           requires completeDeclaration(T, Init) ==K T
@@ -241,15 +245,15 @@ module CPP-DECL-DECLARATOR
               ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
               ~> defineObject(N, X, getCName(T, X, Mangled, Opts), T, Init, Type, StaticStorage, S)
           ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <externals>... LN :: X |-> (T |-> declState(Base::SymBase, _) _::TypeMap) ...</externals>
           <odr-decls> Decls::Map => Decls[Base += odrDecl(Tu, LN :: X, getCName(T, X, Mangled, Opts), T)] </odr-decls>
           <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, Opts), convertTypeToC(T)) </external-types>
           <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, Opts), Loc) </external-decls-loc>
           <curr-template-context> noTemplate </curr-template-context>
-          <curr-scope> Scope::Scope </curr-scope>
-          <curr-program-loc> Loc::CabsLoc </curr-program-loc>
+          <curr-tr-scope> Scope::Scope </curr-tr-scope>
+          <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
           <options> Opts::Set </options>
           requires completeDeclaration(T, Init) ==K T
@@ -259,7 +263,7 @@ module CPP-DECL-DECLARATOR
               => addToEnv(N :: X, T, Base, false)
               ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
               ~> defineObject(N, X, getInternalCName(T, X, Mangled, Uuid, Opts), T, Init, Type, StaticStorage, S) ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <uuid> Uuid::String </uuid>
           <internals>... LN :: X |-> (T::CPPType |-> declState(Base::SymBase, _) _::TypeMap) ...</internals>
@@ -267,8 +271,8 @@ module CPP-DECL-DECLARATOR
           <external-types> ET::Map => addOdrDecl(ET, getInternalCName(T, X, Mangled, Uuid, Opts), convertTypeToC(T)) </external-types>
           <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getInternalCName(T, X, Mangled, Uuid, Opts), Loc) </external-decls-loc>
           <curr-template-context> noTemplate </curr-template-context>
-          <curr-scope> Scope::Scope </curr-scope>
-          <curr-program-loc> Loc::CabsLoc </curr-program-loc>
+          <curr-tr-scope> Scope::Scope </curr-tr-scope>
+          <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
           <options> Opts::Set </options>
           requires completeDeclaration(T, Init) ==K T
@@ -278,20 +282,28 @@ module CPP-DECL-DECLARATOR
      // NoLinkage, AutoStorage, not previously declared
      rule <k> declareObject(NoNamespace(), _, X::CId, _, T::CPPType, Init::Init, Var(Type::InitType), NoLinkage, AutoStorage, S::Set) ~> Next:KItem
               => addToEnv(NoNamespace() :: X, T, nonStatic, false)
-              ~> declareNonStaticObject(X, T, figureInit(le(Name(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, Init, Type), Var(Type), AutoStorage, S)
+              ~> prepareDeclareNonStaticObject(X, T, Init, Type, S)
               ~> Next
           ...</k>
-          <curr-scope> _:BlockScope </curr-scope>
+          <curr-tr-scope> _:BlockScope </curr-tr-scope>
           <curr-template-context> noTemplate </curr-template-context>
           requires completeDeclaration(T, Init) ==K T
                andBool getKLabel(Next) =/=K #klabel(`dummyBind`)
 
+     syntax KItem ::= prepareDeclareNonStaticObject(CId, CPPType, init: Init, InitType, s: Set)
+
+     context prepareDeclareNonStaticObject(...init: HOLE:Expr => evalCoreConstantExpressionUntil(HOLE, #klabel(`isEvalVal`)), s: S::Set)
+          requires Constexpr() in S
+
+     rule prepareDeclareNonStaticObject(X::CId, T::CPPType, Init::Init, Type::InitType, S::Set)
+          => declareNonStaticObject(X, T, figureInit(le(ExecName(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, Init, Type), Var(Type), AutoStorage, S)
+
      // NoLinkage, StaticStorage, not previously declared
      rule <k> declareObject(NoNamespace(), _, X::CId, Mangled::CId, T::CPPType, Init::Init, Type::DeclarationType, NoLinkage, StaticStorage, Set::Set)
               => defineLocalStaticObject(X, bnew(!I:Int, T, Set, static(Tu)), T, Init, Type, Set) ...</k>
-          <curr-scope> S::Scope </curr-scope>
+          <curr-tr-scope> S::Scope </curr-tr-scope>
           <curr-template-context> noTemplate </curr-template-context>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <local-statics> LocalStatics::Map (.Map => kpair(X, S) |-> kpair(bnew(!I, T, Set, static(Tu)), T)) </local-statics>
           <elab>... .K => declareLocalStaticObject(X, bnew(!I, T, Set, static(Tu)), T) </elab>
@@ -305,9 +317,9 @@ module CPP-DECL-DECLARATOR
      rule <k> declareObject(C:Class, C, X::CId, Mangled::CId, T:CPPType, NoInit(), Var(_), ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(C :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
           ...</k>
-          <curr-scope> classScope(C, _) </curr-scope>
+          <curr-tr-scope> classScope(C, _) </curr-tr-scope>
           <class-id> C </class-id>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <externals>
               Exts::Map
@@ -316,21 +328,22 @@ module CPP-DECL-DECLARATOR
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += odrDecl(Tu, C :: X, getCName(T, X, Mangled, Opts), T)] </odr-decls>
           <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, Opts), convertTypeToC(T)) </external-types>
           <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, Opts), Loc) </external-decls-loc>
-          <curr-program-loc> Loc::CabsLoc </curr-program-loc>
+          <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
           <options> Opts::Set </options>
 
      // Declare function member inside class
      rule <k> declareObject(C:Class, C, X::CId, Mangled::CId, T:CPPFunctionType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(C :: X, T, bnew(!I, T, S, link(Tu)), false)
+              ~> markAsConstexpr(bnew(!I, T, S, link(Tu)), S)
               ~> defineObject(C, X, getCName(T, X, Mangled, Opts), T, Init, Type, StaticStorage, S)
           ...</k>
           // pure functions need to have a dummy functionObject in order for virtual call semantics to know their QualId if they have no definition
           <functions> Funcs::Map => #if isMethodPure(T) #then Funcs bnew(!I, T, S, link(Tu)) |-> functionObject(C :: X, T, .List, .K) #else Funcs #fi </functions>
           <deferred-class-actions> _ |> _ |> (K:K => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type)) ~> K) |> .Ordering </deferred-class-actions>
-          <curr-scope> classScope(C, _) </curr-scope>
+          <curr-tr-scope> classScope(C, _) </curr-tr-scope>
           <class-id> C </class-id>
           <function-members>... .List => ListItem(kpair(X, T)) </function-members>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <externals>
               Exts::Map
@@ -339,7 +352,7 @@ module CPP-DECL-DECLARATOR
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += odrDecl(Tu, C :: X, getCName(T, X, Mangled, Opts), T)] </odr-decls>
           <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, Opts), convertTypeToC(T)) </external-types>
           <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, Opts), Loc) </external-decls-loc>
-          <curr-program-loc> Loc::CabsLoc </curr-program-loc>
+          <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
           <options> Opts::Set </options>
           requires notBool isVarDeclarationType(Type)
 
@@ -349,7 +362,7 @@ module CPP-DECL-DECLARATOR
                => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type))
                ~> defineObject(C, X, getCName(T, X, Mangled, Opts), T, Init, Type, StaticStorage, S)
           ...</k>
-          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
+          <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
           <options> Opts::Set </options>
           requires completeDeclaration(T, Init) ==K T andBool getClassNamespace(C) ==K N andBool notBool isLocalQualifier(CQ)
 
@@ -366,8 +379,14 @@ module CPP-DECL-DECLARATOR
      rule <k> stripAuto => .K ...</k>
           <template-arguments>... auto |-> _ => .Map ...</template-arguments>
 
-     rule <k> declareNonStaticObject(... init: Init:KResult) #as D:KItem => .K ...</k>
-          <elab>... .K => D </elab>
+    rule declareNonStaticObject(ID::CId, T::CPPType, Init:KResult, DT::DeclarationType, DU::Duration, S::Set)
+          =>  declareNonStaticObject2(declareNonStaticObjectExec(ID, T, Init, DT, DU, S), Constexpr() in S)
+
+     syntax KItem ::= declareNonStaticObject2(K, Bool)
+     syntax K ::= stripLater(K)
+     rule toExecution(stripLater(K::K)) => K
+     rule <k> declareNonStaticObject2(K::K, ConstExpr:Bool) =>
+              elaborateThen(stripLater(K)) ~> #if ConstExpr #then compileTimeEval(K) #else .K #fi ... </k>
 
      syntax CPPType ::= completeDeclaration(CPPType, Init) [function]
      rule completeDeclaration(T::CPPType, (ExprLoc(_, I::Init) => I))
@@ -447,7 +466,7 @@ module CPP-DECL-DECLARATOR
                ~> initializeObject(NoNamespace(), X, T, figureInit(
                     lv(lnew(Base), noTrace, T),
                     T, Init, Type), Var(Type)) ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <odr-decls> Decls::Map => Decls[Base += odrDecl(Tu, NoNamespace() :: X, #NoName, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[NoNamespace() :: X, T <- Base] </odr-defs>
 
@@ -457,7 +476,7 @@ module CPP-DECL-DECLARATOR
               ~> #if notBool isCPPRefType(T) #then allocObject(bnew(!I, T, S, static(Tu)), T, byteSizeofType(T)) #else .K #fi
               ~> markAsConstexpr(bnew(!I:Int, T, S, static(Tu)), S)
               ~> lv(lnew(bnew(!I, T, S, static(Tu))), noTrace, T) ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <nenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base:LinkBase)) ...</nenv>
@@ -466,13 +485,13 @@ module CPP-DECL-DECLARATOR
           <external-types> ET::Map => addOdrDecl(ET, CName, convertTypeToC(T)) </external-types>
           <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, CName, Loc) </external-decls-loc>
           <odr-defs> Defs::Map => Defs[N :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
-          <curr-program-loc> Loc::CabsLoc </curr-program-loc>
+          <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
      rule <k> allocateDecl(C:Class :: X::CId, CName::CId, T::CPPType, StaticStorage, S::Set, Type::DeclarationType)
               => addToEnv(C :: X, T, bnew(!I:Int, T, S, static(Tu)), false)
               ~> #if notBool isCPPRefType(T) #then allocObject(bnew(!I, T, S, static(Tu)), T, byteSizeofType(T)) #else .K #fi
               ~> markAsConstexpr(bnew(!I:Int, T, S, static(Tu)), S)
               ~> lv(lnew(bnew(!I, T, S, static(Tu))), noTrace, T) ...</k>
-          <curr-tu> Tu::String </curr-tu>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <cenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base:LinkBase)) ...</cenv>
@@ -481,7 +500,7 @@ module CPP-DECL-DECLARATOR
           <odr-defs> Defs::Map => Defs[C :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
           <external-types> ET::Map => addOdrDecl(ET, CName, convertTypeToC(T)) </external-types>
           <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, CName, Loc) </external-decls-loc>
-          <curr-program-loc> Loc::CabsLoc </curr-program-loc>
+          <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
 
      syntax KItem ::= markAsConstexpr(SymBase, Set)
      rule <k> markAsConstexpr(B::SymBase, S::Set) => . ...</k>
@@ -494,38 +513,60 @@ module CPP-DECL-DECLARATOR
      rule <k> initializeObject(N::NNSVal, X::CId, T::CPPFunctionType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
               => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X))))
               ~> processFunDef(Base, N :: X, T, Params, Body) ...</k>
-          <curr-scope> S::Scope </curr-scope>
+          <curr-tr-scope> S::Scope </curr-tr-scope>
           requires notBool isClassScope(S)
 
      rule <k> initializeObject(N::NNSVal, X::CId, T::CPPFunctionType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
               => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X)))) ...</k>
           <deferred-class-actions> _ |> _ |> (K:K => K ~> processFunDef(Base, N :: X, T, Params, Body)) |> .Ordering </deferred-class-actions>
-          <curr-scope> classScope(...) </curr-scope>
+          <curr-tr-scope> classScope(...) </curr-tr-scope>
 
      syntax KItem ::= initFunction(SymBase, K)
 
      rule <k> initFunction(Base::SymBase, Val:K) => .K ...</k>
           <functions> F::Map => F[Base <- Val] </functions>
 
+     syntax KItem ::= preserveThreadLocal(K)
+                    | restoreThreadLocal1(K)
+                    | restoreThreadLocal2(K)
+
+
+     rule <k> preserveThreadLocal(Computation::K)
+              => Computation ~> restoreThreadLocal1(TL)
+          ...</k> <thread-local> TL::Bag </thread-local>
+
+     rule restoreThreadLocal1(TL::K) => popBlock ~> restoreThreadLocal2(TL)
+
+     rule <k> restoreThreadLocal2(TL:Bag) => .K  ... </k>
+          <thread-local> _ => TL </thread-local>
+
+     syntax KItem ::= "prepareExecutionEnvironment"
+     rule <k> prepareExecutionEnvironment => .K ...</k>
+          <curr-tr-scope> Sc::Scope </curr-tr-scope>
+          <curr-scope> _ => Sc </curr-scope>
+          <curr-tr-tu> TU::String </curr-tr-tu>
+          <curr-tu> _ => TU </curr-tu>
+
+
      rule <k> processFunDef(Base::SymBase, QX::QualId, t(... st: functionType(... methodInfo: MI::MethodInfo)) #as T::CPPFunctionTypeExpr, Params::List, Body::Stmt)
-              => scope(blockScope(QX, Base, 0),
-                   elaborateTemplateBody(dummyBind(Params) ~> #if hasThis(MI) #then setThis(QX, MI) #else .K #fi ~> getFunDefBody(I, QX, T, Body))
-                   ~> calculateGotoMap)
+              => preserveThreadLocal(scope(blockScope(QX, Base, 0),
+                   prepareExecutionEnvironment ~> pushBlock(!I:Int) ~> elaborateTemplateBody(dummyBind(Params) ~> #if hasThis(MI) #then setTrThis(QX, MI) #else .K #fi ~> getFunDefBody(I, QX, T, Body))
+                   ~> calculateGotoMap))
           ...</k>
           <curr-function> _ => Base </curr-function>
           <curr-template-context> I::TemplateInfo </curr-template-context>
           requires I =/=K noTemplate orBool isCPPFunctionType(T)
      syntax Stmt ::= getFunDefBody(TemplateInfo, QualId, CPPFunctionTypeExpr, Stmt) [function]
      rule getFunDefBody(noTemplate, QX::QualId, T::CPPFunctionTypeExpr, Body::Stmt)
-          => LabelStmt(funLabel(getId(QX)), #if isDestructorId(getId(QX)) #then ListItem(Destructor()) #else .List #fi ListItem(Body) ListItem(ReturnOp(getDefaultReturnOp(QX, getReturnType(T)))))
+          => TLabelStmt(funLabel(getId(QX)), #if isDestructorId(getId(QX)) #then ListItem(Destructor()) #else .List #fi ListItem(Body) ListItem(TReturnOp(getDefaultReturnOp(QX, getReturnType(T)))))
      rule getFunDefBody(_, _, _, Body::Stmt) => Body [owise]
 
      syntax Bool ::= hasThis(MethodInfo) [function]
      rule hasThis(methodInfo(... static: false)) => true
      rule hasThis(_) => false [owise]
-     syntax KItem ::= setThis(QualId, MethodInfo)
-     rule <k> setThis(C:Class :: _, methodInfo(... cvQuals: Q::Quals)) => .K ...</k>
-          <this> _ => pre(This(), hasTrace(This()), type(pointerType(t(Q::Quals, .Set, classType(C))))) </this>
+     syntax KItem ::= setTrThis(QualId, MethodInfo)
+     rule <k> setTrThis(C:Class :: _, methodInfo(... cvQuals: Q::Quals)) => .K ...</k>
+          <tr-this> _ => pre(This(), hasTrace(This()), type(pointerType(t(Q::Quals, .Set, classType(C))))) </tr-this>
 
      syntax Expr ::= getDefaultReturnOp(QualId, CPPTypeExpr) [function]
      rule getDefaultReturnOp(GlobalNamespace() :: Identifier("main"), T::CPPTypeExpr)

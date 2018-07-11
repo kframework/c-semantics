@@ -18,9 +18,6 @@ module CPP-EXPR-MEMBERS
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule <k> This() => Obj ...</k>
-          <this> Obj::Expr </this>
-
      context HOLE:Expr . _ _
 
      rule V:Val . no-template (Name(_:Class, _) #as N::Name)

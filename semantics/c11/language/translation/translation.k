@@ -9,6 +9,7 @@ require "error.k"
 require "function-def.k"
 require "init.k"
 require "io.k"
+require "linking-interface.k"
 require "literal.k"
 require "process-label.k"
 require "promotion.k"
@@ -71,6 +72,7 @@ module C-TRANSLATION
      imports C-ENV
      imports C-FUNCTION-DEF
      imports C-IO
+     imports C-LINKING-INTERFACE
      imports C-LITERAL
      imports C-PROCESS-LABEL
      imports C-PROMOTION

@@ -1451,7 +1451,7 @@ bool TraverseDecl(Decl *D) {
   }
 
   bool VisitBreakStmt(BreakStmt *S) {
-    AddKApplyNode("BreakStmt", 0);
+    AddKApplyNode("TBreakStmt", 0);
     return false;
   }
 

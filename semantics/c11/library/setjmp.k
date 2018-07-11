@@ -9,6 +9,7 @@ module LIBC-SETJMP
      imports C-IO-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports DELETE-OBJECT-SYNTAX
      imports LIBC-SYNTAX
 
      /*@
