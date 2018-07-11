@@ -12,4 +12,4 @@ A pointer (or array subscript) outside the bounds of an object:
         see MISRA-C section 8.18:1 http://rvdoc.org/MISRA-C/8.18
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
-Execution failed (configuration dumped)
+Pointer not initialized to NULL

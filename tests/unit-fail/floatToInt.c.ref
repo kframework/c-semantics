@@ -8,4 +8,4 @@ Conversion to integer from float outside the range that can be represented:
         see CERT-C section FLP34-C http://rvdoc.org/CERT-C/FLP34-C
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
-Execution failed (configuration dumped)
+0xffffffffe0000000

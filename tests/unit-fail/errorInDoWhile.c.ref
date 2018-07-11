@@ -7,4 +7,8 @@ Division by 0:
         see CERT-C section INT33-C http://rvdoc.org/CERT-C/INT33-C
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
-Execution failed (configuration dumped)
+Encountered an unknown error. This may be due to encountering undefined behavior, an unsupported language feature, or a bug in this tool:
+      > in main at errorInDoWhile.c:6:9
+
+    Unknown error (UNK-1)
+

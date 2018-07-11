@@ -8,4 +8,13 @@ A pointer (or array subscript) outside the bounds of an object:
     Undefined behavior (UB++-CEA1):
         see C++14 section 5.7:4 http://rvdoc.org/C++14/5.7
 
-Execution failed (configuration dumped)
+Reading outside the bounds of an object:
+      > in ::call4 at deep-tail-call-1.C:7:47
+        in ::call3 at deep-tail-call-1.C:8:47
+        in ::call2 at deep-tail-call-1.C:9:47
+        in ::call1 at deep-tail-call-1.C:10:47
+        in ::main at deep-tail-call-1.C:13:3
+
+    Behavior underspecified by standard (DR++-EIO1):
+        see C++ Defect Reports section 232 http://rvdoc.org/C++%20Defect%20Reports/232
+

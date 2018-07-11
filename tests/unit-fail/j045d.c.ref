@@ -7,4 +7,14 @@ Modulus by 0:
         see CERT-C section INT33-C http://rvdoc.org/CERT-C/INT33-C
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
-Execution failed (configuration dumped)
+Indeterminate value used in an expression:
+
+    Undefined behavior (UB-CEE2):
+        see C11 section 6.2.4 http://rvdoc.org/C11/6.2.4
+        see C11 section 6.7.9 http://rvdoc.org/C11/6.7.9
+        see C11 section 6.8 http://rvdoc.org/C11/6.8
+        see C11 section J.2:1 item 11 http://rvdoc.org/C11/J.2
+        see CERT-C section EXP33-C http://rvdoc.org/CERT-C/EXP33-C
+        see MISRA-C section 8.9:1 http://rvdoc.org/MISRA-C/8.9
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+

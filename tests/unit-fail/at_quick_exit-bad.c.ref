@@ -8,4 +8,3 @@ Called the at_quick_exit function after normal program termination has begun:
         see C11 section 7.22.4.3:2 http://rvdoc.org/C11/7.22.4.3
         see C11 section J.1:1 item 45 http://rvdoc.org/C11/J.1
 
-Execution failed (configuration dumped)

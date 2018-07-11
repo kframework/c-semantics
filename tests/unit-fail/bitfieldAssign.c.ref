@@ -6,4 +6,3 @@ Conversion to signed integer outside the range that can be represented:
         see C11 section J.3.5:1 item 4 http://rvdoc.org/C11/J.3.5
         see CERT-C section INT31-C http://rvdoc.org/CERT-C/INT31-C
 
-Execution failed (configuration dumped)

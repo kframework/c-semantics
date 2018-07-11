@@ -10,4 +10,3 @@ Called the quick_exit function more than once (from a call to at_quick_exit):
         see CERT-C section ENV32-C http://rvdoc.org/CERT-C/ENV32-C
         see CERT-C section ERR04-C http://rvdoc.org/CERT-C/ERR04-C
 
-Execution failed (configuration dumped)

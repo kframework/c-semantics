@@ -8,4 +8,3 @@ Function call has more arguments than parameters in function definition:
         see CERT-C section EXP37-C http://rvdoc.org/CERT-C/EXP37-C
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
-Execution failed (configuration dumped)

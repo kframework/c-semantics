@@ -7,4 +7,3 @@ Variable-length array with length that evaluates to non-positive value at execut
         see CERT-C section ARR32-C http://rvdoc.org/CERT-C/ARR32-C
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
-Execution failed (configuration dumped)

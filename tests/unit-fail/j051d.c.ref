@@ -7,4 +7,3 @@ The right operand in a bitwise shift is greater than or equal to the bit width o
         see CERT-C section INT34-C http://rvdoc.org/CERT-C/INT34-C
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
-Execution failed (configuration dumped)

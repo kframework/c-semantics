@@ -8,4 +8,10 @@ Cannot compare pointers with different base objects using '<=':
         see MISRA-C section 8.18:3 http://rvdoc.org/MISRA-C/8.18
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
-Execution failed (configuration dumped)
+Comparison of unspecified value:
+      > in main at j053c.c:8:7
+
+    Unspecified value or behavior (USP-CERL7):
+        see C11 section 6.5.9 http://rvdoc.org/C11/6.5.9
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+

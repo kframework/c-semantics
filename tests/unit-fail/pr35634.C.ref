@@ -4,4 +4,3 @@ Integral conversion to signed integer type in which value cannot be represented:
     Implementation defined behavior (IMPL++-CCV3):
         see C++14 section 4.7:3 http://rvdoc.org/C++14/4.7
 
-Execution failed (configuration dumped)

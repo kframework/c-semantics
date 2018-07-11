@@ -53,9 +53,10 @@ module CPP-MEMORY-READING
      rule interpret(prv(0, Tr::Trace, T:CPPPointerType)) => prv(NullPointer, Tr, T)
      rule interpret(prv(0, Tr::Trace, T:CPPPointerType)) => prv(NullPointer, Tr, T)
      rule interpret(prv(0, Tr::Trace, T:CPPMemberPointerType)) => prv(#if isCPPMemberFunctionPointerType(T) #then NullMemberFunctionPointer #else NullMemberPointer #fi, Tr, T)
+     rule interpret(prv(I:Int, Tr::Trace, T:CPPEnumType)) => interpretEnum(interpret(prv(I, Tr, underlyingType(T))), T)
+     rule interpret(V::PRVal) => V [owise]
 
      syntax PRVal ::= interpretEnum(PRVal, CPPEnumType)
-     rule interpret(prv(I:Int, Tr::Trace, T:CPPEnumType)) => interpretEnum(interpret(prv(I, Tr, underlyingType(T))), T)
      rule interpretEnum(prv(I:Int, Tr::Trace, T:CPPIntegerType), E:CPPEnumType) => prv(I, Tr, E)
 
 endmodule
