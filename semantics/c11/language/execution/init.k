@@ -204,18 +204,18 @@ module C-EXECUTION-INIT
      // int main(void) -- also, int main() gets normalized to main(void)
      syntax KItem ::= #callEntryPoint(String, Int, CId, K, Type)
      rule #callEntryPoint(Entry::String, _, _, _,
-               t(quals(.Set), .Set, functionType(ut(.Set, int),
+               t(quals(.Set), _, functionType(ut(.Set, int),
                     ListItem(typedDeclaration(t(quals(.Set), .Set, void), _)))))
           => Call(Identifier(Entry), list(.List))
      // int main(int argc, char* argv[])
      rule #callEntryPoint(Entry::String, N::Int, X::CId, Args:K,
-               t(quals(.Set), .Set, functionType(ut(.Set, int),
+               t(quals(.Set), _, functionType(ut(.Set, int),
                     ListItem(typedDeclaration(t(quals(.Set), .Set, int), _))
                     ListItem(typedDeclaration(t(quals(.Set), .Set, incompleteArrayType(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, char))) #as T::Type)), _)))))
           => Args ~> Call(Identifier(Entry), list(ListItem(N) ListItem(X)))
      // int main(int argc, char** argv)
      rule #callEntryPoint(Entry::String, N::Int, X::CId, Args:K,
-               t(quals(.Set), .Set, functionType(ut(.Set, int),
+               t(quals(.Set), _, functionType(ut(.Set, int),
                     ListItem(typedDeclaration(t(quals(.Set), .Set, int), _))
                     ListItem(typedDeclaration(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, char))) #as T::Type)), _)))))
           => Args ~> Call(Identifier(Entry), list(ListItem(N) ListItem(X)))

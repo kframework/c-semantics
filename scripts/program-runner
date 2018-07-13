@@ -226,9 +226,6 @@ sub processResult {
       local $/;
       local $_ = <OUT>;
       print if $verbose;
-      if ($ret) {
-            print "Error: Execution failed.\n";
-      }
       return $ret;
 }
 
