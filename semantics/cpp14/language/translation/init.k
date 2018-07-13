@@ -31,7 +31,7 @@ module CPP-TRANSLATION-INIT
      rule Execution() => #Execution(#configuration)
      rule #Execution(<generatedTop>... <compile-time-evaluation> B::Bool </compile-time-evaluation> ...</generatedTop>) => B
 
-     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType) #as V::Val) => (notBool isCPPRefType(T)) andBool ((notBool Execution()) orBool isEvalVal(V))
+     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType)) => Translation() andBool notBool isCPPRefType(T)
           requires isTExprKLabel(#klabel(Lbl))
      rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, _:KItem, T:CPPTypeExpr)) => isDependentInScope(T)
           requires isDepKLabel(#klabel(Lbl))
