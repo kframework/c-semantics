@@ -164,6 +164,17 @@ module CPP-TRANSLATION-VALUE-CATEGORY
           => #catofBuiltinOperator(O, T1)
 
      rule #catofBuiltinOperator(operator=, _, _, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator+=, _, _, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator-=, _, _, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator*=, _, _, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator/=, _, _, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator%=, _, _, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator<<=, _, _, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator>>=, _, _, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator&=, _, _, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator^=, _, _, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator|=, _, _, _) => catof(lvalue)
+
      rule #catofBuiltinOperator(operator||, _, _, _) => catof(prvalue)
      rule #catofBuiltinOperator(operator&&, _, _, _) => catof(prvalue)
      rule #catofBuiltinOperator(operator==, _, _, _) => catof(prvalue)
