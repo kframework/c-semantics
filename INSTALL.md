@@ -13,7 +13,7 @@ We recommend using Linux or OSX on a computer with at least 1 GB of memory.
 
 On Ubuntu 16.04, the installation process for our C semantics can be summarized as:
 ```
-$ sudo apt-get install maven git openjdk-8-jdk flex libgmp-dev libmpfr-dev build-essential cmake zlib1g-dev libclang-3.9-dev llvm-3.9 diffutils libuuid-tiny-perl libxml-libxml-perl libstring-escape-perl libstring-shellquote-perl libgetopt-declare-perl opam pkg-config
+$ sudo apt-get install maven git openjdk-8-jdk flex libgmp-dev libmpfr-dev build-essential cmake zlib1g-dev libclang-3.9-dev llvm-3.9 diffutils libuuid-tiny-perl libxml-libxml-perl libstring-escape-perl libstring-shellquote-perl libgetopt-declare-perl opam pkg-config libapp-fatpacker-perl
 $ git clone --depth=1 https://github.com/runtimeverification/k.git
 $ cd k
 $ mvn package
@@ -43,21 +43,21 @@ $ sudo apt-get install build-essential diffutils
 - For Windows, see here: <http://www.perl.org/get.html>
 - Install the following Perl modules using `cpan` (or `ppm` with ActiveState
   Perl in Windows):
+    - App::FatPacker
     - Getopt::Declare
-    - MIME::Base64
-    - UUID::Tiny
-    - XML::LibXML::Reader
     - String::Escape
     - String::ShellQuote
+    - UUID::Tiny
+    - XML::LibXML::Reader
 
 You can also install them using apt-get with
 ```
-$ sudo apt-get install libuuid-tiny-perl libxml-libxml-perl libgetopt-declare-perl libstring-escape-perl libstring-shellquote-perl
+$ sudo apt-get install libuuid-tiny-perl libxml-libxml-perl libgetopt-declare-perl libstring-escape-perl libstring-shellquote-perl libapp-fatpacker-perl
 ```
 
 Alternately, to install these modules using cpan:
 ```
-$ sudo cpan -i Getopt::Declare MIME::Base64 XML::LibXML::Reader String::Escape String::ShellQuote
+$ sudo cpan -i Getopt::Declare XML::LibXML::Reader String::Escape String::ShellQuote App::FatPacker
 ```
 
 If you are using CPAN to install XML::LibXML::Reader, you will likely also need

@@ -1,12 +1,12 @@
 #!/usr/bin/env perl
 use strict;
 my @requiredModules = qw(
-      XML::LibXML::Reader
+      App::FatPacker
       Getopt::Declare
-      MIME::Base64
       String::Escape
       String::ShellQuote
       UUID::Tiny
+      XML::LibXML::Reader
 );
 my @missingPackages = ();
 

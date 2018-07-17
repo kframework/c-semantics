@@ -60,17 +60,29 @@ check-vars:
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
 $(DIST_DIR)/writelong: $(SCRIPTS_DIR)/writelong.c
+	@mkdir -p $(DIST_DIR)
 	@$(CC) $(SCRIPTS_DIR)/writelong.c -o $(DIST_DIR)/writelong
 
-$(DIST_DIR)/RV_Kcc/Opts.pm: $(SCRIPTS_DIR)/getopt.pl $(PERL_MODULES)
-	@mkdir -p $(DIST_DIR)/RV_Kcc
-	@cp -RLp $(SCRIPTS_DIR)/RV_Kcc/*.pm $(DIST_DIR)/RV_Kcc
-	@cat $(SCRIPTS_DIR)/RV_Kcc/Opts.pm | perl $(SCRIPTS_DIR)/getopt.pl > $(DIST_DIR)/RV_Kcc/Opts.pm
+$(DIST_DIR)/kcc: $(SCRIPTS_DIR)/getopt.pl $(PERL_MODULES) $(DIST_DIR)/writelong $(FILES_TO_DIST)
+	mkdir -p $(DIST_DIR)/RV_Kcc
+	cp -RLp $(FILES_TO_DIST) $(DIST_DIR)
+	cp -RLp $(PERL_MODULES) $(DIST_DIR)/RV_Kcc
+	rm -f $(DIST_DIR)/RV_Kcc/Opts.pm
+	cat $(SCRIPTS_DIR)/RV_Kcc/Opts.pm | perl $(SCRIPTS_DIR)/getopt.pl > $(DIST_DIR)/RV_Kcc/Opts.pm
+	cp -p $(DIST_DIR)/kcc $(DIST_DIR)/kclang
 
-$(DIST_DIR)/kcc: $(DIST_DIR)/RV_Kcc/Opts.pm $(DIST_DIR)/writelong $(FILES_TO_DIST)
-	@mkdir -p $(DIST_DIR)
-	@cp -RLp $(FILES_TO_DIST) $(DIST_DIR)
-	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
+.PHONY: pack
+.INTERMEDIATE: $(DIST_DIR)/kcc.packed $(DIST_DIR)/packlists $(DIST_DIR)/fatpacker.trace
+pack: $(DIST_DIR)/kcc
+	cd $(DIST_DIR) && fatpack trace kcc
+	cd $(DIST_DIR) && fatpack packlists-for `cat fatpacker.trace` >packlists
+	cd $(DIST_DIR) && fatpack tree `cat packlists`
+	mv $(DIST_DIR)/RV_Kcc $(DIST_DIR)/fatlib
+	cd $(DIST_DIR) && fatpack file kcc > kcc.packed
+	chmod --reference=$(DIST_DIR)/kcc $(DIST_DIR)/kcc.packed
+	mv -f $(DIST_DIR)/kcc.packed $(DIST_DIR)/kcc
+	rm -rf $(DIST_DIR)/fatlib
+	cp -pf $(DIST_DIR)/kcc $(DIST_DIR)/kclang
 
 $(DIST_PROFILES)/$(PROFILE): $(DIST_DIR)/kcc $(wildcard $(PROFILE_DIR)/include/* $(PROFILE_DIR)/pp $(PROFILE_DIR)/cpp-pp) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/include/*) $(d)/pp $(d)/cpp-pp) $(PROFILE)-native-server | check-vars
 	@mkdir -p $(DIST_PROFILES)/$(PROFILE)/lib
