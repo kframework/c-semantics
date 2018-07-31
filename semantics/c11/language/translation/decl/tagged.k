@@ -36,41 +36,41 @@ module C-DECL-TAGGED
 
      // TODO(chathhorn): handle global/local differently.
      // note that struct defs might appear buried in a type.
-     rule EnumDef(X::CId, list(L:List), list(Mods::List))
+     rule EnumDef(X::CId, list(L::List), list(Mods::List))
           => defEnumConstants(Packed() in Mods, X, 0, 0, 0, L, .Map)
           [structural]
-     rule StructDef(X::CId, krlist(L:List), list(Mods::List))
+     rule StructDef(X::CId, krlist(L::List), list(Mods::List))
           => addTag(X, makeStructFieldInfo(Packed() in Mods, incompleteToFlexibleArrayMember(numberUnnamed(L))))
           requires hasNamedField(L) andBool structFieldsComplete(L)
                andBool (firstNamedZeroLengthBitfield(L) ==String "")
           [structural]
      rule (.K => UNDEF("CDT1", "Structs must contain a named member."))
-          ~> StructDef(_, krlist(L:List), _)
+          ~> StructDef(_, krlist(L::List), _)
           requires notBool hasNamedField(L)
           [structural]
      rule (.K => CV("CDT3", "Field " +String firstIncompleteOrFlexible(L) +String " has incomplete type or contains a flexible array member."))
-          ~> StructDef(_, krlist(L:List), _)
+          ~> StructDef(_, krlist(L::List), _)
           requires notBool structFieldsComplete(L)
           [structural]
      rule (.K => errorNamedZeroLengthBitfield(firstNamedZeroLengthBitfield(L)))
-          ~> StructDef(_, krlist(L:List), _)
+          ~> StructDef(_, krlist(L::List), _)
           requires firstNamedZeroLengthBitfield(L) =/=String ""
           [structural]
-     rule UnionDef(X::CId, krlist(L:List), list(Mods::List))
+     rule UnionDef(X::CId, krlist(L::List), list(Mods::List))
           => addTag(X, makeUnionFieldInfo(Packed() in Mods, numberUnnamed(L)))
           requires hasNamedField(L) andBool allComplete(L)
                andBool (firstNamedZeroLengthBitfield(L) ==String "")
           [structural]
      rule (.K => UNDEF("CDT2", "Unions must contain a named member."))
-          ~> UnionDef(_, krlist(L:List), _)
+          ~> UnionDef(_, krlist(L::List), _)
           requires notBool hasNamedField(L)
           [structural]
      rule (.K => CV("CDT4", "Field " +String firstIncomplete(L) +String " has incomplete type."))
-          ~> UnionDef(_, krlist(L:List), _)
+          ~> UnionDef(_, krlist(L::List), _)
           requires notBool allComplete(L)
           [structural]
      rule (.K => errorNamedZeroLengthBitfield(firstNamedZeroLengthBitfield(L)))
-          ~> UnionDef(_, krlist(L:List), _)
+          ~> UnionDef(_, krlist(L::List), _)
           requires firstNamedZeroLengthBitfield(L) =/=String ""
           [structural]
 
@@ -143,12 +143,12 @@ module C-DECL-TAGGED
           requires notBool isNoName(F)
      rule hasNamedField(ListItem(F:CId) _) => true
           requires notBool isNoName(F)
-     rule hasNamedField(ListItem(_:NoName) L:List)
+     rule hasNamedField(ListItem(_:NoName) L::List)
           => hasNamedField(L)
-     rule hasNamedField(ListItem(typedDeclaration(T::Type, _:NoName)) L:List)
+     rule hasNamedField(ListItem(typedDeclaration(T::Type, _:NoName)) L::List)
           => hasNamedField(L)
           requires notBool isStructOrUnionType(T)
-     rule hasNamedField(ListItem(typedDeclaration(T:StructOrUnionType, _:NoName)) L:List)
+     rule hasNamedField(ListItem(typedDeclaration(T:StructOrUnionType, _:NoName)) L::List)
           => hasNamedField(findFieldNames(T) L)
      rule hasNamedField(.List) => false
 
@@ -171,16 +171,16 @@ module C-DECL-TAGGED
      rule makeStructFieldInfo'(true, .List, V::Int, Types::Map, Offsets::Map, NL::List)
           => fieldInfo(NL, padTo(V, 1),
                Types, Offsets,
-               computePaddingOffsets(NL, padTo(V, 1), Types, Offsets, 0))
+               computePaddingOffsets(NL, padTo(V, 1), Types, Offsets))
      rule makeStructFieldInfo'(false, .List, V::Int, Types::Map, Offsets::Map, NL::List)
           => fieldInfo(NL, padTo(V, maxByteAlignofDecls(NL)),
                Types, Offsets,
-               computePaddingOffsets(NL, padTo(V, maxByteAlignofDecls(NL)), Types, Offsets, 0))
+               computePaddingOffsets(NL, padTo(V, maxByteAlignofDecls(NL)), Types, Offsets))
 
      // The padding associated with a particular field precedes it, with
      // possibly some extra padding at the end of the whole struct not
      // associated with any field. This is important for understanding the
-     // effect of the gcc et al. padding attr as applied to a particular field.
+     // effect of the gcc et al. packed attr as applied to a particular field.
 
      syntax Int ::= pad(Int, Type) [function]
      // Non-bitfields are aligned according to their type (if we note that
@@ -215,16 +215,16 @@ module C-DECL-TAGGED
      rule incompleteToFlexibleArrayMember(.List) => .List
 
      syntax Bool ::= structFieldsComplete(List) [function]
-     rule structFieldsComplete(L::List ListItem(typedDeclaration(T::Type, _)))
-          => allComplete(L) andBool allRigid(L)
-               andBool ((isCompleteType(T) andBool isRigidType(T)) orBool isIncompleteArrayType(T))
+     rule structFieldsComplete(ListItem(D:K) L::List)
+          => isCompleteType(type(D)) andBool isRigidType(type(D))
+               andBool structFieldsComplete(L)
+          requires L =/=K .List
+     rule structFieldsComplete(ListItem(D::K))
+          => (isCompleteType(type(D)) andBool isRigidType(type(D))) orBool isIncompleteArrayType(type(D))
      rule structFieldsComplete(.List) => true
 
      syntax Bool ::= allComplete(List) [function]
      rule allComplete(L::List) => all(mapList(L, #klabel(`type`)), #klabel(`isCompleteType`))
-
-     syntax Bool ::= allRigid(List) [function]
-     rule allRigid(L::List) => all(mapList(L, #klabel(`type`)), #klabel(`isRigidType`))
 
      syntax Bool ::= isRigidType(Type) [function]
      rule isRigidType(T::Type) => notBool isFlexibleType(T)
@@ -262,33 +262,29 @@ module C-DECL-TAGGED
                Types[Field <- T], Offsets[Field <- 0],
                NL ListItem(typedDeclaration(T, Field)))
      rule makeUnionFieldInfo'(true, .List, Types::Map, Offsets::Map, NL::List)
-          => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte,
-               Types, Offsets,
-               computePaddingOffsets(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, 0))
+          => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, .Set)
      rule makeUnionFieldInfo'(false, .List, Types::Map, Offsets::Map, NL::List)
-          => makePaddedUnionFieldInfo(
+          => fieldInfo(NL,
                padTo(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL)),
-               Types, Offsets, NL)
+               Types, Offsets, getPaddingOffsets(maxByteSizeofList(NL) *Int cfg:bitsPerByte, padTo(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL))))
 
-     syntax FieldInfo ::= makePaddedUnionFieldInfo(Int, Map, Map, List) [function]
-     rule makePaddedUnionFieldInfo(NBits::Int, Types::Map, Offsets::Map, NL::List)
-          => fieldInfo(NL, NBits, Types, Offsets, computePaddingOffsets(NL, NBits, Types, Offsets, 0))
+     syntax Set ::= computePaddingOffsets(List, Int, Map, Map) [function]
+     rule computePaddingOffsets(ListItem(typedDeclaration(_, A::CId)) ListItem(typedDeclaration(BT::Type, B::CId)) L::List, Len::Int, Types::Map, Offsets::Map)
+          => getPaddingOffsets({{Offsets[A]}<:K}:>Int +Int bitSizeofType({{Types[A]}<:K}:>Type), {{Offsets[B]}<:K}:>Int)
+               computePaddingOffsets(ListItem(typedDeclaration(BT, B)) L, Len, Types, Offsets)
+     rule computePaddingOffsets(ListItem(typedDeclaration(_, A::CId)), Len::Int, Types::Map, Offsets::Map)
+          => getPaddingOffsets({{Offsets[A]}<:K}:>Int +Int bitSizeofType({{Types[A]}<:K}:>Type), Len)
+     rule computePaddingOffsets(.List, _, _, _) => .Set
 
-     syntax Set ::= computePaddingOffsets(List, Int, Map, Map, Int) [function]
-     rule computePaddingOffsets(L::List, Len::Int, Types::Map, Offsets::Map, Offset::Int)
-          => SetItem(Offset) computePaddingOffsets(L, Len, Types, Offsets, Offset +Int cfg:bitsPerByte)
-          requires notBool isNonPaddingOffset(Offset, L, Types, Offsets) andBool Offset <Int Len
-     rule computePaddingOffsets(L::List, Len::Int, Types::Map, Offsets::Map, (Offset::Int => Offset +Int cfg:bitsPerByte))
-          requires isNonPaddingOffset(Offset, L, Types, Offsets) andBool Offset <Int Len
-     rule computePaddingOffsets(_, Len::Int, _, _, Offset::Int) => .Set
-          requires Offset >=Int Len
-
-     syntax Bool ::= isNonPaddingOffset(Int, List, Map, Map) [function]
-     rule isNonPaddingOffset(Offset:Int, ListItem(typedDeclaration(_, F:CId)) Decls:List, Types:Map, Offsets:Map)
-          => ({{Offsets[F]}<:K}:>Int <=Int Offset andBool Offset <Int {{Offsets[F]}<:K}:>Int +Int
-               bitSizeofType({{Types[F]}<:K}:>Type))
-          orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
-     rule isNonPaddingOffset(_, .List, _, _) => false
+     syntax Set ::= getPaddingOffsets(Int, Int) [function]
+     rule getPaddingOffsets(Off::Int, BOff::Int)
+          => getPaddingOffsets(Off +Int (cfg:bitsPerByte -Int (Off %Int cfg:bitsPerByte)), BOff)
+          requires Off <Int BOff andBool (Off %Int cfg:bitsPerByte) =/=K 0
+     rule getPaddingOffsets(Off::Int, BOff::Int) => .Set
+          requires Off >=Int BOff
+     rule getPaddingOffsets(Off::Int, BOff::Int)
+          => SetItem(Off) getPaddingOffsets(Off +Int cfg:bitsPerByte, BOff)
+          [owise]
 
      syntax KItem ::= addTag(CId, TagInfo)
      rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set))
