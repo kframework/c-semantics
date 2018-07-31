@@ -72,7 +72,6 @@ $(DIST_DIR)/kcc: $(SCRIPTS_DIR)/getopt.pl $(PERL_MODULES) $(DIST_DIR)/writelong 
 	cp -p $(DIST_DIR)/kcc $(DIST_DIR)/kclang
 
 .PHONY: pack
-.INTERMEDIATE: $(DIST_DIR)/kcc.packed $(DIST_DIR)/packlists $(DIST_DIR)/fatpacker.trace
 pack: $(DIST_DIR)/kcc
 	cd $(DIST_DIR) && fatpack trace kcc
 	cd $(DIST_DIR) && fatpack packlists-for `cat fatpacker.trace` >packlists
@@ -83,8 +82,7 @@ pack: $(DIST_DIR)/kcc
 	chmod --reference=$(DIST_DIR)/kcc $(DIST_DIR)/kcc.packed
 	mv -f $(DIST_DIR)/kcc.packed $(DIST_DIR)/kcc
 	cp -pf $(DIST_DIR)/kcc $(DIST_DIR)/kclang
-	rm -rf $(DIST_DIR)/fatlib
-	rm -rf $(DIST_DIR)/RV_Kcc
+	rm -rf $(DIST_DIR)/fatlib $(DIST_DIR)/RV_Kcc $(DIST_DIR)/packlists $(DIST_DIR)/fatpacker.trace
 
 $(DIST_PROFILES)/$(PROFILE): $(DIST_DIR)/kcc $(wildcard $(PROFILE_DIR)/include/* $(PROFILE_DIR)/pp $(PROFILE_DIR)/cpp-pp) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/include/*) $(d)/pp $(d)/cpp-pp) $(PROFILE)-native-server | check-vars
 	@mkdir -p $(DIST_PROFILES)/$(PROFILE)/lib
