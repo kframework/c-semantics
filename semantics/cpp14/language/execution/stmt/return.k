@@ -37,7 +37,7 @@ module CPP-EXECUTION-STMT-RETURN
      rule Return'(lv(Loc::SymLoc, Tr::Trace, T::CPPType), DeclT::CPPType) => 
           Return''(makeCall2(Loc, Tr, T, DeclT))
 
-     syntax Val ::= makeCall2(SymLoc, Trace, CPPType, CPPType) [function]
+     syntax Expr ::= makeCall2(SymLoc, Trace, CPPType, CPPType) [function]
      rule makeCall2(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
           => lv(Loc, Tr, T)
           requires isUnnamedLValue(DeclT)

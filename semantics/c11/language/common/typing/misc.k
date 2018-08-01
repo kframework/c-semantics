@@ -267,10 +267,11 @@ module C-TYPING-MISC
 
      rule getActiveVariantId(t(_, SetItem(activeVariant(F'::CId)) _, _)) => F'
 
-     rule setActiveVariantId(F::CId, T::UnionType) => addModifier(activeVariant(F), clearActiveVariant(T))
+     rule setActiveVariantId(F::CId, T::UnionType)
+          => {addModifier(activeVariant(F), clearActiveVariant(T))}:>UnionType
 
      rule setActiveVariant(A::Type, t(_, SetItem(activeVariant(F'::CId)) _, _) #as T::UnionType)
-          => setFieldType(F', A, T)
+          => {setFieldType(F', A, T)}:>UnionType
      rule setActiveVariant(_, T::UnionType) => T [owise]
 
      rule mergeVariants(t(_, SetItem(activeVariant(F::CId)) _, _) #as T:UnionType,
@@ -435,7 +436,7 @@ module C-TYPING-MISC
      syntax StructOrUnionType ::= setFields(FieldInfo, StructOrUnionType) [function]
      rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set) _::Set, structType(_)))
      rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set) _::Set, unionType(_)))
-     rule setFields(Fields::FieldInfo, T::StructOrUnionType) => addModifier(Fields, T) [owise]
+     rule setFields(Fields::FieldInfo, T::StructOrUnionType) => {addModifier(Fields, T)}:>StructOrUnionType [owise]
 
      rule setFieldTypeAtOffset(Offset::Int, T'::Type, T::StructOrUnionType)
           => setFields(setFieldType'(getFieldAtOffset'(Offset, getFields(T)), T', getFields(T)), T)
@@ -447,7 +448,7 @@ module C-TYPING-MISC
      rule setElementType(_, _, A::ArrayType) => A [owise]
 
      rule getElementType(Offset::Int, A::ArrayType)
-          => (getElementTypes(A))[floorBitOffset(Offset, A)] orDefault innerType(A)
+          => {(getElementTypes(A))[floorBitOffset(Offset, A)] orDefault innerType(A)}:>Type
 
      syntax Map ::= getElementTypes(ArrayType) [function]
      rule getElementTypes(t(_, SetItem(elementTypes(ETs::Map)) _, _)) => ETs
@@ -456,7 +457,8 @@ module C-TYPING-MISC
      syntax ArrayType ::= setElementTypes(Map, ArrayType) [function]
      rule setElementTypes(ETs::Map, t(Qs::Quals, SetItem(elementTypes(_)) Mods::Set, T::SimpleArrayType))
           => t(Qs, SetItem(elementTypes(ETs)) Mods, T)
-     rule setElementTypes(ETs::Map, T::ArrayType) => addModifier(elementTypes(ETs), T) [owise]
+     rule setElementTypes(ETs::Map, T::ArrayType) => {addModifier(elementTypes(ETs), T)}:>ArrayType
+          [owise]
 
      // TODO(chathhorn): move/refactor?
      rule <k> (.K => stabilize(T)) ~> stabilizeVLA(T::Type) ...</k>

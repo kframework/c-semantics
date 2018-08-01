@@ -10,7 +10,7 @@ module C-CONVERSION-SYNTAX
      // as described in 6.3 // totype, fromvalue
      // change it to function in order
      // to solve anywhere rule
-     syntax KItem ::= cast(UType, K)
+     syntax Cast ::= cast(UType, K)
 endmodule
 
 module C-CONVERSION

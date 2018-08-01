@@ -152,8 +152,7 @@ module C-FUNCTION-DEF
           <functions> M:Map => M[base(Loc) <- Fun] </functions>
           requires notBool isLinkerLoc(Loc)
 
-     syntax KItem ::= safeBody(CId, K) [function]
-
+     syntax K ::= safeBody(CId, K) [function]
      rule safeBody(X:CId, Blk:K)
           => Blk ~> Return(NothingExpression())
           requires X =/=K Identifier("main")

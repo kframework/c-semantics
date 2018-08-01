@@ -10,6 +10,8 @@ module C-LITERAL
      imports C-TYPING-SYNTAX
      imports FLOAT
 
+     syntax Constant ::= RValue
+
      syntax Bool ::= withinRange(Int, SimpleIntegerType) [function]
      rule withinRange(I::Int, T::SimpleIntegerType)
           => intInRange(I, {utype(T)}:>IntegerUType)
@@ -219,6 +221,7 @@ module C-LITERAL
      // TODO(chathhorn): using unsigned-char here even though the standard
      // seems to call for char. Using (signed) char could potentially introduce
      // a trap, it seems to me, which really doesn't seem right.
+     syntax Constant ::= Cast
      rule CharLiteral(N:Int)
           => cast(utype(int), cast(utype(unsigned-char), tv(N, ut(SetItem(IntegerConstant), int))))
      rule WCharLiteral(N:Int) => tv(N, utype(cfg:wcharut))

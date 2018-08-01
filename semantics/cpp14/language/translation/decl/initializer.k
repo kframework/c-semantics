@@ -262,7 +262,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
        => classAggInit(Base, Fields, InitL, InitMap, C, Init)
        requires T =/=K Union()
 
-     syntax KItem ::= classAggInit(base: LVal, fields: List, initList: List, initializers: Map, class: Class, initExp: Expr)
+     syntax Expr ::= classAggInit(base: LVal, fields: List, initList: List, initializers: Map, class: Class, initExp: Expr)
 
      rule classAggInit(... base: Base::LVal,
                            fields: .List,
@@ -380,7 +380,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule compoundInit(V:TExpr, PRV:PRVal) => pre(compoundInit(stripCompoundInit(V), PRV), noTrace, type(PRV))
      rule compoundInit(V:Val, E::Expr) => E
           requires isEvalVal(V)
-     syntax Val ::= stripCompoundInit(Val) [function]
+     syntax Expr ::= stripCompoundInit(Val) [function]
      rule stripCompoundInit(le(compoundInit(E1::Expr, E2::Expr), _, _)) => compoundInit(E1, E2)
      rule stripCompoundInit(V::Val) => V [owise]
 

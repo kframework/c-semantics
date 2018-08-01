@@ -97,8 +97,8 @@ module C-DECL-TAGGED
           => addTag(X, enumInfo(firstSuitableType(Min, Max, enumAliases), M))
           [structural]
 
-     syntax SimpleType ::= firstSuitableType(Int, Int, List) [function]
-     rule firstSuitableType(Min::Int, Max::Int, ListItem(T::SimpleType) _) => T
+     syntax SimpleBasicType ::= firstSuitableType(Int, Int, List) [function]
+     rule firstSuitableType(Min::Int, Max::Int, ListItem(T::SimpleBasicType) _) => T
           requires Min >=Int min(utype(T)) andBool Max <=Int max(utype(T))
      rule firstSuitableType(Min::Int, _, .List)
           // Appears to be gcc's behavior.
@@ -124,7 +124,7 @@ module C-DECL-TAGGED
              ListItem(long-int)
 
      syntax Int ::= asInt(RValue) [function]
-     rule asInt(R::RValue) => value(R)
+     rule asInt(R::RValue) => {value(R)}:>Int
           requires isInt(value(R))
      // In this case, the configuration should be about to get stuck, so it
      // doesn't matter.

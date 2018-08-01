@@ -30,7 +30,7 @@ module LIBCPP-BOOTSTRAP
           <functions>... Base |-> functionObject(F::QualId, T::CPPFunctionType, _, _) ...</functions>
           <curr-function-params> P::List </curr-function-params>
 
-     syntax Name ::= makeNamesFromCIds(CId) [function]
+     syntax ExecName ::= makeNamesFromCIds(CId) [function]
      rule makeNamesFromCIds(X::CId) => ExecName(NoNNS(), X)
 
      rule prepareBuiltin(Q::QualId, false, krlist(.List), krlist(.List))

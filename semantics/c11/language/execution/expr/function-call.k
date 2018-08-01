@@ -113,7 +113,7 @@ module C-EXPR-FUNCTION-CALL
      rule checkStackDepth => .K
           requires notBool hasLint
 
-     syntax KItem ::= checkRecursion(CId, String, Map) [function]
+     syntax K ::= checkRecursion(CId, String, Map) [function]
      rule checkRecursion(_, _, _) => .K
           requires notBool hasLint
 

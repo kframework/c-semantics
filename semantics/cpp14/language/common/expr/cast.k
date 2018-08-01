@@ -5,7 +5,7 @@ module CPP-EXPR-CAST-SYNTAX
      syntax Val ::= convertConst(CPPType, Val) [function]
      syntax Expr ::= convertStatic(CPPType, Val, Trace) [function]
                    | #convertStatic(CPPType, Expr) [strict(2)]
-     syntax Val ::= convertReinterpret(CPPType, Val) [function]
+     syntax Expr ::= convertReinterpret(CPPType, Val) [function]
 
 endmodule
 
@@ -56,8 +56,8 @@ module CPP-EXPR-CAST
 
      rule #convertStatic(T::CPPType, V:PRVal) => inverseConvertType(T, V)
 
-     syntax PRVal ::= inverseConvertType(CPPType, PRVal) [function]
-     syntax PRVal ::= inverseConvertType(CPPType, PRExpr) [function]
+     syntax K ::= inverseConvertType(CPPType, PRVal) [function]
+     syntax K ::= inverseConvertType(CPPType, PRExpr) [function]
      syntax KItem ::= inverseConvertTypeHold(CPPType, PRVal)
      rule inverseConvertType(T:CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPScopedEnumType))
           => prv(C, Tr, T)

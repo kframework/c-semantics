@@ -345,7 +345,8 @@ module CPP-TYPING
      rule getReturnType(t(_, _, functionType(... returnType: T::CPPType))) => T
      rule isVariadicFunction(T::CPPFunctionTypeExpr) => size(getParams(T)) =/=Int size(getRealParams(T))
 
-     rule implicitObjectParameterType(T::CPPFunctionType) => #fun((implicitObjectParameter(T2::CPPType) => T2))(getParams(T)[0])
+     rule implicitObjectParameterType(T::CPPFunctionType)
+          => {#fun((implicitObjectParameter(T2::CPPType) => T2))(getParams(T)[0])}:>CPPType
 
      syntax List ::= #getRealParams(List) [function]
      rule #getRealParams(L::List ListItem(variadic)) => L
@@ -668,7 +669,7 @@ module CPP-TYPING
 
      rule getBaseClassSubobject(lv(L::SymLoc, Tr::Trace, D::CPPClassType), B::CPPClassType) => lv(baseClassSubobject(L, B, D), Tr, B)
      rule getBaseClassOffset(Base::Class, Derived::Class)
-         => getAllBaseClassOffsets(Derived)[ Base ]
+         => {getAllBaseClassOffsets(Derived)[ Base ]}:>Int
 
      // Returns a mapping of type Class |-> Offset, including C |-> 0 for given class C.
      syntax Map ::= getAllBaseClassOffsets(Class) [function]

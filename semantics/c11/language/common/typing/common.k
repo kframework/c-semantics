@@ -43,7 +43,8 @@ module C-TYPING-COMMON
           => unspecifiedArrayUType(utype(T))
      rule unqualSimple(variableLengthArrayType(T::Type, N:K))
           => variableLengthArrayUType(utype(T), N)
-     rule unqualSimple(T::SimpleType) => T [owise]
+     rule unqualSimple(T::SimpleType) => {T}:>SimpleUType
+          requires isSimpleUType(T)
 
      syntax SimpleType ::= qualSimple(SimpleUType) [function]
      rule qualSimple(arrayUType(T::UType, N::Int))
@@ -56,7 +57,8 @@ module C-TYPING-COMMON
           => unspecifiedArrayType(type(T))
      rule qualSimple(variableLengthArrayUType(T::UType, N:K))
           => variableLengthArrayType(type(T), N)
-     rule qualSimple(T::SimpleUType) => T [owise]
+     rule qualSimple(T::SimpleUType) => {T}:>SimpleType
+          requires isSimpleType(T)
 
      rule sameAlignas(Mods:Set, Mods':Set)
           => getAlignasMod(Mods) ==Int getAlignasMod(Mods')
@@ -94,8 +96,8 @@ module C-TYPING-COMMON
 
      rule getEnumAlias(S::TagId) => getEnumAlias'(getTagInfo(S))
 
-     syntax SimpleType ::= "getEnumAlias'" "(" TagInfo ")" [function]
-     rule getEnumAlias'(enumInfo(... enumAlias: T::SimpleType)) => T
+     syntax SimpleBasicType ::= "getEnumAlias'" "(" TagInfo ")" [function]
+     rule getEnumAlias'(enumInfo(... enumAlias: T::SimpleBasicType)) => T
      rule getEnumAlias'(_) => no-type [owise]
 
      rule getFieldInfo(Tag::TagId) => toFieldInfo(getTagInfo(Tag))

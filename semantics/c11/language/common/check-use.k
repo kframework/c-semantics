@@ -74,7 +74,7 @@ module C-CHECK-USE
                andBool notBool isNativeLoc(Loc)
           [structural]
 
-     syntax KItem ::= checkOpaque(Opaque) [function]
+     syntax K ::= checkOpaque(Opaque) [function]
      rule checkOpaque(_) => .K
           requires notBool hasLint
 

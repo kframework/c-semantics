@@ -5,11 +5,11 @@ module C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SORTS
      imports SYMLOC-SORTS
 
-     syntax KItem ::= checkEffectiveType(Type, Int, EffectiveType) [function]
+     syntax K ::= checkEffectiveType(Type, Int, EffectiveType) [function]
      syntax KItem ::= adjustPointerBounds(RValue)
 
      syntax KItem ::= getLastAccessType(SymLoc)
-     syntax SymLoc ::= stripLastAccessType(CValue) [function]
+     syntax CValue ::= stripLastAccessType(CValue) [function]
      syntax SymLoc ::= updateLastAccessType(SymLoc, Type, EffectiveType) [function]
 
      syntax SymLoc ::= updateLastAccessVariant(SymLoc, CId, EffectiveType) [function]
@@ -84,7 +84,7 @@ module C-TYPING-EFFECTIVE
 
      syntax SymLoc ::= setLastAccessType(SymLoc, EffectiveType) [function]
      rule setLastAccessType(Loc::SymLoc, T::EffectiveType)
-          => addProv(objectType(T), stripLastAccessType(Loc))
+          => addProv(objectType(T), {stripLastAccessType(Loc)}:>SymLoc)
 
      rule stripLastAccessType(loc(Base::SymBase, Offset::Int, Prov::Set SetItem(objectType(_))))
           => stripLastAccessType(loc(Base, Offset, Prov))
@@ -151,11 +151,11 @@ module C-TYPING-EFFECTIVE
 
      syntax StructType ::= fixFlexibleStruct(StructType, List, Int) [function]
      rule fixFlexibleStruct(T::StructType, _ ListItem(F::CId), N::Int)
-          => setFieldType(F, fixFlexibleArray'(findFieldType(F, T), N), resizeFlexibleType(T, F, N))
+          => {setFieldType(F, fixFlexibleArray'(findFieldType(F, T), N), resizeFlexibleType(T, F, N))}:>StructType
           requires isFlexibleArrayType(findFieldType(F, T))
      // GCC extension
      rule fixFlexibleStruct(T::StructType, _ ListItem(F::CId), N::Int)
-          => setFieldType(F, fixFlexibleType'(findFieldType(F, T), N), resizeFlexibleType(T, F, N))
+          => {setFieldType(F, fixFlexibleType'(findFieldType(F, T), N), resizeFlexibleType(T, F, N))}:>StructType
           requires isFlexibleType(findFieldType(F, T))
      rule fixFlexibleStruct(T::StructType, _, _) => T [owise]
 
@@ -176,7 +176,8 @@ module C-TYPING-EFFECTIVE
           => t(Qs, Mods, arrayType(T', 1))
           requires (N /Int byteSizeofType(T')) <=Int 0
 
-     syntax Type ::= setVariantAtOffset(EffectiveType, CId, Int) [function]
+     syntax EffectiveType ::= setVariantAtOffset(EffectiveType, CId, Int) [function]
+     syntax Type ::= setVariantAtOffset(Type, CId, Int) [function]
      rule setVariantAtOffset(dynamicType(T::Type), F::CId, Offset::Int)
           => dynamicType(setVariantAtOffset(T, F, Offset))
 

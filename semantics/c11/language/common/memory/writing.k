@@ -147,7 +147,7 @@ module C-MEMORY-WRITING
 
      syntax KItem ::= makeInactiveVariantUnknown(SymLoc, Type, Int)
                     | makePaddingUnknown(SymBase, Int, K) [strict(3)]
-                    | makeStructUnionUnknown(SymBase, Int, Int, Type) [function]
+     syntax K ::= makeStructUnionUnknown(SymBase, Int, Int, Type) [function]
 
      rule makePaddingUnknown(Base::SymBase, Offset::Int, EffT:Type)
           => makeStructUnionUnknown(Base, 0, Offset, EffT)
@@ -173,7 +173,7 @@ module C-MEMORY-WRITING
           ~> initFieldPadding(Loc, T, F, true)
           ~> trapUnnamed(Loc, findUnnamedBitfields(T), T)
 
-     syntax KItem ::= trapUnnamed(SymLoc, List, StructOrUnionType) [function]
+     syntax K ::= trapUnnamed(SymLoc, List, StructOrUnionType) [function]
      rule trapUnnamed(Loc::SymLoc, ListItem(F::CId) Fs::List, T::StructOrUnionType)
           => initPaddingBits(Loc +bits findFieldOffset(F, T), bitSizeofType(findFieldType(F, T)), true)
           ~> trapUnnamed(Loc, Fs, T)

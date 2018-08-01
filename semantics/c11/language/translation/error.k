@@ -2,8 +2,8 @@ module C-TRANSLATION-ERROR-SYNTAX
      imports BASIC-K
      imports C-DYNAMIC-SORTS
 
-     syntax KItem ::= lintZero(RValue) [function]
-                    | lintEmpty(K) [function]
+     syntax K ::= lintZero(RValue) [function]
+                | lintEmpty(K) [function]
 endmodule
 
 module C-TRANSLATION-ERROR

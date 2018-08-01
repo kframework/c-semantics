@@ -2,8 +2,8 @@ module CPP-TRANSLATION-ERROR-SYNTAX
      imports BASIC-K
      imports CPP-DYNAMIC-SORTS
 
-     syntax KItem ::= lintZero(PRVal) [function]
-                    | lintEmpty(K) [function]
+     syntax K ::= lintZero(PRVal) [function]
+                | lintEmpty(K) [function]
 
 endmodule
 

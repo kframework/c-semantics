@@ -2587,7 +2587,7 @@ module LIBC-STDIO
      rule setPrecision(F::Float, _) => F
 
      syntax KItem ::= "getFormatType"
-     syntax Type ::= "getFormatType'" "(" String "," String ")" [function]
+     syntax K ::= "getFormatType'" "(" String "," String ")" [function]
      rule <k> getFormatType => getFormatType'(State, Length) ...</k>
           <format-length> Length::String </format-length>
           <format-state> State::String </format-state>

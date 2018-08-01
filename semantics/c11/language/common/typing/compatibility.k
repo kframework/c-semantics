@@ -388,8 +388,7 @@ module C-TYPING-COMPATIBILITY
           => t(Qs +Quals Qs', Mods Mods', structType(S'::TagId))
           requires getTagInfo(S) ==K #incomplete
 
-     syntax KItem ::= compositeFunctionType(UType, Quals, Set, List, List, List)
-          [function]
+     syntax Type ::= compositeFunctionType(UType, Quals, Set, List, List, List) [function]
      rule compositeFunctionType(R::UType, Qs::Quals, Mods::Set, .List, .List, P'::List)
           => t(Qs, Mods, functionType(R, P'))
      rule compositeFunctionType(_, _, _, .List, (P::List => .List), (_ => P))

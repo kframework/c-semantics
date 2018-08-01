@@ -2,13 +2,14 @@ module C-TYPE-BUILDER-SYNTAX
      imports INT-SYNTAX
      imports STRING-SYNTAX
      imports C-TYPING-SORTS
-     syntax FlexType ::= Type | SimpleType | Variadic
+     syntax FlexType ::= Type | SimpleType
+     syntax FlexParamDecl ::= FlexType | Variadic
 
      syntax Type ::= fun(FlexType) [function, klabel(fun1)]
-                   | fun(FlexType, FlexType) [function, klabel(fun2)]
-                   | fun(FlexType, FlexType, FlexType) [function, klabel(fun3)]
-                   | fun(FlexType, FlexType, FlexType, FlexType) [function, klabel(fun4)]
-                   | fun(FlexType, FlexType, FlexType, FlexType, FlexType) [function, klabel(fun5)]
+                   | fun(FlexType, FlexParamDecl) [function, klabel(fun2)]
+                   | fun(FlexType, FlexParamDecl, FlexParamDecl) [function, klabel(fun3)]
+                   | fun(FlexType, FlexParamDecl, FlexParamDecl, FlexParamDecl) [function, klabel(fun4)]
+                   | fun(FlexType, FlexParamDecl, FlexParamDecl, FlexParamDecl, FlexParamDecl) [function, klabel(fun5)]
 
      syntax Type ::= ptr(FlexType) [function]
      syntax Type ::= arr(FlexType, Int) [function]
@@ -36,24 +37,24 @@ module C-TYPE-BUILDER
 
      rule fun(R:FlexType)
           => fun(R, void)
-     rule fun(R:FlexType, T:FlexType)
-          => type(functionType(expandut(R),
-               ListItem(expand(T))))
-     rule fun(R:FlexType, T:FlexType, T':FlexType)
-          => type(functionType(expandut(R),
-               ListItem(expand(T))
-               ListItem(expand(T'))))
-     rule fun(R:FlexType, T:FlexType, T':FlexType, T'':FlexType)
-          => type(functionType(expandut(R),
-               ListItem(expand(T))
-               ListItem(expand(T'))
-               ListItem(expand(T''))))
-     rule fun(R:FlexType, T:FlexType, T':FlexType, T'':FlexType, T''':FlexType)
-          => type(functionType(expandut(R),
-               ListItem(expand(T))
-               ListItem(expand(T'))
-               ListItem(expand(T''))
-               ListItem(expand(T'''))))
+     rule fun(R:FlexType, T:FlexParamDecl)
+          => type(functionType(expandUT(R),
+               ListItem(expandParam(T))))
+     rule fun(R:FlexType, T:FlexParamDecl, T':FlexParamDecl)
+          => type(functionType(expandUT(R),
+               ListItem(expandParam(T))
+               ListItem(expandParam(T'))))
+     rule fun(R:FlexType, T:FlexType, T':FlexParamDecl, T'':FlexParamDecl)
+          => type(functionType(expandUT(R),
+               ListItem(expandParam(T))
+               ListItem(expandParam(T'))
+               ListItem(expandParam(T''))))
+     rule fun(R:FlexType, T:FlexParamDecl, T':FlexParamDecl, T'':FlexParamDecl, T''':FlexParamDecl)
+          => type(functionType(expandUT(R),
+               ListItem(expandParam(T))
+               ListItem(expandParam(T'))
+               ListItem(expandParam(T''))
+               ListItem(expandParam(T'''))))
 
      rule ptr(T:FlexType) => type(pointerType(expand(T)))
 
@@ -78,11 +79,14 @@ module C-TYPE-BUILDER
 
      syntax Type ::= expand(FlexType) [function]
      rule expand(T:Type) => T
-     rule expand(T:Variadic) => T
      rule expand(T:SimpleType) => type(T)
 
-     syntax UType ::= expandut(FlexType) [function]
-     rule expandut(T:Type) => utype(T)
-     rule expandut(T:SimpleType) => utype(T)
+     syntax ParamDecl ::= expandParam(FlexParamDecl) [function]
+     rule expandParam(T:FlexType) => expand(T)
+     rule expandParam(V:Variadic) => V
+
+     syntax UType ::= expandUT(FlexType) [function]
+     rule expandUT(T:Type) => utype(T)
+     rule expandUT(T:SimpleType) => utype(T)
 
 endmodule

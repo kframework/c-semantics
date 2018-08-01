@@ -7,14 +7,14 @@ module CPP-CONVERSION-SYNTAX
 
      // performs standard type conversions only
      syntax PRVal ::= convertType(CPPType, PRVal) [function]
-                    | convertType(CPPType, PRExpr) [function]
+     syntax PRExpr ::= convertType(CPPType, PRExpr) [function]
      syntax Expr ::= convertTypeHold(CPPType, Expr)
 
-     syntax PRVal ::= convertLVal(GLVal) [function]
-                    | convertLVal(GLExpr) [function]
-                    | convertArray(Val) [function]
-                    | convertFunction(LVal) [function]
-                    | convertReval(Val) [function]
+     syntax Expr ::= convertLVal(GLExpr) [function]
+                   | convertLVal(GLVal) [function]
+                   | convertArray(Val) [function]
+                   | convertFunction(LVal) [function]
+                   | convertReval(Val) [function]
 
      syntax Bool ::= isSimilar(CPPType, CPPType) [function]
      syntax List ::= cvQualificationSignature(CPPType) [function]
@@ -36,7 +36,7 @@ module CPP-CONVERSION-SYNTAX
                       | compositePointerType(Expr, CPPType, Expr, CPPType) [function, klabel(compositePointerType4)]
                       | usualArithmeticConversions(CPPType, CPPType) [function]
 
-     syntax Expr ::= arithInterpret(CPPType, CPPValue, Trace) [function, klabel(arithInterpretCpp)]
+     syntax PRVal ::= arithInterpret(CPPType, CPPValue, Trace) [function, klabel(arithInterpretCpp)]
                    | arithInterpretHold(CPPType, CPPValue, Trace) [klabel(arithInterpretHoldCpp)]
 
      syntax Bool ::= isNullPointerConstant(PRVal) [function, klabel(isNullPointerConstantCpp)]
@@ -45,6 +45,8 @@ module CPP-CONVERSION-SYNTAX
      syntax Bool ::= canConvertWithStandardConversion(CPPType, CPPType, ValueCategory) [function]
 
      syntax CannotConvert ::= "cannot-convert"
+     syntax PRVal ::= CannotConvert
+     syntax PRExpr ::= CannotConvert
      syntax ValResult ::= CannotConvert
 endmodule
 
@@ -61,7 +63,8 @@ module CPP-CONVERSION
      imports CPP-TYPING-SYNTAX
      imports CPP-SYNTAX
 
-     rule isExpr(errorFuncResult(_, _:Expr)) => true
+     syntax PRVal ::= ErrorResult
+     syntax PRExpr ::= ErrorResult
 
      context ConvertType(_, (HOLE:Expr => reval(HOLE))) [result(EPRVal)]
      rule ConvertType(T::CPPType, R:PRVal) => convertType(T, R)

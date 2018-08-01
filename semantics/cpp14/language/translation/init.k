@@ -49,9 +49,9 @@ module CPP-TRANSLATION-INIT
      rule trace(xd(_, Tr::Trace, _, _)) => Tr
      rule trace(prd(_, Tr::Trace, _, _)) => Tr
 
-     rule type(ld(_, _, T::CPPTypeExpr, _)) => T
-     rule type(xd(_, _, T::CPPTypeExpr, _)) => T
-     rule type(prd(_, _, T::CPPTypeExpr, _)) => T
+     rule type(ld(_, _, T::CPPType, _)) => T
+     rule type(xd(_, _, T::CPPType, _)) => T
+     rule type(prd(_, _, T::CPPType, _)) => T
 
      rule param(ld(_, _, _, T::TemplateParam)) => T
      rule param(xd(_, _, _, T::TemplateParam)) => T

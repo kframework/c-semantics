@@ -359,7 +359,7 @@ module C-DECL-INITIALIZER
      rule getTopArrayUse((K::InitLValue [[N::Int]])[[_]]) => getTopArrayUse(K[[N]])
      rule getTopArrayUse((K::InitLValue .init _)[[_]]) => getTopArrayUse(K)
 
-     syntax KItem ::= trapPadding(K) [function]
+     syntax K ::= trapPadding(K) [function]
      rule trapPadding(K::InitLValue .init F::CId) => InitPadding(K, F) ~> trapPadding(K)
      rule trapPadding(K::InitLValue [[_]]) => trapPadding(K)
      rule trapPadding(_:LValue) => .K

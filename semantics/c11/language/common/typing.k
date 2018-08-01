@@ -5,6 +5,7 @@ module C-TYPING-SORTS
      syntax FunctionType
      syntax UType
      syntax DType
+     syntax ParamDecl
 
      syntax SimpleType
      syntax SimpleUType
@@ -28,6 +29,7 @@ module C-TYPING-SYNTAX
      syntax Type ::= t(Quals, Set, SimpleType) // possibly-qualified type
      syntax UType ::= ut(Set, SimpleUType)     // unqualified type
      syntax DType ::= typedDeclaration(Type, CId)
+     syntax ParamDecl ::= Type | DType
 
      syntax Type ::= type(K) [function]
      syntax UType ::= utype(K) [function]
@@ -48,7 +50,7 @@ module C-TYPING-SYNTAX
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Int, Map, Map, Set)
-     syntax EnumInfo ::= enumInfo(enumAlias: SimpleType, ctMap: Map)
+     syntax EnumInfo ::= enumInfo(enumAlias: SimpleBasicType, ctMap: Map)
      syntax TagInfo ::= FieldInfo | EnumInfo
      syntax SimpleBasicType ::= getEnumAlias(TagId) [function]
      syntax FieldInfo ::= getFields(StructOrUnionType) [function]

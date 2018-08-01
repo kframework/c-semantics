@@ -102,7 +102,9 @@ module C-ABSTRACT-SYNTAX
      syntax TypeSpecifier ::= Imaginary()
 
      syntax TypeSpecifier ::= AutoType()
-     syntax SimpleType ::= "auto-type"
+     syntax SimpleAutoType ::= "auto-type"
+     syntax SimpleType ::= SimpleAutoType
+     syntax SimpleUType ::= SimpleAutoType
 
      syntax SpecifierElem ::= TypeofExpression(K)
      syntax SpecifierElem ::= TypeofType(K, K)
