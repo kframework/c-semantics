@@ -14,7 +14,7 @@ use MIME::Base64 qw(encode_base64);
 use String::Escape qw(quote backslash);
 use UUID::Tiny qw(:std);
 
-use RV_Kcc::Files qw(profileDir distDir tempFile tempDir IS_CYGWIN);
+use RV_Kcc::Files qw(profileDir distDir tempFile tempDir error IS_CYGWIN);
 use RV_Kcc::Opts qw(
       getopts arg classify
       cppArgs suppressions ifdefs ldArgs nativeObjFiles srcFiles objFiles trampolineFiles
@@ -429,6 +429,7 @@ sub getKRunCommand {
             push(@options, "`XBuiltins`(.KList)");
             $hasBuiltins = 1;
       }
+
       if (!$link) {
             push(@options, "`NoLink`(.KList)");
       }
@@ -541,7 +542,7 @@ sub parse {
       my ($inputFile, $lang, $trampolines) = @_;
 
       my $ppResult = tempFile('pp');
-      my $kast = tempFile('kast');
+      my $kast = tempFile('kast-txt');
       setShellDebugFile($ppResult, 0);
       checkError(preprocess($ppResult, $trampolines, $inputFile, $lang));
 
@@ -639,11 +640,6 @@ sub interruptHandler {
 # whenever we exit. This is going to be mostly temp files. If the program
 # terminates for almost any reason, this code will be executed.
 sub finalCleanup { }
-
-sub error {
-      print STDERR @_;
-      exit 1;
-}
 
 # This block gets run at the end of a normally terminating program, whether it
 # simply exits, or dies. We use this to clean up.

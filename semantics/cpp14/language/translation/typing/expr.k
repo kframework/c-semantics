@@ -297,7 +297,16 @@ module CPP-TRANSLATION-TYPING-EXPR
      //rule typeof(& E1::Expr) => typeofBuiltinOperator(operator&, E1)
      rule typeof(* E1::Expr) => typeofBuiltinOperator(operator*, E1, E1)
 
-     context GnuEnumUnderlyingType(HOLE:AType, _) [result(CPPType)]
-     rule GnuEnumUnderlyingType(T:CPPEnumType, _) => underlyingType(T)
+     context GnuEnumUnderlyingType2(HOLE:AType, _) [result(CPPType)]
+     rule GnuEnumUnderlyingType2(T:CPPEnumType, _) => underlyingType(T)
+
+     rule TypeofExpression(E::Expr) => typeofExpr(E)
+
+     context TypeofType(HOLE:AType) [result(CPPType)]
+     rule TypeofType(T:CPPType) => T
+
+     syntax Expr ::= typeofExpr(TypeExpr)
+     context typeofExpr(HOLE:TypeExpr => typeof(HOLE)) [result(CPPType)]
+     rule typeofExpr(T:CPPType) => T
 
 endmodule

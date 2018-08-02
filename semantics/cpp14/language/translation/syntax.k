@@ -68,11 +68,12 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax CtorInit ::= ConstructorBase(AType, Bool, Bool, Init)
                       | ConstructorMember(CId, Init)
+                      | ConstructorDelegating(Init)
 
-     syntax Declarator ::= FunctionDefinition(NNS, CId, CId, AType, List, AStmt)
-                         | FunctionDecl(NNS, CId, CId, AType, List)
-                         | VarDecl(NNS, CId, CId, AType, Init, isDirect: Bool)
-                         | FieldDecl(NNS, CId, AType, Init)
+     syntax Declarator ::= FunctionDefinition(NNS, CId, CId, AType, List, AStmt) [strict(4)]
+                         | FunctionDecl(NNS, CId, CId, AType, List) [strict(4)]
+                         | VarDecl(NNS, CId, CId, AType, Init, isDirect: Bool) [strict(4)]
+                         | FieldDecl(NNS, CId, AType, Init) [strict(3)]
                          | BitFieldDecl(NNS, CId, AType, Expr) [strict(3)]
 
      syntax Init ::= NoInit()
@@ -168,8 +169,9 @@ module CPP-ABSTRACT-SYNTAX
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      // extensions
-     syntax AType ::= GnuTypeOfExpr(AType)
-                    | GnuEnumUnderlyingType(AType, AType)
+     syntax AType ::= GnuEnumUnderlyingType2(AType, AType)
+                    | GnuEnumUnderlyingType1(AType)
+                    | TypeofExpression(Expr) | TypeofType(AType)
 
      syntax ExceptionSpec ::= NoExceptionSpec() 
                             | NoexceptSpec(AExpr)
@@ -179,7 +181,9 @@ module CPP-ABSTRACT-SYNTAX
                             | Bool() | UChar() | UShort() | UInt() | ULong() 
                             | ULongLong() | SChar() | Short() | Int() | Long()
                             | LongLong() | Float() | Double() | LongDouble()
-     
+                            | OversizedInt() | OversizedUInt()
+                            | Dependent()
+
      syntax AType ::= RefQualifier(RefQualifier, AType) [strict(2)]
 
      syntax AType ::= Qualifier(Qualifier, AType) [strict(2)]
@@ -193,6 +197,7 @@ module CPP-ABSTRACT-SYNTAX
                    | TLabelStmt(CId, List)
                    | TCatchAnyOp(Stmt)
                    | TBreakStmt()
+                   | ContinueStmt()
                    | ReturnStmt(Init)
                    | IfTStmt(Decl, Stmt, Stmt)
                    | IfTStmt(Expr, Stmt, Stmt)
@@ -237,6 +242,7 @@ module CPP-ABSTRACT-SYNTAX
                    | AnonymousUnionObject(AType)
                    | Subscript(Expr, Expr)
                    | Name
+                   | OverloadedCall()
                    | UnaryOperator(OpId, Expr)
                    | BinaryOperator(OpId, Expr, Init)
                    | ConditionalOperator(Expr, Expr, Expr)

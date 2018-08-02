@@ -12,7 +12,7 @@ use File::Spec::Functions qw(catfile);
 use Getopt::Declare;
 
 use RV_Kcc::Shell qw(shell);
-use RV_Kcc::Files qw(distDir tempFile tempDir);
+use RV_Kcc::Files qw(distDir tempFile tempDir error);
 
 use constant MAGIC        => "\x7fKAST";
 use constant RVMAIN       => '__rvmatch_main'; # Symbol 'main' gets rewritten to in natively-compiled code.

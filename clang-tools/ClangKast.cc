@@ -141,14 +141,12 @@ public:
     return RecursiveASTVisitor::TraverseStmt(S);
   }
 
-// copied from RecursiveASTVisitor.h with a change made: D->isImplicit() -> isImplicitDecl(D)
+// copied from RecursiveASTVisitor.h with a change made: D->isImplicit() -> excludedDecl(D)
 bool TraverseDecl(Decl *D) {
   if (!D)
     return true;
 
-  // As a syntax visitor, by default we want to ignore declarations for
-  // implicit declarations (ones not typed explicitly by the user).
-  if (!getDerived().shouldVisitImplicitCode() && isImplicitDecl(D))
+  if (excludedDecl(D))
     return true;
 
   AddKApplyNode("DeclLoc", 2);
@@ -272,15 +270,15 @@ bool TraverseDecl(Decl *D) {
     return false;
   }
 
-  bool isImplicitDecl(clang::Decl const *d) {
-    return d->isImplicit() && !isAnonymousUnionVarDecl(d);
+  bool excludedDecl(clang::Decl const *d) {
+    return d->isImplicit() && d->isDefinedOutsideFunctionOrMethod();
   }
 
   void AddDeclContextNode(DeclContext *D) {
     int i = 0;
     for (DeclContext::decl_iterator iter = D->decls_begin(), end = D->decls_end(); iter != end; ++iter) {
       clang::Decl const *d = *iter;
-      if (!isImplicitDecl(d)) {
+      if (!excludedDecl(d)) {
         i++;
       }
     }
@@ -290,7 +288,7 @@ bool TraverseDecl(Decl *D) {
   bool TraverseDeclContextNode(DeclContext *D) {
     for (DeclContext::decl_iterator iter = D->decls_begin(), end = D->decls_end(); iter != end; ++iter) {
       clang::Decl *d = *iter;
-      if (!isImplicitDecl(d)) {
+      if (!excludedDecl(d)) {
         TRY_TO(TraverseDecl(d));
       }
     }
@@ -494,6 +492,9 @@ bool TraverseDecl(Decl *D) {
       AddKApplyNode("ConstructorMember", 2);
       TRY_TO(TraverseDeclarationName(Init->getMember()->getDeclName()));
       TRY_TO(TraverseStmt(Init->getInit()));
+    } else if (Init->isDelegatingInitializer()) {
+      AddKApplyNode("ConstructorDelegating", 1);
+      TRY_TO(TraverseStmt(Init->getInit()));
     } else {
       doThrow("unimplemented: ctor initializer");
     }
@@ -633,6 +634,8 @@ bool TraverseDecl(Decl *D) {
     }
     if (D->isExplicitlyDefaulted()) {
       AddKApplyNode("Defaulted", 0);
+    } else if (D->isDeleted()) {
+      AddKApplyNode("Deleted", 0);
     }
     return true;
   }
@@ -684,28 +687,7 @@ bool TraverseDecl(Decl *D) {
   }
 
   bool TraverseVarDecl(VarDecl *D) {
-    if (D->isImplicit() && !isImplicitDecl(D) && isAnonymousUnionVarDecl(D)) {
-      if (D->isLocalVarDecl()) {
-        // for some reason clang doesn't emit a RecordDecl in this case, even
-        // though one exists implicitly within the VarDecl it creates. We need
-        // this but we don't actually need the VarDecl, so I am manually
-        // inserting it here when we visit the implicit VarDecl.
-        // this is a hideously ugly hack but aside from using a different
-        // version of clang and potentially fixing the issue ourselves,
-        // there's not much else we can do.
-
-        const VarDecl *VD = dyn_cast<VarDecl>(D);
-        TypeLoc TL = VD->getTypeSourceInfo()->getTypeLoc();
-        RecordTypeLoc RTL = getTypeLocAsAdjusted<RecordTypeLoc>(TL);
-        AddStorageClass(VD->getStorageClass());
-        TRY_TO(TraverseDecl(RTL.getDecl()));
-      } else {
-        AddKApplyNode("NoDecl", 0);
-      }
-      return true;
-    } else {
-      return TraverseVarHelper(D);
-    }
+    return TraverseVarHelper(D);
   }
 
   bool TraverseFieldDecl(FieldDecl *D) {
@@ -1233,10 +1215,13 @@ bool TraverseDecl(Decl *D) {
         AddKApplyNode("LongDouble", 0);
         break;
       case BuiltinType::Int128:
-        AddKApplyNode("Int128", 0);
+        AddKApplyNode("OversizedInt", 0);
         break;
       case BuiltinType::UInt128:
-        AddKApplyNode("UInt128", 0);
+        AddKApplyNode("OversizedUInt", 0);
+        break;
+      case BuiltinType::Dependent:
+        AddKApplyNode("Dependent", 0);
         break;
       default:
         doThrow("unimplemented: basic type");
@@ -1411,12 +1396,21 @@ bool TraverseDecl(Decl *D) {
   }
 
   bool VisitTypeOfExprType(TypeOfExprType *T) {
-    AddKApplyNode("GnuTypeOfExpr", 1);
+    AddKApplyNode("TypeofExpression", 1);
+    return false;
+  }
+
+  bool VisitTypeOfType(TypeOfType *T) {
+    AddKApplyNode("TypeofType", 1);
     return false;
   }
 
   bool VisitUnaryTransformType(UnaryTransformType *T) {
-    AddKApplyNode("GnuEnumUnderlyingType", 2);
+    if (T->isSugared()) {
+      AddKApplyNode("GnuEnumUnderlyingType2", 2);
+    } else {
+      AddKApplyNode("GnuEnumUnderlyingType1", 1);
+    }
     return false;
   }
 
@@ -1452,6 +1446,11 @@ bool TraverseDecl(Decl *D) {
 
   bool VisitBreakStmt(BreakStmt *S) {
     AddKApplyNode("TBreakStmt", 0);
+    return false;
+  }
+
+  bool VisitContinueStmt(ContinueStmt *S) {
+    AddKApplyNode("ContinueStmt", 0);
     return false;
   }
 
@@ -1711,6 +1710,18 @@ bool TraverseDecl(Decl *D) {
     UNARY_OP(Minus, "-")
     UNARY_OP(Not, "~")
     UNARY_OP(LNot, "!")
+    case UO_Real:
+      AddKApplyNode("RealOperator", 0);
+      break;
+    case UO_Imag:
+      AddKApplyNode("ImagOperator", 0);
+      break;
+    case UO_Extension:
+      AddKApplyNode("ExtensionOperator", 0);
+      break;
+    case UO_Coawait:
+      AddKApplyNode("CoawaitOperator", 0);
+      break;
     default:
       doThrow("unsupported unary operator");
     }
@@ -1779,6 +1790,14 @@ bool TraverseDecl(Decl *D) {
 
   bool TraverseCXXOperatorCallExpr(CXXOperatorCallExpr *E) {
     switch(E->getOperator()) {
+    case OO_Call:
+        // TODO(chathhorn)
+        AddKApplyNode("OverloadedCall", 0);
+        break;
+    case OO_New:
+    case OO_Delete:
+    case OO_Array_New:
+    case OO_Array_Delete:
     case OO_Plus:
     case OO_Minus:
     case OO_Star:
@@ -1852,6 +1871,7 @@ bool TraverseDecl(Decl *D) {
     case OO_PipePipe:
     case OO_Comma:
     case OO_ArrowStar:
+    case OO_Subscript:
       if (E->getNumArgs() != 2) {
         doThrow("unexpected number of arguments to operator");
       }
@@ -1862,6 +1882,7 @@ bool TraverseDecl(Decl *D) {
       break;
     case OO_Tilde:
     case OO_Exclaim:
+    case OO_Coawait:
       if (E->getNumArgs() != 1) {
         doThrow("unexpected number of arguments to operator");
       }
@@ -2408,6 +2429,9 @@ public:
 
 void makeKast(int& idx) {
   Node *current = nodes[idx];
+  if (!current) {
+        doThrow("parse error");
+  }
   switch(current->kind) {
   case KAPPLY:
     printf("`%s`(", current->_1);

@@ -20,6 +20,7 @@ our @EXPORT_OK = qw(
       getProfiles
       tempFile
       tempDir
+      error
       IS_CYGWIN
 );
 
@@ -142,6 +143,11 @@ sub getProfiles {
 
             return $dir;
       }
+}
+
+sub error {
+      print STDERR @_;
+      exit 1;
 }
 
 1;
