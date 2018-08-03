@@ -159,28 +159,23 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      /* After everything is computed */
 
      syntax Map ::= addOdrDecl(Map, CId, K) [function]
-     rule addOdrDecl(ET::Map, #NoName, _) => ET
-     rule addOdrDecl(ET::Map, X::CId, V::K) => ET[X <- V] [owise]
+     rule addOdrDecl(ET::Map, Identifier(_) #as X::CId, V::K) => ET[X <- V]
+     rule addOdrDecl(ET::Map, _, _) => ET [owise]
 
-     syntax CId ::= getCName(CPPType, CId, CId, Set) [function]
-     rule getCName(T::CPPType, X::CId, _, _) => X
-          requires isCLinkage(T)
-     rule getCName(T::CPPType, X::CId, _, Opts::Set) => X
-          requires notBool isCLinkage(T) andBool notBool isCPPFunctionType(T)
+     syntax CId ::= getCName(CPPType, CId, CId, LanguageLinkage, Set) [function]
+     rule getCName(T::CPPType, X::CId, _, CLinkage, _) => X
+     rule getCName(T::CPPType, X::CId, Mangled::CId, LangLinkage::LanguageLinkage, Opts::Set) => Mangled
+          requires (LangLinkage =/=K CLinkage) andBool (X =/=K Mangled)
                andBool notBool (NoNativeFallback() in Opts)
-     rule getCName(T::CPPType, X::CId, Mangled::CId, Opts::Set) => Mangled
-          requires notBool isCLinkage(T) andBool isCPPFunctionType(T)
-               andBool (X =/=K Mangled)
-               andBool notBool (NoNativeFallback() in Opts)
-     rule getCName(_, _, _, _) => #NoName [owise]
+     rule getCName(_, _, _, _, _) => #NoName [owise]
 
-     syntax CId ::= getInternalCName(CPPType, CId, CId, String, Set) [function]
-     rule getInternalCName(T::CPPType, X::CId, Identifier(S::String), Uuid::String, Opts::Set)
+     syntax CId ::= getInternalCName(CPPType, CId, CId, String, LanguageLinkage, Set) [function]
+     rule getInternalCName(T::CPPType, X::CId, Identifier(S::String), Uuid::String, LangLinkage::LanguageLinkage, Opts::Set)
           => #if isCPPFunctionType(T)
-               #then getCName(T, X, Identifier(S +String Uuid), Opts)
+               #then getCName(T, X, Identifier(S +String Uuid), LangLinkage, Opts)
                #else #NoName #fi
-     rule getInternalCName(T::CPPType, X::CId, Mangled::CId, _, Opts::Set)
-          => getCName(T, X, Mangled, Opts) [owise]
+     rule getInternalCName(T::CPPType, X::CId, Mangled::CId, _, LangLinkage::LanguageLinkage, Opts::Set)
+          => getCName(T, X, Mangled, LangLinkage, Opts) [owise]
 
      context declareObject(_, _, _, _, HOLE:CPPTypeExpr, _, _, _, _, _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
@@ -190,7 +185,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
               => addToEnv(N :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
               ~> markAsConstexpr(bnew(!I, T, S, link(Tu)), S)
               ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
-              ~> defineObject(N, X, getCName(T, X, Mangled, Opts), T, Init, Type, StaticStorage, S)
+              ~> defineObject(N, X, getCName(T, X, Mangled, LangLinkage, Opts), T, Init, Type, StaticStorage, S)
           ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
@@ -198,11 +193,12 @@ module CPP-TRANSLATION-DECL-DECLARATOR
               Exts::Map
               => Exts[LN :: X, T <- declState(bnew(!I, T, S, link(Tu)), declared)]
           </externals>
-          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += odrDecl(Tu, LN :: X, getCName(T, X, Mangled, Opts), T)] </odr-decls>
-          <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, Opts), convertTypeToC(T)) </external-types>
-          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, Opts), Loc) </external-decls-loc>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += odrDecl(Tu, LN :: X, getCName(T, X, Mangled, LangLinkage, Opts), LangLinkage, T)] </odr-decls>
+          <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, LangLinkage, Opts), convertTypeToC(T)) </external-types>
+          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, LangLinkage, Opts), Loc) </external-decls-loc>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
+          <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
           <options> Opts::Set </options>
           requires notBool LN :: X, T in_keys(Exts)
                andBool completeDeclaration(T, Init) ==K T
@@ -212,7 +208,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
               => addToEnv(N :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
               ~> markAsConstexpr(bnew(!I, T, S, link(Tu)), S)
               ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
-              ~> defineObject(N, X, getInternalCName(T, X, Mangled, Uuid, Opts), T, Init, Type, StaticStorage, S)
+              ~> defineObject(N, X, getInternalCName(T, X, Mangled, Uuid, LangLinkage, Opts), T, Init, Type, StaticStorage, S)
           ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
@@ -221,12 +217,13 @@ module CPP-TRANSLATION-DECL-DECLARATOR
               Ints::Map
               => Ints[LN :: X, T <- declState(bnew(!I, T, S, link(Tu)), declared)]
           </internals>
-          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += odrDecl(Tu, LN :: X, getInternalCName(T, X, Mangled, Uuid, Opts), T)] </odr-decls>
-          <external-types> ET::Map => addOdrDecl(ET, getInternalCName(T, X, Mangled, Uuid, Opts), convertTypeToC(T)) </external-types>
-          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getInternalCName(T, X, Mangled, Uuid, Opts), Loc) </external-decls-loc>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += odrDecl(Tu, LN :: X, getInternalCName(T, X, Mangled, Uuid, LangLinkage, Opts), LangLinkage, T)] </odr-decls>
+          <external-types> ET::Map => addOdrDecl(ET, getInternalCName(T, X, Mangled, Uuid, LangLinkage, Opts), convertTypeToC(T)) </external-types>
+          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getInternalCName(T, X, Mangled, Uuid, LangLinkage, Opts), Loc) </external-decls-loc>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-tr-scope> Scope::Scope </curr-tr-scope>
           <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
+          <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
           <options> Opts::Set </options>
           requires notBool LN :: X, T in_keys(Ints)
                andBool completeDeclaration(T, Init) ==K T
@@ -243,17 +240,18 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, Mangled::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, Base, false)
               ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
-              ~> defineObject(N, X, getCName(T, X, Mangled, Opts), T, Init, Type, StaticStorage, S)
+              ~> defineObject(N, X, getCName(T, X, Mangled, LangLinkage, Opts), T, Init, Type, StaticStorage, S)
           ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <externals>... LN :: X |-> (T |-> declState(Base::SymBase, _) _::TypeMap) ...</externals>
-          <odr-decls> Decls::Map => Decls[Base += odrDecl(Tu, LN :: X, getCName(T, X, Mangled, Opts), T)] </odr-decls>
-          <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, Opts), convertTypeToC(T)) </external-types>
-          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, Opts), Loc) </external-decls-loc>
+          <odr-decls> Decls::Map => Decls[Base += odrDecl(Tu, LN :: X, getCName(T, X, Mangled, LangLinkage, Opts), LangLinkage, T)] </odr-decls>
+          <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, LangLinkage, Opts), convertTypeToC(T)) </external-types>
+          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, LangLinkage, Opts), Loc) </external-decls-loc>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-tr-scope> Scope::Scope </curr-tr-scope>
           <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
+          <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
           <options> Opts::Set </options>
           requires completeDeclaration(T, Init) ==K T
@@ -262,17 +260,18 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, Mangled::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, Base, false)
               ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
-              ~> defineObject(N, X, getInternalCName(T, X, Mangled, Uuid, Opts), T, Init, Type, StaticStorage, S) ...</k>
+              ~> defineObject(N, X, getInternalCName(T, X, Mangled, Uuid, LangLinkage, Opts), T, Init, Type, StaticStorage, S) ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <uuid> Uuid::String </uuid>
           <internals>... LN :: X |-> (T::CPPType |-> declState(Base::SymBase, _) _::TypeMap) ...</internals>
-          <odr-decls> Decls::Map => Decls[Base += odrDecl(Tu, LN :: X, getInternalCName(T, X, Mangled, Uuid, Opts), T)] </odr-decls>
-          <external-types> ET::Map => addOdrDecl(ET, getInternalCName(T, X, Mangled, Uuid, Opts), convertTypeToC(T)) </external-types>
-          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getInternalCName(T, X, Mangled, Uuid, Opts), Loc) </external-decls-loc>
+          <odr-decls> Decls::Map => Decls[Base += odrDecl(Tu, LN :: X, getInternalCName(T, X, Mangled, Uuid, LangLinkage, Opts), LangLinkage, T)] </odr-decls>
+          <external-types> ET::Map => addOdrDecl(ET, getInternalCName(T, X, Mangled, Uuid, LangLinkage, Opts), convertTypeToC(T)) </external-types>
+          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getInternalCName(T, X, Mangled, Uuid, LangLinkage, Opts), Loc) </external-decls-loc>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-tr-scope> Scope::Scope </curr-tr-scope>
           <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
+          <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
           <options> Opts::Set </options>
           requires completeDeclaration(T, Init) ==K T
@@ -325,17 +324,18 @@ module CPP-TRANSLATION-DECL-DECLARATOR
               Exts::Map
               => Exts[C :: X, T <- declState(bnew(!I:Int, T, S, link(Tu)), declared)]
           </externals>
-          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += odrDecl(Tu, C :: X, getCName(T, X, Mangled, Opts), T)] </odr-decls>
-          <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, Opts), convertTypeToC(T)) </external-types>
-          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, Opts), Loc) </external-decls-loc>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += odrDecl(Tu, C :: X, getCName(T, X, Mangled, LangLinkage, Opts), LangLinkage, T)] </odr-decls>
+          <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, LangLinkage, Opts), convertTypeToC(T)) </external-types>
+          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, LangLinkage, Opts), Loc) </external-decls-loc>
           <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
+          <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
           <options> Opts::Set </options>
 
      // Declare function member inside class
      rule <k> declareObject(C:Class, C, X::CId, Mangled::CId, T:CPPFunctionType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(C :: X, T, bnew(!I, T, S, link(Tu)), false)
               ~> markAsConstexpr(bnew(!I, T, S, link(Tu)), S)
-              ~> defineObject(C, X, getCName(T, X, Mangled, Opts), T, Init, Type, StaticStorage, S)
+              ~> defineObject(C, X, getCName(T, X, Mangled, LangLinkage, Opts), T, Init, Type, StaticStorage, S)
           ...</k>
           // pure functions need to have a dummy functionObject in order for virtual call semantics to know their QualId if they have no definition
           <functions> Funcs::Map => #if isMethodPure(T) #then Funcs bnew(!I, T, S, link(Tu)) |-> functionObject(C :: X, T, .List, .K) #else Funcs #fi </functions>
@@ -349,10 +349,11 @@ module CPP-TRANSLATION-DECL-DECLARATOR
               Exts::Map
               => Exts[C :: X, T <- declState(bnew(!I:Int, T, S, link(Tu)), declared)]
           </externals>
-          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += odrDecl(Tu, C :: X, getCName(T, X, Mangled, Opts), T)] </odr-decls>
-          <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, Opts), convertTypeToC(T)) </external-types>
-          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, Opts), Loc) </external-decls-loc>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += odrDecl(Tu, C :: X, getCName(T, X, Mangled, LangLinkage, Opts), LangLinkage, T)] </odr-decls>
+          <external-types> ET::Map => addOdrDecl(ET, getCName(T, X, Mangled, LangLinkage, Opts), convertTypeToC(T)) </external-types>
+          <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, getCName(T, X, Mangled, LangLinkage, Opts), Loc) </external-decls-loc>
           <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
+          <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
           <options> Opts::Set </options>
           requires notBool isVarDeclarationType(Type)
 
@@ -360,9 +361,10 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      // Note that static member are not allowed in local classes
      rule <k> declareObject((CQ::ClassQualifier :: _::ClassSpecifier) #as C:Class, C, X::CId, Mangled::CId, T:CPPType, Init::Expr, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
                => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type))
-               ~> defineObject(C, X, getCName(T, X, Mangled, Opts), T, Init, Type, StaticStorage, S)
+               ~> defineObject(C, X, getCName(T, X, Mangled, LangLinkage, Opts), T, Init, Type, StaticStorage, S)
           ...</k>
           <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
+          <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
           <options> Opts::Set </options>
           requires completeDeclaration(T, Init) ==K T andBool getClassNamespace(C) ==K N andBool notBool isLocalQualifier(CQ)
 
@@ -467,8 +469,9 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                     lv(lnew(Base), noTrace, T),
                     T, Init, Type), Var(Type)) ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
-          <odr-decls> Decls::Map => Decls[Base += odrDecl(Tu, NoNamespace() :: X, #NoName, T)] </odr-decls>
+          <odr-decls> Decls::Map => Decls[Base += odrDecl(Tu, NoNamespace() :: X, #NoName, LangLinkage, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[NoNamespace() :: X, T <- Base] </odr-defs>
+          <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
 
      syntax Expr ::= allocateDecl(QualId, CId, CPPType, Duration, Set, DeclarationType)
      rule <k> allocateDecl(N:Namespace :: X::CId, CName::CId, T::CPPType, StaticStorage, S::Set, Type::DeclarationType)
@@ -481,11 +484,12 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <ns-id> N </ns-id>
           <nenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base:LinkBase)) ...</nenv>
           <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
-          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += odrDecl(Tu, N :: X, CName, T)] </odr-decls>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += odrDecl(Tu, N :: X, CName, LangLinkage, T)] </odr-decls>
           <external-types> ET::Map => addOdrDecl(ET, CName, convertTypeToC(T)) </external-types>
           <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, CName, Loc) </external-decls-loc>
           <odr-defs> Defs::Map => Defs[N :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
           <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
+          <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
      rule <k> allocateDecl(C:Class :: X::CId, CName::CId, T::CPPType, StaticStorage, S::Set, Type::DeclarationType)
               => addToEnv(C :: X, T, bnew(!I:Int, T, S, static(Tu)), false)
               ~> #if notBool isCPPRefType(T) #then allocObject(bnew(!I, T, S, static(Tu)), T, byteSizeofType(T)) #else .K #fi
@@ -496,11 +500,12 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <class-id> C </class-id>
           <cenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base:LinkBase)) ...</cenv>
           <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
-          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += odrDecl(Tu, C :: X, CName, T)] </odr-decls>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += odrDecl(Tu, C :: X, CName, LangLinkage, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[C :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
           <external-types> ET::Map => addOdrDecl(ET, CName, convertTypeToC(T)) </external-types>
           <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, CName, Loc) </external-decls-loc>
           <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
+          <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
 
      syntax KItem ::= markAsConstexpr(SymBase, Set)
      rule <k> markAsConstexpr(B::SymBase, S::Set) => . ...</k>

@@ -100,7 +100,7 @@ module CPP-TRANSLATION-TYPING-CANONICALIZATION
      context elabResult(HOLE:KItem)
      rule <k> elabResult(V:Val) => .K ...</k>
           <elab> .K => V ...</elab>
-     rule <k> EXIT(_) => recover ...</k>
+     rule <k> EXIT(_) => skipToScopeEnd ...</k>
           <curr-eval-context> noEval </curr-eval-context>
 
      rule isAdjustedType(t(_, _, functionType(... paramTypes: (T::CPPType, _)))) => false

@@ -139,16 +139,13 @@ module CPP-TRANSLATION-INIT
           <mem> Mem::Map => Mem[Base <- object(T, 0, makeEmptyArray(0))] </mem>
           <functions> Fun::Map => Fun[Base <- functionObject(N :: X, T, getDummyParams(T), callBuiltin)] </functions>
           <odr-defs> Defs::Map => Defs[N :: X, T <- Base] </odr-defs>
-          <odr-decls> Decls::Map => Decls[Base += odrDecl("cpp-builtin", N :: X, X, T)] </odr-decls>
+          <odr-decls> Decls::Map => Decls[Base += odrDecl("cpp-builtin", N :: X, X, CPPLinkage, T)] </odr-decls>
 
      syntax List ::= getDummyParams(CPPType) [function]
      syntax List ::= #getDummyParams(CPPTypes, Int) [function]
      rule getDummyParams(t(_, _, functionType(... paramTypes: Ts::CPPTypes))) => #getDummyParams(Ts, 0)
      rule #getDummyParams(T::CPPType, Ts::CPPTypes, I::Int) => ListItem(Identifier("_" +String Int2String(I))) #getDummyParams(Ts, I +Int 1)
      rule #getDummyParams(.CPPTypes, _) => .List
-
-     rule isCLinkage(t(_, _, functionType(... linkage: CLinkage))) => true
-     rule isCLinkage(_) => false [owise]
 
      rule combine(hasTrace(E::Expr), #klabel(Lbl:KLabel)) => hasTrace(Lbl(E))
      rule combine(hasTrace(E::Expr), hasTrace(E2::Expr), #klabel(Lbl:KLabel)) => hasTrace(Lbl(E, E2))

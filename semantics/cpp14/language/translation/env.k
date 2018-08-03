@@ -11,10 +11,10 @@ module CPP-TRANSLATION-ENV-SYNTAX
                     | scope(Scope, K)
                     | setScope(Scope)
                     | noEval(K)
-                    | "recover"
+                    | "skipToScopeEnd"
      syntax KItem ::= "pushLocals" | "popLocals"
      syntax KItem ::= updateDefaultArguments(QualId, CPPType, DefaultArguments) [strict(3)]
-     
+
      syntax DefaultArguments ::= defArgs(vals: StrictList, types: StrictList, cats: StrictList) [strict(1)]
      syntax DefaultArguments ::= DefaultArgumentsResult
      syntax DefaultArgumentsResult ::= defArgs(vals: StrictListResult, types: StrictListResult, cats: StrictListResult)
@@ -176,8 +176,8 @@ module CPP-TRANSLATION-ENV
      rule <k> setEval(Eval::EvalContext) => .K ...</k>
           <curr-eval-context> _ => Eval </curr-eval-context>
 
-     rule recover ~> (K:KItem => .K)
+     rule skipToScopeEnd ~> (K:KItem => .K)
           requires K =/=K popLocals
-     rule (recover => .K) ~> popLocals
+     rule (skipToScopeEnd => .K) ~> popLocals
 
 endmodule

@@ -248,7 +248,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax Ordering ::= K "|>" Ordering [right]
                        | ".Ordering"
 
-     syntax KItem ::= odrDecl(String, QualId, CId, CPPType)
+     syntax KItem ::= odrDecl(String, QualId, CId, LanguageLinkage, CPPType)
 endmodule
 
 module CPP-DYNAMIC

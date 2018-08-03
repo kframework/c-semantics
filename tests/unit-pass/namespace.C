@@ -4,7 +4,13 @@ namespace foo {
 
 inline namespace x {}
 
+namespace A {
+      namespace B {
+            int y;
+      }
+}
+
 int main() {
   foo::bar x = 0;
-  return x;
+  return x + A::B::y;
 }

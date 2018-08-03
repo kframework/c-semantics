@@ -332,11 +332,11 @@ module CPP-TRANSLATION-OVERLOADING
      // with C linkage, because we may need to be able to detect that the native entity associated with
      // this declaration needs to be linked in.
      syntax Map ::= addOdrUse(Map, CId, CabsLoc) [function]
-     rule addOdrUse(EU::Map, #NoName, _) => EU
-     rule addOdrUse(EU::Map, X::CId, L::CabsLoc) => EU[X <- L] [owise]
+     rule addOdrUse(EU::Map, Identifier(_) #as X::CId, L::CabsLoc) => EU[X <- L]
+     rule addOdrUse(EU::Map, _, _) => EU [owise]
 
      syntax CId ::= fetchMangled(Set) [function]
-     rule fetchMangled(SetItem(odrDecl(_, _, Mangled::CId, _)) _::Set) => Mangled
+     rule fetchMangled(SetItem(odrDecl(_, _, Mangled::CId, _, _)) _::Set) => Mangled
      rule fetchMangled(_) => #NoName [owise]
 
      // do not actually perform overload resolution, this was a function call

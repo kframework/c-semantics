@@ -15,7 +15,7 @@ module CPP-LINKING-RESOLUTION
      // used by local statics
      rule <k> resolveCPPReference(OdrBase:DirectBase) ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(odrDecl(Tu::String, QX::QualId, _, T::CPPType)) => .Set) _::Set
+               OdrBase |-> (SetItem(odrDecl(Tu::String, QX::QualId, _, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
           <odr-defs>... QX |-> (T |-> _ _::TypeMap) ...</odr-defs>
 
@@ -26,7 +26,7 @@ module CPP-LINKING-RESOLUTION
 
      rule <k> resolveCPPReference(OdrBase:LinkBase) ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(odrDecl(Tu::String, N:Namespace :: X::CId, _, T::CPPType)) => .Set) _::Set
+               OdrBase |-> (SetItem(odrDecl(Tu::String, N:Namespace :: X::CId, _, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
           <odr-defs>... N :: X |-> (T |-> Base'::SymBase _::TypeMap) ...</odr-defs>
           <tu-id> Tu </tu-id>
@@ -36,7 +36,7 @@ module CPP-LINKING-RESOLUTION
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(odrDecl(Tu::String, N:Namespace :: X::CId, _, T::CPPType)) => .Set) _::Set
+               OdrBase |-> (SetItem(odrDecl(Tu::String, N:Namespace :: X::CId, _, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
           <odr-defs>... N :: X |-> (T |-> _ _::TypeMap) ...</odr-defs>
           <tu-id> Tu </tu-id>
@@ -45,7 +45,7 @@ module CPP-LINKING-RESOLUTION
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(odrDecl(Tu::String, N::Namespace :: X::CId, Mangled::CId, T::CPPType)) => .Set) _::Set
+               OdrBase |-> (SetItem(odrDecl(Tu::String, N::Namespace :: X::CId, Mangled::CId, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
           <odr-defs> Defs::Map </odr-defs>
           <external-defs>... Mangled |-> Base':SymBase ...</external-defs>
@@ -57,7 +57,7 @@ module CPP-LINKING-RESOLUTION
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(odrDecl(Tu::String, N::Namespace :: X::CId, Mangled::CId, T::CPPType)) => .Set) _::Set
+               OdrBase |-> (SetItem(odrDecl(Tu::String, N::Namespace :: X::CId, Mangled::CId, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
           <external-defs>... Mangled |-> _ ...</external-defs>
           <tu-id> Tu </tu-id>
@@ -70,7 +70,7 @@ module CPP-LINKING-RESOLUTION
               ~> resolveCPPReference(OdrBase::SymBase)
           ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(odrDecl(_, N::Namespace :: X::CId, Mangled::CId, T::CPPType))) _::Set
+               OdrBase |-> (SetItem(odrDecl(_, N::Namespace :: X::CId, Mangled::CId, _, T::CPPType))) _::Set
           ...</odr-decls>
           <external-defs> CDefs::Map </external-defs>
           <odr-defs> Defs::Map </odr-defs>
@@ -111,7 +111,7 @@ module CPP-LINKING-RESOLUTION
      // Linking resolution for class members with static storage
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(odrDecl(Tu::String, C:Class :: X::CId, _, T::CPPType)) => .Set) _::Set
+               OdrBase |-> (SetItem(odrDecl(Tu::String, C:Class :: X::CId, _, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
           <odr-defs>... C :: X |-> (T |-> Base'::SymBase _::TypeMap) ...</odr-defs>
           <tu-id> Tu </tu-id>
@@ -121,7 +121,7 @@ module CPP-LINKING-RESOLUTION
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(odrDecl(Tu::String, C:Class :: X::CId, _, T::CPPType)) => .Set) _::Set
+               OdrBase |-> (SetItem(odrDecl(Tu::String, C:Class :: X::CId, _, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
           <odr-defs>... C :: X |-> (T |-> _ _::TypeMap) ...</odr-defs>
           <tu-id> Tu </tu-id>
