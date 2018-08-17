@@ -23,6 +23,7 @@ module C-EXECUTION-INIT
      imports C-EXECUTION-INIT-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports COMMON-BUILTIN-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
@@ -259,8 +260,16 @@ module C-EXECUTION-INIT
                </k>
           ...</thread>
 
-     rule <k> L:CabsLoc => .K ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+     syntax ExecOpts ::= Breakpoint(String, Int)
+
+     rule <k> CabsLoc(File'::String, File::String, Line::Int, Col::Int, Sys::Bool) => breakpoint ...</k>
+          <curr-program-loc> _ => CabsLoc(File', File, Line, Col, Sys) </curr-program-loc>
+          <options>... SetItem(Breakpoint(File, Line)) ...</options>
+          [structural]
+     rule <k> CabsLoc(File'::String, File::String, Line::Int, Col::Int, Sys::Bool) => .K ...</k>
+          <curr-program-loc> _ => CabsLoc(File', File, Line, Col, Sys) </curr-program-loc>
+          <options> Opts::Set </options>
+          requires notBool (Breakpoint(File, Line) in Opts)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{

@@ -4,6 +4,7 @@ module COMMON-BUILTIN-SYNTAX
      syntax Map ::= "nativeDefinedBuiltins" [function, memo]
      syntax KItem ::= "callBuiltin"
      syntax KItem ::= handleBuiltin(SymLoc)
+     syntax KItem ::= "breakpoint" [klabel(breakpoint)]
 
 endmodule
 

@@ -33,6 +33,7 @@ our @EXPORT_OK = qw(
       srcFiles
       objFiles
       trampolineFiles
+      breakpoints
       RVMAIN
       BASE_LIBS
       MAGIC
@@ -40,19 +41,21 @@ our @EXPORT_OK = qw(
 
 my $pseudoArgs = {};
 
-sub cppArgs { (@{$pseudoArgs->{cppArgs}}); }
-sub suppressions { (@{$pseudoArgs->{suppressions}}); }
-sub ifdefs { (@{$pseudoArgs->{ifdefs}}); }
-sub ldArgs { (@{$pseudoArgs->{ldArgs}}); }
-sub nativeObjFiles { (@{$pseudoArgs->{nativeObjFiles}}); }
-sub srcFiles { (@{$pseudoArgs->{srcFiles}}); }
-sub objFiles { (@{$pseudoArgs->{objFiles}}); }
-sub trampolineFiles { (@{$pseudoArgs->{trampolineFiles}}); }
+sub cppArgs { (@{$pseudoArgs->{cppArgs} || []}); }
+sub suppressions { (@{$pseudoArgs->{suppressions} || []}); }
+sub ifdefs { (@{$pseudoArgs->{ifdefs} || []}); }
+sub ldArgs { (@{$pseudoArgs->{ldArgs} || []}); }
+sub nativeObjFiles { (@{$pseudoArgs->{nativeObjFiles} || []}); }
+sub srcFiles { (@{$pseudoArgs->{srcFiles} || []}); }
+sub objFiles { (@{$pseudoArgs->{objFiles} || []}); }
+sub trampolineFiles { (@{$pseudoArgs->{trampolineFiles} || []}); }
+sub breakpoints { (@{$pseudoArgs->{breakpoints} || []}); }
 
 my $hasStdin = 0;
 my $args;
 
 our $xLang = 'none';
+our @incompleteBreakpoints = ();
 
 our %cppWarns = map {$_ => 1} (
       "import",
@@ -286,7 +289,7 @@ sub pushArg {
 }
 
 sub getopts {
-      pushArg('ldArgs', BASE_LIBS, '-Wl,--no-as-needed', '-u', RVMAIN);
+      pushArg('ldArgs', BASE_LIBS, '-Wl,--unresolved-symbols=ignore-all', '-Wl,--no-as-needed', '-u', RVMAIN);
       if ((split /\./, shell('gcc -dumpversion')->stdout()->run())[0] + 0 >= 5) { # gcc version >= 5
             pushArg('ldArgs', '-no-pie');
       }
@@ -319,15 +322,6 @@ sub parseOpts {
       $args->{_internal}{args} = (());
       $args->{_internal}{args}[0]{required} = 1;
       $args->{_internal}{args}[0]{desc} = "<files>...";
-
-      pushArg('cppArgs');
-      pushArg('suppressions');
-      pushArg('ifdefs');
-      pushArg('ldArgs');
-      pushArg('nativeObjFiles');
-      pushArg('srcFiles');
-      pushArg('objFiles');
-      pushArg('trampolineFiles');
 
 =for Getopt::Declare
   [strict]
@@ -420,6 +414,9 @@ sub parseOpts {
       { RV_Kcc::Opts::pushArg('ldArgs', '-u', $symbol); }
   <files>...		C files to be compiled. [repeatable] [required] [undocumented]
       {
+            for (@RV_Kcc::Opts::incompleteBreakpoints) {
+                  RV_Kcc::Opts::pushArg('breakpoints', [$files[0], $_]);
+            }
             for (@files) {
                   classify($_, $RV_Kcc::Opts::xLang);
             }
@@ -453,6 +450,17 @@ sub parseOpts {
   -frunner-script	Compile program to perl script with analysis tool options. [undocumented]
   -fissue-report=<file>	Write issues to the specified file.
 			Format (CSV/JSON) is inferred from the specified file extension.
+  -finteractive-fail	Enter an interactive debugger-like session when
+			encountering an otherwise fatal error.
+  -fbreakpoint=[<file>:]<line>	Enter an interactive debugger-like session when
+			execution reaches a given location in a source file. [repeatable]
+      {
+            if (defined $file) {
+                  RV_Kcc::Opts::pushArg('breakpoints', [$file, $line]);
+            } else {
+                  push(@RV_Kcc::Opts::incompleteBreakpoints, $line);
+            }
+      }
   -Wlint		Generate lint errors for potentially undesirable
 			behaviors.*
       {

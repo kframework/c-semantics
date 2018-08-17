@@ -17,7 +17,7 @@ use UUID::Tiny qw(:std);
 use RV_Kcc::Files qw(profileDir distDir tempFile tempDir error IS_CYGWIN);
 use RV_Kcc::Opts qw(
       getopts arg classify
-      cppArgs suppressions ifdefs ldArgs nativeObjFiles srcFiles objFiles trampolineFiles
+      cppArgs suppressions ifdefs ldArgs nativeObjFiles srcFiles objFiles trampolineFiles breakpoints
       RVMAIN BASE_LIBS MAGIC
 );
 use RV_Kcc::Shell qw(shell checkError setShellDebugFile saveArgv);
@@ -186,6 +186,18 @@ sub main {
             push(@options, "`EntryPoint`(#token($entry, $string))");
       }
 
+      if (arg('-finteractive-fail')) {
+            push(@options, "`InteractiveFail`(.KList)");
+      }
+
+      for (breakpoints()) {
+            my ($file, $line) = @{$_};
+            $file = quote(backslash(quote(rel2abs($file))));
+            $line = quote(backslash($line));
+            my ($string, $int) = (QUOTE_STRING, QUOTE_INT);
+            push(@options, "`Breakpoint`(#token($file, $string), #token($line, $int))");
+      }
+
       my $opts = makeSet(@options);
       my $useCompile = -e profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled', 'execution_partial.o');
 
@@ -252,13 +264,6 @@ sub main {
             print $pluginPath catfile($dir, 'realdef.cma');
             close($pluginPath);
 
-            my $compiler;
-            if (arg('-Xk++')) {
-                  $compiler = 'g++';
-            } else {
-                  $compiler = 'gcc';
-            }
-
             if (arg('-fnative-binary')) {
                   my $dir = profileDir('native-server');
                   shell("cat '$tramp' | awk -F '\t' '{if (\$1!=\"\") print \$1; }' | " . distDir("make-trampolines"))
@@ -267,7 +272,7 @@ sub main {
                         ->stdout($tempDir, 'used_symbols')->run(); 
                   shell("(cat '$tramp' | awk -F '\t' '{if (\$1!=\"\") print \"__\" \$1; }'; comm -12 '" . catfile($tempDir, 'used_symbols') . "' '" . dumpSymbols() . "') | sort | uniq | " . distDir("make-symbols"))
                         ->stdout($tempDir, 'symbols.c')->run();
-                  shell($compiler, '-fsanitize=undefined', '-o', catfile($tempDir, 'native_binary'),
+                  shell(nativeCompiler(), '-fsanitize=undefined', '-o', catfile($tempDir, 'native_binary'),
                               catfile($dir, 'main.o'),
                               catfile($dir, 'platform.o'),
                               catfile($dir, 'server.c'),
@@ -285,7 +290,7 @@ sub main {
             shell('ld', '-r', '-b', 'binary', '-o', 'native_binary.o', 'native_binary')->run();
             chdir($old_cwd);
 
-            shell($compiler, catfile($dir, 'execution_partial.o'), '-o', $oval, '-Wl,-E',
+            shell(nativeCompiler(), catfile($dir, 'execution_partial.o'), '-o', $oval, '-Wl,-E',
                         catfile($tempDir, 'kore_term.o'),
                         catfile($tempDir, 'marshal_term.o'),
                         catfile($tempDir, 'plugin_path.o'),
@@ -294,6 +299,14 @@ sub main {
       }
 
       return 0;
+}
+
+sub nativeCompiler {
+      if (arg('-Xk++')) {
+            return profileDir("cxx");
+      } else {
+            return profileDir("cc");
+      }
 }
 
 sub mergeObjs {
@@ -316,28 +329,24 @@ sub mergeObjs {
 
 sub compile {
       my ($oval, $inputFile, $lang) = @_;
-      my $compiler = 'gcc';
       if ($lang eq 'c' or $lang eq 'c++') {
             my $kast = tempFile('kast');
             my $obj = tempFile('obj');
             my $trampolines = tempFile('trampolines');
             my $uuid = create_uuid_as_string();
             shell(getKRunCommand($kast, [], $inputFile, 0, $lang, $uuid, $trampolines))->verbose()->run();
-            if (arg('-Xk++')) {
-                  $compiler = 'g++';
-            }
             if (arg('-fno-native-compilation')) {
-                  shell($compiler, '-c', getStd($lang), '-x', $lang, '/dev/null', '-o', $obj)->verbose()->run();
+                  shell(nativeCompiler(), '-c', getStd($lang), '-x', $lang, '/dev/null', '-o', $obj)->verbose()->run();
             } else {
                   setShellDebugFile($obj, 0);
-                  shell($compiler, '-c', getStd($lang), '-x', $lang, $inputFile, '-o', $obj, cppArgs())->verbose()->run();
+                  shell(nativeCompiler(), '-c', getStd($lang), '-x', $lang, $inputFile, '-o', $obj, cppArgs())->verbose()->run();
                   shell(distDir('globalize-syms'), $uuid, $obj)->run();
             }
             shell('objcopy', '--redefine-sym', 'main=' . RVMAIN, $obj)->run();
             shell(distDir('merge-kcc-obj'), $obj, $kast, $trampolines, $oval)->run();
       } else {
             setShellDebugFile($oval, 0);
-            shell($compiler, '-c', '-x', $lang, $inputFile, '-o', $oval, cppArgs())->verbose()->run();
+            shell(nativeCompiler(), '-c', '-x', $lang, $inputFile, '-o', $oval, cppArgs())->verbose()->run();
       }
 }
 
@@ -432,6 +441,10 @@ sub getKRunCommand {
 
       if (!$link) {
             push(@options, "`NoLink`(.KList)");
+      }
+
+      if (arg('-finteractive-fail')) {
+            push(@options, "`InteractiveFail`(.KList)");
       }
 
       my $opts = makeSet(@options);
