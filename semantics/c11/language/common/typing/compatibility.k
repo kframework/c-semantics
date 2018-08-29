@@ -292,11 +292,16 @@ module C-TYPING-COMPATIBILITY
 
      syntax Bool ::= #areCompatFields(List, List, Set) [function]
      rule #areCompatFields(
-               ListItem(typedDeclaration(T::Type, X:CId)) L::List,
-               ListItem(typedDeclaration(T'::Type, X)) L'::List, Cache::Set)
-          => #areCompat(T, T', Cache) andBool #areCompatFields(L, L', Cache)
+                    ListItem(typedDeclaration(T::Type, X::CId)) L::List,
+                    ListItem(typedDeclaration(T'::Type, X'::CId)) L'::List, Cache::Set)
+          => #areCompatIds(X, X') andBool #areCompat(T, T', Cache) andBool #areCompatFields(L, L', Cache)
      rule #areCompatFields(.List, .List, _) => true
      rule #areCompatFields(_:List, _, _) => false [owise]
+
+     syntax Bool ::= #areCompatIds(CId, CId) [function]
+     rule #areCompatIds(X::CId, X) => true
+     rule #areCompatIds(_:NoName, _:NoName) => true
+     rule #areCompatIds(_, _) => false [owise]
 
      rule compositeType(T:UType, T':UType)
           => utype(compositeType(type(T), type(T')))
