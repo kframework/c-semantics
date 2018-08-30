@@ -272,7 +272,7 @@ sub main {
                         ->stdout($tempDir, 'used_symbols')->run(); 
                   shell("(cat '$tramp' | awk -F '\t' '{if (\$1!=\"\") print \"__\" \$1; }'; comm -12 '" . catfile($tempDir, 'used_symbols') . "' '" . dumpSymbols() . "') | sort | uniq | " . distDir("make-symbols"))
                         ->stdout($tempDir, 'symbols.c')->run();
-                  shell(nativeCompiler(), '-fsanitize=undefined', '-o', catfile($tempDir, 'native_binary'),
+                  shell(nativeCompiler(), '-std=c11', '-fsanitize=undefined', '-o', catfile($tempDir, 'native_binary'),
                               catfile($dir, 'main.o'),
                               catfile($dir, 'platform.o'),
                               catfile($dir, 'server.c'),
