@@ -35,6 +35,10 @@ module C-CHECK-EFFECTIVE
      syntax KItem ::= effTypeUB(Type, Type) [function]
      rule effTypeUB(L::Type, Eff::Type)
           => UNDEF("EIO10", "Type of lvalue (" +String showType(L) +String ") not compatible with the effective type of the object being accessed (" +String showType(Eff) +String ").")
+          requires L =/=Type Eff
+     rule effTypeUB(L::Type, _)
+          => UNDEF("EIO10", "Type of lvalue (" +String showType(L) +String ") not compatible with the effective type of the object being accessed.")
+          [owise]
 
      rule Eff:EffectiveType
           ~> adjustPointerBounds(tv(Loc::SymLoc, ut(_, pointerType(T'::Type)) #as T::UType))
