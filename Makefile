@@ -8,7 +8,7 @@ export SUBPROFILE_DIRS =
 TESTS_DIR = tests
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
-KCCFLAGS = 
+KCCFLAGS = -D_POSIX_C_SOURCE=200809 -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary
 PASS_TESTS_DIR = tests/unit-pass
 FAIL_TESTS_DIR = tests/unit-fail
 FAIL_COMPILE_TESTS_DIR = tests/unit-fail-compilation
@@ -118,21 +118,21 @@ $(call timestamp_of,cpp14-translation): cpp-semantics $(DIST_PROFILES)/$(PROFILE
 
 $(LIBSTDCXX_SO): $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) $(DIST_PROFILES)/$(PROFILE)
 	@echo "$(PROFILE): Translating the C++ standard library..."
-	@cd $(PROFILE_DIR)/compiler-src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(LIBSTDCXX_SO) *.C $(KCCFLAGS) -I .
+	@cd $(PROFILE_DIR)/compiler-src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$(LIBSTDCXX_SO) *.C $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/compiler-src && \
-		$(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libstdc++.so *.C $(KCCFLAGS) -I .;)
+		$(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libstdc++.so *.C $(KCCFLAGS) -I .;)
 	@echo "$(PROFILE): Done translating the C++ standard library."
 
 $(LIBC_SO): $(call timestamp_of,cpp14-translation) $(call timestamp_of,c11-translation) $(wildcard $(PROFILE_DIR)/native/*.c) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/native/*.c)) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_PROFILES)/$(PROFILE)
 	@echo "$(PROFILE): Translating the C standard library..."
 	@if [ -d "$(PROFILE_DIR)/native" ]; \
-		then cd $(PROFILE_DIR)/native && $(CC) -std=gnu11 -c *.c -I . && cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(LIBC_SO) *.c $(PROFILE_DIR)/native/*.o $(KCCFLAGS) -I .; \
-		else cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(LIBC_SO) *.c $(KCCFLAGS) -I .; fi
+		then cd $(PROFILE_DIR)/native && $(CC) -std=gnu11 -c *.c -I . && cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$(LIBC_SO) *.c $(PROFILE_DIR)/native/*.o $(KCCFLAGS) -I .; \
+		else cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$(LIBC_SO) *.c $(KCCFLAGS) -I .; fi
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		if [ -d "$(d)/native" ]; \
-			then cd $(d)/native && $(CC) -std=gnu11 -c *.c -I . && cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libc.so *.c $(d)/native/*.o $(KCCFLAGS) -I .; \
-			else cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libc.so *.c $(KCCFLAGS) -I .; fi;)
+			then cd $(d)/native && $(CC) -std=gnu11 -c *.c -I . && cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libc.so *.c $(d)/native/*.o $(KCCFLAGS) -I .; \
+			else cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libc.so *.c $(KCCFLAGS) -I .; fi;)
 	@echo "$(PROFILE): Done translating the C standard library."
 
 $(PROFILE)-native-server: $(DIST_PROFILES)/$(PROFILE)/native-server/main.o $(DIST_PROFILES)/$(PROFILE)/native-server/server.c $(DIST_PROFILES)/$(PROFILE)/native-server/platform.o $(DIST_PROFILES)/$(PROFILE)/native-server/platform.h $(DIST_PROFILES)/$(PROFILE)/native-server/server.h

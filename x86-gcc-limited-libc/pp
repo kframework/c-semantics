@@ -46,4 +46,9 @@ do
     fi
 done
 
-gcc -Wall -Wextra -Wmissing-prototypes -x c -std=c11 -nostdlib -U __GNUC__ -D__KCC__ -include "$(dirname "$0")/include/kcc_settings.h" -E -I "$(dirname "$0")/include" "${options[@]}"
+standard="c11"
+if (gcc -std=c11 |& grep -q unrecognized); then
+  standard="c99"
+fi
+
+gcc -Wall -Wextra -Wmissing-prototypes -x c -std=$standard -nostdlib -U __GNUC__ -D__KCC__ -include "$(dirname "$0")/include/kcc_settings.h" -E -I "$(dirname "$0")/include" "${options[@]}"
