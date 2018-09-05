@@ -8,6 +8,7 @@ module C-TYPING-COMMON-SYNTAX
      syntax RValue ::= functionObject(CId, Type, List)
 
      syntax Type ::= adjustParams(Type) [function]
+     syntax List ::= "adjustParams'" "(" List ")" [function]
 
 endmodule
 
@@ -335,7 +336,6 @@ module C-TYPING-COMMON
           => t(Qs, Mods, functionType(R, adjustParams'(Params)))
      rule adjustParams(T::Type) => T [owise]
 
-     syntax List ::= "adjustParams'" "(" List ")" [function]
      rule adjustParams'(ListItem(typedDeclaration(T::Type, X::CId)) Ds::List)
           => ListItem(typedDeclaration(adjustParam(T), X)) adjustParams'(Ds)
      rule adjustParams'(ListItem(t(...) #as T::Type) Ds::List)

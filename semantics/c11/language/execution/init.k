@@ -107,7 +107,7 @@ module C-EXECUTION-INIT
           [structural]
 
      syntax KItem ::= makeArgv(CId, Type)
-     rule makeArgv(X:CId, T:Type)
+     rule makeArgv(X::CId, T::Type)
           => allocObject(bnew(0, T, argv), T)
           ~> addToEnv(X, bnew(0, T, argv))
           ~> giveType(X, T)
@@ -203,23 +203,15 @@ module C-EXECUTION-INIT
      rule getEntryPoint(_) => "main" [owise]
 
      // int main(void) -- also, int main() gets normalized to main(void)
-     syntax KItem ::= #callEntryPoint(String, Int, CId, K, Type)
+     syntax K ::= #callEntryPoint(String, Int, CId, K, Type) [function]
      rule #callEntryPoint(Entry::String, _, _, _,
                t(quals(.Set), _, functionType(ut(.Set, int),
                     ListItem(typedDeclaration(t(quals(.Set), .Set, void), _)))))
           => Call(Identifier(Entry), list(.List))
-     // int main(int argc, char* argv[])
-     rule #callEntryPoint(Entry::String, N::Int, X::CId, Args:K,
-               t(quals(.Set), _, functionType(ut(.Set, int),
-                    ListItem(typedDeclaration(t(quals(.Set), .Set, int), _))
-                    ListItem(typedDeclaration(t(quals(.Set), .Set, incompleteArrayType(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, char))) #as T::Type)), _)))))
-          => Args ~> Call(Identifier(Entry), list(ListItem(N) ListItem(X)))
-     // int main(int argc, char** argv)
-     rule #callEntryPoint(Entry::String, N::Int, X::CId, Args:K,
-               t(quals(.Set), _, functionType(ut(.Set, int),
-                    ListItem(typedDeclaration(t(quals(.Set), .Set, int), _))
-                    ListItem(typedDeclaration(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, char))) #as T::Type)), _)))))
-          => Args ~> Call(Identifier(Entry), list(ListItem(N) ListItem(X)))
+     // int main(int argc, char* argv[]), int main(int argc, char** argv), and old style (no prototype).
+     rule #callEntryPoint(Entry::String, N::Int, X::CId, Args:K, _)
+          => Args ~> Call(Identifier(Entry), list(ListItem(tv(N, utype(int))) ListItem(X)))
+          [owise]
 
      rule <k> reval(V:RValue) ~> callAtExit => AtExit ~> reval(V) ~> callAtExit ...</k>
           <atexit> AtExit:KItem => .K ...</atexit>

@@ -36,11 +36,11 @@ module C-BINDING
                (ListItem(V:RValue) => .List) _)
           requires notBool isVoidType(T)
           [structural]
-     rule bind(ListItem(typedDeclaration(T:VoidType, _)),
-               ListItem(T':VoidType), .List) => .K
+     rule bind(ListItem(typedDeclaration(_:VoidType, _)),
+               ListItem(_:VoidType), .List) => .K
           [structural]
-     rule bind(ListItem(typedDeclaration(T:VoidType, _)),
-               ListItem(typedDeclaration(T':VoidType, _)), .List) => .K
+     rule bind(ListItem(typedDeclaration(_:VoidType, _)),
+               ListItem(typedDeclaration(_:VoidType, _)), .List) => .K
           [structural]
      // No prototype -- but the args must still have ids/types in the def.
      rule (.K => bindParam(X, T, argPromote(V)))

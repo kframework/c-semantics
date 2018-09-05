@@ -24,6 +24,7 @@ module C-TYPING-INTERPRETATION
      imports C-ERROR-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
 
      // Rules that use specifier should be careful to use extractActualType if
@@ -110,7 +111,7 @@ module C-TYPING-INTERPRETATION
           <elab> _ => pushTypeDown(T, makeFunctionType(L ListItem(variadic))) </elab>
 
      rule NoPrototype(T:Type, krlist(L:List), false)
-          => pushTypeDown(T, makeOldStyleFunctionType(L))
+          => pushTypeDown(T, makeOldStyleFunctionType(adjustParams'(L)))
 
      rule pushTypeDown(T:BasicType, Lbl:K) => applyTypeFunction(Lbl, T)
      rule pushTypeDown(t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)), Lbl:K)
