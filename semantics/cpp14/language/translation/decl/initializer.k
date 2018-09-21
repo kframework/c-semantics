@@ -204,7 +204,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax KItem ::= listInit(LVal, CPPType, InitType, List, ConstructorType)
                     | aggInit(LVal, CPPType, List)
-                    | arrayInit(LVal, CPPType, Int, List, K)
+                    | arrayInit(base: LVal, type: CPPType, current: Int, initList: List, result: K)
                     | strInit(LVal, CPPType, CharKind, String, Int, K)
 
      // 8.5.4:3.1 (aggregate init)
@@ -326,27 +326,133 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule #evalBraceOrEqualInitializers(C::Class, Base::Expr, ListItem(I::Init) L::List)
        => ListItem(#evalBraceOrEqualInitializer(C, Base, I)) #evalBraceOrEqualInitializers(C, Base, L)
 
-     rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, Init, CopyInit()))
-          ~> arrayInit(Base::LVal, t(_, _, arrayType(T::CPPType, Size::Int)), (I::Int => I +Int 1), (ListItem(Init::Init) => .List) _, _)
+     // *** < Aggregate initialization of an array >
+
+     // Syntactic sugar
+     syntax Expr ::= Expr "[" Int "]" [function]
+     rule E::Expr [ I::Int ] => (E[prv(I, noTrace, t(noQuals, .Set, size_t))])
+
+
+     rule (V:Val => .K) ~> arrayInit(... result:(E::Expr => compoundInit(E, V)))
+
+     // No initializers left, but we still need to initialize
+     // the rest of the array.
+     rule (.K => figureInit(Base[I], T, BraceInit(.List), CopyInit())) ~>
+          arrayInit(...
+               base:     Base::LVal,
+               type:     t(... st: arrayType(T::CPPType, Size::Int)),
+               current:  (I::Int => I +Int 1),
+               initList: .List
+          )
+          requires Size >Int I
+
+     // No initializers left, the whole array is done.
+     rule arrayInit(...
+               base:     Base::LVal,
+               type:     t(... st: arrayType(_, Size::Int)),
+               current:  I::Int,
+               initList: .List,
+               result:   E::Expr
+          ) => compoundInit(E, Base)
+          requires I ==Int Size
+
+     rule (.K => braceElisionNo()) ~>
+          arrayInit(...
+               type:     t(... st: arrayType(T::CPPType, Size::Int)),
+               current:  I::Int,
+               initList: ListItem(Init::Init) _
+          )
           requires (notBool isAggregateType(T) orBool isBraceInit(Init))
            andBool Size >Int I
-     rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, BraceInit(.List), CopyInit()))
-          ~> arrayInit(Base::LVal, t(_, _, arrayType(T::CPPType, Size::Int)), (I::Int => I +Int 1), .List, _)
-          requires Size >Int I
-     rule (V:Val => .K)
-          ~> arrayInit(_, _, _, _, (E::Expr => compoundInit(E, V)))
-     rule arrayInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, Size::Int)), Size::Int, .List, E::Expr)
-          => compoundInit(E, Base)
 
-     rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, BraceInit(L), CopyInit()))
-          ~> arrayInit(Base::LVal, t(_, _, arrayType(T::CPPType, Size::Int)), (I::Int => I +Int 1), (ListItem(Init::Init) _) #as L::List => .List, _)
+     rule (.K => braceElisionMaybe(Init, T)) ~>
+          arrayInit(...
+               type:     t(... st: arrayType(T::CPPType, Size::Int)),
+               current:  I::Int,
+               initList: (ListItem(Init::Init) _) #as L::List
+          )
           requires notBool isBraceInit(Init)
            andBool isAggregateType(T)
            andBool Size >Int I
-     rule (arrayInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, Size::Int)), Size::Int, L::List, E2::Expr) => .K)
-          ~> arrayInit(_, _, _, .List => L, (E1::Expr => compoundInitJoin(E1, E2)))
-     rule (classAggInit(... fields: .List, initList: L::List, initExp: E2::Expr) => .K)
-          ~> arrayInit(_, _, _, .List => L, (E1::Expr => compoundInitJoin(E1, E2)))
+
+     syntax KItem ::= braceElisionYes()
+                    | braceElisionNo()
+                    | braceElisionMaybe(Init, CPPType)
+                    | braceElisionMaybe2(init: Expr, initType: TypeExpr, initCat: CatExpr, destType: CPPType)
+
+     // If the initializer is neither BraceInit nor Expr, then this rule may not apply.
+     rule braceElisionMaybe(E:Expr, T::CPPType) => braceElisionMaybe2(E, E, E, T)
+
+     context braceElisionMaybe2(... initType: (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
+     context braceElisionMaybe2(... initCat: (HOLE:CatExpr => catof(HOLE))) [result(ValueCategory)]
+
+     rule braceElisionMaybe2(...
+               init:     From::Expr,
+               initType: FromT:CPPType,
+               initCat:  FromC:ValueCategory,
+               destType: ToT::CPPType
+          ) =>
+          #if canBeImplicitlyConvertedTo(FromT, FromC, ToT)
+          #then braceElisionNo()
+          #else braceElisionYes()
+          #fi
+
+     // Ordinary initialization of an array member.
+     // No brace elision happens.
+     rule (braceElisionNo() => figureInit(Base[I], T, Init, CopyInit())) ~>
+          arrayInit(...
+               base:     Base::LVal,
+               type:     t(... st: arrayType(T::CPPType, Size::Int)),
+               current:  (I::Int => I +Int 1),
+               initList: (ListItem(Init::Init) => .List) _
+          )
+
+     // Assuming brace elision.
+     // The provided initializer is not a brace-init-list,
+     // and so we make a braced-init-list from
+     // all the remaining initializer-list.
+     // The initializers not used for member initialization
+     // will be later used to initialize the rest of current array.
+     rule (braceElisionYes() => figureInit(Base[I], T, BraceInit(L), CopyInit())) ~>
+          arrayInit(...
+               base:     Base::LVal,
+               type:     t(... st: arrayType(T::CPPType, Size::Int)),
+               current:  (I::Int => I +Int 1),
+               initList: (ListItem(Init::Init) _) #as L::List => .List
+          )
+
+     // Use the initializers that remained after brace-elision
+     // to initialize the rest of the outer aggregate.
+     // Brace elision probably happened in past, because
+     // the initList of the second `arrayInit` is empty.
+     //
+     // It may also hapen that after brace elision, the topmost `arrayInit`
+     // (`classAggInit`) rewrites to `compoundInit`, so this rule will not apply.
+     // That should not be a problem, because it happens
+     // only when the initializer list has been fully used.
+     rule (
+            arrayInit(...
+               type:     t(... st: arrayType(_, Size::Int)),
+               current:  Current::Int,
+               initList: L::List,
+               result:   E2::Expr
+            ) => .K
+          ) ~>
+          arrayInit(...
+               initList: .List => L,
+               result:   (E1::Expr => compoundInitJoin(E1, E2))
+          )
+          requires (Current ==Int Size) andBool (L =/=K .List)
+
+     // This is similar: we elided an opening brace and the member initialization is now done,
+     // but now the member was an aggregate class.
+     rule (classAggInit(... fields: .List, initList: L::List, initExp: E2::Expr) => .K) ~>
+          arrayInit(...
+               initList: .List => L,
+               result:   (E1::Expr => compoundInitJoin(E1, E2))
+          )
+
+     // *** </ Aggregate initialization of an array >
 
 
      rule <k> (.K => resolveOverload(cSet(#if Type ==K DirectInit() #then M #else stripExplicit(M) #fi, C :: ConstructorId(X)), list(L), constructor)) 
@@ -365,9 +471,9 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule V:Val ~> constructorInit(Base::LVal, _, _, _, NoConstructorInit) => compoundInit(compoundInit(le(beginConstruction(Base, false), trace(Base), type(Base)), V), le(endConstruction(Base, false), trace(Base), type(Base)))
      rule V:Val ~> constructorInit(Base::LVal, _, _, _, ConstructorInit(IsBaseClass::Bool)) => compoundInit(compoundInit(le(beginConstruction(Base, IsBaseClass), trace(Base), type(Base)), V), le(endConstruction(Base, true), trace(Base), type(Base)))
 
-     rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], innerType(T), CharacterLiteral(C, ordChar(firstChar(S))), CopyInit())) ~> strInit(Base:LVal, T::CPPArrayType, C::CharKind, (S::String => butFirstChar(S)), (I::Int => I +Int 1), _)
+     rule (.K => figureInit(Base[I], innerType(T), CharacterLiteral(C, ordChar(firstChar(S))), CopyInit())) ~> strInit(Base:LVal, T::CPPArrayType, C::CharKind, (S::String => butFirstChar(S)), (I::Int => I +Int 1), _)
           requires S =/=String ""
-     rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, CharacterLiteral(C, 0), CopyInit())) ~> strInit(Base:LVal, t(_, _, arrayType(T::CPPType, N::Int)), C::CharKind, "", (I::Int => I +Int 1), _)
+     rule (.K => figureInit(Base[I], T, CharacterLiteral(C, 0), CopyInit())) ~> strInit(Base:LVal, t(_, _, arrayType(T::CPPType, N::Int)), C::CharKind, "", (I::Int => I +Int 1), _)
           requires I <Int N
      rule (V:Val => .K)
           ~> strInit(_, _, _, _, _, (E::Expr => compoundInit(E, V)))

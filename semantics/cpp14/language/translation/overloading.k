@@ -2,7 +2,9 @@ module CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports COMPAT-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPE-MAP-SORTS 
-     imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
+     imports CPP-TYPING-SORTS
+     imports CPP-TRANSLATION-TYPING-EXPR-SORTS
+     imports CPP-TRANSLATION-VALUE-CATEGORY-SORTS
 
      syntax ValResult ::= CandidateSet
      syntax CandidateSet ::= cSet(candidates: TypeMap, id: QualId)
@@ -21,6 +23,7 @@ module CPP-TRANSLATION-OVERLOADING-SYNTAX
 
      syntax BuiltinOp ::= builtinOp(Expr)
 
+     syntax Bool ::= canBeImplicitlyConvertedTo(fromType: CPPType, fromCat: ValueCategory, toType: CPPType) [function]
 endmodule
 
 module CPP-TRANSLATION-OVERLOADING
@@ -135,6 +138,12 @@ module CPP-TRANSLATION-OVERLOADING
      rule #notViableTypes(... params: .List, types: .List, cats: .List) => false
      // default arguments
      rule #notViableTypes(ListItem(P:CPPType) _, .List => ListItem(A) DAs, ListItem(A::CPPType) DAs::List, .List => DCs, DCs::List, _)
+
+     rule canBeImplicitlyConvertedTo(...
+               fromType: FromType::CPPType,
+               fromCat:  FromCat::ValueCategory,
+               toType:   ToType::CPPType
+          ) => viableType(FromType, ToType, FromCat)
 
      rule viableType(P::CPPType, A::CPPType, C::ValueCategory) => conversionSequence(P, A, C, false, false, true) =/=K cannot-convert
 
