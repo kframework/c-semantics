@@ -110,14 +110,18 @@ sub main {
       }
 
       if (arg('-shared')) {
-            my $tramp = mergeObjs(srcFiles());
+            compileAll(srcFiles());
+
+            my $trampolines = tempFile('trampolines');
+            my @trampolineFiles = trampolineFiles();
+            shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
 
             my $accum = tempFile('accum');
             shell(getKRunCommand($accum, [objFiles()], undef, 0, 'c++', undef, undef))->verbose()->run();
 
             my $obj = tempFile('merge');
             shell('ld', '-r', '-o', $obj, nativeObjFiles())->run();
-            shell(distDir('merge-kcc-obj'), $obj, $accum, $tramp, arg('-o') || 'a.out')->run();
+            shell(distDir('merge-kcc-obj'), $obj, $accum, $trampolines, arg('-o') || 'a.out')->run();
             return 0;
       }
 
@@ -129,7 +133,7 @@ sub main {
       }
 
       # Reduce our remaining source files to object files
-      my $tramp = mergeObjs(srcFiles());
+      compileAll(srcFiles());
 
       my $oval = arg('-o') || 'a.out';
 
@@ -243,59 +247,65 @@ sub main {
             ($numFilesChanged == 1)
                   or error("Call to chmod $oval failed.\n");
       } else {
-            my $dir = profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled');
-            my $tempDir = tempDir('res');
+            my $sem = profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled');
+            my $d = tempDir('native');
             my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
+
             setShellDebugFile($programConfFile, 1);
-            shell(catfile($dir, 'marshalvalue'),
-                        catfile($dir, 'realdef.cma'),
+            shell(catfile($sem, 'marshalvalue'),
+                        catfile($sem, 'realdef.cma'),
                         '-c', 'ARGV', '`#argv`(.KList) ', 'text',
                         '-c', 'OPTIONS', $opts, 'text',
                         '-c', 'JSON', "#token($rvErrorJson, $string)", 'text',
-                        '--output-file', catfile($tempDir, 'kore_term')
+                        '--output-file', catfile($d, 'kore_term')
                  )->run();
-            shell(catfile($dir, 'marshalvalue'),
-                        catfile($dir, 'realdef.cma'), '-s', # -s before -c
+            shell(catfile($sem, 'marshalvalue'),
+                        catfile($sem, 'realdef.cma'), '-s', # -s before -c
                         '-c', 'PGM', $programConfFile, 'binaryfile',
-                        '--output-file', catfile($tempDir, 'marshal_term')
+                        '--output-file', catfile($d, 'marshal_term')
                  )->run();
 
-            open(my $pluginPath, '>', catfile($tempDir, "plugin_path")) or error("Couldn't open file: $!\n");
-            print $pluginPath catfile($dir, 'realdef.cma');
+            open(my $pluginPath, '>', catfile($d, 'plugin_path')) or error("Couldn't open file: $!\n");
+            print $pluginPath catfile($sem, 'realdef.cma');
             close($pluginPath);
 
+            my @lnk = (catfile($d, 'kore_term.o'), catfile($d, 'marshal_term.o'), catfile($d, 'plugin_path.o'));
+
+            my $native = profileDir('native');
             if (arg('-fnative-binary')) {
-                  my $dir = profileDir('native-server');
-                  shell("cat '$tramp' | awk -F '\t' '{if (\$1!=\"\") print \$1; }' | " . distDir("make-trampolines"))
-                        ->stdout($tempDir, 'trampolines.h')->run();
-                  shell("cat '$tramp' | awk -F '\t' '{if (\$2!=\"\") print \$2; }'")
-                        ->stdout($tempDir, 'used_symbols')->run(); 
-                  shell("(cat '$tramp' | awk -F '\t' '{if (\$1!=\"\") print \"__\" \$1; }'; comm -12 '" . catfile($tempDir, 'used_symbols') . "' '" . dumpSymbols() . "') | sort | uniq | " . distDir("make-symbols"))
-                        ->stdout($tempDir, 'symbols.c')->run();
-                  shell(nativeCompiler(), '-std=c11', '-fsanitize=undefined', '-o', catfile($tempDir, 'native_binary'),
-                              catfile($dir, 'main.o'),
-                              catfile($dir, 'platform.o'),
-                              catfile($dir, 'server.c'),
-                              '-I', $dir, '-I', $tempDir, "-w", "-g",
+                  my @trampolineFiles = trampolineFiles();
+                  my $trampolines = catfile($d, 'trampolines.txt');
+                  shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
+                  shell("cat '$trampolines' | awk -F '\t' '{if (\$1!=\"\") print \$1; }' | " . distDir("make-trampolines"))
+                        ->stdout($d, 'trampolines.h')->run();
+                  shell("cat '$trampolines' | awk -F '\t' '{if (\$2!=\"\") print \$2; }'")
+                        ->stdout($d, 'used_symbols')->run(); 
+                  shell("(cat '$trampolines' | awk -F '\t' '{if (\$1!=\"\") print \"__\" \$1; }'; comm -12 '" . catfile($d, 'used_symbols') . "' '" . dumpSymbols() . "') | sort | uniq | " . distDir("make-symbols"))
+                        ->stdout($d, 'symbols.c')->run();
+                  shell('gcc', '-std=c11', '-o', catfile($d, 'native_binary'),
+                              catfile($native, 'server.c'),
+                              catfile($native, 'main.o'),
+                              catfile($native, 'builtins.o'),
+                              catfile($native, 'platform.o'),
+                              '-I', $native, '-I', $d, '-w', '-g',
                               ldArgs())->run();
+
             } else {
-                  shell('touch', catfile($tempDir, 'native_binary'))->run();
+                  shell('touch', catfile($d, 'native_binary'))->run();
+                  push(@lnk, catfile($native, 'builtins.o'), ldArgs());
             }
 
+            push(@lnk, catfile($d, 'native_binary.o'));
+
             my $old_cwd = getcwd();
-            chdir($tempDir);
+            chdir($d);
             shell('ld', '-r', '-b', 'binary', '-o', 'kore_term.o', 'kore_term')->run();
             shell('ld', '-r', '-b', 'binary', '-o', 'marshal_term.o', 'marshal_term')->run();
             shell('ld', '-r', '-b', 'binary', '-o', 'plugin_path.o', 'plugin_path')->run();
             shell('ld', '-r', '-b', 'binary', '-o', 'native_binary.o', 'native_binary')->run();
             chdir($old_cwd);
 
-            shell(nativeCompiler(), catfile($dir, 'execution_partial.o'), '-o', $oval, '-Wl,-E',
-                        catfile($tempDir, 'kore_term.o'),
-                        catfile($tempDir, 'marshal_term.o'),
-                        catfile($tempDir, 'plugin_path.o'),
-                        catfile($tempDir, 'native_binary.o'),
-                        ldArgs())->run();
+            shell(nativeCompiler(), catfile($sem, 'execution_partial.o'), '-o', $oval, '-Wl,-E', @lnk)->run();
       }
 
       return 0;
@@ -309,7 +319,7 @@ sub nativeCompiler {
       }
 }
 
-sub mergeObjs {
+sub compileAll {
       my (@srcFiles) = @_;
 
       while (scalar @srcFiles > 0) {
@@ -319,12 +329,6 @@ sub mergeObjs {
             compile($oval, $input, $lang);
             classify($oval, 'none');
       }
-
-      my $trampolines = tempFile('trampolines');
-      my @trampolineFiles = trampolineFiles();
-      shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
-
-      return $trampolines;
 }
 
 sub compile {
@@ -510,7 +514,7 @@ sub dumpSymbols {
       state $syms = do {
             my $tmp = tempFile('syms');
             shell(distDir('gccsymdump'), ldArgs())->stdout($tmp)->run();
-            rel2abs($tmp);
+            $tmp;
       };
       return $syms;
 }
@@ -540,6 +544,7 @@ sub preprocess {
             } else {
                   shell('touch', $trampolines)->run();
             }
+
             shell("rv-ifdefclear $output || true")->run();
             for (ifdefs()) {
                   shell("rv-ifdefall $output @$_ || true")->run();

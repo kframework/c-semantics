@@ -164,18 +164,15 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax CId ::= getCName(CPPType, CId, CId, LanguageLinkage, Set) [function]
      rule getCName(T::CPPType, X::CId, _, CLinkage, _) => X
-     rule getCName(T::CPPType, X::CId, Mangled::CId, LangLinkage::LanguageLinkage, Opts::Set) => Mangled
+     rule getCName(T:CPPFunctionType, X::CId, Mangled::CId, LangLinkage::LanguageLinkage, Opts::Set) => Mangled
           requires (LangLinkage =/=K CLinkage) andBool (X =/=K Mangled)
                andBool notBool (NoNativeFallback() in Opts)
      rule getCName(_, _, _, _, _) => #NoName [owise]
 
      syntax CId ::= getInternalCName(CPPType, CId, CId, String, LanguageLinkage, Set) [function]
-     rule getInternalCName(T::CPPType, X::CId, Identifier(S::String), Uuid::String, LangLinkage::LanguageLinkage, Opts::Set)
-          => #if isCPPFunctionType(T)
-               #then getCName(T, X, Identifier(S +String Uuid), LangLinkage, Opts)
-               #else #NoName #fi
-     rule getInternalCName(T::CPPType, X::CId, Mangled::CId, _, LangLinkage::LanguageLinkage, Opts::Set)
-          => getCName(T, X, Mangled, LangLinkage, Opts) [owise]
+     rule getInternalCName(T:CPPFunctionType, X::CId, Identifier(S::String), Uuid::String, LangLinkage::LanguageLinkage, Opts::Set)
+          => getCName(T, X, Identifier(S +String Uuid), LangLinkage, Opts)
+     rule getInternalCName(_, _, _, _, _, _) => #NoName [owise]
 
      context declareObject(_, _, _, _, HOLE:CPPTypeExpr, _, _, _, _, _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]

@@ -3,7 +3,7 @@
 #include "server.h"
 
 int main(int argc, char **argv) {
-  if (argc < 3) {
+  if (argc != 3) {
     printf("usage: %s read_pipe write_pipe\n", argv[0]);
     return 1;
   }

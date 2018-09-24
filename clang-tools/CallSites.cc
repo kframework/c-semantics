@@ -78,6 +78,11 @@ public:
     return true;
   }
 
+  bool TraverseDecayedType(DecayedType *T) {
+    outs() << "p_";
+    return true;
+  }
+
   bool VisitBuiltinType(BuiltinType *T) {
     switch (T->getKind()) {
       case BuiltinType::Void:

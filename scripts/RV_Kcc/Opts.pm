@@ -218,14 +218,15 @@ sub classify {
 
 sub extractKObj {
       my ($file) = @_;
-      my $kast = tempFile('kast');
-      my $obj = tempFile('obj');
-      my $trampolines = tempFile('trampolines');
+      my $basename = basename($file);
+      my $kast = tempFile("$basename-kast");
+      my $obj = tempFile("$basename-obj");
+      my $trampolines = tempFile("$basename-trampolines");
       shell(distDir('split-kcc-obj'), $file, $obj, $kast, $trampolines)->run();
       pushArg('objFiles', $kast);
       pushArg('nativeObjFiles', $obj);
-      pushArg('trampolineFiles', $trampolines);
       pushArg('ldArgs', $obj);
+      pushArg('trampolineFiles', $trampolines);
 }
 
 sub extractStatic {

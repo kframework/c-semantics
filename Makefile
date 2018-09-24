@@ -8,7 +8,8 @@ export SUBPROFILE_DIRS =
 TESTS_DIR = tests
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
-KCCFLAGS = -D_POSIX_C_SOURCE=200809 -nodefaultlibs -Xbuiltins -fno-native-compilation -fnative-binary
+KCCFLAGS = -D_POSIX_C_SOURCE=200809 -nodefaultlibs -Xbuiltins -fno-native-compilation
+CFLAGS = -std=gnu11 -Wall -Wextra -Werror -pedantic
 PASS_TESTS_DIR = tests/unit-pass
 FAIL_TESTS_DIR = tests/unit-fail
 FAIL_COMPILE_TESTS_DIR = tests/unit-fail-compilation
@@ -50,7 +51,7 @@ define timestamp_of
     $(DIST_PROFILES)/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
-.PHONY: default check-vars semantics clean fast cpp-semantics translation-semantics execution-semantics test-build pass fail fail-compile parser/cparser $(CPPPARSER_DIR)/clang-kast $(PROFILE)-native-server
+.PHONY: default check-vars semantics clean fast cpp-semantics translation-semantics execution-semantics test-build pass fail fail-compile parser/cparser $(CPPPARSER_DIR)/clang-kast $(PROFILE)-native
 
 default: test-build
 
@@ -65,7 +66,7 @@ check-vars:
 
 $(DIST_DIR)/writelong: $(SCRIPTS_DIR)/writelong.c
 	@mkdir -p $(DIST_DIR)
-	@$(CC) -std=c11 $(SCRIPTS_DIR)/writelong.c -o $(DIST_DIR)/writelong
+	@gcc $(CFLAGS) $(SCRIPTS_DIR)/writelong.c -o $(DIST_DIR)/writelong
 
 $(DIST_DIR)/kcc: $(SCRIPTS_DIR)/getopt.pl $(PERL_MODULES) $(DIST_DIR)/writelong $(FILES_TO_DIST)
 	mkdir -p $(DIST_DIR)/RV_Kcc
@@ -88,7 +89,7 @@ pack: $(DIST_DIR)/kcc
 	cp -pf $(DIST_DIR)/kcc $(DIST_DIR)/kclang
 	rm -rf $(DIST_DIR)/fatlib $(DIST_DIR)/RV_Kcc $(DIST_DIR)/packlists $(DIST_DIR)/fatpacker.trace
 
-$(DIST_PROFILES)/$(PROFILE): $(DIST_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native-server | check-vars
+$(DIST_PROFILES)/$(PROFILE): $(DIST_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native | check-vars
 	@mkdir -p $(DIST_PROFILES)/$(PROFILE)/lib
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/current-profile
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/default-profile
@@ -98,6 +99,8 @@ $(DIST_PROFILES)/$(PROFILE): $(DIST_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_F
 		mkdir -p $(DIST_PROFILES)/$(shell basename $(d))/lib;)
 	@-$(foreach d, $(SUBPROFILE_DIRS), $(foreach f, $(PROFILE_FILES), \
 		cp -RLp $(d)/$(f) $(DIST_PROFILES)/$(shell basename $(d))/$(f);))
+	@-$(foreach d, $(SUBPROFILE_DIRS), \
+		cp -RLp $(DIST_PROFILES)/$(PROFILE)/native/* $(DIST_PROFILES)/$(shell basename $(d))/native;)
 
 $(PROFILE_DIR)/cpp-pp:
 
@@ -124,31 +127,27 @@ $(LIBSTDCXX_SO): $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR
 		$(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libstdc++.so *.C $(KCCFLAGS) -I .;)
 	@echo "$(PROFILE): Done translating the C++ standard library."
 
-$(LIBC_SO): $(call timestamp_of,cpp14-translation) $(call timestamp_of,c11-translation) $(wildcard $(PROFILE_DIR)/native/*.c) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/native/*.c)) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_PROFILES)/$(PROFILE)
+$(LIBC_SO): $(call timestamp_of,cpp14-translation) $(call timestamp_of,c11-translation) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_PROFILES)/$(PROFILE)
 	@echo "$(PROFILE): Translating the C standard library..."
-	@if [ -d "$(PROFILE_DIR)/native" ]; \
-		then cd $(PROFILE_DIR)/native && $(CC) -std=gnu11 -c *.c -I . && cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$(LIBC_SO) *.c $(PROFILE_DIR)/native/*.o $(KCCFLAGS) -I .; \
-		else cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$(LIBC_SO) *.c $(KCCFLAGS) -I .; fi
+	@cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$(LIBC_SO) *.c $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		if [ -d "$(d)/native" ]; \
-			then cd $(d)/native && $(CC) -std=gnu11 -c *.c -I . && cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libc.so *.c $(d)/native/*.o $(KCCFLAGS) -I .; \
-			else cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libc.so *.c $(KCCFLAGS) -I .; fi;)
+		cd $(d)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libc.so *.c $(KCCFLAGS) -I .)
 	@echo "$(PROFILE): Done translating the C standard library."
 
-$(PROFILE)-native-server: $(DIST_PROFILES)/$(PROFILE)/native-server/main.o $(DIST_PROFILES)/$(PROFILE)/native-server/server.c $(DIST_PROFILES)/$(PROFILE)/native-server/platform.o $(DIST_PROFILES)/$(PROFILE)/native-server/platform.h $(DIST_PROFILES)/$(PROFILE)/native-server/server.h
+$(PROFILE)-native: $(DIST_PROFILES)/$(PROFILE)/native/main.o $(DIST_PROFILES)/$(PROFILE)/native/server.c $(DIST_PROFILES)/$(PROFILE)/native/builtins.o $(DIST_PROFILES)/$(PROFILE)/native/platform.o $(DIST_PROFILES)/$(PROFILE)/native/platform.h $(DIST_PROFILES)/$(PROFILE)/native/server.h
 
-$(DIST_PROFILES)/$(PROFILE)/native-server/main.o: native-server/main.c native-server/server.h
+$(DIST_PROFILES)/$(PROFILE)/native/main.o: native-server/main.c native-server/server.h
 	mkdir -p $(dir $@)
-	gcc -c $< -o $@ -Wall -Wextra -pedantic -Werror -g
-$(DIST_PROFILES)/$(PROFILE)/native-server/%.h: native-server/%.h
-	mkdir -p $(dir $@)
-	cp -RLp $< $@
-$(DIST_PROFILES)/$(PROFILE)/native-server/server.c: native-server/server.c
+	gcc $(CFLAGS) -c $< -o $@  -g
+$(DIST_PROFILES)/$(PROFILE)/native/%.h: native-server/%.h
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
-$(DIST_PROFILES)/$(PROFILE)/native-server/platform.o: $(PROFILE_DIR)/native-server/platform.c native-server/platform.h
+$(DIST_PROFILES)/$(PROFILE)/native/server.c: native-server/server.c
 	mkdir -p $(dir $@)
-	gcc -c $< -o $@ -Wall -Wextra -pedantic -Werror -I native-server -g
+	cp -RLp $< $@
+$(DIST_PROFILES)/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c $(wildcard native-server/*.h)
+	mkdir -p $(dir $@)
+	gcc $(CFLAGS) -c $< -o $@ -I native-server
 
 test-build: fast
 	@echo "Testing kcc..."

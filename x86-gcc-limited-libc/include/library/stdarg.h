@@ -1,6 +1,5 @@
 #ifndef _STDARG_H
 #define _STDARG_H
-#include <kcc_settings.h>
 #include <stddef.h>
 
 #ifndef __cplusplus

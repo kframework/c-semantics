@@ -6,7 +6,8 @@ printf "#define bool _Bool\n\n"
 explain_type='
 remaining=1
 typ=""
-structName=""
+tagName=""
+tag=""
 while (( $remaining > 0 )); do
     remaining=$(($remaining-1))
     head=$1
@@ -73,15 +74,15 @@ while (( $remaining > 0 )); do
         remaining=$((remaining+1))
         typ="$typ _Atomic"
         ;;
-    s[0-9]*)
-        nfields=${head#s}
+    [su][0-9]*)
+        nfields=${head#[su]}
         sremaining=$nfields
-        structName="$head"
+        tagName="$head"
         while (( $sremaining > 0 )); do
             shead=$1
             shift
             IFS="$OIFS"
-            structName="${structName}_${shead}"
+            tagName="${tagName}_${shead}"
             IFS="_ "
             case $shead in
                 [su][0-9]*)
@@ -91,7 +92,9 @@ while (( $remaining > 0 )); do
             esac
             sremaining=$(($sremaining-1))
         done
-        typ="$typ struct __$structName"
+        tag="struct"
+        if [[ $head =~ ^u ]]; then tag="union"; fi
+        typ="$typ $tag __$tagName"
     esac
 done
 '
@@ -137,19 +140,19 @@ function explain_fun_type {
     printf "%s" "$return_type"
 }
 
-function print_struct {
+function print_tagged {
     if [ -z "$*" ]; then
         return
     fi
-    local currentStruct="$*"
-    local output="  struct __$* {
+    local currentTag="$*"
+    local output="  $tag __$* {
 "
     shift
     local idx=0
     while (( "$#" )); do
         eval "$explain_type"
         local field_type="$typ"
-        print_struct $structName
+        print_tagged $tagName
         IFS="$OIFS"
         local output="$output    $("$(dirname "$0")/cdecl" declare _$idx as $field_type)
 "
@@ -158,29 +161,29 @@ function print_struct {
     done
     local output="$output  };
 "
-    printf "%s" "$structs" | grep -s -- "^$currentStruct\$" "-" > /dev/null
+    printf "%s" "$tags" | grep -s -- "^$currentTag\$" "-" > /dev/null
     if [ $? -eq 1 ]; then
-        structs="$structs
-$currentStruct"
+        tags="$tags
+$currentTag"
         printf "%s" "$output"
     fi
 }
 
-function print_structs {
-    structs=""
+function print_tagged_types {
+    tags=""
     eval "$explain_type"
-    print_struct $structName
+    print_tagged $tagName
     while (( "$#" > 2 )); do
         eval "$explain_type"
         IFS="_ "
-        print_struct $structName
+        print_tagged $tagName
     done
 }
 
 function write_trampoline {
     printf "static void __%s (void (*fptr)(), void *retval) {\n" "$*"
     explained_type=$(explain_fun_type "$@")
-    print_structs "$@"
+    print_tagged_types "$@"
     eval "$explain_type"
     local return_type="$typ"
     IFS="$OIFS"
@@ -217,5 +220,5 @@ function write_trampoline {
 OIFS="$IFS"
 IFS="_ "
 while read line; do
-    write_trampoline $line  
+    write_trampoline $line
 done

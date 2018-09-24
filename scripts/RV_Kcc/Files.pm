@@ -114,14 +114,10 @@ sub getProfiles {
 }
 
 {
-      my $tempRoot;
+      my $tempRoot = rel2abs(tempdir(".tmp-kcc-XXXXX", CLEANUP => 1));
 
       sub tempFile {
             my ($name, $ext) = @_;
-
-            if (!$tempRoot) {
-                  $tempRoot = tempdir(".tmp-kcc-XXXXX", CLEANUP => 1);
-            }
 
             my $file;
             if (defined $ext) {
@@ -134,10 +130,6 @@ sub getProfiles {
 
       sub tempDir {
             my ($name) = @_;
-
-            if (!$tempRoot) {
-                  $tempRoot = tempdir(".tmp-kcc-XXXXX", CLEANUP => 1);
-            }
 
             my $dir = tempdir(catfile($tempRoot, "tmp-kcc-$name-XXXXX"), CLEANUP => 1);
 

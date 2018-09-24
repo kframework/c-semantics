@@ -63,4 +63,4 @@ if (g++ -std=c++14 |& grep -q unrecognized); then
   standard="c++11"
 fi
 
-g++ -Wall -Wextra -x c++ -std=$standard -nostdlib -U __GNUC__ -U __GNUG__ -D__KCC__ -include "$(dirname "$0")/include/kcc_settings.h" -E -I "$(dirname "$0")/include" "${options[@]}"
+g++ -Wall -Wextra -x c++ -std=$standard -nostdlib -U __GNUC__ -U __GNUG__ -D__KCC__ -include "$(dirname "$0")/include/kcc_settings.h" -E -I "$(dirname "$0")/include/library" "${options[@]}"
