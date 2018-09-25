@@ -182,7 +182,7 @@ let init_lexicon _ =
       ("__kcc_offsetof", fun loc -> KCC_OFFSETOF loc);
 
       (* GCC Extensions *)
-      ("__kcc_typeof", fun loc -> KCC_TYPEOF loc);
+      ("__typeof__", fun loc -> KCC_TYPEOF loc);
       ("__kcc_auto_type", fun loc -> KCC_AUTO_TYPE loc);
       ("__kcc_types_compatible_p", fun loc -> KCC_TYPES_COMPAT loc);
 

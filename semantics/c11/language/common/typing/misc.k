@@ -4,14 +4,15 @@ module C-TYPING-MISC
      imports BOOL
      imports FLOAT
      imports INT
-     imports COMPAT-SYNTAX
-     imports SYMLOC-SYNTAX
-     imports C-SORTS
+     imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
+     imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SORTS
      imports C-SYNTAX
+     imports SYMLOC-SYNTAX
 
      //TODO(chathhorn): a lot of junk dumped here.
      rule simpleType(t(_, _, T::SimpleType)) => T
@@ -518,5 +519,104 @@ module C-TYPING-MISC
      rule isStructOrUnionKLabel(#klabel(`structType`)) => true
      rule isStructOrUnionKLabel(#klabel(`unionType`)) => true
      rule isStructOrUnionKLabel(_) => false [owise]
+
+     rule makeStructFieldInfo(Pack::Bool, Fs::List)
+          => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)
+
+     syntax FieldInfo ::= "makeStructFieldInfo'" "(" Bool "," List "," Int "," Map ","  Map "," List ")" [function]
+     rule makeStructFieldInfo'(Pack::Bool,
+               ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
+               V::Int,
+               Types::Map,
+               Offsets::Map,
+               NL::List)
+          => makeStructFieldInfo'(Pack,
+               L,
+               pad(V, T) +Int bitSizeofType(T),
+               Types[Field <- T],
+               Offsets[Field <- pad(V, T)],
+               NL ListItem(typedDeclaration(T, Field)))
+     rule makeStructFieldInfo'(true, .List, V::Int, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, roundBits(V, 1),
+               Types, Offsets,
+               computePaddingOffsets(NL, roundBits(V, 1), Types, Offsets))
+     rule makeStructFieldInfo'(false, .List, V::Int, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, roundBits(V, maxByteAlignofDecls(NL)),
+               Types, Offsets,
+               computePaddingOffsets(NL, roundBits(V, maxByteAlignofDecls(NL)), Types, Offsets))
+
+     // The padding associated with a particular field precedes it, with
+     // possibly some extra padding at the end of the whole struct not
+     // associated with any field. This is important for understanding the
+     // effect of the gcc et al. packed attr as applied to a particular field.
+
+     syntax Int ::= pad(Int, Type) [function]
+     // Non-bitfields are aligned according to their type (if we note that
+     // fields tagged with the Packed() attribute have an alignment of 1 byte).
+     rule pad(V::Int, T::Type) => roundBits(V, byteAlignofType(T))
+          requires notBool isBitfieldType(T)
+     // Non-packed bitfields that would cross an alignment boundary and
+     // zero-length bitfields have an alignment of the bitfield field type.
+     rule pad(V::Int, T:BitfieldType) => roundBits(V, byteAlignofType(innerType(T)))
+          requires notBool (Packed() in getModifiers(T))
+               andBool (V +Int bitSizeofType(T)) >Int roundBits(V, byteAlignofType(innerType(T)))
+     rule pad(V::Int, T:BitfieldType) => roundBits(V, byteAlignofType(innerType(T)))
+          requires bitSizeofType(T) ==Int 0
+     // Packed bitfields and non-packed bitfields that don't cross an alignment
+     // boundary have 1-bit alignment (no padding).
+     rule pad(V::Int, _) => V [owise]
+
+     // Round up to the nearest multiple of the second arg * cfg:bitsPerByte.
+     syntax Int ::= roundBits(Int, Int) [function]
+     rule roundBits(N::Int, A::Int) => N
+          requires (N %Int (A *Int cfg:bitsPerByte)) ==Int 0
+     rule roundBits(N::Int, A::Int)
+          => N +Int ((A *Int cfg:bitsPerByte) -Int (N %Int (A *Int cfg:bitsPerByte))) [owise]
+
+     rule allComplete(L::List) => all(mapList(L, #klabel(`type`)), #klabel(`isCompleteType`))
+
+     rule makeUnionFieldInfo(Pack::Bool, Fs::List)
+          => makeUnionFieldInfo'(Pack, Fs, .Map, .Map, .List)
+
+     syntax FieldInfo ::= "makeUnionFieldInfo'" "(" Bool "," List "," Map ","  Map "," List ")" [function]
+     rule makeUnionFieldInfo'(Pack::Bool,
+               ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
+               Types::Map,
+               Offsets::Map,
+               NL::List)
+          => makeUnionFieldInfo'(Pack, L,
+               Types[Field <- T], Offsets[Field <- 0],
+               NL ListItem(typedDeclaration(T, Field)))
+     rule makeUnionFieldInfo'(true, .List, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, .Set)
+     rule makeUnionFieldInfo'(false, .List, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL,
+               roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL)),
+               Types, Offsets, getPaddingOffsets(maxByteSizeofList(NL) *Int cfg:bitsPerByte, roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL))))
+
+     syntax Set ::= computePaddingOffsets(List, Int, Map, Map) [function]
+     rule computePaddingOffsets(ListItem(typedDeclaration(_, A::CId)) ListItem(typedDeclaration(BT::Type, B::CId)) L::List, Len::Int, Types::Map, Offsets::Map)
+          => getPaddingOffsets({{Offsets[A]}<:K}:>Int +Int bitSizeofType({{Types[A]}<:K}:>Type), {{Offsets[B]}<:K}:>Int)
+               computePaddingOffsets(ListItem(typedDeclaration(BT, B)) L, Len, Types, Offsets)
+     rule computePaddingOffsets(ListItem(typedDeclaration(_, A::CId)), Len::Int, Types::Map, Offsets::Map)
+          => getPaddingOffsets({{Offsets[A]}<:K}:>Int +Int bitSizeofType({{Types[A]}<:K}:>Type), Len)
+     rule computePaddingOffsets(.List, _, _, _) => .Set
+
+     syntax Set ::= getPaddingOffsets(Int, Int) [function]
+     rule getPaddingOffsets(Off::Int, BOff::Int)
+          => getPaddingOffsets(Off +Int (cfg:bitsPerByte -Int (Off %Int cfg:bitsPerByte)), BOff)
+          requires Off <Int BOff andBool (Off %Int cfg:bitsPerByte) =/=K 0
+     rule getPaddingOffsets(Off::Int, BOff::Int) => .Set
+          requires Off >=Int BOff
+     rule getPaddingOffsets(Off::Int, BOff::Int)
+          => SetItem(Off) getPaddingOffsets(Off +Int cfg:bitsPerByte, BOff)
+          [owise]
+
+     syntax Bool ::= isNonPaddingOffset(Int, List, Map, Map) [function]
+     rule isNonPaddingOffset(Offset:Int, ListItem(typedDeclaration(_, F:CId)) Decls:List, Types:Map, Offsets:Map)
+          => ({{Offsets[F]}<:K}:>Int <=Int Offset andBool Offset <Int {{Offsets[F]}<:K}:>Int +Int
+               bitSizeofType({{Types[F]}<:K}:>Type))
+          orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
+     rule isNonPaddingOffset(_, .List, _, _) => false
 
 endmodule

@@ -687,7 +687,9 @@ module CPP-TRANSLATION-NAME
           SetItem(type(long))
           SetItem(type(unsigned-long))
           SetItem(type(long-long))
+          SetItem(type(oversized))
           SetItem(type(unsigned-long-long))
+          SetItem(type(unsigned-oversized))
 
      rule makeSet(M::TypeMap, O::OpId) => cSet(M, NoNamespace() :: O)
 

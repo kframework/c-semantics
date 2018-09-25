@@ -230,7 +230,9 @@ module CPP-TRANSLATION-DECL-ENUM
              ListItem(long)
              ListItem(unsigned-long)
              ListItem(long-long)
+             ListItem(oversized)
              ListItem(unsigned-long-long)
+             ListItem(unsigned-oversized)
 
      syntax List ::= "allIntegralTypes" [function]
      rule allIntegralTypes

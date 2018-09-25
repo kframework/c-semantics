@@ -49,7 +49,9 @@ module CPP-BITSIZE
      rule byteSizeofType(long) => cfg:sizeofLongInt
      rule byteSizeofType(unsigned-long) => cfg:sizeofLongLongInt
      rule byteSizeofType(long-long) => cfg:sizeofLongInt
+     rule byteSizeofType(oversized) => cfg:sizeofOversizedInt
      rule byteSizeofType(unsigned-long-long) => cfg:sizeofLongLongInt
+     rule byteSizeofType(unsigned-oversized) => cfg:sizeofOversizedInt
      rule byteSizeofType(float) => cfg:sizeofFloat
      rule byteSizeofType(double) => cfg:sizeofDouble
      rule byteSizeofType(long-double) => cfg:sizeofLongDouble

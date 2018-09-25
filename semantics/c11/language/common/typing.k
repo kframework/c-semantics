@@ -402,4 +402,7 @@ module C-TYPING-SYNTAX
      syntax KResult ::= DynamicType
      syntax EffectiveType ::= DynamicType
 
+     syntax Bool ::= allComplete(List) [function]
+     syntax FieldInfo ::= makeStructFieldInfo(Bool, List) [function]
+     syntax FieldInfo ::= makeUnionFieldInfo(Bool, List) [function]
 endmodule

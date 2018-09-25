@@ -52,7 +52,9 @@ module CPP-ALIGNMENT
      rule byteAlignofType(long) => cfg:alignofLongInt
      rule byteAlignofType(unsigned-long) => cfg:alignofLongInt
      rule byteAlignofType(long-long) => cfg:alignofLongLongInt
+     rule byteAlignofType(oversized) => cfg:alignofOversizedInt
      rule byteAlignofType(unsigned-long-long) => cfg:alignofLongLongInt
+     rule byteAlignofType(unsigned-oversized) => cfg:alignofOversizedInt
      rule byteAlignofType(float) => cfg:alignofFloat
      rule byteAlignofType(double) => cfg:alignofDouble
      rule byteAlignofType(long-double) => cfg:alignofLongDouble

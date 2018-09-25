@@ -24,10 +24,6 @@ module LIBC-STDLIB
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
 
-     rule [debug]:
-          builtin("__debug", _) => voidVal
-          [interpRule]
-
      rule [exit]:
           <k> builtin("exit", tv(I:Int, ut(_, int))) ~> _
                => reval(tv(I, utype(int))) ~> callAtExit

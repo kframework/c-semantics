@@ -2106,7 +2106,7 @@ module LIBC-STDIO
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(pad(
+               .List => ListItem(padString(
                     Float2String(setPrecision(D, #if P ==K "" #then 6 #else String2Int(P) #fi)),
                     String2Int(W),
                     #if Z #then "0" #else " " #fi))
@@ -2125,7 +2125,7 @@ module LIBC-STDIO
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(pad(
+               .List => ListItem(padString(
                     toUpperCase(Float2String(setPrecision(D, #if P ==K "" #then 6 #else String2Int(P) #fi))),
                     String2Int(W),
                     #if Z #then "0" #else " " #fi))
@@ -2194,7 +2194,7 @@ module LIBC-STDIO
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(pad(
+               .List => ListItem(padString(
                     Float2String(setPrecision(D, String2Int(P))),
                     String2Int(W),
                     #if Z #then "0" #else " " #fi))
@@ -2213,7 +2213,7 @@ module LIBC-STDIO
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(pad(
+               .List => ListItem(padString(
                     toUpperCase(Float2String(setPrecision(D, String2Int(P)))),
                     String2Int(W),
                     #if Z #then "0" #else " " #fi))
@@ -2346,7 +2346,7 @@ module LIBC-STDIO
           <format-pad-zero> false </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(pad(pointerToString(Loc), String2Int(W), " "))
+               .List => ListItem(padString(pointerToString(Loc), String2Int(W), " "))
           </format-result>
           <format-state> "%p" => "reset" </format-state>
           [structural]
@@ -2538,20 +2538,20 @@ module LIBC-STDIO
      specified above, the behavior is undefined.
      */
 
-     syntax String ::= pad(String, Int, String) [function]
-                     | "pad'" "(" String "," Int "," String ")" [function]
+     syntax String ::= padString(String, Int, String) [function]
+                     | "padString'" "(" String "," Int "," String ")" [function]
 
-     rule pad(X::String, W::Int, _) => X
+     rule padString(X::String, W::Int, _) => X
           requires lengthString(X) >=Int absInt(W)
-     rule pad(X::String, W::Int, P::String)
-          => pad'(X, (absInt(W) -Int lengthString(X)) *Int signInt(W), P)
+     rule padString(X::String, W::Int, P::String)
+          => padString'(X, (absInt(W) -Int lengthString(X)) *Int signInt(W), P)
           requires lengthString(X) <Int absInt(W)
 
-     rule pad'(X::String, W::Int, P::String) => pad'(X +String " ", W +Int 1, P)
+     rule padString'(X::String, W::Int, P::String) => padString'(X +String " ", W +Int 1, P)
           requires W <Int 0
-     rule pad'(X::String, W::Int, P::String) => pad'(P +String X, W -Int 1, P)
+     rule padString'(X::String, W::Int, P::String) => padString'(P +String X, W -Int 1, P)
           requires W >Int 0
-     rule pad'(X::String, W::Int, _) => X
+     rule padString'(X::String, W::Int, _) => X
           requires W ==Int 0
 
     syntax String ::= "formatPrecisionWidth" "(" String "," Int "," Bool "," String "," Int ")" [function]
@@ -2571,12 +2571,12 @@ module LIBC-STDIO
          => formatPrecisionWidth''(V, P, Prefix, W)
 
     rule formatPrecisionWidth''(V::String, P::Int, "0", W::Int)
-         => pad(#fun(V2::String => #if firstChar(V2) ==String "0" #then V2 #else "0" +String V2 #fi)(pad(V, P, "0")), W, " ")
+         => padString(#fun(V2::String => #if firstChar(V2) ==String "0" #then V2 #else "0" +String V2 #fi)(padString(V, P, "0")), W, " ")
     rule formatPrecisionWidth''(V::String, P::Int, Prefix::String, W::Int)
-         => pad(pad(V, P, "0"), W, " ")
+         => padString(padString(V, P, "0"), W, " ")
          requires ((V ==String "0" orBool V ==String "") andBool (Prefix ==String "0x" orBool Prefix ==String "0X")) orBool Prefix ==String ""
     rule formatPrecisionWidth''(V::String, P::Int, Prefix::String, W::Int)
-         => pad(Prefix +String pad(V, P, "0"), W, " ")
+         => padString(Prefix +String padString(V, P, "0"), W, " ")
          requires V =/=String "0" andBool V =/=String "" andBool (Prefix ==String "0x" orBool Prefix ==String "0X")
 
      syntax Int ::= signInt(Int) [function]

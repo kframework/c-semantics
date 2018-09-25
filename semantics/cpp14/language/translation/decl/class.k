@@ -459,6 +459,9 @@ module CPP-TRANSLATION-DECL-CLASS
      rule <k> Defaulted() => .K ...</k>
           <curr-tr-scope> blockScope(C::Class :: DestructorId(_), _, _) </curr-tr-scope>
 
+     // TODO(chathhorn)
+     rule Deleted() => .K
+
      syntax Stmt ::= figureDestruct(bases: List, dataMembers: List, result: K)
 
      // 12.4:5
@@ -746,7 +749,7 @@ module CPP-TRANSLATION-DECL-CLASS
      rule getT'(t(... st: bitfieldType(_, N::Int))) => 
           #if byteSizeofType(type(long-long)) *Int cfg:bitsPerByte <=Int N #then type(long-long) #else
           #if byteSizeofType(type(long)) *Int cfg:bitsPerByte <=Int N #then type(long) #else
-	  #if byteSizeofType(type(int)) *Int cfg:bitsPerByte <=Int N #then type(int) #else
+          #if byteSizeofType(type(int)) *Int cfg:bitsPerByte <=Int N #then type(int) #else
           #if byteSizeofType(type(short)) *Int cfg:bitsPerByte <=Int N #then type(short) #else
           type(char)
           #fi #fi #fi #fi

@@ -232,6 +232,8 @@ module CPP-CONVERSION
      rule rank(t(_, _, unsigned-long)) => 4
      rule rank(t(_, _, long-long)) => 5
      rule rank(t(_, _, unsigned-long-long)) => 5
+     rule rank(t(_, _, oversized)) => 6
+     rule rank(t(_, _, unsigned-oversized)) => 6
      rule rank(t(_, _, char16_t)) => rank(type(underlyingType(char16_t)))
      rule rank(t(_, _, char32_t)) => rank(type(underlyingType(char32_t)))
      rule rank(t(_, _, wchar_t)) => rank(type(underlyingType(wchar_t)))

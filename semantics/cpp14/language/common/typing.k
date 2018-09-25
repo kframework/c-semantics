@@ -85,6 +85,7 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPSimpleSignedType ::= CPPSimpleSignedCharType | "short" | "int" | "long" | "long-long"
      syntax CPPSimpleUnsignedType ::= CPPSimpleUnsignedCharType | "unsigned-short" | "unsigned" | "unsigned-long" | "unsigned-long-long"
+                                    | "oversized" | "unsigned-oversized"
      syntax CPPSimpleFloatingType ::= "float" | "double" | "long-double"
      syntax CPPSimpleCharType ::= CPPSimpleSignedCharType | CPPSimpleUnsignedCharType
      syntax CPPSimpleSignedCharType ::= "signed-char"
@@ -548,6 +549,7 @@ module CPP-TYPING
      rule correspondingUnsignedType(t(Q::Quals, Mods::Set, int)) => t(Q, Mods, unsigned)
      rule correspondingUnsignedType(t(Q::Quals, Mods::Set, long)) => t(Q, Mods, unsigned-long)
      rule correspondingUnsignedType(t(Q::Quals, Mods::Set, long-long)) => t(Q, Mods, unsigned-long-long)
+     rule correspondingUnsignedType(t(Q::Quals, Mods::Set, oversized)) => t(Q, Mods, unsigned-oversized)
 
      rule stripType(t(Q::Quals, _, T:CPPSimpleFundamentalType)) => t(Q, .Set, T)
      rule stripType(t(_, _, bitfieldType(T::CPPSimpleType, _) => T))
@@ -602,17 +604,6 @@ module CPP-TYPING
           => F <=Float fmax(T) andBool F >=Float fmin(T)
      rule inRange(Loc:SymLoc, T::CPPIntegerType)
           => bitSizeofType(T) >=Int cfg:ptrsize *Int cfg:bitsPerByte
-
-     rule correspondingUnsignedType(t(Q::Quals, Mods::Set, signed-char))
-          => t(Q, Mods, unsigned-char)
-     rule correspondingUnsignedType(t(Q::Quals, Mods::Set, short))
-          => t(Q, Mods, unsigned-short)
-     rule correspondingUnsignedType(t(Q::Quals, Mods::Set, int))
-          => t(Q, Mods, unsigned)
-     rule correspondingUnsignedType(t(Q::Quals, Mods::Set, long))
-          => t(Q, Mods, unsigned-long)
-     rule correspondingUnsignedType(t(Q::Quals, Mods::Set, long-long))
-          => t(Q, Mods, unsigned-long-long)
 
      // bitfields can't have values beyond their actual type, regardless of their width
      rule min(T:CPPBitfieldType) => maxInt(#min(T), #min(innerType(T)))
@@ -782,7 +773,9 @@ module C-CPP-TYPING
      rule convertTypeToC(t(Q::Quals, Mods::Set, long)) => t(Q, Mods, long-int)
      rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned-long)) => t(Q, Mods, unsigned-long-int)
      rule convertTypeToC(t(Q::Quals, Mods::Set, long-long)) => t(Q, Mods, long-long-int)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, oversized)) => t(Q, Mods, oversized-int)
      rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned-long-long)) => t(Q, Mods, unsigned-long-long-int)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned-oversized)) => t(Q, Mods, unsigned-oversized-int)
      rule convertTypeToC(t(Q::Quals, Mods::Set, float::CPPSimpleFloatingType)) => t(Q, Mods, float::SimpleFloatType)
      rule convertTypeToC(t(Q::Quals, Mods::Set, double::CPPSimpleFloatingType)) => t(Q, Mods, double::SimpleFloatType)
      rule convertTypeToC(t(Q::Quals, Mods::Set, long-double::CPPSimpleFloatingType)) => t(Q, Mods, long-double::SimpleFloatType)
@@ -820,7 +813,9 @@ module C-CPP-TYPING
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, long-int)) => t(Q, Mods, long)
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, unsigned-long-int)) => t(Q, Mods, unsigned-long)
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, long-long-int)) => t(Q, Mods, long-long)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, oversized-int)) => t(Q, Mods, oversized)
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, unsigned-long-long-int)) => t(Q, Mods, unsigned-long-long)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, unsigned-oversized-int)) => t(Q, Mods, unsigned-oversized)
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, float::SimpleFloatType)) => t(Q, Mods, float::CPPSimpleFloatingType)
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, double::SimpleFloatType)) => t(Q, Mods, double::CPPSimpleFloatingType)
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, long-double::SimpleFloatType)) => t(Q, Mods, long-double::CPPSimpleFloatingType)

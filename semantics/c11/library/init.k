@@ -55,7 +55,6 @@ module LIBC-INIT
           (id("atexit") |-> fun(int, ptr(fun(void)))
           (id("at_quick_exit") |-> fun(int, ptr(fun(void)))
           (id("calloc") |-> fun(ptr(void), size_t, size_t)
-          (id("__debug") |-> fun(void, int)
           (id("exit") |-> fun(void, int)
           (id("free") |-> fun(void, ptr(void))
           (id("getenv") |-> fun(ptr(char), ptr(const(char)))
@@ -183,7 +182,7 @@ module LIBC-INIT
           extensionBuiltins
           // we need these parentheses to avoid an exponential explosion of parsing time;
           // really should look further into true priorities in the parser kernel.
-          )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+          ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
      rule mtx_t => typeref("__kcc_typeref_mtx_t")
      rule jmp_buf => typeref("__kcc_typeref_jmp_buf")
