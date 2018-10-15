@@ -126,6 +126,10 @@ module SYMLOC-SYNTAX
      // cause UB if the user tries to modify them.
      syntax Bool ::= isLibcFixedDuration(SymBase) [function]
 
+     syntax String ::= showSymLoc(SymLoc) [function]
+     syntax String ::= showSymBase(SymBase) [function]
+     syntax String ::= showDuration(Duration) [function]
+
 endmodule
 
 module SYMLOC
@@ -326,6 +330,52 @@ module SYMLOC
 
      rule isLibcFixedDuration(obj(... d: libcFixed)) => true
      rule isLibcFixedDuration(_) => false [owise]
+
+     rule showSymLoc(loc(Base::SymBase, Offset::Int)) => wrapSymbolic(showSymBase(Base) +String " + " +String showInt(Offset))
+     rule showSymLoc(loc(Base::SymBase, Offset::Int, Prov::Set)) => wrapSymbolic(showSymBase(Base) +String " + " +String showInt(Offset) +String showProvSet(Prov))
+     rule showSymLoc(NullPointer) => wrapSymbolic("null")
+     rule showSymLoc(V::SymLoc) => showK(V) [owise]
+
+     rule showSymBase(obj(B::Int, Align::Int, D:Duration)) => showInt(B) +String " @ " +String showDuration(D) +String "/" +String showInt(Align)
+     rule showSymBase(obj(B::Int, Align::Int, D:LinkDuration)) => showInt(B) +String " @ " +String showLinkDuration(D) +String "/" +String showInt(Align)
+     rule showSymBase(B::SymBase) => showK(B) [owise]
+
+     rule showDuration(libc) => "libc"
+     rule showDuration(libcFixed) => "libcFixed"
+     rule showDuration(alloc) => "alloc"
+     rule showDuration(dynamic) => "dynamic"
+     rule showDuration(static(S::String)) => "static" +String wrapParens(S)
+     rule showDuration(string(S::String)) => "string" +String wrapParens(S)
+     rule showDuration(wstring(_)) => "wstring"
+     rule showDuration(builtinSymbol(S::String)) => "builtinSymbol" +String wrapParens(S)
+     rule showDuration(nativeSymbol(S::String)) => "nativeSymbol" +String wrapParens(S)
+     rule showDuration(threadLocal(N::Int)) => "threadLocal" +String wrapParens(showInt(N))
+     rule showDuration(auto(N::Int)) => "auto" +String wrapParens(showInt(N))
+     rule showDuration(argv) => "argv"
+     rule showDuration(register(N::Int)) => "register" +String wrapParens(showInt(N))
+     rule showDuration(nativeAddress()) => "native"
+     rule showDuration(D::Duration) => showK(D) [owise]
+
+     syntax String ::= showLinkDuration(LinkDuration) [function]
+     rule showLinkDuration(link(S::String)) => "link" +String wrapParens(S)
+     rule showLinkDuration(D::LinkDuration) => showK(D) [owise]
+
+     syntax String ::= showProvSet(Set) [function]
+     rule showProvSet(SetItem(P:Provenance) Prov::Set) => ", " +String showProvenance(P) +String showProvSet(Prov)
+     rule showProvSet(.Set) => ""
+     rule showProvSet(SetItem(P:K) Prov::Set) => ", " +String showK(P) +String showProvSet(Prov) [owise]
+
+     syntax String ::= showProvenance(Provenance) [function]
+     rule showProvenance(fromArray(A::Int, B::Int)) => "array" +String wrapParens(showInt(A) +String ", " +String showInt(B))
+     rule showProvenance(basedOn(B::SymBase, _)) => "based" +String wrapParens(showSymBase(B))
+     rule showProvenance(objectType(T::EffectiveType)) => showEffectiveType(T)
+     rule showProvenance(P::Provenance) => showK(P) [owise]
+
+     syntax String ::= wrapSymbolic(String) [function]
+     rule wrapSymbolic(S::String) => "[" +String S +String "]"
+
+     syntax String ::= wrapParens(String) [function]
+     rule wrapParens(S::String) => "(" +String S +String ")"
 
 endmodule
 

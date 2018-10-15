@@ -71,7 +71,7 @@ module C-LINKING-RESOLUTION
           [structural]
      rule <k> (.K => setTranslationLoc(L) ~> EXT-UNDEF("TDR2",
                     "No definition for symbol with external linkage: "
-                     +String idToString(X) +String "."))
+                     +String showCId(X) +String "."))
               ~> resolveCReference(X:CId)
           ...</k>
           <external-defs> Defs:Map </external-defs>

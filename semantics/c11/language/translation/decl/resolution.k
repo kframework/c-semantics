@@ -50,7 +50,7 @@ module C-DECL-RESOLUTION
                declState(_, t(_, Mods::Set, _), completed, _))
           => UNDEF("TDR1",
                "Declaration for inline function not defined in the same translation unit: "
-               +String idToString(X) +String ".")
+               +String showCId(X) +String ".")
           requires Inline() in Mods
           [structural]
 

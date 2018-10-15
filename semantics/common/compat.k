@@ -15,7 +15,10 @@ module COMPAT-SYNTAX
      syntax List ::= stringToList(String) [function]
      syntax String ::= listToString(List) [function]
 
-     syntax String ::= idToString(CId) [function]
+     syntax String ::= showK(K) [function, hook(C_SEMANTICS.kToString)]
+     syntax String ::= showCId(CId) [function]
+     syntax String ::= showInt(Int) [function]
+     syntax String ::= showFloat(Float) [function]
 
      syntax String ::= toUpperCase(String) [function]
 
@@ -91,17 +94,21 @@ module COMPAT
      rule listToString((ListItem(S:String) L:List))
                => S:String +String listToString(L:List)
 
-     rule idToString(Identifier(S:String)) => S
-     rule idToString(#NoName) => "<anonymous>"
-     rule idToString(#NoName(_)) => "<anonymous>"
-     rule idToString(vararg(N::Int)) => "<vararg " +String Int2String(N) +String ">"
-     rule idToString(X:UnnamedCId) => #idToString(X, #configuration)
-     rule idToString(_::CId) => "<unknown>" [owise]
+     rule showCId(Identifier(S:String)) => S
+     rule showCId(#NoName) => "<anonymous>"
+     rule showCId(#NoName(_)) => "<anonymous>"
+     rule showCId(vararg(N::Int)) => "<vararg " +String showInt(N) +String ">"
+     rule showCId(X:UnnamedCId) => #showCId(X, #configuration)
+     rule showCId(_::CId) => "<unknown>" [owise]
 
-     syntax String ::= #idToString(CId, K) [function]
-     rule #idToString(X::UnnamedCId, <generatedTop>... <unnamed-locs>... X |-> CabsLoc(File::String, _, Line::Int, _, _) ...</unnamed-locs> ...</generatedTop>)
-          => "<anonymous at " +String File +String ":" +String Int2String(Line) +String ">"
-     rule #idToString(_, _) => "<unknown>" [owise]
+     syntax String ::= #showCId(CId, K) [function]
+     rule #showCId(X::UnnamedCId, <generatedTop>... <unnamed-locs>... X |-> CabsLoc(File::String, _, Line::Int, _, _) ...</unnamed-locs> ...</generatedTop>)
+          => "<anonymous at " +String File +String ":" +String showInt(Line) +String ">"
+     rule #showCId(_, _) => "<unknown>" [owise]
+
+     rule showInt(V::Int) => Int2String(V)
+
+     rule showFloat(V::Float) => Float2String(V)
 
      rule firstChar(S::String) => substrString(S, 0, 1)
           requires lengthString(S) >=Int 1

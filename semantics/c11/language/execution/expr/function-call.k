@@ -89,13 +89,13 @@ module C-EXPR-FUNCTION-CALL
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
 
-     rule idToString(nativeFunction(Address:Int)) => "<native function at 0x" +String Base2String(Address, 16) +String ">"
+     rule showCId(nativeFunction(Address:Int)) => "<native function at 0x" +String Base2String(Address, 16) +String ">"
 
      syntax Type ::= makeNativeDecl(Type) [function]
      rule makeNativeDecl(t(Quals::Quals, Mods::Set, functionType(R::UType, L::List)))
           => t(Quals, Mods, functionType(R, makeNativeDeclArgs(L, 0)))
      syntax List ::= makeNativeDeclArgs(List, Int) [function]
-     rule makeNativeDeclArgs(ListItem(T::Type) L::List, I::Int) => ListItem(typedDeclaration(T, Identifier("_" +String Int2String(I)))) makeNativeDeclArgs(L, I +Int 1)
+     rule makeNativeDeclArgs(ListItem(T::Type) L::List, I::Int) => ListItem(typedDeclaration(T, Identifier("_" +String showInt(I)))) makeNativeDeclArgs(L, I +Int 1)
      rule makeNativeDeclArgs(.List, _) => .List
 
      syntax KItem ::= revalParams(K)
@@ -162,7 +162,7 @@ module C-EXPR-FUNCTION-CALL
           requires CallT ==Type toPrototype(DefT)
           [structural]
      rule (.K => UNDEF("EFNC1", "Attempt to call the function "
-               +String idToString(X) +String " through a pointer with incompatible type."))
+               +String showCId(X) +String " through a pointer with incompatible type."))
           ~> application(_, _, functionObject(X::CId, DefT::Type, _), CallT:Type, _, _)
           requires CallT =/=Type toPrototype(DefT)
           [structural]

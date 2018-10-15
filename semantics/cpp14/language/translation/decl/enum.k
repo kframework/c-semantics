@@ -181,7 +181,7 @@ module CPP-TRANSLATION-DECL-ENUM
      rule declareEnumerator(E::Enum, X::CId, prv(V::CPPValue, Tr::Trace, _), true, UT::CPPIntegerType) => addEnumerator(E, X, prv(V, Tr, UT))
      requires inRange(V, UT)
 
-     rule (.K => ILL("TDE1", "Value of enumerator '" +String idToString(X) +String "' does not fit to fixed underlying type.")) ~> declareEnumerator(_, X::CId, prv(V::CPPValue, _, _), true, UT::CPPIntegerType)
+     rule (.K => ILL("TDE1", "Value of enumerator '" +String showCId(X) +String "' does not fit to fixed underlying type.")) ~> declareEnumerator(_, X::CId, prv(V::CPPValue, _, _), true, UT::CPPIntegerType)
           requires notBool inRange(V, UT)
 
      syntax KItem ::= addEnumerator(enum: Enum, id: CId, v: PRVal)

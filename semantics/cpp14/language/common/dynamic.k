@@ -216,10 +216,10 @@ module CPP-DYNAMIC-SYNTAX
      syntax TemplateParam ::= CPPTypeExpr
      syntax TemplateArg ::= CPPType
 
-     syntax String ::= typesToString(CPPTypes) [function]
-                     | typeToString(CPPType) [function]
-                     | signatureToString(QualId, CPPType) [function]
-                     | idToString(QualId) [function, klabel(qualIdToString)]
+     syntax String ::= showCPPTypes(CPPTypes) [function]
+                     | showCPPType(CPPType) [function]
+                     | showSignature(QualId, CPPType) [function]
+                     | showQualId(QualId) [function]
 
      syntax Bool ::= isValKLabel(K) [function, klabelPredicate]
      syntax Bool ::= isTExprKLabel(K) [function, klabelPredicate]
@@ -367,7 +367,6 @@ module CPP-DYNAMIC
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
      context K:KResult typeStrict:: HOLE:STypeStrictList
 
-
      rule trace(lv(_, Tr::Trace, _)) => Tr
      rule trace(xv(_, Tr::Trace, _)) => Tr
      rule trace(prv(_, Tr::Trace, _)) => Tr
@@ -388,68 +387,70 @@ module CPP-DYNAMIC
      rule toList(T::TemplateArg, Ts::TemplateArgs) => ListItem(T) toList(Ts)
      rule toList(.TemplateArgs) => .List
 
-     syntax String ::= namespaceToString(Namespace) [function]
-                     | classToString(Class) [function]
-     rule idToString(N:Namespace :: X::CId)
-          => namespaceToString(N) +String idToString(X)
-     rule idToString(C:Class :: X::CId)
-          => classToString(C) +String idToString(X)
-     rule namespaceToString(NoNamespace()) => ""
-     rule namespaceToString(GlobalNamespace()) => "::"
-     rule namespaceToString(N::Namespace :: Namespace(X::CId))
-          => namespaceToString(N) +String idToString(X) +String "::"
-     rule classToString(N:Namespace :: Class(Key::ClassKey, X::CId, .TemplateArgs))
-          => namespaceToString(N) +String idToString(X) +String "::"
-     rule classToString(C:Class :: Class(Key::ClassKey, X::CId, .TemplateArgs))
-          => classToString(C) +String idToString(X) +String "::"
+     syntax String ::= showNamespace(Namespace) [function]
+                     | showClass(Class) [function]
+     rule showQualId(N:Namespace :: X::CId)
+          => showNamespace(N) +String showCId(X)
+     rule showQualId(C:Class :: X::CId)
+          => showClass(C) +String showCId(X)
 
-     rule idToString(operatornew) => "operator new"
-     rule idToString(operatordelete) => "operator delete"
-     rule idToString(operatornew[]) => "operator new[]"
-     rule idToString(operatordelete[]) => "operator delete[]"
-     rule idToString(operator+) => "operator +"
-     rule idToString(operator-) => "operator -"
-     rule idToString(operator*) => "operator *"
-     rule idToString(operator/) => "operator /"
-     rule idToString(operator%) => "operator %"
-     rule idToString(operator^) => "operator ^"
-     rule idToString(operator&) => "operator &"
-     rule idToString(operator|) => "operator |"
-     rule idToString(operator~) => "operator ~"
-     rule idToString(operator!) => "operator !"
-     rule idToString(operator=) => "operator ="
-     rule idToString(operator<) => "operator <"
-     rule idToString(operator>) => "operator >"
-     rule idToString(operator+=) => "operator +="
-     rule idToString(operator-=) => "operator -="
-     rule idToString(operator*=) => "operator *="
-     rule idToString(operator/=) => "operator /="
-     rule idToString(operator%=) => "operator %="
-     rule idToString(operator^=) => "operator ^="
-     rule idToString(operator&=) => "operator &="
-     rule idToString(operator|=) => "operator |="
-     rule idToString(operator<<) => "operator <<"
-     rule idToString(operator>>) => "operator >>"
-     rule idToString(operator<<=) => "operator <<="
-     rule idToString(operator>>=) => "operator >>="
-     rule idToString(operator==) => "operator =="
-     rule idToString(operator!=) => "operator !="
-     rule idToString(operator<=) => "operator <="
-     rule idToString(operator>=) => "operator >="
-     rule idToString(operator&&) => "operator &&"
-     rule idToString(operator||) => "operator ||"
-     rule idToString(operator++) => "operator ++"
-     rule idToString(operator--) => "operator --"
-     rule idToString(operator,) => "operator ,"
-     rule idToString(operator->*) => "operator ->*"
-     rule idToString(operator->) => "operator ->"
-     rule idToString(operator()) => "operator ()"
-     rule idToString(operator[]) => "operator []"
-     rule idToString(DestructorId(Identifier(S::String))) => "~" +String S
+     rule showNamespace(NoNamespace()) => ""
+     rule showNamespace(GlobalNamespace()) => "::"
+     rule showNamespace(N::Namespace :: Namespace(X::CId))
+          => showNamespace(N) +String showCId(X) +String "::"
 
-     rule signatureToString(Q::QualId, T::CPPType) => idToString(Q)
+     rule showClass(N:Namespace :: Class(Key::ClassKey, X::CId, .TemplateArgs))
+          => showNamespace(N) +String showCId(X) +String "::"
+     rule showClass(C:Class :: Class(Key::ClassKey, X::CId, .TemplateArgs))
+          => showClass(C) +String showCId(X) +String "::"
+
+     rule showCId(operatornew) => "operator new"
+     rule showCId(operatordelete) => "operator delete"
+     rule showCId(operatornew[]) => "operator new[]"
+     rule showCId(operatordelete[]) => "operator delete[]"
+     rule showCId(operator+) => "operator +"
+     rule showCId(operator-) => "operator -"
+     rule showCId(operator*) => "operator *"
+     rule showCId(operator/) => "operator /"
+     rule showCId(operator%) => "operator %"
+     rule showCId(operator^) => "operator ^"
+     rule showCId(operator&) => "operator &"
+     rule showCId(operator|) => "operator |"
+     rule showCId(operator~) => "operator ~"
+     rule showCId(operator!) => "operator !"
+     rule showCId(operator=) => "operator ="
+     rule showCId(operator<) => "operator <"
+     rule showCId(operator>) => "operator >"
+     rule showCId(operator+=) => "operator +="
+     rule showCId(operator-=) => "operator -="
+     rule showCId(operator*=) => "operator *="
+     rule showCId(operator/=) => "operator /="
+     rule showCId(operator%=) => "operator %="
+     rule showCId(operator^=) => "operator ^="
+     rule showCId(operator&=) => "operator &="
+     rule showCId(operator|=) => "operator |="
+     rule showCId(operator<<) => "operator <<"
+     rule showCId(operator>>) => "operator >>"
+     rule showCId(operator<<=) => "operator <<="
+     rule showCId(operator>>=) => "operator >>="
+     rule showCId(operator==) => "operator =="
+     rule showCId(operator!=) => "operator !="
+     rule showCId(operator<=) => "operator <="
+     rule showCId(operator>=) => "operator >="
+     rule showCId(operator&&) => "operator &&"
+     rule showCId(operator||) => "operator ||"
+     rule showCId(operator++) => "operator ++"
+     rule showCId(operator--) => "operator --"
+     rule showCId(operator,) => "operator ,"
+     rule showCId(operator->*) => "operator ->*"
+     rule showCId(operator->) => "operator ->"
+     rule showCId(operator()) => "operator ()"
+     rule showCId(operator[]) => "operator []"
+     rule showCId(DestructorId(Identifier(S::String))) => "~" +String S
+
+     rule showSignature(Q::QualId, T::CPPType) => showQualId(Q)
           requires notBool isCPPFunctionType(T)
-     rule signatureToString(Q::QualId, t(_, _, functionType(... paramTypes: T::CPPTypes))) => idToString(Q) +String "(" +String typesToString(T) +String ")"
+     rule showSignature(Q::QualId, t(_, _, functionType(... paramTypes: T::CPPTypes))) => showQualId(Q) +String "(" +String showCPPTypes(T) +String ")"
 
      rule X:K, T:CPPType in_keys(M::Map) => (X in_keys(M)) andBool (T in_keys({M[X]}:>TypeMap))
      rule X:K, Y:K in_keys(M::Map) => (X in_keys(M)) andBool (Y in_keys({M[X]}:>Map)) [owise]
@@ -462,53 +463,55 @@ module CPP-DYNAMIC
           requires notBool isCPPType(B)
           [owise]
 
-     rule typesToString(.CPPTypes) => ""
-     rule typesToString(T::CPPType) => typeToString(T)
-     rule typesToString(T1::CPPType, T2::CPPType, Ts::CPPTypes) => typeToString(T1) +String ", " +String typesToString(T2, Ts)
-     syntax String ::= typeToString(CPPSimpleType) [function, klabel(simpleTypeToString)]
-     rule typeToString(t(quals(.Set), _, T::CPPSimpleType)) => typeToString(T)
-     rule typeToString(char) => "char"
-     rule typeToString(signed-char) => "signed char"
-     rule typeToString(unsigned-char) => "unsigned char"
-     rule typeToString(short) => "short"
-     rule typeToString(int) => "int"
-     rule typeToString(long) => "long"
-     rule typeToString(long-long) => "long long"
-     rule typeToString(oversized) => "__int128_t"
-     rule typeToString(unsigned-short) => "unsigned short"
-     rule typeToString(unsigned) => "unsigned int"
-     rule typeToString(unsigned-long) => "unsigned long"
-     rule typeToString(unsigned-long-long) => "unsigned long long"
-     rule typeToString(unsigned-oversized) => "__uint128_t"
-     rule typeToString(float) => "float"
-     rule typeToString(double) => "double"
-     rule typeToString(long-double) => "long double"
-     rule typeToString(bool) => "bool"
-     rule typeToString(void) => "void"
-     rule typeToString(wchar_t) => "wchar_t"
-     rule typeToString(char16_t) => "char16_t"
-     rule typeToString(char32_t) => "char32_t"
-     rule typeToString(nullptr_t) => "std::nullptr_t"
-     rule typeToString(pointerType(T::CPPType)) => typeToString("", pointerType(T))
-     rule typeToString(classType(N:Namespace :: Class(_, X::CId, .TemplateArgs)))
-          => namespaceToString(N) +String idToString(X)
-     rule typeToString(classType(N:Namespace :: Class(_, X::CId, T::TemplateArg, Ts::TemplateArgs)))
-          => namespaceToString(N) +String idToString(X) +String "<" +String templateArgsToString(T, Ts) +String ">"
-     syntax String ::= typeToString(String, CPPSimpleType) [function, klabel(compoundTypeToString)]
-     rule typeToString(DDL::String, pointerType(T::CPPType))
-          => typeToString(parens(T, "*" +String DDL), simpleType(T))
-     rule typeToString(DDL::String, T::CPPSimpleType)
-          => typeToString(T) +String " " +String DDL [owise]
+     rule showCPPTypes(.CPPTypes) => ""
+     rule showCPPTypes(T::CPPType) => showCPPType(T)
+     rule showCPPTypes(T1::CPPType, T2::CPPType, Ts::CPPTypes) => showCPPType(T1) +String ", " +String showCPPTypes(T2, Ts)
+
+     syntax String ::= showCPPType(CPPSimpleType) [function, klabel(showCPPSimpleType)]
+     rule showCPPType(t(quals(.Set), _, T::CPPSimpleType)) => showCPPType(T)
+     rule showCPPType(char) => "char"
+     rule showCPPType(signed-char) => "signed char"
+     rule showCPPType(unsigned-char) => "unsigned char"
+     rule showCPPType(short) => "short"
+     rule showCPPType(int) => "int"
+     rule showCPPType(long) => "long"
+     rule showCPPType(long-long) => "long long"
+     rule showCPPType(oversized) => "__int128_t"
+     rule showCPPType(unsigned-short) => "unsigned short"
+     rule showCPPType(unsigned) => "unsigned int"
+     rule showCPPType(unsigned-long) => "unsigned long"
+     rule showCPPType(unsigned-long-long) => "unsigned long long"
+     rule showCPPType(unsigned-oversized) => "__uint128_t"
+     rule showCPPType(float) => "float"
+     rule showCPPType(double) => "double"
+     rule showCPPType(long-double) => "long double"
+     rule showCPPType(bool) => "bool"
+     rule showCPPType(void) => "void"
+     rule showCPPType(wchar_t) => "wchar_t"
+     rule showCPPType(char16_t) => "char16_t"
+     rule showCPPType(char32_t) => "char32_t"
+     rule showCPPType(nullptr_t) => "std::nullptr_t"
+     rule showCPPType(pointerType(T::CPPType)) => showCPPType("", pointerType(T))
+     rule showCPPType(classType(N:Namespace :: Class(_, X::CId, .TemplateArgs)))
+          => showNamespace(N) +String showCId(X)
+     rule showCPPType(classType(N:Namespace :: Class(_, X::CId, T::TemplateArg, Ts::TemplateArgs)))
+          => showNamespace(N) +String showCId(X) +String "<" +String showTemplateArgs(T, Ts) +String ">"
+
+     syntax String ::= showCPPType(String, CPPSimpleType) [function, klabel(showCompoundType)]
+     rule showCPPType(DDL::String, pointerType(T::CPPType))
+          => showCPPType(parens(T, "*" +String DDL), simpleType(T))
+     rule showCPPType(DDL::String, T::CPPSimpleType)
+          => showCPPType(T) +String " " +String DDL [owise]
 
      syntax String ::= parens(CPPType, String) [function]
      rule parens(_:CPPFunctionType, S::String) => "(" +String S +String ")"
      rule parens(_:CPPArrayType, S::String) => "(" +String S +String ")"
      rule parens(_, S::String) => S [owise]
 
-     syntax String ::= templateArgsToString(TemplateArgs) [function]
-     rule templateArgsToString(T:CPPType, .TemplateArgs) => typeToString(T)
-     rule templateArgsToString(T:CPPType, T2:TemplateArg, Ts::TemplateArgs)
-          => typeToString(T) +String "," +String templateArgsToString(T2, Ts)
+     syntax String ::= showTemplateArgs(TemplateArgs) [function]
+     rule showTemplateArgs(T:CPPType, .TemplateArgs) => showCPPType(T)
+     rule showTemplateArgs(T:CPPType, T2:TemplateArg, Ts::TemplateArgs)
+          => showCPPType(T) +String "," +String showTemplateArgs(T2, Ts)
 
      rule fillRHoles(V::PRVal, RHOLE) => V
      rule fillRHoles(V::PRVal, Lbl:KLabel(L:K))

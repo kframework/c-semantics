@@ -6,6 +6,7 @@ require "configuration.k"
 require "error.k"
 require "init.k"
 require "memory.k"
+require "options.k"
 require "resolution.k"
 require "settings.k"
 require "symloc.k"
@@ -13,13 +14,14 @@ require "syntax.k"
 require "translation-unit.k"
 
 module COMMON
-  imports ALIGNMENT
-  imports BITS
-  imports COMMON-BUILTIN
-  imports COMMON-INIT
-  imports COMMON-RESOLUTION
-  imports COMMON-TRANSLATION-UNIT
-  imports COMPAT
-  imports ERROR
-  imports SYMLOC
+     imports ALIGNMENT
+     imports BITS
+     imports COMMON-BUILTIN
+     imports COMMON-INIT
+     imports COMMON-RESOLUTION
+     imports COMMON-TRANSLATION-UNIT
+     imports COMPAT
+     imports ERROR
+     imports OPTIONS
+     imports SYMLOC
 endmodule

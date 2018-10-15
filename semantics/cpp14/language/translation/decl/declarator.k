@@ -28,6 +28,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports STRING
+     imports OPTIONS-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX

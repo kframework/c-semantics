@@ -1,9 +1,10 @@
 module LIBC-STDIO
      imports C-CONFIGURATION
-     imports BITS-SYNTAX
      imports INT
      imports K-IO
      imports STRING
+     imports BITS-SYNTAX
+     imports COMPAT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
@@ -25,7 +26,6 @@ module LIBC-STDIO
      imports LIBC-IO-SYNTAX
      imports LIBC-STDLIB-SYNTAX
      imports LIBC-SYNTAX
-     imports SYMLOC-SYNTAX
 
      rule builtin("rewind", FDPtr::RValue)
           => fseek((* FDPtr), 0, 0) ~> discard
@@ -568,7 +568,7 @@ module LIBC-STDIO
           => Computation((* Ptr) := tv(0, utype(innerType(type(Ptr)))))
           ~> Ptr
           [structural]
-     rule (.K => fscanf(FD, str("%" +String Int2String(NMemb -Int 1) +String "[^\n]"), ListItem(Ptr)))
+     rule (.K => fscanf(FD, str("%" +String showInt(NMemb -Int 1) +String "[^\n]"), ListItem(Ptr)))
           ~> fgets(Ptr::RValue, NMemb::Int, FD:RValue)
           requires NMemb >Int 1
           [structural]
@@ -1842,12 +1842,12 @@ module LIBC-STDIO
           [structural]
      rule <k> formatter'((ListItem(tv(W':Int, _)) => .List) _) ...</k>
           <format> ListItem("*") ListItem(".") => .List ...</format>
-          <format-field-width> "" => Int2String(W') </format-field-width>
+          <format-field-width> "" => showInt(W') </format-field-width>
           <format-state> "%" => "%." </format-state>
           [structural]
      rule <k> formatter'((ListItem(tv(W':Int, _)) => .List) _) ...</k>
           <format> (ListItem("*") => .List) ListItem(C:String) ...</format>
-          <format-field-width> "" => Int2String(W') </format-field-width>
+          <format-field-width> "" => showInt(W') </format-field-width>
           <format-state> "%" </format-state>
           requires C =/=K "*"
                andBool notBool isDigit(C, 10)
@@ -1952,7 +1952,7 @@ module LIBC-STDIO
           <format-alt-form> false </format-alt-form>
           <format-result>...
                .List => ListItem(
-                        formatPrecisionWidth(Int2String(D),
+                        formatPrecisionWidth(showInt(D),
                                              String2Int(P),
                                              Z, "",
                                              String2Int(W)))
@@ -2013,7 +2013,7 @@ module LIBC-STDIO
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
-                        formatPrecisionWidth(Int2String(D),
+                        formatPrecisionWidth(showInt(D),
                                              String2Int(P),
                                              Z, "",
                                              String2Int(W)))
@@ -2107,7 +2107,7 @@ module LIBC-STDIO
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(padString(
-                    Float2String(setPrecision(D, #if P ==K "" #then 6 #else String2Int(P) #fi)),
+                    showFloat(setPrecision(D, #if P ==K "" #then 6 #else String2Int(P) #fi)),
                     String2Int(W),
                     #if Z #then "0" #else " " #fi))
           </format-result>
@@ -2126,7 +2126,7 @@ module LIBC-STDIO
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(padString(
-                    toUpperCase(Float2String(setPrecision(D, #if P ==K "" #then 6 #else String2Int(P) #fi))),
+                    toUpperCase(showFloat(setPrecision(D, #if P ==K "" #then 6 #else String2Int(P) #fi))),
                     String2Int(W),
                     #if Z #then "0" #else " " #fi))
           </format-result>
@@ -2195,7 +2195,7 @@ module LIBC-STDIO
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(padString(
-                    Float2String(setPrecision(D, String2Int(P))),
+                    showFloat(setPrecision(D, String2Int(P))),
                     String2Int(W),
                     #if Z #then "0" #else " " #fi))
           </format-result>
@@ -2214,7 +2214,7 @@ module LIBC-STDIO
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(padString(
-                    toUpperCase(Float2String(setPrecision(D, String2Int(P)))),
+                    toUpperCase(showFloat(setPrecision(D, String2Int(P)))),
                     String2Int(W),
                     #if Z #then "0" #else " " #fi))
           </format-result>
@@ -2426,7 +2426,6 @@ module LIBC-STDIO
           requires W =/=String "*"
           [structural]
 
-
      syntax KItem ::= "formatter-arg" "(" K "," List ")" [strict(1)]
      rule <k> formatter-arg(tv(V::CValue, _), Args:List)
                => formatter'(Args)
@@ -2437,16 +2436,14 @@ module LIBC-STDIO
      rule <k> formatter-prec(tv(V:Int, _), Args:List)
                => formatter-next(Args)
           ...</k>
-          <format-precision> _ => Int2String(V) </format-precision>
+          <format-precision> _ => showInt(V) </format-precision>
           [structural]
      syntax KItem ::= "formatter-width" "(" K "," List ")" [strict(1)]
      rule <k> formatter-width(tv(V:Int, _), Args:List)
                => formatter-next(Args)
           ...</k>
-          <format-field-width> _ => Int2String(V) </format-field-width>
+          <format-field-width> _ => showInt(V) </format-field-width>
           [structural]
-
-
 
      syntax KItem ::= nextvarg(RValue, K) [strict(2)]
      rule <k> nextvarg(tv(V:CValue, T'::UType), T:Type) => tv(V, utype(T)) ...</k>

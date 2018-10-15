@@ -3,6 +3,7 @@ module C-TRANSLATION-INIT
      imports LIST
      imports STRING
      imports COMPAT-SYNTAX
+     imports OPTIONS-SYNTAX
      imports LIBC-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-CONFIGURATION

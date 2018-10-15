@@ -94,7 +94,7 @@ module C-DECL-LOCAL
      // We don't give local extern decls an entry in the "local-types" map in
      // order to detect this case.
      rule <k> (.K => CV("TDL1", "Extern declaration of "
-                    +String idToString(X) +String " follows one with no linkage."))
+                    +String showCId(X) +String " follows one with no linkage."))
                ~> declareInternalVariable(X:CId, T:Type, _:NoInit)
           ...</k>
           <curr-tu> TU:String </curr-tu>
@@ -102,12 +102,12 @@ module C-DECL-LOCAL
           <local-types>... X |-> _ ...</local-types>
           requires isExternType(T) andBool notBool isStaticType(T)
           [structural]
-     rule (.K => CV("TDL2", "Extern declaration of " +String idToString(X)
+     rule (.K => CV("TDL2", "Extern declaration of " +String showCId(X)
                +String " appears at block scope with an initializer."))
           ~> declareInternalVariable(X:CId, T:Type, K:KResult)
           requires isExternType(T) andBool notBool isNoInit(K)
           [structural]
-     rule <k> (.K => CV("TDL3", "Extern declaration of " +String idToString(X)
+     rule <k> (.K => CV("TDL3", "Extern declaration of " +String showCId(X)
                     +String " with incompatible type."))
                ~> declareInternalVariable(X:CId, T':Type, _:NoInit)
           ...</k>
@@ -140,7 +140,7 @@ module C-DECL-LOCAL
           requires notBool ((kpair(X, S) in_keys(LocalStatics))
                orBool (X in_keys(LocalTypes)))
           [structural]
-     rule <k> (.K => CV("TDL4","Redeclaration of " +String idToString(X)
+     rule <k> (.K => CV("TDL4","Redeclaration of " +String showCId(X)
                     +String " with no linkage."))
                ~> initLocalStatic(X:CId, _)
           ...</k>
@@ -186,7 +186,7 @@ module C-DECL-LOCAL
           ~> defineAndInit(_, _, initValue(_, T:Type, _))
           requires notBool isCompleteType(T)
           [structural]
-     rule <k> (.K => CV("TDL4","Redeclaration of " +String idToString(X)
+     rule <k> (.K => CV("TDL4","Redeclaration of " +String showCId(X)
                     +String " with no linkage."))
                ~> defineAndInit(X:CId, _, initValue(_, T:Type, _))
           ...</k>

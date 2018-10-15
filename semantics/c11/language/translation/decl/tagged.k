@@ -172,20 +172,20 @@ module C-DECL-TAGGED
      rule isRigidType(T::Type) => notBool isFlexibleType(T)
 
      syntax String ::= firstIncomplete(List) [function]
-     rule firstIncomplete(ListItem(typedDeclaration(T::Type, X::CId)) _) => idToString(X)
+     rule firstIncomplete(ListItem(typedDeclaration(T::Type, X::CId)) _) => showCId(X)
           requires notBool isCompleteType(T)
      rule firstIncomplete((ListItem(typedDeclaration(T::Type, X::CId)) => .List) _)
           requires isCompleteType(T)
      rule firstIncomplete(.List) => ""
 
      syntax String ::= firstIncompleteOrFlexible(List) [function]
-     rule firstIncompleteOrFlexible(ListItem(typedDeclaration(T::Type, X::CId)) _) => idToString(X)
+     rule firstIncompleteOrFlexible(ListItem(typedDeclaration(T::Type, X::CId)) _) => showCId(X)
           requires notBool isCompleteType(T) orBool isFlexibleType(T)
      rule firstIncompleteOrFlexible((ListItem(_) => .List) _) [owise]
      rule firstIncompleteOrFlexible(.List) => ""
 
      syntax String ::= firstNamedZeroLengthBitfield(List) [function]
-     rule firstNamedZeroLengthBitfield(ListItem(typedDeclaration(T::Type, X::CId)) _) => idToString(X)
+     rule firstNamedZeroLengthBitfield(ListItem(typedDeclaration(T::Type, X::CId)) _) => showCId(X)
           requires (bitSizeofType(T) ==Int 0) andBool isBitfieldType(T)
                andBool notBool isNoName(X)
      rule firstNamedZeroLengthBitfield((ListItem(_) => .List) _) [owise]
@@ -229,7 +229,7 @@ module C-DECL-TAGGED
                andBool notBool (tag(X, Tu, BlockNum) in_keys(Structs))
           [structural]
      rule <k> (.K => CV("TDG15", "Redefinition of a struct, union, or enum: "
-               +String idToString(X)))
+               +String showCId(X)))
                ~> addLocalTag(X:CId, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>

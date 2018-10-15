@@ -15,8 +15,6 @@ module LIBC-IO-SYNTAX
      syntax KItem ::= close(FauxFD)
      syntax KItem ::= setBuf(FD, BufMode, Int)
 
-     syntax ExecOpts ::= NoIO()
-
      syntax SeekWhence ::= "seekSet" | "seekCur" | "seekEnd"
      syntax BufMode ::= "fullBuf" | "lineBuf" | "noBuf"
 
@@ -57,6 +55,7 @@ module LIBC-IO
      imports K-IO
      imports STRING
      imports BITS-SYNTAX
+     imports OPTIONS-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -64,10 +63,10 @@ module LIBC-IO
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-OS-SETTINGS-SYNTAX
-     imports C-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX

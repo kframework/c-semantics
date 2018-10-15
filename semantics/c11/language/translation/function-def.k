@@ -14,6 +14,7 @@ module C-FUNCTION-DEF
      imports LIST
      imports STRING
      imports COMPAT-SYNTAX
+     imports OPTIONS-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-ANNOTATION-SYNTAX

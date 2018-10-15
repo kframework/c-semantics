@@ -4,10 +4,8 @@ module C-LINKING-INIT-SYNTAX
      imports MAP
      imports STRING-SYNTAX
 
-     syntax KItem ::= load(K) 
+     syntax KItem ::= load(K)
      syntax KItem ::= "link" | "cleanup" | "reportSuccess" | "builtinTu"
-
-     syntax TransOpts ::= Debug() | NoLink() | XBuiltins() | NoNativeFallback()
 
      syntax KItem ::= makeTu(String)
 
@@ -22,13 +20,14 @@ module C-LINKING-INIT
      imports BOOL
      imports STRING
      imports C-TYPING-SORTS
-     imports COMPAT-SYNTAX
      imports COMMON-BUILTIN-SYNTAX
      imports COMMON-INIT-SYNTAX
      imports COMMON-LINKING-INTERFACE-SYNTAX
      imports COMMON-TRANSLATION-UNIT-SYNTAX
+     imports COMPAT-SYNTAX
      imports ERROR-SYNTAX
      imports MEMORY-SYNTAX
+     imports OPTIONS-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
@@ -199,7 +198,7 @@ module C-LINKING-INIT
           requires notBool (X in_keys(Locs))
      rule (checkExtType(true) => .K) ~> checkExtTypes(X:KItem => .K, _, _, _, _, _)
      rule (.K => setTranslationLoc(L) ~> EXT-UNDEF("TIN1",
-               "Identifier " +String idToString({X}:>CId) +String " declared with incompatible types in different translation units."))
+               "Identifier " +String showCId({X}:>CId) +String " declared with incompatible types in different translation units."))
                ~> checkExtType(false) ~> checkExtTypes(X:KItem, _, _, _, _, X |-> L::CabsLoc _)
      rule checkExtTypes(.K, .Set, _, _, _, _) => setTranslationLoc(UnknownCabsLoc)
 
@@ -208,7 +207,7 @@ module C-LINKING-INIT
           requires notBool (X in Defs')
      rule checkExtDefs(.K, .Set, _, _) => .K
      rule (.K => setTranslationLoc(L) ~> EXT-UNDEF("TIN2",
-               "Multiple external definitions for " +String idToString({X}:>CId) +String "."))
+               "Multiple external definitions for " +String showCId({X}:>CId) +String "."))
                ~> checkExtDefs(X:KItem, _, SetItem(X) _, X |-> L::CabsLoc _)
 
      syntax K ::= mergeObj(K, K) [function]

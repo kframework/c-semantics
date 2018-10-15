@@ -39,6 +39,7 @@ module LIBC-BUILTIN
      imports MAP
      imports COMMON-BUILTIN-SYNTAX
      imports COMPAT-SYNTAX
+     imports OPTIONS-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX

@@ -44,10 +44,6 @@ module C-TYPING-EFFECTIVE
      imports C-TYPING-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
 
-     // Used to tag lvalues with their last-access type for checking and
-     // updating the effective types of accesses.
-     syntax Provenance ::= objectType(EffectiveType)
-
      rule updateLastAccessType(Loc::SymLoc, T::Type, dynamicType(LAT::Type))
           => setLastAccessType(Loc, dynamicType(LAT))
           requires effectivelyCompat(T, getTypesAtOffset(LAT, bitOffset(Loc)))

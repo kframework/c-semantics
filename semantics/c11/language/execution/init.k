@@ -14,27 +14,31 @@ module C-EXECUTION-INIT-SYNTAX
 endmodule
 
 module C-EXECUTION-INIT
-     imports BITS-SYNTAX
-     imports C-CHECK-RESTRICT-SYNTAX
+     imports C-EXECUTION-INIT-SYNTAX
      imports C-CONFIGURATION
+
+     imports K-EQUAL
+     imports K-IO
+     imports STRING
+
+     imports BITS-SYNTAX
+     imports COMMON-BUILTIN-SYNTAX
+     imports COMMON-TRANSLATION-UNIT-SYNTAX
+     imports OPTIONS-SYNTAX
+
+     imports C-CHECK-RESTRICT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-EXECUTION-INIT-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports COMMON-BUILTIN-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports COMMON-TRANSLATION-UNIT-SYNTAX
-     imports K-EQUAL
-     imports K-IO
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
      imports LIBCPP-BOOTSTRAP-SYNTAX
-     imports STRING
 
      syntax TCell ::= ".TCell" [klabel(.TCell)]
 
@@ -198,7 +202,6 @@ module C-EXECUTION-INIT
           <status> _ => mainCalled </status>
           [ndtrans]
 
-     syntax ExecOpts ::= EntryPoint(String)
      rule getEntryPoint(_ SetItem(EntryPoint(EP::String))) => EP
      rule getEntryPoint(_) => "main" [owise]
 
@@ -252,17 +255,22 @@ module C-EXECUTION-INIT
                </k>
           ...</thread>
 
-     syntax ExecOpts ::= Breakpoint(String, Int)
-
      rule <k> CabsLoc(File'::String, File::String, Line::Int, Col::Int, Sys::Bool) => breakpoint ...</k>
           <curr-program-loc> _ => CabsLoc(File', File, Line, Col, Sys) </curr-program-loc>
-          <options>... SetItem(Breakpoint(File, Line)) ...</options>
+          <options>... SetItem(Breakpoint(File, Line) => ActiveBreakpoint(File, Line)) ...</options>
           [structural]
      rule <k> CabsLoc(File'::String, File::String, Line::Int, Col::Int, Sys::Bool) => .K ...</k>
           <curr-program-loc> _ => CabsLoc(File', File, Line, Col, Sys) </curr-program-loc>
-          <options> Opts::Set </options>
+          <options> Opts::Set => clearActiveBreakpoints(Opts) </options>
           requires notBool (Breakpoint(File, Line) in Opts)
           [structural]
+
+     syntax Set ::= clearActiveBreakpoints(Set) [function]
+     rule clearActiveBreakpoints(SetItem(ActiveBreakpoint(File::String, Line::Int)) Opts::Set)
+          => SetItem(Breakpoint(File, Line)) clearActiveBreakpoints(Opts)
+     rule clearActiveBreakpoints(SetItem(K:K) Opts::Set)
+          => SetItem(K) clearActiveBreakpoints(Opts) [owise]
+     rule clearActiveBreakpoints(.Set) => .Set
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{
      A null statement (consisting of just a semicolon) performs no operations.

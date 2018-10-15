@@ -252,6 +252,19 @@ module C-TYPING-COMMON
      rule getQualifiers(t(_, _, _:SimpleArrayType) #as T::Type) => getQualifiers(innerType(T))
      rule getQualifiers(t(Qs::Quals, _, _)) => Qs [owise]
 
+     rule showEffectiveType(T:Type) => showType(T)
+     rule showEffectiveType(dynamicType(T::Type)) => showType(T)
+     rule showEffectiveType(T::EffectiveType) => showK(T) [owise]
+
+     rule showUType(T::UType) => showType(type(T))
+
+     rule showType(T::Type) => showDeclarator("", T)
+
+     rule showDType(variadic) => "..."
+     rule showDType(typedDeclaration(T::Type, #NoName)) => showDeclarator("", T)
+     rule showDType(typedDeclaration(T::Type, #NoName(_))) => showDeclarator("", T)
+     rule showDType(typedDeclaration(T::Type, X::CId)) => showDeclarator(" " +String showCId(X), T) [owise]
+
      syntax String ::= showTypeSpecifier(SimpleType) [function]
      rule showTypeSpecifier(bool) => "_Bool"
      rule showTypeSpecifier(char) => "char"
@@ -270,33 +283,39 @@ module C-TYPING-COMMON
      rule showTypeSpecifier(float) => "float"
      rule showTypeSpecifier(double) => "double"
      rule showTypeSpecifier(long-double) => "long double"
-     rule showTypeSpecifier(enumType(tag(X::CId, _, _))) => "enum " +String idToString(X)
+     rule showTypeSpecifier(enumType(tag(X::CId, _, _))) => "enum " +String showCId(X)
      rule showTypeSpecifier(void) => "void"
-     rule showTypeSpecifier(structType(tag(X::CId, _, _))) => "struct " +String idToString(X)
-     rule showTypeSpecifier(unionType(tag(X::CId, _, _))) => "union " +String idToString(X)
+     rule showTypeSpecifier(structType(tag(X::CId, _, _))) => "struct " +String showCId(X)
+     rule showTypeSpecifier(unionType(tag(X::CId, _, _))) => "union " +String showCId(X)
      rule showTypeSpecifier(bitfieldType(T::SimpleType, _) => T)
      rule showTypeSpecifier(no-type) => "<none>"
+
      syntax String ::= showQualifiers(Set) [function]
      rule showQualifiers(SetItem(Q1::Qualifier) SetItem(Q2::Qualifier) S::Set)
           => showQualifier(Q1) +String " " +String showQualifiers(SetItem(Q2) S)
      rule showQualifiers(SetItem(Q::Qualifier)) => showQualifier(Q)
      rule showQualifiers(.Set) => ""
+
      syntax String ::= showQualifier(Qualifier) [function]
      rule showQualifier(Const()) => "const"
      rule showQualifier(Volatile()) => "volatile"
      rule showQualifier(Restrict()) => "restrict"
      rule showQualifier(Atomic()) => "_Atomic"
+
      syntax String ::= showSpecifiedType(Type) [function]
      rule showSpecifiedType(T::Type)
           => showQualifiedSpecifier(T) +String showTypeSpecifier(simpleType(T))
+
      syntax String ::= showQualifiedSpecifier(Type) [function]
      rule showQualifiedSpecifier(t(quals(.Set), _, _)) => ""
      rule showQualifiedSpecifier(t(quals(S::Set), _, _))
           => showQualifiers(S) +String " " [owise]
+
      syntax String ::= showQualifiedDeclarator(Quals) [function]
      rule showQualifiedDeclarator(quals(.Set)) => ""
      rule showQualifiedDeclarator(quals(S::Set))
           => " " +String showQualifiers(S) [owise]
+
      syntax String ::= showDeclarator(String, Type) [function]
      rule showDeclarator(DDL::String, t(Q::Quals, _, pointerType(T::Type)))
           => showDeclarator(parens(T, "*" +String showQualifiedDeclarator(Q) +String DDL), T)
@@ -306,11 +325,13 @@ module C-TYPING-COMMON
           => showDeclarator(DDL +String " (" +String showFunctionDeclarator(Params) +String ")", type(Ret))
      rule showDeclarator(DDL::String, T::Type)
           => showSpecifiedType(T) +String DDL [owise]
+
      syntax String ::= showArrayDeclarator(SimpleArrayType) [function]
-     rule showArrayDeclarator(arrayType(_, I::Int)) => " [" +String Int2String(I) +String "]"
+     rule showArrayDeclarator(arrayType(_, I::Int)) => " [" +String showInt(I) +String "]"
      rule showArrayDeclarator(T:SimpleIncompleteArrayType) => " []"
      rule showArrayDeclarator(unspecifiedArrayType(_)) => " [*]"
      rule showArrayDeclarator(variableLengthArrayType(_, _)) => " [<expr>]"
+
      syntax String ::= showFunctionDeclarator(List) [function]
      rule showFunctionDeclarator(ListItem(T1:DType) ListItem(T2::DType) L::List)
           => showDType(T1) +String ", " +String showFunctionDeclarator(ListItem(T2) L)
@@ -321,16 +342,11 @@ module C-TYPING-COMMON
      rule showFunctionDeclarator(ListItem(T:Type))
           => showType(T)
      rule showFunctionDeclarator(.List) => ""
+
      syntax String ::= parens(Type, String) [function, klabel(showTypeParensC)]
      rule parens(_:FunctionType, S::String) => "(" +String S +String ")"
      rule parens(_:ArrayType, S::String) => "(" +String S +String ")"
      rule parens(_, S::String) => " " +String S [owise]
-
-     rule showType(T::Type) => showDeclarator("", T)
-     rule showDType(variadic) => "..."
-     rule showDType(typedDeclaration(T::Type, #NoName)) => showDeclarator("", T)
-     rule showDType(typedDeclaration(T::Type, #NoName(_))) => showDeclarator("", T)
-     rule showDType(typedDeclaration(T::Type, X::CId)) => showDeclarator(" " +String idToString(X), T) [owise]
 
      rule adjustParams(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
           => t(Qs, Mods, functionType(R, adjustParams'(Params)))

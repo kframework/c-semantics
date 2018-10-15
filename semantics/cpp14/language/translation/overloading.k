@@ -680,7 +680,7 @@ module CPP-TRANSLATION-OVERLOADING
      rule resolveUniqueDecl(V:KResult, _, _) => V
           requires notBool isCandidateSet(V) andBool notBool isNotFoundNameRef(V)
 
-     rule (.K => ILL("TOL1", "No declaration found for name '" +String idToString(X) +String "'.")) ~> resolveUniqueDecl(notFound(X::CId), _, _)
+     rule (.K => ILL("TOL1", "No declaration found for name '" +String showCId(X) +String "'.")) ~> resolveUniqueDecl(notFound(X::CId), _, _)
 
      // NOTE: the category of the contrivedObject is defaulted to lvalue as its value does not matter, as the
      // conversion sequence for the implicit object parameter will be ignored in this case.

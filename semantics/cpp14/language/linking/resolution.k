@@ -66,7 +66,7 @@ module CPP-LINKING-RESOLUTION
 
      rule <k> (.K => ILL("TDR3",
                     "No definition for function or variable which was odr-used: "
-                    +String signatureToString(N :: X, T) +String "."))
+                    +String showSignature(N :: X, T) +String "."))
               ~> resolveCPPReference(OdrBase::SymBase)
           ...</k>
           <odr-decls>...

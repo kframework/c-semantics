@@ -395,7 +395,9 @@ module C-TYPING-SYNTAX
      syntax Type ::= arrayToPtrType(Type) [function]
 
      syntax String ::= showType(Type) [function]
+     syntax String ::= showUType(UType) [function]
      syntax String ::= showDType(DType) [function]
+     syntax String ::= showEffectiveType(EffectiveType) [function]
 
      // Effective type of malloced regions.
      syntax DynamicType ::= dynamicType(Type)
@@ -405,4 +407,9 @@ module C-TYPING-SYNTAX
      syntax Bool ::= allComplete(List) [function]
      syntax FieldInfo ::= makeStructFieldInfo(Bool, List) [function]
      syntax FieldInfo ::= makeUnionFieldInfo(Bool, List) [function]
+
+     // Used to tag lvalues with their last-access type for checking and
+     // updating the effective types of accesses.
+     syntax Provenance ::= objectType(EffectiveType)
+
 endmodule
