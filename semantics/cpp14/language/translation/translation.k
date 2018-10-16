@@ -7,6 +7,7 @@ require "init.k"
 require "io.k"
 require "linking-interface.k"
 require "name.k"
+require "odr.k"
 require "operators.k"
 require "overloading.k"
 require "process-label.k"
@@ -88,6 +89,7 @@ module CPP-TRANSLATION
      imports CPP-TRANSLATION-INIT
      imports CPP-TRANSLATION-IO
      imports CPP-TRANSLATION-NAME
+     imports CPP-TRANSLATION-ODR
      imports CPP-TRANSLATION-OPERATORS
      imports CPP-TRANSLATION-OVERLOADING
      imports CPP-TRANSLATION-PROCESS-LABEL

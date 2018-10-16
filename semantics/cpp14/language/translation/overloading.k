@@ -46,6 +46,7 @@ module CPP-TRANSLATION-OVERLOADING
      imports CPP-REFERENCE-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TRANSLATION-ODR-SYNTAX
      imports CPP-TRANSLATION-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
@@ -348,26 +349,29 @@ module CPP-TRANSLATION-OVERLOADING
      rule fetchMangled(SetItem(odrDecl(_, _, Mangled::CId, _, _)) _::Set) => Mangled
      rule fetchMangled(_) => #NoName [owise]
 
-     // do not actually perform overload resolution, this was a function call
-     // in which the postfix expression was a function pointer
-     rule <k> #resolveOverload(cSet(... candidates: T:CPPPointerType |-> envEntry(... base: Base::SymBase), id: X::QualId), list(Args::List), _, _, E::Expr, _)
-              => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T)))))) ...</k>
-          <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
+     syntax KItem ::= updateExternalUses(SymBase)
+     rule <k> updateExternalUses(Base::SymBase) => .K ...</k>
           <odr-decls> Decls::Map </odr-decls>
           <external-uses> EU::Map => addOdrUse(EU, fetchMangled({Decls[Base]}:>Set), L) </external-uses>
           <curr-tr-program-loc> L::CabsLoc </curr-tr-program-loc>
+
+     // do not actually perform overload resolution, this was a function call
+     // in which the postfix expression was a function pointer
+     rule #resolveOverload(cSet(... candidates: T:CPPPointerType |-> envEntry(... base: Base::SymBase), id: X::QualId), list(Args::List), _, _, E::Expr, _)
+          => makeOdrUsed(Base)
+          ~> updateExternalUses(Base)
+          ~> checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T))))))
           requires isCPPFunctionType(innerType(T)) andBool Base =/=K nonStatic
+
      rule #resolveOverload(cSet(... candidates: T:CPPPointerType |-> envEntry(... base: nonStatic)), list(Args::List), _, _, E::Expr, _)
           => checkAccess(CallExpr(le(E, hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T))))))
           requires isCPPFunctionType(innerType(T))
 
      // only one viable candidate
-     rule <k> bestViable(T::CPPFunctionType, envEntry(... base: Base::SymBase, defaultArgs: defArgs(... vals: DArgs::StrictListResult))) ~> #resolveOverload(cSet(... id: X::QualId), list(Args::List), _, _, E::Expr, _) 
-              => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), DArgs)) ...</k>
-          <odr-uses>... .Set => #if isMethodPure(T) andBool isVirtualCall(hasTrace(E), T) #then .Set #else SetItem(Base) #fi ...</odr-uses>
-          <odr-decls> Decls::Map </odr-decls>
-          <external-uses> EU::Map => addOdrUse(EU, fetchMangled({Decls[Base]}:>Set), L) </external-uses>
-          <curr-tr-program-loc> L::CabsLoc </curr-tr-program-loc>
+     rule bestViable(T::CPPFunctionType, envEntry(... base: Base::SymBase, defaultArgs: defArgs(... vals: DArgs::StrictListResult))) ~> #resolveOverload(cSet(... id: X::QualId), list(Args::List), _, _, E::Expr, _)
+          => #if isMethodPure(T) andBool isVirtualCall(hasTrace(E), T) #then .K #else makeOdrUsed(Base) #fi
+          ~> updateExternalUses(Base)
+          ~> checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), DArgs))
 
      rule bestViable(T::CPPFunctionType, builtinOp(E::Expr)) ~> #resolveOverload(...) => E
 
@@ -654,14 +658,14 @@ module CPP-TRANSLATION-OVERLOADING
      // TODO(traiansf): properly resolve default arguments for templates
      rule (lv(loc(Base::SymBase, 0), _, _) => .K) ~> bestViable(T::CPPFunctionType, (_ => envEntry(Base, false, emptyDefaultArguments(T))))
 
-     rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase), id: X::QualId), E::Expr, _) => lv(lnew(Base), hasTrace(E), T) ...</k>
-          <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
-          <odr-decls> Decls::Map </odr-decls>
-          <external-uses> EU::Map => addOdrUse(EU, fetchMangled({Decls[Base]}:>Set), L) </external-uses>
-          <curr-tr-program-loc> L::CabsLoc </curr-tr-program-loc>
+     rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase), id: X::QualId), E::Expr, _)
+          => makeOdrUsed(Base)
+          ~> updateExternalUses(Base)
+          ~> lv(lnew(Base), hasTrace(E), T)
           requires Base =/=K nonStatic
                andBool notBool isCPPRefType(T)
                andBool notBool isMemberBase(Base)
+
      rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: nonStatic)), E::Expr, _) => le(E, hasTrace(E), T)
      // resolve anonymous union member lookup
      rule resolveUniqueDecl(cSet(... candidates: _ |-> envEntry(... base: memberBase(unnamedObject(C::Class), X::CId, _))), _, _)

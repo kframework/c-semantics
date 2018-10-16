@@ -4,13 +4,15 @@ module CPP-TRANSLATION-STMT-TRY
      imports SYMLOC-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BUILTIN-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
+     imports CPP-SYNTAX
+     imports CPP-TYPING-SYNTAX
      imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
      imports CPP-TRANSLATION-ELABORATOR-SYNTAX
-     imports CPP-SYNTAX
+     imports CPP-TRANSLATION-ODR-SYNTAX
      imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
-     imports CPP-TYPING-SYNTAX
+
 
      rule (.K => elaborate(Try, listToK(Catch)))
           ~> TryStmt(Try::Stmt, Catch::List)
@@ -23,8 +25,9 @@ module CPP-TRANSLATION-STMT-TRY
 
      context evalThrow(HOLE:Expr, _) [result(Val)]
 
-     rule <k> Throw(E::Expr) => prepareThrow(E, E) ...</k>
-          <odr-uses>... .Set => SetItem(obj(0, 0, builtinSymbol("::std::terminate()"))) ...</odr-uses>
+     rule Throw(E::Expr)
+       => makeOdrUsed(obj(0, 0, builtinSymbol("::std::terminate()")))
+       ~> prepareThrow(E, E)
 
      syntax Expr ::= prepareThrow(AExpr, K)
      context prepareThrow(_, HOLE:TypeExpr => typeof(HOLE)) [result(CPPTypeExpr)]

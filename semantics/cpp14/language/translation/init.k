@@ -5,24 +5,25 @@ module CPP-TRANSLATION-INIT-SYNTAX
 endmodule
 
 module CPP-TRANSLATION-INIT
-     imports K-REFLECTION
      imports CPP-TRANSLATION-INIT-SYNTAX
+     imports K-REFLECTION
      imports STRING
      imports COMMON-BUILTIN-SYNTAX
+     imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports COMPAT-SYNTAX
      imports MEMORY-SYNTAX
      imports OPTIONS-SYNTAX
      imports C-LINKING-INIT-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
-     imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BUILTIN-SYNTAX
-     imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ERROR-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
+     imports CPP-TRANSLATION-ODR-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -136,10 +137,11 @@ module CPP-TRANSLATION-INIT
      rule checkReplaceable(_, _, _) => .K [owise]
 
      syntax KItem ::= declareBuiltinFunction(QualId, CPPType, SymBase) [klabel(declareBuiltinFunctionCpp)]
-     rule <k> declareBuiltinFunction(N::Namespace :: X::CId, T::CPPType, Base::SymBase) => .K ...</k>
+     rule <k> declareBuiltinFunction(N::Namespace :: X::CId, T::CPPType, Base::SymBase)
+              => newOdrDef(N :: X, T, Base)
+          ...</k>
           <mem> Mem::Map => Mem[Base <- object(T, 0, makeEmptyArray(0))] </mem>
           <functions> Fun::Map => Fun[Base <- functionObject(N :: X, T, getDummyParams(T), callBuiltin)] </functions>
-          <odr-defs> Defs::Map => Defs[N :: X, T <- Base] </odr-defs>
           <odr-decls> Decls::Map => Decls[Base += odrDecl("cpp-builtin", N :: X, X, CPPLinkage, T)] </odr-decls>
 
      syntax List ::= getDummyParams(CPPType) [function]
