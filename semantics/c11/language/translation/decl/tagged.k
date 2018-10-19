@@ -128,13 +128,18 @@ module C-DECL-TAGGED
      // doesn't matter.
      rule asInt(_) => 0 [owise]
 
-     syntax KItem ::= initEnum(CId, RValue)
+     syntax KItem ::= initEnum(CId, K) [strict(2)]
      rule initEnum(X:CId, tv(Value:Int, T:IntegerUType)) => addEnum(X, Value)
           requires IntegerConstant in getModifiers(T)
+               andBool intInRange(Value, ut(.Set, int))
      rule (.K => CV("CDE1", "Enum initializer not an integer constant expression."))
           ~> initEnum(_, R:RValue)
           requires isHold(R) orBool notBool isIntegerType(type(R))
                orBool notBool IntegerConstant in getModifiers(utype(R))
+     rule (.K => CV("CDE2", "Enum initializer outside the range representable by int."))
+          ~> initEnum(_, tv(Value:Int, T:IntegerUType))
+          requires notBool intInRange(Value, ut(.Set, int))
+               andBool (IntegerConstant in getModifiers(T))
 
      syntax Bool ::= hasNamedField(List) [function]
      rule hasNamedField(ListItem(typedDeclaration(_, F::CId)) _) => true
