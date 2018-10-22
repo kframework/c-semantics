@@ -1021,7 +1021,7 @@ module CPP-TRANSLATION-DECL-CLASS
      rule padOrNot(V::Int, T::CPPType, _) => pad(V, T) [owise]
 
      // TODO(traiansf): Handle pack directives
-     // taken from c-semantics/semantics/c11/language/translation/decl/tagged.k
+     // taken from c-semantics/semantics/c/language/translation/decl/tagged.k
      //
      // The padding associated with a particular field precedes it, with
      // possibly some extra padding at the end of the whole struct not

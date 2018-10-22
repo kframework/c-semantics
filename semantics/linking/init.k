@@ -36,7 +36,7 @@ module C-LINKING-INIT
      imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
 
-     rule <k> link // compare against c11/language/translation/init.k
+     rule <k> link // compare against c/language/translation/init.k
                => makeTu("native")
                ~> addNativeSymbols(nativeDefinedBuiltins)
                ~> addCPPBuiltins

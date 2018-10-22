@@ -67,9 +67,9 @@ require "../../../common/execution/execution.k"
 
 require "../execution/simple-execution.k"
 
-require "../../../c11/language/execution/sequence-point.k"
-require "../../../c11/language/execution/check-restrict.k"
-require "../../../c11/language/common/error.k"
+require "../../../c/language/execution/sequence-point.k"
+require "../../../c/language/execution/check-restrict.k"
+require "../../../c/language/common/error.k"
 
 
 module CPP-TRANSLATION

@@ -1,14 +1,14 @@
 require "kast.k"
 require "domains.k"
 
-require "c11/language/execution/execution.k"
-require "c11/language/common/common.k"
-require "c11/library/library.k"
+require "c/language/execution/execution.k"
+require "c/language/common/common.k"
+require "c/library/library.k"
 require "c-settings.k"
 
-require "cpp14/language/execution/execution.k"
-require "cpp14/language/common/common.k"
-require "cpp14/library/library.k"
+require "cpp/language/execution/execution.k"
+require "cpp/language/common/common.k"
+require "cpp/library/library.k"
 require "cpp-settings.k"
 
 require "common/common.k"

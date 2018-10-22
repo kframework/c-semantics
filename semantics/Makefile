@@ -2,8 +2,8 @@ export K_OPTS := -Xmx2048m -Xss32m
 KOMPILE = kompile -O2
 KDEP = kdep
 KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict --smt none
-CPP_KOMPILE_FLAGS=--opaque-klabels c11/c11-translation.k
-EXECUTION_KOMPILE_FLAGS=--opaque-klabels cpp14/cpp14-translation.k --no-expand-macros --ocaml-serialize-config '$$PGM' --ocaml-dump-exit-code 139
+CPP_KOMPILE_FLAGS=--opaque-klabels c/c11-translation.k
+EXECUTION_KOMPILE_FLAGS=--opaque-klabels cpp/cpp14-translation.k --no-expand-macros --ocaml-serialize-config '$$PGM' --ocaml-dump-exit-code 139
 KDEP_DEFAULT_FLAGS=
 
 C11_TRANSLATION_FILES = $(wildcard *.k) \
@@ -25,23 +25,23 @@ default: fast
 
 $(call timestamp_of,c11-translation):
 	@echo "Kompiling the static C semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) c11/c11-translation.k -d "build/$(PROFILE)/c11-translation-kompiled" --no-prelude -w all -v --debug -I $(PROFILE_DIR)/semantics/c11
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) c/c11-translation.k -d "build/$(PROFILE)/c11-translation-kompiled" --no-prelude -w all -v --debug -I $(PROFILE_DIR)/semantics/c
 
 $(call timestamp_of,cpp14-translation):
 	@echo "Kompiling the static C++ semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(CPP_KOMPILE_FLAGS) cpp14/cpp14-translation.k -d "build/$(PROFILE)/cpp14-translation-kompiled" --no-prelude -w all -v --debug -I $(PROFILE_DIR)/semantics/cpp14 -I $(PROFILE_DIR)/semantics/c11
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(CPP_KOMPILE_FLAGS) cpp/cpp14-translation.k -d "build/$(PROFILE)/cpp14-translation-kompiled" --no-prelude -w all -v --debug -I $(PROFILE_DIR)/semantics/cpp -I $(PROFILE_DIR)/semantics/c
 
 $(call timestamp_of,c11-cpp14):
 	@echo "Kompiling the dynamic C and C++ semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c11-cpp14.k -d "build/$(PROFILE)/c11-cpp14-kompiled" --no-prelude -w all -v --transition "interpRule" --debug -I $(PROFILE_DIR)/semantics/c11 -I $(PROFILE_DIR)/semantics/cpp14
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c11-cpp14.k -d "build/$(PROFILE)/c11-cpp14-kompiled" --no-prelude -w all -v --transition "interpRule" --debug -I $(PROFILE_DIR)/semantics/c -I $(PROFILE_DIR)/semantics/cpp
 
 $(call timestamp_of,c11-nd):
 	@echo "Kompiling the dynamic C and C++ semantics with expression sequencing non-determinism..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c11-cpp14.k -d "build/$(PROFILE)/c11-nd-kompiled" --no-prelude --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantics/c11 -I $(PROFILE_DIR)/semantics/cpp14
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c11-cpp14.k -d "build/$(PROFILE)/c11-nd-kompiled" --no-prelude --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantics/c -I $(PROFILE_DIR)/semantics/cpp
 
 $(call timestamp_of,c11-nd-thread):
 	@echo "Kompiling the dynamic C and C++ semantics with thread-interleaving non-determinism..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c11-cpp14.k -d "build/$(PROFILE)/c11-nd-thread-kompiled" --no-prelude --transition "observable ndtrans ndthread" -I $(PROFILE_DIR)/semantics/c11 -I $(PROFILE_DIR)/semantics/cpp14
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c11-cpp14.k -d "build/$(PROFILE)/c11-nd-thread-kompiled" --no-prelude --transition "observable ndtrans ndthread" -I $(PROFILE_DIR)/semantics/c -I $(PROFILE_DIR)/semantics/cpp
 
 all: fast nd thread
 
@@ -64,23 +64,23 @@ clean:
 
 .depend-$(PROFILE)-translation:
 	$(eval TMP := $(shell mktemp))
-	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "build/$(PROFILE)/c11-translation-kompiled" -I $(PROFILE_DIR)/semantics/c11 -- c11/c11-translation.k > $(TMP)
+	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "build/$(PROFILE)/c11-translation-kompiled" -I $(PROFILE_DIR)/semantics/c -- c/c11-translation.k > $(TMP)
 	mv $(TMP) $@
 .depend-$(PROFILE)-cpp:
 	$(eval TMP := $(shell mktemp))
-	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "build/$(PROFILE)/cpp14-translation-kompiled" -I $(PROFILE_DIR)/semantics/cpp14 -I $(PROFILE_DIR)/semantics/c11 -- cpp14/cpp14-translation.k > $(TMP)
+	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "build/$(PROFILE)/cpp14-translation-kompiled" -I $(PROFILE_DIR)/semantics/cpp -I $(PROFILE_DIR)/semantics/c -- cpp/cpp14-translation.k > $(TMP)
 	mv $(TMP) $@
 .depend-$(PROFILE)-execution:
 	$(eval TMP := $(shell mktemp))
-	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "build/$(PROFILE)/c11-cpp14-kompiled" -I $(PROFILE_DIR)/semantics/c11 -I $(PROFILE_DIR)/semantics/cpp14 -- c11-cpp14.k > $(TMP)
+	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "build/$(PROFILE)/c11-cpp14-kompiled" -I $(PROFILE_DIR)/semantics/c -I $(PROFILE_DIR)/semantics/cpp -- c11-cpp14.k > $(TMP)
 	mv $(TMP) $@
 .depend-$(PROFILE)-nd:
 	$(eval TMP := $(shell mktemp))
-	$(KDEP) -d "build/$(PROFILE)/c11-nd-kompiled" -I $(PROFILE_DIR)/semantics/c11 -I $(PROFILE_DIR)/semantics/cpp14 -- c11-cpp14.k > $(TMP)
+	$(KDEP) -d "build/$(PROFILE)/c11-nd-kompiled" -I $(PROFILE_DIR)/semantics/c -I $(PROFILE_DIR)/semantics/cpp -- c11-cpp14.k > $(TMP)
 	mv $(TMP) $@
 .depend-$(PROFILE)-nd-thread:
 	$(eval TMP := $(shell mktemp))
-	$(KDEP) -d "build/$(PROFILE)/c11-nd-thread-kompiled" -I $(PROFILE_DIR)/semantics/c11 -I $(PROFILE_DIR)/semantics/cpp14 -- c11-cpp14.k > $(TMP)
+	$(KDEP) -d "build/$(PROFILE)/c11-nd-thread-kompiled" -I $(PROFILE_DIR)/semantics/c -I $(PROFILE_DIR)/semantics/cpp -- c11-cpp14.k > $(TMP)
 	mv $(TMP) $@
 
 -include .depend-$(PROFILE)-translation
