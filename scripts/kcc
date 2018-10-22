@@ -20,7 +20,7 @@ use RV_Kcc::Opts qw(
       cppArgs suppressions ifdefs ldArgs nativeObjFiles srcFiles objFiles trampolineFiles breakpoints
       RVMAIN BASE_LIBS MAGIC
 );
-use RV_Kcc::Shell qw(shell checkError setShellDebugFile saveArgv);
+use RV_Kcc::Shell qw(shell checkError setShellDebugFile saveArgv debug);
 
 # Here we trap control-c (and others) so we can clean up when that happens.
 $SIG{'ABRT'} = 'interruptHandler';
@@ -39,6 +39,13 @@ use constant QUOTE_STRING => IS_CYGWIN? backslash("\"String\"") : "\"String\"";
 
 exit main();
 
+sub validateOptions {
+      !srcFiles() && !objFiles()
+            && error("no input files found.\n");
+      (arg('-c') || arg('-E') || arg('-M') || arg('-MM')) && arg('-o') && (scalar srcFiles() > 2)
+            && error("cannot specify -o with -c or -E with multiple files.\n");
+}
+
 sub main {
       saveArgv();
 
@@ -48,11 +55,10 @@ sub main {
       }
 
       getopts() or error("Failed to parse the command line.\n");
+      validateOptions();
 
       my $noLicense = defined(arg('--no-license-message'))
             || defined($ENV{'KCC_NO_LICENSE_MESSAGE'});
-
-      my $msg = '';
 
       my $heapSize = "1G";
       if (arg('-Xmx')) {
@@ -67,61 +73,29 @@ sub main {
             $ENV{OCAMLRUNPARAM} = "s=32M,l=8M";
       }
 
-      if (!srcFiles() && !objFiles()) {
-            error("no input files found.\n");
-      }
-
       if (arg('-E') || arg('-M') || arg('-MM')) {
-            my $oval = arg('-o');
-            if ($oval) {
-                  if (scalar srcFiles() > 2) {
-                        error("cannot specify -o with -c or -E with multiple files.\n");
-                  }
-            } else {
-                  $oval = '-';
-            }
-            return preprocess($oval, '/dev/null', (srcFiles())[0], (srcFiles())[1]);
-      }
+            my $oval = arg('-o') || '-';
 
-      if (arg('-c')) {
-            my $oval = arg('-o');
-            if ($oval) {
-                  if (scalar srcFiles() > 2) {
-                        error("cannot specify -o with -c or -E with multiple files.\n");
-                  }
-                  if (!$noLicense && $msg ne '') {
-                        printf "%s\n", $msg;
-                  }
+            return preprocess($oval, '/dev/null', (srcFiles())[0], (srcFiles())[1]);
+      } elsif (arg('-c') && arg('-o')) {
+            my $result = tempFile('compile');
+            compile($result, (srcFiles())[0], (srcFiles())[1]);
+            move($result, arg('-o'));
+
+            return 0;
+      } elsif (arg('-c')) {
+            for (my $i = 0; $i < (scalar srcFiles() - 1); $i += 2) {
+                  my $oval = basename((srcFiles())[$i], ".c", ".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C", ".h", ".hh", ".hp", ".hxx", ".hpp", ".HPP", ".h++", ".H", ".tcc") . ".o";
                   my $result = tempFile('compile');
-                  compile($result, (srcFiles())[0], (srcFiles())[1]);
+                  compile($result, (srcFiles())[$i], (srcFiles())[$i+1]);
                   move($result, $oval);
-            } else {
-                  if (!$noLicense && $msg ne '') {
-                        printf "%s\n", $msg;
-                  }
-                  for (my $i = 0; $i < (scalar srcFiles() - 1); $i += 2) {
-                        $oval = basename((srcFiles())[$i], ".c", ".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C", ".h", ".hh", ".hp", ".hxx", ".hpp", ".HPP", ".h++", ".H", ".tcc") . ".o";
-                        my $result = tempFile('compile');
-                        compile($result, (srcFiles())[$i], (srcFiles())[$i+1]);
-                        move($result, $oval);
-                  }
             }
             return 0;
-      }
-
-      if (arg('-shared')) {
+      } elsif (arg('-shared')) {
             compileAll(srcFiles());
 
-            my $trampolines = tempFile('trampolines');
-            my @trampolineFiles = trampolineFiles();
-            shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
+            sharedObject(arg('-o') || 'a.out');
 
-            my $accum = tempFile('accum');
-            shell(getKRunCommand($accum, [objFiles()], undef, 0, 'c++', undef, undef))->verbose()->run();
-
-            my $obj = tempFile('merge');
-            shell('ld', '-r', '-o', $obj, nativeObjFiles())->run();
-            shell(distDir('merge-kcc-obj'), $obj, $accum, $trampolines, arg('-o') || 'a.out')->run();
             return 0;
       }
 
@@ -132,80 +106,19 @@ sub main {
             }
       }
 
-      # Reduce our remaining source files to object files
+      # Compile source files to object files
       compileAll(srcFiles());
+
+      # Linking.
+      my $programConfFile = tempFile('conf');
+      linkAll($programConfFile);
+
+      my $useCompile = -e profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled', 'execution_partial.o');
 
       my $oval = arg('-o') || 'a.out';
 
-      my $programConfFile = tempFile('conf');
-
-      if (!$noLicense && $msg ne '') {
-            printf "%s\n", $msg;
-      }
-
-      # At this point, we have 0 source files and 1 object file left for
-      # the final calls to krun.
-      shell(getKRunCommand($programConfFile, [objFiles()], undef, 1, 'c++', undef, undef))->verbose()->run();
-
-      # add space to end of args with () so that batch scripts work on windows
-      my @options = initOptions();
-      if (arg('-flint') || arg('-Wlint')) {
-            my $heapSize;
-            if (arg('-fheap-size=')) {
-                  $heapSize = shell("echo " . arg('-fheap-size=') . " | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc")->stdout()->run();
-                  chop($heapSize);
-            } else {
-                  $heapSize = 1024 * 1024 * 1024;
-            }
-            my $heapSizeInt = $heapSize;
-            $heapSize = quote(backslash($heapSize));
-            if (IS_CYGWIN) {
-                  $heapSize = backslash($heapSize);
-            }
-            my $stackSize;
-            if (arg('-fstack-size=')) {
-                  $stackSize = shell("echo " . arg('-fstack-size=') . " | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc")->stdout()->run();
-                  chop($stackSize);
-            } else {
-                  $stackSize = shell('ulimit -s')->stdout()->run();
-                  chop($stackSize);
-                  if ($stackSize eq 'unlimited') {
-                        $stackSize = $heapSizeInt;
-                  } else {
-                        $stackSize = $stackSize * 1024; # result was in kb
-                  }
-            }
-            $stackSize = quote(backslash($stackSize));
-            if (IS_CYGWIN) {
-                  $stackSize = backslash($stackSize);
-            }
-            my $int = QUOTE_INT;
-            push(@options, "`Heap`(#token($heapSize, $int))");
-            push(@options, "`Stack`(#token($stackSize, $int))");
-      }
-
-      if (arg('-e')) {
-            my $entry = quote(backslash(quote(arg('-e'))));
-            my $string = QUOTE_STRING;
-            push(@options, "`EntryPoint`(#token($entry, $string))");
-      }
-
-      if (arg('-finteractive-fail')) {
-            push(@options, "`InteractiveFail`(.KList)");
-      }
-
-      for (breakpoints()) {
-            my ($file, $line) = @{$_};
-            $file = quote(backslash(quote(rel2abs($file))));
-            $line = quote(backslash($line));
-            my ($string, $int) = (QUOTE_STRING, QUOTE_INT);
-            push(@options, "`Breakpoint`(#token($file, $string), #token($line, $int))");
-      }
-
-      my $opts = makeSet(@options);
-      my $useCompile = -e profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled', 'execution_partial.o');
-
       if (arg('-frunner-script') || !$useCompile) {
+            debug("Building an executable using the runner script.\n");
             open(FILE, $programConfFile) or error("Couldn't open file: $!\n");
             my $programConf = join("", <FILE>);
             close(FILE);
@@ -238,7 +151,7 @@ sub main {
             my $encodedJsonAsPerlString = quote(backslash(getRVErrorJson()));
             print $programRunner "sub getJson {\n return $encodedJsonAsPerlString;\n}\n";
 
-            my $encodedOptsAsPerlString = quote(backslash($opts));
+            my $encodedOptsAsPerlString = quote(backslash(makeOptions(0)));
             print $programRunner "sub getOptions {\n return $encodedOptsAsPerlString;\n}\n";
 
             close($programRunner);
@@ -247,6 +160,7 @@ sub main {
             ($numFilesChanged == 1)
                   or error("Call to chmod $oval failed.\n");
       } else {
+            debug("Building a natively-compiled executable.\n");
             my $sem = profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled');
             my $d = tempDir('native');
             my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
@@ -255,7 +169,7 @@ sub main {
             shell(catfile($sem, 'marshalvalue'),
                         catfile($sem, 'realdef.cma'),
                         '-c', 'ARGV', '`#argv`(.KList) ', 'text',
-                        '-c', 'OPTIONS', $opts, 'text',
+                        '-c', 'OPTIONS', makeOptions(0), 'text',
                         '-c', 'JSON', "#token($rvErrorJson, $string)", 'text',
                         '--output-file', catfile($d, 'kore_term')
                  )->run();
@@ -273,6 +187,7 @@ sub main {
 
             my $native = profileDir('native');
             if (arg('-fnative-binary')) {
+                  debug("Linking all native objects into seperate binary.\n");
                   my @trampolineFiles = trampolineFiles();
                   my $trampolines = catfile($d, 'trampolines.txt');
                   shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
@@ -291,6 +206,7 @@ sub main {
                               ldArgs())->run();
 
             } else {
+                  debug("Linking native objects directly.\n");
                   shell('touch', catfile($d, 'native_binary'))->run();
                   push(@lnk, catfile($native, 'builtins.o'), ldArgs());
             }
@@ -338,7 +254,9 @@ sub compile {
             my $obj = tempFile('obj');
             my $trampolines = tempFile('trampolines');
             my $uuid = create_uuid_as_string();
-            shell(getKRunCommand($kast, [], $inputFile, 0, $lang, $uuid, $trampolines))->verbose()->run();
+            my @cmd = getKRunCommand($kast, [], $inputFile, 'dummy', makeOptions(0), $lang, $uuid, $trampolines);
+            debug("Compiling (C or C++) $inputFile.\n");
+            shell(@cmd)->verbose()->run();
             if (arg('-fno-native-compilation')) {
                   shell(nativeCompiler(), '-c', getStd($lang), '-x', $lang, '/dev/null', '-o', $obj)->verbose()->run();
             } else {
@@ -349,6 +267,7 @@ sub compile {
             shell('objcopy', '--redefine-sym', 'main=' . RVMAIN, $obj)->run();
             shell(distDir('merge-kcc-obj'), $obj, $kast, $trampolines, $oval)->run();
       } else {
+            debug("Compiling $inputFile.\n");
             setShellDebugFile($oval, 0);
             shell(nativeCompiler(), '-c', '-x', $lang, $inputFile, '-o', $oval, cppArgs())->verbose()->run();
       }
@@ -366,21 +285,87 @@ sub pushObj {
       }
 }
 
-sub initOptions {
+sub makeOptions {
+      my ($link) = (@_);
       my @options = ();
+
       if (arg('-fno-native-compilation')) {
             push(@options, "`NoNativeFallback`(.KList)");
       }
+
       if (arg('-frecover-all-errors')) {
             push(@options, "`RecoverAll`(.KList)");
       }
+
       if (arg('-fuse-native-std-lib')) {
             push(@options, "`UseNativeStdLib`(.KList)");
       }
+
       if (arg('-flint') || arg('-Wlint')) {
+            my $heapSize;
+            if (arg('-fheap-size=')) {
+                  $heapSize = shell("echo " . arg('-fheap-size=') . " | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc")->stdout()->run();
+                  chop($heapSize);
+            } else {
+                  $heapSize = 1024 * 1024 * 1024;
+            }
+            my $heapSizeInt = $heapSize;
+            $heapSize = quote(backslash($heapSize));
+            if (IS_CYGWIN) {
+                  $heapSize = backslash($heapSize);
+            }
+            my $stackSize;
+            if (arg('-fstack-size=')) {
+                  $stackSize = shell("echo " . arg('-fstack-size=') . " | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc")->stdout()->run();
+                  chop($stackSize);
+            } else {
+                  $stackSize = shell('ulimit -s')->stdout()->run();
+                  chop($stackSize);
+                  if ($stackSize eq 'unlimited') {
+                        $stackSize = $heapSizeInt;
+                  } else {
+                        $stackSize = $stackSize * 1024; # result was in kb
+                  }
+            }
+            $stackSize = quote(backslash($stackSize));
+            if (IS_CYGWIN) {
+                  $stackSize = backslash($stackSize);
+            }
+            my $int = QUOTE_INT;
             push(@options, "`Lint`(.KList)");
+            push(@options, "`Heap`(#token($heapSize, $int))");
+            push(@options, "`Stack`(#token($stackSize, $int))");
       }
-      @options
+
+      if (arg('-e')) {
+            my $entry = quote(backslash(quote(arg('-e'))));
+            my $string = QUOTE_STRING;
+            push(@options, "`EntryPoint`(#token($entry, $string))");
+      }
+
+      state $hasBuiltins = 0;
+      if (!$hasBuiltins && arg('-Xbuiltins')) {
+            push(@options, "`Builtins`(.KList)");
+            $hasBuiltins = 1;
+      }
+
+      if (arg('-finteractive-fail')) {
+            push(@options, "`InteractiveFail`(.KList)");
+      }
+
+      for (breakpoints()) {
+            my ($file, $line) = @{$_};
+            $file = quote(backslash(quote(rel2abs($file))));
+            $line = quote(backslash($line));
+            my ($string, $int) = (QUOTE_STRING, QUOTE_INT);
+            push(@options, "`Breakpoint`(#token($file, $string), #token($line, $int))");
+      }
+
+      if ($link) {
+            push(@options, "`Link`(.KList)");
+      }
+
+      return makeSet(@options);
 }
 
 sub addArg {
@@ -399,14 +384,37 @@ sub addArg {
       return @krunArgs;
 }
 
+sub sharedObject {
+      my ($oval) = @_;
+
+      my $trampolines = tempFile('trampolines');
+      my @trampolineFiles = trampolineFiles();
+      shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
+
+      debug("Creating shared object.\n");
+      my $accum = tempFile('accum');
+      shell(getKRunCommand($accum, [objFiles()], undef, 'dummy', makeOptions(0), 'c++', undef, undef))->verbose()->run();
+
+      my $obj = tempFile('merge');
+      shell('ld', '-r', '-o', $obj, nativeObjFiles())->run();
+      shell(distDir('merge-kcc-obj'), $obj, $accum, $trampolines, $oval)->run();
+}
+
+sub linkAll {
+      my ($output) = @_;
+      my $symbols = dumpSymbols();
+
+      debug("Linking.\n");
+      shell(getKRunCommand($output, [objFiles()], undef, $symbols, makeOptions(1), 'c++', undef, undef))->verbose()->run();
+}
+
 sub getKRunCommand {
-      my ($output, $objFiles, $src, $link, $lang, $uuid, $trampolines) = @_;
+      my ($output, $objFiles, $src, $symbols, $opts, $lang, $uuid, $trampolines) = @_;
 
       my $cTransDef = profileDir("c11-translation-kompiled");
       my $cppTransDef = profileDir("cpp14-translation-kompiled");
 
       my @krunArgs;
-      my $symbols = $link ? dumpSymbols() : 'dummy';
       if (useInterpreter()) {
             my $dir = $lang eq 'c++' ? catfile($cppTransDef, 'cpp14-translation-kompiled') : catfile($cTransDef, 'c11-translation-kompiled');
             @krunArgs =
@@ -436,22 +444,6 @@ sub getKRunCommand {
             push(@krunArgs, arg('-ftranslation-depth='));
       }
 
-      my @options = initOptions();
-      state $hasBuiltins = 0;
-      if (!$hasBuiltins && arg('-Xbuiltins')) {
-            push(@options, "`XBuiltins`(.KList)");
-            $hasBuiltins = 1;
-      }
-
-      if (!$link) {
-            push(@options, "`NoLink`(.KList)");
-      }
-
-      if (arg('-finteractive-fail')) {
-            push(@options, "`InteractiveFail`(.KList)");
-      }
-
-      my $opts = makeSet(@options);
       my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
       my $json = "#token($rvErrorJson, $string)";
 
@@ -513,7 +505,7 @@ sub getKRunCommand {
 sub dumpSymbols {
       state $syms = do {
             my $tmp = tempFile('syms');
-            shell(distDir('gccsymdump'), ldArgs())->stdout($tmp)->run();
+            shell(distDir('gccsymdump'), profileDir('native', 'builtins.o'), ldArgs())->stdout($tmp)->run();
             $tmp;
       };
       return $syms;
@@ -522,6 +514,7 @@ sub dumpSymbols {
 sub preprocess {
       my ($output, $trampolines, $inputFile, $lang) = @_;
       my $isStdout = 0;
+      debug("Preprocessing $inputFile.\n");
       if ($output eq '-') {
             $output = tempFile('pp');
             $isStdout = 1;
@@ -561,9 +554,11 @@ sub parse {
 
       my $ppResult = tempFile('pp');
       my $kast = tempFile('kast-txt');
+
       setShellDebugFile($ppResult, 0);
       checkError(preprocess($ppResult, $trampolines, $inputFile, $lang));
 
+      debug("Parsing $inputFile.\n");
       setShellDebugFile($kast, 0);
       if ($lang eq 'c++') {
             my $std = getStd('c++');

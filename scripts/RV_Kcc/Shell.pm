@@ -25,10 +25,19 @@ our @EXPORT_OK = qw(
       saveArgv
       setShellDebugFile
       shell
+      debug
 );
 
 my $debugging = 0;
+
 sub enableDebugging { $debugging = 1; }
+
+sub debug {
+      if ($debugging) {
+            print "DEBUG> ";
+            print @_;
+      }
+}
 
 sub shell {
       my ($cmd, @args) = @_;
@@ -94,16 +103,12 @@ sub result {
             $self->{STDERR} and $cmd = "$cmd 2>$self->{STDERR}";
       }
 
-      if ($debugging) {
-            print("*** Executing: $cmd\n");
-      }
+      debug("Executing: $cmd\n");
 
       system($cmd);
       my $r = $? >> 8;
 
-      if ($debugging) {
-            print("*** (Result: $r)\n");
-      }
+      debug("(Result: $r)\n");
 
       return $r;
 }

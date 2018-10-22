@@ -29,6 +29,7 @@ module SYMLOC-SYNTAX
      syntax Duration ::= string(String)
      syntax Duration ::= wstring(List)
      syntax Duration ::= builtinSymbol(String)
+     syntax Duration ::= builtinCppSymbol(String)
      syntax Duration ::= nativeSymbol(String)
      // Thread local duration.
      syntax Duration ::= threadLocal(Int)
@@ -153,6 +154,7 @@ module SYMLOC
      rule isStaticDuration(obj(... d: string(_))) => true
      rule isStaticDuration(obj(... d: wstring(_))) => true
      rule isStaticDuration(obj(... d: builtinSymbol(_))) => true
+     rule isStaticDuration(obj(... d: builtinCppSymbol(_))) => true
      rule isStaticDuration(_::SymBase) => false [owise]
 
      rule isThreadDuration(loc(obj(... d: threadLocal(_)), _)) => true
@@ -180,6 +182,7 @@ module SYMLOC
      rule isBuiltinLoc(Loc:SymLoc) => isBuiltinLoc(base(Loc)) [owise]
 
      rule isBuiltinLoc(obj(... d: builtinSymbol(_))) => true
+     rule isBuiltinLoc(obj(... d: builtinCppSymbol(_))) => true
      rule isBuiltinLoc(_::SymBase) => false [owise]
 
      rule isRegisterLoc(loc(obj(... d: register(_)), _)) => true
@@ -245,6 +248,7 @@ module SYMLOC
      rule getTU(obj(... d: nativeAddress())) => "native"
      rule getTU(obj(... d: nativeSymbol(_))) => "native"
      rule getTU(obj(... d: builtinSymbol(_))) => "builtin"
+     rule getTU(obj(... d: builtinCppSymbol(_))) => "cpp-builtin"
 
      rule getThreadId(loc(obj(... d: threadLocal(Th:Int)), _)) => Th
      rule getThreadId(loc(obj(... d: threadLocal(Th:Int)), _, _)) => Th
@@ -348,6 +352,7 @@ module SYMLOC
      rule showDuration(string(S::String)) => "string" +String wrapParens(S)
      rule showDuration(wstring(_)) => "wstring"
      rule showDuration(builtinSymbol(S::String)) => "builtinSymbol" +String wrapParens(S)
+     rule showDuration(builtinCppSymbol(S::String)) => "builtinCppSymbol" +String wrapParens(S)
      rule showDuration(nativeSymbol(S::String)) => "nativeSymbol" +String wrapParens(S)
      rule showDuration(threadLocal(N::Int)) => "threadLocal" +String wrapParens(showInt(N))
      rule showDuration(auto(N::Int)) => "auto" +String wrapParens(showInt(N))

@@ -24,11 +24,11 @@ module C-TRANSLATION-INIT
                ~> addBuiltins(builtins)
                ~> removeUnusedIdentifiers
           ...</k>
-          <options>... SetItem(XBuiltins()) ...</options>
+          <options>... SetItem(Builtins()) ...</options>
 
      rule <k> builtinTu => .K ...</k>
           <options> Opts:Set </options>
-          requires notBool (XBuiltins() in Opts)
+          requires notBool (Builtins() in Opts)
 
      rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
                => makeTu(TU +String Uuid)

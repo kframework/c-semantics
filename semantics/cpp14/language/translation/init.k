@@ -100,13 +100,17 @@ module CPP-TRANSLATION-INIT
 
      rule addCPPBuiltins => addCPPBuiltins(weakCppBuiltins, false)
 
-     rule <k> builtinTu => TranslationUnit("cpp-builtin", ListItem(addCPPBuiltins(cppBuiltins, true)))
+     rule <k> builtinTu
+               => makeTu("cpp-builtin")
+               ~> makeNs(GlobalNamespace())
+               ~> implicitDecls
+               ~> addCPPBuiltins(cppBuiltins, true)
           ...</k>
-          <options>... SetItem(XBuiltins()) ...</options>
+          <options>... SetItem(Builtins()) ...</options>
 
      rule <k> builtinTu => .K ...</k>
           <options> Opts:Set </options>
-          requires notBool (XBuiltins() in Opts)
+          requires notBool (Builtins() in Opts)
 
      syntax KItem ::= addCPPBuiltins(K, Bool)
      rule <k> (.K => addBuiltin(B, T, AddAll))
@@ -116,7 +120,7 @@ module CPP-TRANSLATION-INIT
      syntax KItem ::= addBuiltin(QualId, CPPType, Bool) [klabel(addBuiltinCpp)]
  
      rule <k> addBuiltin(Q::QualId, T:CPPFunctionType, AddAll:Bool)
-              => declareBuiltinFunction(Q, T, obj(0, 0, builtinSymbol(showSignature(Q, T)))) ...</k>
+              => declareBuiltinFunction(Q, T, obj(0, 0, builtinCppSymbol(showSignature(Q, T)))) ...</k>
           <odr-defs> Defs:Map </odr-defs>
           requires (notBool (Q, T in_keys(Defs))) orBool AddAll
 

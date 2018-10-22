@@ -10,16 +10,16 @@ module LIBCPP-EXCEPTION
 
      // terminate_handler has c++ linkage so we need to wrap the call to abort in a c++ linkage function
      rule builtin(GlobalNamespace() :: Identifier("__cpp_abort"))
-          => BuiltinCallOp(lv(lnew(obj(0, 0, builtinSymbol("abort"))), noTrace, func(type(void), CLinkage)), false, .List)
+          => BuiltinCallOp(lv(lnew(obj(0, 0, builtinCppSymbol("abort"))), noTrace, func(type(void), CLinkage)), false, .List)
 
      rule builtin(GlobalNamespace() :: Namespace(Identifier("std")) :: Identifier("terminate")) 
-          => BuiltinCallOp(lv(lnew(bnew(0, terminate_handler, .Set, builtinSymbol("::std::__terminate_handler"))), noTrace, terminate_handler), false, .List)
+          => BuiltinCallOp(lv(lnew(bnew(0, terminate_handler, .Set, builtinCppSymbol("::std::__terminate_handler"))), noTrace, terminate_handler), false, .List)
 
      syntax CPPType ::= "terminate_handler" [function]
      rule terminate_handler => ptr(func(type(void)))
 
      rule initException
-          => allocObject(bnew(0, terminate_handler, .Set, builtinSymbol("::std::__terminate_handler")), terminate_handler, byteSizeofType(terminate_handler))
-          ~> ExpressionStmt(lv(lnew(bnew(0, terminate_handler, .Set, builtinSymbol("::std::__terminate_handler"))), noTrace, terminate_handler) :=init prv(lnew(obj(0, 0, builtinSymbol("::__cpp_abort()"))), noTrace, terminate_handler))
+          => allocObject(bnew(0, terminate_handler, .Set, builtinCppSymbol("::std::__terminate_handler")), terminate_handler, byteSizeofType(terminate_handler))
+          ~> ExpressionStmt(lv(lnew(bnew(0, terminate_handler, .Set, builtinCppSymbol("::std::__terminate_handler"))), noTrace, terminate_handler) :=init prv(lnew(obj(0, 0, builtinCppSymbol("::__cpp_abort()"))), noTrace, terminate_handler))
 
 endmodule

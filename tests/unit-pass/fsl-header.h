@@ -14,5 +14,3 @@ size_t strlen(const char *s);
 char *strcpy(char * restrict, const char * restrict);
 void* memset(void *, int, size_t);
 int printf(const char * restrict, ...);
-
-#define __builtin_constant_p(X) 0

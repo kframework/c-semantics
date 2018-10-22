@@ -11,19 +11,19 @@ module OPTIONS-SYNTAX
      imports STRING
 
      syntax TransOpt ::= Debug()
-                       | NoLink()                // Translate, but don't resolve refs.
-                       | XBuiltins()             // Exclude builtins.
-                       | NoNativeFallback()      // Don't attempt linking with native defs.
+                       | Link()                       // Resolve uses to definitions.
+                       | Builtins()                   // Include translation unit with builtins.
+                       | NoNativeFallback()           // Don't attempt linking with native defs.
 
-     syntax ExecOpt ::= EntryPoint(String)             // Set the program entry point symbol.
-                      | NoIO()                         // Disable IO.
-                      | UseNativeStdLib()              // Prefer the native standard library
-                      | Stack(Int) | Heap(Int)         // Stack/heap bounds checking.
-                      | Breakpoint(String, Int)        // Set a breakpoint at a certain file/line.
-                      | ActiveBreakpoint(String, Int)  // Flags the active breakpoint.
+     syntax ExecOpt ::= EntryPoint(String)            // Set the program entry point symbol.
+                      | NoIO()                        // Disable IO.
+                      | UseNativeStdLib()             // Prefer the native standard library
+                      | Stack(Int) | Heap(Int)        // Stack/heap bounds checking.
+                      | Breakpoint(String, Int)       // Set a breakpoint at a certain file/line.
+                      | ActiveBreakpoint(String, Int) // Flags the active breakpoint.
 
-     syntax Opt ::= RecoverAll()                 // Attempt recovery on all errors.
-                  | InteractiveFail()            // Enter interactive mode when recovery fails.
+     syntax Opt ::= RecoverAll()                      // Attempt recovery on all errors.
+                  | InteractiveFail()                 // Enter interactive mode when recovery fails.
 
      syntax String ::= showOpt(Opt) [function]
 
@@ -34,8 +34,8 @@ module OPTIONS
      imports COMPAT-SYNTAX
 
      rule showOpt(Debug()) => "debug-mode"
-     rule showOpt(NoLink()) => "no-link"
-     rule showOpt(XBuiltins()) => "exclude-builtins"
+     rule showOpt(Link()) => "link"
+     rule showOpt(Builtins()) => "builtins"
      rule showOpt(NoNativeFallback()) => "no-native-fallback"
      rule showOpt(EntryPoint(S::String)) => "entry-point=" +String S
      rule showOpt(Breakpoint(F::String, L::Int)) => "breakpoint=" +String F +String ":" +String showInt(L)

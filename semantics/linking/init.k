@@ -18,6 +18,7 @@ module C-LINKING-INIT
      imports C-LINKING-INIT-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
+     imports K-REFLECTION
      imports STRING
      imports C-TYPING-SORTS
      imports COMMON-BUILTIN-SYNTAX
@@ -43,8 +44,7 @@ module C-LINKING-INIT
                ~> resolveReferences
                ~> reportSuccess
           ...</k>
-          <options> Opts:Set </options>
-          requires notBool (NoLink() in Opts)
+          <options>... SetItem(Link()) ...</options>
 
      rule <k> makeTu(TU:String) => setTranslationUnit(TU) ...</k>
           <translation-units>...
@@ -54,8 +54,17 @@ module C-LINKING-INIT
                     // this is a bug in krun but I'm going with a temporary fix for now.
                     <externals> .Map </externals>
                ...</tu>)
-          ...</translation-units>
+          </translation-units>
+          requires notBool haveTu(TU, #configuration)
           [structural]
+     rule makeTu(TU:String) => setTranslationUnit(TU)
+          requires haveTu(TU, #configuration)
+          [structural]
+
+     syntax Bool ::= haveTu(String, K) [function]
+     rule haveTu(Tu::String, <generatedTop>... <translation-units>... <tu-id> Tu </tu-id> ...</translation-units> ...</generatedTop>)
+          => true
+     rule haveTu(_, _) => false [owise]
 
      // Only add a builtin if it has an external type (that is, it's been
      // declared somewhere) and if it doesn't already have a definition.
@@ -152,7 +161,8 @@ module C-LINKING-INIT
      rule load(.K) => .K
 
      rule <k> link => reportSuccess ...</k>
-          <options> SetItem(NoLink()) ...</options>
+          <options> Opts::Set </options>
+          requires notBool (Link() in Opts)
 
      rule (<T>...
                <k> cleanup </k>

@@ -26,7 +26,7 @@ module CPP-TRANSLATION-STMT-TRY
      context evalThrow(HOLE:Expr, _) [result(Val)]
 
      rule Throw(E::Expr)
-       => makeOdrUsed(obj(0, 0, builtinSymbol("::std::terminate()")))
+       => makeOdrUsed(obj(0, 0, builtinCppSymbol("::std::terminate()")))
        ~> prepareThrow(E, E)
 
      syntax Expr ::= prepareThrow(AExpr, K)

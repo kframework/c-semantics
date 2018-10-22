@@ -84,7 +84,7 @@ module CPP-LINKING-RESOLUTION
      rule <k> (.K => ILL("TDR3",
                     "No definition for function or variable which was odr-used: "
                     +String Symbol +String "."))
-              ~> resolveCPPReference(obj(_, _, builtinSymbol(Symbol::String)) #as OdrBase::SymBase)
+              ~> resolveCPPReference(obj(_, _, builtinCppSymbol(Symbol::String)) #as OdrBase::SymBase)
           ...</k>
           <odr-decls> Decls::Map </odr-decls>
           requires notBool OdrBase in_keys(Decls)
