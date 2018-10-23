@@ -1,4 +1,4 @@
-requires "core-extensions/common/common.k"
+require "core-extensions/common/common.k"
 
 module CPP-COMMON-EXTENSIONS
      imports CORE-EXTENSIONS-COMMON

@@ -1,5 +1,5 @@
 module CPP-TRANSLATION-NAME-SYNTAX
-     import SET
+     imports SET
      imports CPP-SORTS
      imports COMMON-SORTS
      imports CPP-DYNAMIC-SORTS
@@ -39,7 +39,7 @@ module CPP-TRANSLATION-NAME
      imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
-     
+
      syntax CandidateSet ::= classSet(K, QualId, Set)
 
      rule notFound(_) orIfNotFound E::K => E
@@ -92,15 +92,15 @@ module CPP-TRANSLATION-NAME
           <inline-namespaces> InlineS::Set </inline-namespaces>
           <nusing-namespaces> UsingS::Set </nusing-namespaces>
 
-     rule <k> nameLookupInUsingDirectives(... set: (SetItem(N::Namespace) => .Set) _, 
+     rule <k> nameLookupInUsingDirectives(... set: (SetItem(N::Namespace) => .Set) _,
                    usingS: (.Set => UsingS) _)
           ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <nusing-namespaces> UsingS::Set </nusing-namespaces>
-     rule nameLookupInUsingDirectives(X::CId, .Set, Tag::Tag, Mask::Set, 
-               (SetItem(N::Namespace) => .Set ) _, 
+     rule nameLookupInUsingDirectives(X::CId, .Set, Tag::Tag, Mask::Set,
+               (SetItem(N::Namespace) => .Set ) _,
                R::Expr => cSetUnion(nameLookupInNamespaceScope(X, N, Tag, Mask), R))
      rule nameLookupInUsingDirectives(... set: .Set, usingS: .Set, result: R::Expr) => R
 
@@ -191,8 +191,8 @@ module CPP-TRANSLATION-NAME
           <using-namespaces> BlockUsingDirectives::Set </using-namespaces>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
-          <ns-id> N </ns-id> 
-          <nusing-namespaces> NewUsingDirectives::Set </nusing-namespaces> 
+          <ns-id> N </ns-id>
+          <nusing-namespaces> NewUsingDirectives::Set </nusing-namespaces>
 
      syntax Set ::= getUsingNamespaces(Set, Namespace) [function]
      rule getUsingNamespaces(SetItem(Using::Namespace) S::Set, N::Namespace) => SetItem(Using) getUsingNamespaces(S, N)
@@ -242,7 +242,7 @@ module CPP-TRANSLATION-NAME
 
      rule lookupMember(X::CId, C::Class, IsBody::Bool, T::Tag, Mask::Set)
           => resolveClassSet(#lookupMember(X, C, IsBody, T, Mask))
- 
+
      syntax Expr ::= resolveClassSet(Expr) [strict]
      rule resolveClassSet(classSet(M:TypeMap, X::QualId, _)) => cSet(M, X)
      rule resolveClassSet(classSet(T:CPPType, _, _)) => T
@@ -472,16 +472,16 @@ module CPP-TRANSLATION-NAME
      rule hasSpecialDeclInArgLookup(_, _, _) => false [owise]
 
      // associated namespaces
-     rule <k> (.K => getFunctionAddressTypes(Args)) 
+     rule <k> (.K => getFunctionAddressTypes(Args))
               ~> false ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), cSet(... candidates: Y::TypeMap)) ...</k>
           <tr-env> Env::Map </tr-env>
           requires notBool hasSpecialDeclInArgLookup(X, Y, Env)
-     rule <k> (.K => getFunctionAddressTypes(Args)) 
+     rule <k> (.K => getFunctionAddressTypes(Args))
               ~> false ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), notFound(_)) ...</k>
           <tr-env> Env::Map </tr-env>
 
      // if the argument is the name or address of a set of overloaded functions
-     // and/or function templates, its associated classes and namespaces are 
+     // and/or function templates, its associated classes and namespaces are
      // the union of those associated with each of the members of the set,
      // i.e., the classes and namespaces associated with its parameter types
      // and return type
@@ -529,9 +529,9 @@ module CPP-TRANSLATION-NAME
      // namespace is also included in the set.
      // If an associated namespace directly contains inline namespaces, those
      // inline namespaces are also included in the set
-     rule #getAssociatedNamespaces(SetItem(N::Namespace :: S::NamespaceSpecifier) _::Set (.Set => #if B #then SetItem(N) #else .Set #fi Set), 
-          <namespaces>... 
-            (<ns>... 
+     rule #getAssociatedNamespaces(SetItem(N::Namespace :: S::NamespaceSpecifier) _::Set (.Set => #if B #then SetItem(N) #else .Set #fi Set),
+          <namespaces>...
+            (<ns>...
                <ns-id> N :: S </ns-id>
                <is-inline> B:Bool </is-inline>
                <inline-namespaces> Set::Set </inline-namespaces>
@@ -578,7 +578,7 @@ module CPP-TRANSLATION-NAME
      rule memberCandidates(O::OpId, t(... st: classType(C::Class)) #as T::CPPType) => qualifiedNameLookup(O, C, defaultMask)
           requires isCompleteType(T)
      rule memberCandidates(O::OpId, _) => notFound(O) [owise]
-         
+
      rule nonMemberCandidates(O::OpId, E1::Expr, T1::CPPType)
           => filterNonMemberLookupSet(argDependentNameLookup(O, list(ListItem(E1))), T1)
      rule nonMemberCandidates(O::OpId, E1::Expr, T1::CPPType, E2::Expr, T2::CPPType)
@@ -611,7 +611,7 @@ module CPP-TRANSLATION-NAME
      rule stripEnum1(M::TypeMap T::CPPType |-> K:K, T1::CPPType) => T |-> K stripEnum1(M, T1) [owise]
      rule stripEnum2(M::TypeMap T::CPPType |-> K:K, T2::CPPType) => T |-> K stripEnum2(M, T2) [owise]
 
-     rule addBuiltinCandidates(operator,, E1::Expr, _, _, E2::Expr, _, _, C1:CandidateSet, C2:CandidateSet) 
+     rule addBuiltinCandidates(operator,, E1::Expr, _, _, E2::Expr, _, _, C1:CandidateSet, C2:CandidateSet)
           => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), Comma(E1, E2), BinaryOperator(operator,, E1, E2))
      rule addBuiltinCandidates(operator&, E1::Expr, _, _, C1:CandidateSet, C2:CandidateSet)
           => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1)), & E1, UnaryOperator(operator&, E1))
