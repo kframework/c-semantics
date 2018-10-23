@@ -1,6 +1,6 @@
 module CPP-LINKING-INTERFACE
      imports K-REFLECTION
-     imports COMMON-LINKING-INTERFACE-SYNTAX
+     imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports C-CONFIGURATION
 
      rule currentTranslationScope() => #currentTranslationScope(#configuration)

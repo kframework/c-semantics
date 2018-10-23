@@ -1,7 +1,7 @@
 module DELETE-OBJECT-SYNTAX
      imports SET
      imports SYMLOC-SORTS
-     
+
      // deletes the base object from memory, given a location
      syntax KItem ::= deleteObject(SymBase)
      syntax KItem ::= deleteObjects(Set)
@@ -10,13 +10,11 @@ endmodule
 
 
 module DELETE-OBJECT
-     imports BASIC-K
-     imports C-CONFIGURATION
-     imports C-CONFIGURATION
-     imports COMMON-IO-BUFFERED-SYNTAX
-     imports LIST
-
      imports DELETE-OBJECT-SYNTAX
+     imports C-CONFIGURATION
+     imports BASIC-K
+     imports LIST
+     imports COMMON-IO-BUFFERED-SYNTAX
 
      rule deleteObjects(SetItem(Base::SymBase) Locals::Set)
           => deleteObject(Base) ~> deleteObjects(Locals)

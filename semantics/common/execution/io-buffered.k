@@ -10,9 +10,10 @@ module COMMON-IO-BUFFERED-SYNTAX
 endmodule
 
 module COMMON-IO-BUFFERED
+     imports COMMON-IO-BUFFERED-SYNTAX
      imports C-CONFIGURATION
      imports MEMORY-SYNTAX
-     imports COMMON-IO-BUFFERED-SYNTAX
+     imports SYMLOC-SYNTAX
 
      rule <k> writeBytesBuffered(Loc::SymLoc, L::List) => .K ...</k>
           <buffer>... .List => ListItem(bwrite(Loc, L)) </buffer>

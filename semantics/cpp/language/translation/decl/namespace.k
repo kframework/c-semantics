@@ -4,9 +4,8 @@ module CPP-TRANSLATION-DECL-NAMESPACE
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-TRANSLATION-ENV-SYNTAX
      imports CPP-SYNTAX
-     imports CPP-TRANSLATION-INIT-SYNTAX
+     imports CPP-TRANSLATION-ENV-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
 
      syntax Decl ::= NamespaceNameDecl(Expr, Bool, List) [strict(1)]
@@ -32,14 +31,19 @@ module CPP-TRANSLATION-DECL-NAMESPACE
           <ns-id> N </ns-id>
           <is-inline> _ => true </is-inline>
 
-     rule <k> (.K => makeNs(N :: Namespace(X))) 
-              ~> NamespaceNameDecl((notFound(X::CId) => nsRef(N :: Namespace(X))), _, _)
-          ...</k>
+     rule <k> NamespaceNameDecl((notFound(X::CId) => nsRef(N :: Namespace(X))), _, _) ...</k>
           <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
-          <ns-id> N </ns-id>
-          <nested-namespaces> Env::Map => Env[X <- N :: Namespace(X)] </nested-namespaces>
+          <namespaces>...
+               <ns>...
+                    <ns-id> N </ns-id>
+                    <nested-namespaces> Env::Map => Env[X <- N :: Namespace(X)] </nested-namespaces>
+               ...</ns>
+               (.Bag => <ns>...
+                             <ns-id> N :: Namespace(X) </ns-id>
+                        ...</ns>)
+          ...</namespaces>
 
      rule NamespaceAliasDecl(X::CId, Y::CId, NoNNS()) => NamespaceNameAliasDecl(X, nameLookup(Y, NoTag(), namespaceMask))
      rule NamespaceAliasDecl(X::CId, Y::CId, N::NNS) => NamespaceNameAliasDecl(X, qualifiedNameLookup(Y, N, namespaceMask))

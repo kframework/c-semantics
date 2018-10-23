@@ -17,7 +17,7 @@ module LIBC-STRING
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
-     imports LIBC-SYNTAX
+     imports LIBC-TYPES-SYNTAX
 
      rule (.K => cast(utype(unsigned-char), V))
           ~> builtin("memset", _, V::RValue, _)

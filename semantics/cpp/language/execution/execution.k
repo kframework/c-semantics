@@ -8,22 +8,14 @@ require "simple-execution.k"
 require "stmt/return-from-c.k"
 require "expr/function-call-to-c.k"
 
-require "cpp-extensions-execution.k"
-
 module CPP-EXECUTION
-     imports C-CONFIGURATION
-
      imports CPP-SIMPLE-EXECUTION
      imports CPP-EXECUTION-CONVERSION
      imports CPP-EXECUTION-ERROR
      imports CPP-EXECUTION-INIT
 
-
-
      // C/C++ interoperability
      imports C-CPP-EXECUTION-STMT-RETURN
      imports C-CPP-EXECUTION-EXPR-FUNCTION-CALL
      imports C-CPP-EXECUTION-VAL-CONVERSION
-
-     imports CPP-EXECUTION-EXTENSIONS
 endmodule

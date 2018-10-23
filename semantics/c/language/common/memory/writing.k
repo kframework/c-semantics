@@ -63,7 +63,6 @@ module C-MEMORY-WRITING
      imports C-SYNTAX
      imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
-     imports LIBC-SYNTAX
      imports MEMORY-SYNTAX
 
      // Write thread-local or auto.

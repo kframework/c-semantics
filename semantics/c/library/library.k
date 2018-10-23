@@ -1,5 +1,5 @@
 require "builtin.k"
-require "init.k"
+require "types.k"
 require "io.k"
 require "locale.k"
 require "math.k"
@@ -19,7 +19,7 @@ module C-LIBRARY
      imports LIBC-BUILTIN
      imports LIBC-IO
 
-     imports LIBC-INIT
+     imports LIBC-TYPES
      imports LIBC-LOCALE
      imports LIBC-MATH
      imports LIBC-SETJMP

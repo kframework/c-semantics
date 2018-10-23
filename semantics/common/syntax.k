@@ -12,6 +12,7 @@ module COMMON-SORTS
      syntax Quals
      syntax EvalContext
      syntax LanguageLinkage
+     syntax AutoSpecifier
      syntax Namespace
      syntax Scope
 endmodule
@@ -55,9 +56,16 @@ module COMMON-SYNTAX
      syntax FileScope ::= "fileScope"
 
      syntax Status ::= "initializingTu" | "mainCalled" | "mainExited" | "terminated"
+     syntax KItem ::= "cleanup" | "reportSuccess"
 
      syntax LanguageLinkage ::= "CLinkage" | "CPPLinkage"
 
      syntax KItem ::= CodeLoc(K, CabsLoc)
+
+     syntax FunctionSpecifier ::= Inline()
+     syntax Init ::= NoInit()
+
+     syntax AutoSpecifier ::= Auto()
+     syntax StorageClassSpecifier ::= Static() | Extern() | Register() | ThreadLocal()
 
 endmodule

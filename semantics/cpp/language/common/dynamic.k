@@ -52,6 +52,7 @@ module CPP-DYNAMIC-SYNTAX
      imports CPP-TYPING-SORTS
      imports CPP-DEPENDENT-SYNTAX
      imports CPP-REVAL-SYNTAX
+     imports OPTIONS-SYNTAX
      imports FLOAT-SYNTAX
      imports INT-SYNTAX
      imports LIST
@@ -231,8 +232,6 @@ module CPP-DYNAMIC-SYNTAX
      syntax Expr ::= postOp(Expr, Expr, Trace) [strict(1), klabel(postOpCpp)]
      syntax Expr ::= compoundAssign(Expr, Expr, Trace) [strict(1), klabel(compoundAssignCpp)]
                    | compoundOp(Expr)
-     syntax KItem ::= fillLHoles(K, K) [function, klabel(fillLHolesCpp)]
-     syntax KItem ::= fillRHoles(K, K) [function, klabel(fillRHolesCpp)]
      syntax Expr ::= makePRVal(K)
      syntax Expr ::= makeXVal(K)
 
@@ -513,30 +512,6 @@ module CPP-DYNAMIC
      rule showTemplateArgs(T:CPPType, T2:TemplateArg, Ts::TemplateArgs)
           => showCPPType(T) +String "," +String showTemplateArgs(T2, Ts)
 
-     rule fillRHoles(V::PRVal, RHOLE) => V
-     rule fillRHoles(V::PRVal, Lbl:KLabel(L:K))
-          => Lbl(fillRHoles(V, L))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-     rule fillRHoles(V::PRVal, Lbl:KLabel(L:K, R:K))
-          => Lbl(fillRHoles(V, L), fillRHoles(V, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-     rule fillRHoles(V::PRVal, Lbl:KLabel(L:K, M:K, R:K))
-          => Lbl(fillRHoles(V, L), fillRHoles(V, M), fillRHoles(V, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-     rule fillRHoles(_, K:K) => K [owise]
-
-     rule fillLHoles(V::LVal, LHOLE) => V
-     rule fillLHoles(V::LVal, Lbl:KLabel(L:K))
-          => Lbl(fillLHoles(V, L))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-     rule fillLHoles(V::LVal, Lbl:KLabel(L:K, R:K))
-          => Lbl(fillLHoles(V, L), fillLHoles(V, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-     rule fillLHoles(V::PRVal, Lbl:KLabel(L:K, M:K, R:K))
-          => Lbl(fillLHoles(V, L), fillLHoles(V, M), fillLHoles(V, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-     rule fillLHoles(_, K:K) => K [owise]
-
      rule _:KResult ~> discard => .K
 
      context makePRVal(HOLE:Expr => reval(HOLE)) [result(EPRVal)]
@@ -570,4 +545,5 @@ module CPP-DYNAMIC
 
      // is given prval fully evaluated?
      rule isEPRVal(E:PRVal) => Translation() orBool isPRV(E)
+
 endmodule

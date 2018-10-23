@@ -11,10 +11,10 @@ module CPP-ABSTRACT-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports CPP-SORTS
      imports CPP-TYPING-SORTS
-     imports COMMON-SORTS
      imports COMPAT-SORTS
-     imports CPP-DEPENDENT-SYNTAX
      imports CPP-CLASS-SYNTAX
+     imports CPP-DEPENDENT-SYNTAX
+     imports COMMON-SYNTAX
 
      syntax CPPIntegerType
 
@@ -76,12 +76,10 @@ module CPP-ABSTRACT-SYNTAX
                          | FieldDecl(NNS, CId, AType, Init) [strict(3)]
                          | BitFieldDecl(NNS, CId, AType, Expr) [strict(3)]
 
-     syntax Init ::= NoInit()
-
-     syntax StorageClassSpecifier ::= Register() | Static() | ThreadLocal() | Extern() | Mutable()
-     syntax FunctionSpecifier ::= Inline() | Explicit()
+     syntax StorageClassSpecifier ::= Mutable()
+     syntax FunctionSpecifier ::= Explicit()
      syntax Specifier ::= StorageClassSpecifier | FunctionSpecifier
-                        | Constexpr() | Auto()
+                        | Constexpr() | AutoSpecifier
 
      syntax Decl ::= Template(Decl, List)
                    | TemplateWithInstantiations(Decl, List, List)
@@ -208,7 +206,7 @@ module CPP-ABSTRACT-SYNTAX
                    | ForTStmt(Stmt, Decl, Stmt, Stmt)
                    | ForTStmt(Expr, Stmt, Stmt)
                    | TemplateDefinitionStmt(K) // synthetic statement created by the body of a function template definition when it's evaluted before instantiation
-      
+
      syntax AStmt ::= NoStatement()
                     | CompoundAStmt(List)
                     | LabelAStmt(CId, List)
@@ -233,7 +231,7 @@ module CPP-ABSTRACT-SYNTAX
                     | Constructor(List, Stmt)
                     | Destructor()
 
-     syntax CatchDecl ::= Decl | Ellipsis()             
+     syntax CatchDecl ::= Decl | Ellipsis()
 
      syntax AExpr ::= Expr
                     | NoExpression()

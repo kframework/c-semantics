@@ -10,7 +10,7 @@ module LIBC-SETJMP
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports DELETE-OBJECT-SYNTAX
-     imports LIBC-SYNTAX
+     imports LIBC-TYPES-SYNTAX
 
      /*@
      \fromStandard{\source[n1570]{\para{7.13}{1--3}}}{

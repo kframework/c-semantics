@@ -29,8 +29,6 @@ require "memory/writing.k"
 
 require "stmt/expr.k"
 
-require "cpp-extensions-common.k"
-
 module CPP-COMMON
      imports CPP-ALIGNMENT
      imports CPP-BITSIZE
@@ -62,6 +60,5 @@ module CPP-COMMON
 
      imports CPP-COMMON-STMT-EXPR
 
-     imports CPP-COMMON-EXTENSIONS
      imports CPP-COMMON-IO
 endmodule

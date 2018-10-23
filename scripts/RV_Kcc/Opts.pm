@@ -592,7 +592,6 @@ sub parseOpts {
                         option if extra output interferes with a build system.
                         Setting the environment error KCC_NO_LICENCE_MESSAGE
                         has the same effect.
-  -Xbuiltins		[undocumented]
   -Xk++			[undocumented]
   -soname <name>	[undocumented]
 

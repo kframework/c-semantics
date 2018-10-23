@@ -25,7 +25,7 @@ module LIBC-STDIO
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
      imports LIBC-STDLIB-SYNTAX
-     imports LIBC-SYNTAX
+     imports LIBC-TYPES-SYNTAX
 
      rule builtin("rewind", FDPtr::RValue)
           => fseek((* FDPtr), 0, 0) ~> discard

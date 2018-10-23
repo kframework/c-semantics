@@ -2,7 +2,6 @@ require "syntax.k"
 
 require "annotation.k"
 require "compound-literal.k"
-require "configuration.k"
 require "elaborator.k"
 require "env.k"
 require "error.k"
@@ -59,15 +58,12 @@ require "typing/canonicalization.k"
 require "typing/interpretation.k"
 require "typing/expr.k"
 
-require "c-extensions-translation.k"
-
 module C-TRANSLATION
      imports C-ABSTRACT-REWRITING
      imports C-DYNAMIC-SYNTAX
 
      imports C-ANNOTATION
      imports C-COMPOUND-LITERAL
-     imports C-CONFIGURATION
      imports C-ELABORATOR
      imports C-ENV
      imports C-FUNCTION-DEF
@@ -124,5 +120,4 @@ module C-TRANSLATION
      imports C-TYPING-INTERPRETATION
      imports C-TYPING-EXPR
 
-     imports C-TRANSLATION-EXTENSIONS
 endmodule

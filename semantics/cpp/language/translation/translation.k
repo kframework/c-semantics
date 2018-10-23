@@ -3,6 +3,7 @@ require "conversion.k"
 require "elaborator.k"
 require "env.k"
 require "error.k"
+require "implicit.k"
 require "init.k"
 require "io.k"
 require "linking-interface.k"
@@ -15,7 +16,6 @@ require "promotion.k"
 require "syntax.k"
 require "template-deduction.k"
 require "value-category.k"
-require "configuration.k"
 
 require "decl/class.k"
 require "decl/declarator.k"
@@ -61,31 +61,16 @@ require "typing/canonicalization.k"
 require "typing/dependent.k"
 require "typing/expr.k"
 
-require "cpp-extensions-translation.k"
-
-require "../../../common/execution/execution.k"
-
-require "../execution/simple-execution.k"
-
-require "../../../c/language/execution/sequence-point.k"
-require "../../../c/language/execution/check-restrict.k"
-require "../../../c/language/common/error.k"
-
-
 module CPP-TRANSLATION
-     imports COMMON-EXECUTION
-     imports CPP-SIMPLE-EXECUTION
 
-     imports C-SEQUENCE-POINT
-     imports C-CHECK-RESTRICT
-     imports C-ERROR
+     imports CPP-LINKING-INTERFACE
 
      imports CPP-TRANSLATION-CONVERSION
      imports CPP-TRANSLATION-ELABORATOR
      imports CPP-TRANSLATION-ENV
-     imports CPP-LINKING-INTERFACE
      imports CPP-TRANSLATION-CONSTANT
      imports CPP-TRANSLATION-ERROR
+     imports CPP-TRANSLATION-IMPLICIT
      imports CPP-TRANSLATION-INIT
      imports CPP-TRANSLATION-IO
      imports CPP-TRANSLATION-NAME
@@ -142,5 +127,4 @@ module CPP-TRANSLATION
      imports CPP-TRANSLATION-TYPING-DEPENDENT
      imports CPP-TRANSLATION-TYPING-EXPR
 
-     imports CPP-TRANSLATION-EXTENSIONS
 endmodule

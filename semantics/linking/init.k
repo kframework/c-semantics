@@ -1,21 +1,13 @@
-module C-LINKING-INIT-SYNTAX
+module LINKING-INIT-SYNTAX
      imports BASIC-K
-     imports BOOL-SYNTAX
-     imports MAP
-     imports STRING-SYNTAX
 
      syntax KItem ::= load(K)
-     syntax KItem ::= "link" | "cleanup" | "reportSuccess" | "builtinTu"
-
-     syntax KItem ::= makeTu(String)
-
-     syntax KItem ::= addBuiltins(Map)
-     syntax KItem ::= "addCPPBuiltins"
+     syntax KItem ::= "link"
 
 endmodule
 
-module C-LINKING-INIT
-     imports C-LINKING-INIT-SYNTAX
+module LINKING-INIT
+     imports LINKING-INIT-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
      imports K-REFLECTION
@@ -23,130 +15,76 @@ module C-LINKING-INIT
      imports C-TYPING-SORTS
      imports COMMON-BUILTIN-SYNTAX
      imports COMMON-INIT-SYNTAX
-     imports COMMON-LINKING-INTERFACE-SYNTAX
      imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports COMPAT-SYNTAX
      imports ERROR-SYNTAX
-     imports MEMORY-SYNTAX
+     imports LIBC-TYPES-SYNTAX
      imports OPTIONS-SYNTAX
-     imports SYMLOC-SYNTAX
-     imports C-ALIGNMENT-SYNTAX
-     imports C-LINKING-RESOLUTION-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-TYPING-COMMON-SYNTAX
+     imports CPP-BUILTIN-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports CPP-TRANSLATION-IMPLICIT-SYNTAX
+     imports LINKING-C-RESOLUTION-SYNTAX
+     imports LINKING-CPP-RESOLUTION-SYNTAX
+     imports LINKING-C-BUILTIN-SYNTAX
+     imports LINKING-CPP-BUILTIN-SYNTAX
 
-     rule <k> link // compare against c/language/translation/init.k
-               => makeTu("native")
-               ~> addNativeSymbols(nativeDefinedBuiltins)
-               ~> addCPPBuiltins
-               ~> removeUnusedIdentifiers
+     rule <k> link
+               => cBuiltinTu("builtin")
+               ~> cppBuiltinTu("cpp-builtin")
+               ~> nativeTu("native")
                ~> resolveReferences
                ~> reportSuccess
           ...</k>
           <options>... SetItem(Link()) ...</options>
+     rule <k> link => reportSuccess ...</k>
+          <options> Opts::Set </options>
+          requires notBool Link() in Opts
 
-     rule <k> makeTu(TU:String) => setTranslationUnit(TU) ...</k>
-          <translation-units>...
-               (.Bag => <tu>...
-                    <tu-id> TU </tu-id>
-                    // without this line the tu-linking-state cell doesn't get created
-                    // this is a bug in krun but I'm going with a temporary fix for now.
-                    <externals> .Map </externals>
-               ...</tu>)
-          </translation-units>
-          requires notBool haveTu(TU, #configuration)
-          [structural]
-     rule makeTu(TU:String) => setTranslationUnit(TU)
-          requires haveTu(TU, #configuration)
-          [structural]
-
-     syntax Bool ::= haveTu(String, K) [function]
-     rule haveTu(Tu::String, <generatedTop>... <translation-units>... <tu-id> Tu </tu-id> ...</translation-units> ...</generatedTop>)
-          => true
-     rule haveTu(_, _) => false [owise]
-
-     // Only add a builtin if it has an external type (that is, it's been
-     // declared somewhere) and if it doesn't already have a definition.
-     // Therefore, if someone redefines a builtin, we won't co-opt it.
-     // We should use this mechanism only for symbols that are considered weak
-     // by the C and C++ standards, or for native symbols.
-
-     syntax String ::= idToSymbol(CId) [function]
-     rule idToSymbol(Identifier(S::String)) => S
-
-     rule (.K => addBuiltin(X, adjustParams(T), obj(0, byteAlignofType(T), builtinSymbol(idToSymbol(X))), true))
-               ~> addBuiltins((X::CId |-> T:Type => .Map) _)
-     rule addBuiltins(.Map) => .K
-
-     syntax KItem ::= addNativeSymbols(Map)
-     rule (.K => addBuiltin(X, adjustParams(T), obj(0, byteAlignofType(T), nativeSymbol(idToSymbol(X))), false))
-               ~> addNativeSymbols((X::CId |-> T:Type => .Map) _)
-     rule addNativeSymbols(.Map) => .K
-
-     syntax KItem ::= addBuiltin(CId, Type, SymBase, Bool)
-     syntax KItem ::= addBuiltin2(CId, Type, SymBase, Bool, tu: String)
-
-     rule addBuiltin(B::CId, T::Type, Base::SymBase, AddAll::Bool)
-          => addBuiltin2(B, T, Base, AddAll, nameOfCurrentTranslationUnit())
-
-     rule <k> addBuiltin2(B:CId, T:FunctionType, Base:SymBase, AddAll:Bool, Tu::String)
-               => declareBuiltinFunction(B, T, Base, Tu)
+     syntax KItem ::= cBuiltinTu(tu: String)
+     rule <k> cBuiltinTu(Tu::String)
+               => makeTu(Tu)
+            // ~> checkExtTypes(.K, keys(builtins), builtins, keys(Types), Types, DeclLocs)
+               ~> checkExtDefs(.K, keys(builtins), keys(Defs), Locs)
+               ~> addCBuiltins(Tu, builtins)
+               ~> removeUnusedIdentifiers(Tu)
           ...</k>
-          <external-uses> Uses:Map </external-uses>
           <external-types> Types:Map </external-types>
+          <external-decls-loc> DeclLocs:Map </external-decls-loc>
           <external-defs> Defs:Map </external-defs>
-          <tu-id> Tu </tu-id>
-          <uses>... .Set => SetItem(B) ...</uses>
-          requires (notBool (B in_keys(Defs)) andBool B in_keys(Uses))
-               orBool (notBool (B in_keys(Defs)) andBool (B in_keys(Types)))
-               orBool AddAll
+          <external-defs-loc> Locs:Map </external-defs-loc>
 
-     rule <k> addBuiltin2(B:CId, T:Type, Base:SymBase, AddAll:Bool, Tu::String)
-               => declareBuiltinConstant(B, T, Base, Tu)
+     syntax KItem ::= cppBuiltinTu(tu: String)
+     rule cppBuiltinTu(Tu::String)
+          => makeTu(Tu)
+          ~> makeNs(Tu, GlobalNamespace())
+          ~> implicitDecls
+          ~> addCppBuiltins(cppBuiltins, true)
+          ~> removeUnusedIdentifiers(Tu)
+
+     syntax KItem ::= nativeTu(tu: String)
+     rule nativeTu(Tu::String)
+          => makeTu(Tu)
+          ~> addNativeSymbols(Tu, nativeDefinedBuiltins)
+          ~> addCppBuiltins(weakCppBuiltins, false)
+          ~> removeUnusedIdentifiers(Tu)
+
+     syntax KItem ::= "resolveReferences"
+     rule <k> resolveReferences
+               => resolveCPPReferences(OdrUses)
+               ~> resolveCReferences(Uses)
+               ~> resolveMain
           ...</k>
-          <external-uses> Uses:Map </external-uses>
-          <external-defs> Defs:Map </external-defs>
+          <odr-uses> OdrUses::Set => .Set </odr-uses>
+          <external-uses> Uses::Map => .Map </external-uses>
+
+     syntax KItem ::= makeNs(tu: String, Namespace)
+     rule <k> makeNs(Tu::String, N::Namespace) => .K ...</k>
           <tu-id> Tu </tu-id>
-          <uses>... .Set => SetItem(B) ...</uses>
-          requires ((notBool (B in_keys(Defs)) andBool B in_keys(Uses))
-               orBool AddAll)
-               andBool notBool isFunctionType(T)
-
-     rule <k> addBuiltin2(B::CId, _, _, false, _) => .K ...</k>
-          <external-defs> Defs:Map </external-defs>
-          <external-uses> Uses:Map </external-uses>
-          requires (B in_keys(Defs))
-               orBool notBool (B in_keys(Uses))
-
-     syntax Set ::= getIds(Set) [function]
-     rule getIds(SetItem(CodeLoc(X::CId, _)) S::Set)
-          => SetItem(X) getIds(S)
-     rule getIds(.Set) => .Set
-
-     // compare against declare()
-     syntax KItem ::= declareBuiltinFunction(CId, Type, SymBase, String)
-                    | declareBuiltinConstant(CId, Type, SymBase, String)
-
-     rule <k> declareBuiltinFunction(B:CId, T::Type, Base:SymBase, Tu::String) => .K ...</k>
-          <mem> Mem::Map => Mem[Base <- object(T, 1, makeEmptyArray(1))] </mem>
-          <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List)] </functions>
-          <external-decls> Decls::Map => Decls[B += Tu] </external-decls>
-          <external-decls-loc> DeclLocs::Map => DeclLocs[B <- UnknownCabsLoc] </external-decls-loc>
-          <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
-          <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
-          <tu-id> Tu </tu-id>
-          <genv> Env::Map => Env[B <- Base] </genv>
-          <gtypes> Types::Map => Types[B <- T] </gtypes>
-
-     rule <k> declareBuiltinConstant(B:CId, T::Type, Base:SymBase, Tu::String) => .K ...</k>
-          <external-decls> Decls::Map => Decls[B += Tu] </external-decls>
-          <external-decls-loc> DeclLocs::Map => DeclLocs[B <- UnknownCabsLoc] </external-decls-loc>
-          <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
-          <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
-          <tu-id> Tu </tu-id>
-          <genv> Env::Map => Env[B <- Base] </genv>
-          <gtypes> Types::Map => Types[B <- T] </gtypes>
+          <namespaces>...
+               (.Bag => <ns>...
+                             <ns-id> N </ns-id>
+                        ...</ns>)
+          ...</namespaces>
 
      rule load(Obj1:KItem ~> Obj2:KItem ~> Objs:K)
                => load(Objs ~> mergeObj(Obj1, Obj2))
@@ -159,17 +97,6 @@ module C-LINKING-INIT
           ThisObj:GlobalCell
 
      rule load(.K) => .K
-
-     rule <k> link => reportSuccess ...</k>
-          <options> Opts::Set </options>
-          requires notBool (Link() in Opts)
-
-     rule (<T>...
-               <k> cleanup </k>
-               <options> Opts:Set </options>
-          ...</T> => .Bag)
-          requires notBool (Debug() in Opts)
-          [structural]
 
      syntax KItem ::= checkMerge(K, K)
                     | checkExtTypes(K, Set, Map, Set, Map, Map)
@@ -324,7 +251,28 @@ module C-LINKING-INIT
                <translation-units> TUs1 TUs2 </translation-units>
           </global>
 
-     rule <k> reportSuccess => .K ...</k>
-          <result-value> _ => 0 </result-value>
+     // TODO(chathhorn): remove redundancy
+     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tu> Tu::String </curr-tu> ...</generatedTop>)
+          => Tu
+
+     rule currentTranslationScope() => #currentTranslationScope(#configuration)
+     syntax Scope ::= #currentTranslationScope(K) [function]
+     rule #currentTranslationScope(<generatedTop>... <curr-scope> S::Scope </curr-scope> ...</generatedTop>)
+          => S
+
+     rule currentTranslationLoc() => #currentTranslationLoc(#configuration)
+     syntax CabsLoc ::= #currentTranslationLoc(K) [function]
+     rule #currentTranslationLoc(<generatedTop>... <curr-program-loc> Loc::CabsLoc </curr-program-loc> ...</generatedTop>)
+          => Loc
+
+     rule <k> setTranslationLoc(Loc::CabsLoc) => .K ... </k>
+          <curr-tr-program-loc> _ => Loc </curr-tr-program-loc>
+          <curr-program-loc> _ => Loc </curr-program-loc>
+
+     rule <k> setTranslationUnit(Tu::String) => .K ... </k>
+          <curr-tr-tu> _ => Tu </curr-tr-tu>
+          <curr-tu> _ => Tu </curr-tu>
+
+     rule (<T>... <k> cleanup </k> ...</T> => .Bag)
 
 endmodule

@@ -12,7 +12,6 @@ module OPTIONS-SYNTAX
 
      syntax TransOpt ::= Debug()
                        | Link()                       // Resolve uses to definitions.
-                       | Builtins()                   // Include translation unit with builtins.
                        | NoNativeFallback()           // Don't attempt linking with native defs.
 
      syntax ExecOpt ::= EntryPoint(String)            // Set the program entry point symbol.
@@ -35,7 +34,6 @@ module OPTIONS
 
      rule showOpt(Debug()) => "debug-mode"
      rule showOpt(Link()) => "link"
-     rule showOpt(Builtins()) => "builtins"
      rule showOpt(NoNativeFallback()) => "no-native-fallback"
      rule showOpt(EntryPoint(S::String)) => "entry-point=" +String S
      rule showOpt(Breakpoint(F::String, L::Int)) => "breakpoint=" +String F +String ":" +String showInt(L)

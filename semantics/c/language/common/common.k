@@ -36,8 +36,6 @@ require "typing/effective.k"
 require "typing/misc.k"
 require "typing/predicates.k"
 
-require "c-extensions-common.k"
-
 module C-COMMON
      imports C-ALIGNMENT
      imports C-BINDING
@@ -75,5 +73,4 @@ module C-COMMON
      imports C-TYPING-MISC
      imports C-TYPING-PREDICATES
 
-     imports C-COMMON-EXTENSIONS
 endmodule

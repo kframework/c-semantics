@@ -295,7 +295,7 @@ module C-DECL-GLOBAL
      then the identifier has external linkage.
      }*/
 
-     syntax Storage ::= "Naked"
+     syntax StorageClassSpecifier ::= "Naked"
      syntax KItem ::= declareExternalVariable(CId, Type, K)
 
      // Static or extern, previously declared static.
@@ -441,7 +441,7 @@ module C-DECL-GLOBAL
      // differ in the case of declarations without initializers. A naked
      // declaration without an initializer constitutes a tentative definition,
      // but an extern declaration without an initializer does not.
-     syntax KItem ::= "declareExternalVariable'" "(" Bool "," K "," DeclState "," Linkage "," Storage ")"
+     syntax KItem ::= "declareExternalVariable'" "(" Bool "," K "," DeclState "," Linkage "," StorageClassSpecifier ")"
           [strict(2)]
 
      // *** Incomplete ***
@@ -454,7 +454,7 @@ module C-DECL-GLOBAL
           [structural]
      // Tentative definition (with incomplete type).
      rule declareExternalVariable'(true, initValue(X:CId, T:Type, .K),
-               State:DeclState, Lnk:Linkage, Sto:Storage)
+               State:DeclState, Lnk:Linkage, Sto:StorageClassSpecifier)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
           ~> recordTentDef(X, Lnk)
@@ -487,7 +487,7 @@ module C-DECL-GLOBAL
      // Completed type, no init.
      // declared => allocated
      rule declareExternalVariable'(true, initValue(X:CId, T:Type, .K),
-               declared, Lnk:Linkage, Sto:Storage)
+               declared, Lnk:Linkage, Sto:StorageClassSpecifier)
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, allocated)
@@ -507,7 +507,7 @@ module C-DECL-GLOBAL
      // Already encountered a completed decl, no init.
      // completed => allocated
      rule declareExternalVariable'(true, initValue(X:CId, T:Type, .K),
-               completed, Lnk:Linkage, Sto:Storage)
+               completed, Lnk:Linkage, Sto:StorageClassSpecifier)
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, allocated)
@@ -518,7 +518,7 @@ module C-DECL-GLOBAL
 
      // Already encountered an allocated or initialized decl, no init.
      rule declareExternalVariable'(true, initValue(X:CId, T:Type, .K),
-               State:DeclState, Lnk:Linkage, Sto:Storage)
+               State:DeclState, Lnk:Linkage, Sto:StorageClassSpecifier)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
           ~> recordTentDef(X, Lnk) // Don't really need this.

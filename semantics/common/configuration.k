@@ -67,7 +67,7 @@ module COMMON-CONFIGURATION
                <tu-linking-state multiplicity="?" initial="">
                     <externals> .Map </externals>
                     <internals> .Map </internals>
-                    <uses> SetItem(Identifier("main")) </uses>
+                    <uses> .Set </uses>
                     <genums> .Map </genums>
                     // QualId |-> (CPPType |-> TemplateInfo)
                     <templates> .Map </templates>

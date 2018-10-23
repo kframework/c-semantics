@@ -7,7 +7,6 @@ require "error.k"
 require "init.k"
 require "memory.k"
 require "options.k"
-require "resolution.k"
 require "settings.k"
 require "symloc.k"
 require "syntax.k"
@@ -18,7 +17,6 @@ module COMMON
      imports BITS
      imports COMMON-BUILTIN
      imports COMMON-INIT
-     imports COMMON-RESOLUTION
      imports COMMON-TRANSLATION-UNIT
      imports COMPAT
      imports ERROR

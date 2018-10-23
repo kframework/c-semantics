@@ -86,11 +86,11 @@ module CPP-TRANSLATION-DECL-TEMPLATE
           <curr-template-context> templateInfo(... decls: L::List) </curr-template-context>
 
      syntax KItem ::= addTemplateParam(CId, ParamType, K)
-     rule <k> addTemplateParam(#NoName, T::ParamType, Default:K) => .K ...</k>
-          <curr-template-context> templateInfo(_, (L::List => L ListItem(#NoName(size(L)))), _::Map (.Map => #NoName(size(L)) |-> T), _::Map (.Map => #NoName(size(L)) |-> Default), _, _) </curr-template-context>
+     rule <k> addTemplateParam(#NoName, T::ParamType, Def:K) => .K ...</k>
+          <curr-template-context> templateInfo(_, (L::List => L ListItem(#NoName(size(L)))), _::Map (.Map => #NoName(size(L)) |-> T), _::Map (.Map => #NoName(size(L)) |-> Def), _, _) </curr-template-context>
 
-     rule <k> addTemplateParam(Identifier(S::String), T::ParamType, Default:K) => .K ...</k>
-          <curr-template-context> templateInfo(_, (L::List => L ListItem(Identifier(S))), _::Map (.Map => Identifier(S) |-> T), _::Map (.Map => Identifier(S) |-> Default), _, _) </curr-template-context>
+     rule <k> addTemplateParam(Identifier(S::String), T::ParamType, Def:K) => .K ...</k>
+          <curr-template-context> templateInfo(_, (L::List => L ListItem(Identifier(S))), _::Map (.Map => Identifier(S) |-> T), _::Map (.Map => Identifier(S) |-> Def), _, _) </curr-template-context>
 
      // template declarations
 
@@ -135,8 +135,8 @@ module CPP-TRANSLATION-DECL-TEMPLATE
 
      syntax KItem ::= declareTemplate(CPPType)
      rule <k> declareTemplate(T::CPPType) => .K ...</k>
-          <curr-template-context> templateInfo(X::QualId, Decls::List, Types::Map, Default::Map, (_ => T), _) </curr-template-context>
-          <templates> Temp:Map => Temp X |-> (T |-> templateInfo(X, Decls, Types, Default, T, .K)) </templates>
+          <curr-template-context> templateInfo(X::QualId, Decls::List, Types::Map, Def::Map, (_ => T), _) </curr-template-context>
+          <templates> Temp:Map => Temp X |-> (T |-> templateInfo(X, Decls, Types, Def, T, .K)) </templates>
           requires notBool X, T in_keys(Temp)
      rule <k> declareTemplate(T::CPPType) => .K ...</k>
           <curr-template-context> templateInfo(... id: X::QualId, type: _ => T) </curr-template-context>

@@ -22,6 +22,15 @@ module LIBC-BUILTIN-SYNTAX
 
      syntax KItem ::= "initBuiltins"
 
+     syntax RValue ::= "eof" [function]
+
+     syntax RValue ::= "stdin"  [function]
+                     | "stdout" [function]
+                     | "stderr" [function]
+
+     syntax LValue ::= fileLVal(SymBase) [function]
+     syntax LValue ::= filePtr(SymBase) [function]
+
 endmodule
 
 module LIB-BUILTIN-SYNTAX
@@ -49,7 +58,7 @@ module LIBC-BUILTIN
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports LIBC-SYNTAX
+     imports LIBC-TYPES-SYNTAX
 
      rule <k> callBuiltin
                => Return(prepareBuiltin(F, variadic in getParams(T),
@@ -187,5 +196,14 @@ module LIBC-BUILTIN
      rule initErrno
           => alloc(obj(0, byteAlignofType(type(int)), builtinSymbol("errno")), type(int), byteSizeofType(type(int)))
           ~> Initializer(lv(lnew(obj(0, byteAlignofType(type(int)), builtinSymbol("errno"))), type(int)) := tv(0, utype(int)))
+
+     rule eof => tv(-1, utype(int))
+
+     rule fileLVal(Base::SymBase) => lv(lnew(Base), file)
+     rule filePtr(Base::SymBase) => lv(lnew(Base), type(pointerType(file)))
+
+     rule stdin  => tv(opaque(#stdin, utype(file)), utype(file))
+     rule stdout => tv(opaque(#stdout, utype(file)), utype(file))
+     rule stderr => tv(opaque(#stderr, utype(file)), utype(file))
 
 endmodule

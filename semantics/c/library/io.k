@@ -70,7 +70,7 @@ module LIBC-IO
      imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
-     imports LIBC-SYNTAX
+     imports LIBC-TYPES-SYNTAX
 
      rule writeFD(FD::FD, N:Int) => writeFD(FD, chrChar(N %Int 256))
           [structural]

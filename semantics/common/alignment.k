@@ -12,7 +12,7 @@ module ALIGNMENT
      imports K-REFLECTION
      imports SYMLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     
+
      rule getAlign(NullPointer) => cfg:alignofMalloc
      rule getAlign(Loc::SymLoc) => getAlign'(base(Loc), offset(Loc), #configuration) [owise]
      syntax Int ::= "getAlign'" "(" SymBase "," Int "," K ")" [function]

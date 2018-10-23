@@ -1,18 +1,28 @@
-module CPP-LINKING-RESOLUTION
-     imports C-LINKING-RESOLUTION-SYNTAX
-     imports COMMON-RESOLUTION-SYNTAX
+module LINKING-CPP-RESOLUTION-SYNTAX
+     imports SET
+
+     syntax KItem ::= resolveCPPReferences(Set)
+endmodule
+
+module LINKING-CPP-RESOLUTION
+     imports LINKING-CPP-RESOLUTION-SYNTAX
+     imports LINKING-C-RESOLUTION-SYNTAX
      imports C-CONFIGURATION
-     imports COLLECTIONS
-     imports LIST
-     imports MAP
      imports STRING
-     imports COMPAT-SYNTAX
+     imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports ERROR-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
 
+     rule (.K => resolveCPPReference(Base))
+          ~> resolveCPPReferences((SetItem(Base::SymBase) => .Set) _::Set)
+          [structural]
+     rule resolveCPPReferences(.Set) => .K
+          [structural]
+
      // used by local statics
+     syntax KItem ::= resolveCPPReference(SymBase)
      rule <k> resolveCPPReference(OdrBase:DirectBase) ...</k>
           <odr-decls>...
                OdrBase |-> (SetItem(odrDecl(Tu::String, QX::QualId, _, _, T::CPPType)) => .Set) _::Set
@@ -99,8 +109,8 @@ module CPP-LINKING-RESOLUTION
      // to declare the main function. We need a special error category for this, but it's
      // low priority, so for now we just default to the C error message in order to not
      // confuse anyone using RV-Match for C.
-     rule <k> (.K => EXT-UNDEF("TDR2",
-                    "No definition for symbol with external linkage: main."))
+     rule <k> (.K => setTranslationLoc(UnknownCabsLoc)
+                  ~> EXT-UNDEF("TDR2", "No definition for symbol with external linkage: main."))
               ~> resolveMain
           ...</k>
           <external-defs> CDefs:Map </external-defs>

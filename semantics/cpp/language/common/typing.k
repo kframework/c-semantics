@@ -18,7 +18,10 @@ module CPP-TYPING-SORTS
      syntax CPPFunctionType
      syntax CPPClassType
      syntax CPPRefType
+     syntax ClassInfo
      syntax IncompleteInfo
+     syntax TemplateInfo
+     syntax MethodInfo
      syntax RValue
 endmodule
 

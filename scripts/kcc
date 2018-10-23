@@ -236,7 +236,7 @@ sub nativeCompiler {
 }
 
 sub compileAll {
-      my (@srcFiles) = @_;
+      my (@srcFiles) = (@_);
 
       while (scalar @srcFiles > 0) {
             my $oval = tempFile('merge');
@@ -248,13 +248,13 @@ sub compileAll {
 }
 
 sub compile {
-      my ($oval, $inputFile, $lang) = @_;
+      my ($oval, $inputFile, $lang) = (@_);
       if ($lang eq 'c' or $lang eq 'c++') {
             my $kast = tempFile('kast');
             my $obj = tempFile('obj');
             my $trampolines = tempFile('trampolines');
             my $uuid = create_uuid_as_string();
-            my @cmd = getKRunCommand($kast, [], $inputFile, 'dummy', makeOptions(0), $lang, $uuid, $trampolines);
+            my @cmd = getTranslationCommand($kast, $inputFile, $lang, $uuid, $trampolines);
             debug("Compiling (C or C++) $inputFile.\n");
             shell(@cmd)->verbose()->run();
             if (arg('-fno-native-compilation')) {
@@ -287,6 +287,7 @@ sub pushObj {
 
 sub makeOptions {
       my ($link) = (@_);
+
       my @options = ();
 
       if (arg('-fno-native-compilation')) {
@@ -343,12 +344,6 @@ sub makeOptions {
             push(@options, "`EntryPoint`(#token($entry, $string))");
       }
 
-      state $hasBuiltins = 0;
-      if (!$hasBuiltins && arg('-Xbuiltins')) {
-            push(@options, "`Builtins`(.KList)");
-            $hasBuiltins = 1;
-      }
-
       if (arg('-finteractive-fail')) {
             push(@options, "`InteractiveFail`(.KList)");
       }
@@ -366,6 +361,7 @@ sub makeOptions {
       }
 
       return makeSet(@options);
+
 }
 
 sub addArg {
@@ -385,7 +381,7 @@ sub addArg {
 }
 
 sub sharedObject {
-      my ($oval) = @_;
+      my ($oval) = (@_);
 
       my $trampolines = tempFile('trampolines');
       my @trampolineFiles = trampolineFiles();
@@ -393,7 +389,7 @@ sub sharedObject {
 
       debug("Creating shared object.\n");
       my $accum = tempFile('accum');
-      shell(getKRunCommand($accum, [objFiles()], undef, 'dummy', makeOptions(0), 'c++', undef, undef))->verbose()->run();
+      shell(getLinkingCommand($accum, 'dummy', 0))->verbose()->run();
 
       my $obj = tempFile('merge');
       shell('ld', '-r', '-o', $obj, nativeObjFiles())->run();
@@ -401,72 +397,74 @@ sub sharedObject {
 }
 
 sub linkAll {
-      my ($output) = @_;
+      my ($output) = (@_);
       my $symbols = dumpSymbols();
 
       debug("Linking.\n");
-      shell(getKRunCommand($output, [objFiles()], undef, $symbols, makeOptions(1), 'c++', undef, undef))->verbose()->run();
+      shell(getLinkingCommand($output, $symbols, 1))->verbose()->run();
 }
 
 sub getKRunCommand {
-      my ($output, $objFiles, $src, $symbols, $opts, $lang, $uuid, $trampolines) = @_;
+      my ($output, $symbols, $sem) = @_;
 
-      my $cTransDef = profileDir("c11-translation-kompiled");
-      my $cppTransDef = profileDir("cpp14-translation-kompiled");
+      my $def = profileDir($sem);
 
-      my @krunArgs;
+      my @krun;
       if (useInterpreter()) {
-            my $dir = $lang eq 'c++' ? catfile($cppTransDef, 'cpp14-translation-kompiled') : catfile($cTransDef, 'c11-translation-kompiled');
-            @krunArgs =
+            my $dir = catfile($def, $sem);
+            @krun =
                   ( catfile($dir, 'interpreter')
                   , catfile($dir, 'realdef.cma')
                   , $symbols
                   , '--output-file', $output
                   );
       } else {
-            @krunArgs =
+            @krun =
                   ( KRUN
                   , '--output', 'binary'
                   , '--output-file', $output
-                  , '-d', $lang eq 'c++' ? $cppTransDef : $cTransDef
+                  , '-d', $def
                   , '-w', 'none'
                   , '--smt', 'none'
                   , '--argv', $symbols
                   );
 
             if (arg('-d')) {
-                  push(@krunArgs, '--debug');
+                  push(@krun, '--debug');
             }
       }
 
-      if (arg('-ftranslation-depth=')) {
-            push(@krunArgs, '--depth');
-            push(@krunArgs, arg('-ftranslation-depth='));
-      }
+      return @krun;
+}
+
+sub getLinkingCommand {
+      my ($output, $symbols, $link) = (@_);
+
+      my @objs = objFiles();
+
+      my @krun = getKRunCommand($output, $symbols, 'c11-cpp14-linking-kompiled');
 
       my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
       my $json = "#token($rvErrorJson, $string)";
 
-      @krunArgs = addArg("OPTIONS", $opts, 'text', @krunArgs);
-      @krunArgs = addArg("JSON", $json, 'text', @krunArgs);
+      @krun = addArg("OPTIONS", makeOptions($link), 'text', @krun);
+      @krun = addArg("JSON", $json, 'text', @krun);
 
-      if (!defined $uuid) {
-            $uuid = create_uuid_as_string();
-      }
+      my $uuid = create_uuid_as_string();
       my $encodedUuid = quote(backslash(quote($uuid)));
       my $uuidOpt = "#token($encodedUuid, $string)";
-      @krunArgs = addArg("UUID", $uuidOpt, 'text', @krunArgs);
+      @krun = addArg("UUID", $uuidOpt, 'text', @krun);
 
-      if (scalar @{$objFiles}) {
+      if (scalar @objs) {
             my $allObjsFile = tempFile('all-objs');
             my @catArgs = ();
             my @objTexts = ();
-            for (my $i = 0; $i < scalar @{$objFiles}; $i++) {
+            for (my $i = 0; $i < scalar @objs; $i++) {
                   my $thisObj = "";
-                  if (-e $objFiles->[$i]) {
+                  if (-e $objs[$i]) {
                         $thisObj = do {
                               local $/ = undef;
-                              open my $fh, '<', $objFiles->[$i];
+                              open my $fh, '<', $objs[$i];
                               <$fh>;
                         };
                   }
@@ -487,19 +485,46 @@ sub getKRunCommand {
             print $file $objText;
             close $file;
 
-            @krunArgs = addArg("OBJS", $allObjsFile, 'binaryfile', @krunArgs);
+            @krun = addArg("OBJS", $allObjsFile, 'binaryfile', @krun);
       } else {
-            @krunArgs = addArg("OBJS", ".K", 'text', @krunArgs);
-      }
-      if (defined $src) {
-            my $kast = parse($src, $lang, $trampolines);
-            @krunArgs = addArg("PGM", $kast, 'textfile', @krunArgs);
-      } else {
-            @krunArgs = addArg("PGM", ".K", 'text', @krunArgs);
+            @krun = addArg("OBJS", ".K", 'text', @krun);
       }
 
+      @krun = addArg("PGM", ".K", 'text', @krun);
+
       setShellDebugFile($output, 1);
-      return @krunArgs;
+      return @krun;
+}
+
+sub getTranslationCommand {
+      my ($output, $src, $lang, $uuid, $trampolines) = (@_);
+
+      my $cTransDef = profileDir("c11-translation-kompiled");
+      my $cppTransDef = profileDir("cpp14-translation-kompiled");
+
+      my @krun = getKRunCommand($output, 'dummy',
+            $lang eq 'c++'? 'cpp14-translation-kompiled' : 'c11-translation-kompiled');
+
+      if (arg('-ftranslation-depth=')) {
+            push(@krun, '--depth');
+            push(@krun, arg('-ftranslation-depth='));
+      }
+
+      my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
+      my $json = "#token($rvErrorJson, $string)";
+
+      @krun = addArg("OPTIONS", makeOptions(0), 'text', @krun);
+      @krun = addArg("JSON", $json, 'text', @krun);
+
+      my $encodedUuid = quote(backslash(quote($uuid)));
+      my $uuidOpt = "#token($encodedUuid, $string)";
+      @krun = addArg("UUID", $uuidOpt, 'text', @krun);
+
+      my $kast = parse($src, $lang, $trampolines);
+      @krun = addArg("PGM", $kast, 'textfile', @krun);
+
+      setShellDebugFile($output, 1);
+      return @krun;
 }
 
 sub dumpSymbols {

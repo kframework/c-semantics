@@ -1,5 +1,6 @@
 module CPP-EXECUTION-EXPR-INC-AND-DEC
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-EXECUTION-EXPR-ASSIGNMENT-SYNTAX
 
      rule postOp(LV:LVal, Op::Expr, _) => #postOp(LV, fillLHoles(LV, Op))
           requires Execution()

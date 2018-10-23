@@ -8,32 +8,32 @@ module CPP-TRANSLATION-STMT-LOOP
      imports CPP-TRANSLATION-ERROR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule ForTStmt(Decl::Stmt, Condition:Expr, Inc::Stmt, Block::Stmt)
-          => CompoundAStmt(ListItem(Decl) ListItem(ForTStmt(Condition, Inc, Block)))
+     rule ForTStmt(Decl::Stmt, Condition:Expr, Inc::Stmt, Blk::Stmt)
+          => CompoundAStmt(ListItem(Decl) ListItem(ForTStmt(Condition, Inc, Blk)))
 
      context ForTStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
-     rule ForTStmt((Condition:PRVal => convertType(type(bool), Condition)), Inc::Stmt, Block::Stmt)
+     rule ForTStmt((Condition:PRVal => convertType(type(bool), Condition)), Inc::Stmt, Blk::Stmt)
           requires notBool isCPPBoolType(type(Condition))
 
-     rule (.K => elaborate(Inc, Block)) ~> ForTStmt(Condition:PRVal, Inc::Stmt, Block::Stmt)
+     rule (.K => elaborate(Inc, Blk)) ~> ForTStmt(Condition:PRVal, Inc::Stmt, Blk::Stmt)
           requires isCPPBoolType(type(Condition))
-     rule <k> elaborateDone(Inc:K, Block:K)
+     rule <k> elaborateDone(Inc:K, Blk:K)
               ~> ForTStmt(Condition::PRVal, _, _)
-              => lintZero(Condition) ~> lintEmpty(Block)
+              => lintZero(Condition) ~> lintEmpty(Blk)
           ...</k>
-          <elab>... .K => ForStmt(Condition, Inc, Block) </elab>
+          <elab>... .K => ForStmt(Condition, Inc, Blk) </elab>
 
      context WhileTStmt((HOLE:Expr => reval(HOLE)), _) [result(PRVal)]
-     rule WhileTStmt((Condition:PRVal => convertType(type(bool), Condition)), Block::Stmt)
+     rule WhileTStmt((Condition:PRVal => convertType(type(bool), Condition)), Blk::Stmt)
           requires notBool isCPPBoolType(type(Condition))
 
-     rule (.K => elaborate(Block)) ~> WhileTStmt(Condition:PRVal, Block::Stmt)
+     rule (.K => elaborate(Blk)) ~> WhileTStmt(Condition:PRVal, Blk::Stmt)
           requires isCPPBoolType(type(Condition))
-     rule <k> elaborateDone(Block:K)
+     rule <k> elaborateDone(Blk:K)
               ~> WhileTStmt(Condition::PRVal, _)
-              => lintZero(Condition) ~> lintEmpty(Block)
+              => lintZero(Condition) ~> lintEmpty(Blk)
           ...</k>
-          <elab>... .K => WhileStmt(Condition, Block) </elab>
+          <elab>... .K => WhileStmt(Condition, Blk) </elab>
 
      rule <k> TBreakStmt() => .K ...</k>
           <elab>... .K => BreakStmt() </elab>

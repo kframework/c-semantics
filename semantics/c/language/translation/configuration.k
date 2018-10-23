@@ -1,11 +1,9 @@
 module C-CONFIGURATION
      imports BOOL-SYNTAX
-     imports C-LINKING-INIT-SYNTAX
      imports COMMON-CONFIGURATION
      imports COMMON-SYNTAX
      imports DEFAULT-STRATEGY
      imports INT-SYNTAX
-     imports LIBC-SYNTAX
      imports MAP
      imports SET
 
@@ -39,7 +37,6 @@ module C-CONFIGURATION
      </goto-map-calc>
      <k color="green">
           $PGM:K
-          ~> builtinTu
           ~> reportSuccess
           ~> cleanup
      </k>

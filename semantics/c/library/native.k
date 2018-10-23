@@ -13,7 +13,7 @@ module C-NATIVE-BRIDGE
      imports COMMON-BUILTIN-SYNTAX
      imports C-TYPING-SORTS
      imports LIBC-BUILTIN-SYNTAX
-     imports LIBC-SYNTAX
+     imports LIBC-TYPES-SYNTAX
 
      syntax K ::= #nativeCall(String, Type, List, List, K) [function, hook(C_SEMANTICS.nativeCall), impure]
      rule <generatedTop>... 

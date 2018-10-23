@@ -134,7 +134,7 @@ module C-TYPING-MISC
 
      rule addQualifier(Q:Qualifier, T:Type) => addQualifiers(noQuals +Qual Q, T)
 
-     rule addStorage(S:Storage, T:Type) => addModifier(S, T)
+     rule addStorage(S:StorageClassSpecifier, T:Type) => addModifier(S, T)
 
      rule addModifier(M:Modifier, T:UType) => utype(addModifier(M, type(T)))
      rule addModifiers(Mods::Set, T:UType) => utype(addModifiers(Mods, type(T)))

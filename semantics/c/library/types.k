@@ -1,11 +1,4 @@
-module LIBC-SYNTAX
-     imports C-DYNAMIC-SORTS
-     imports COMMON-BUILTIN-SYNTAX
-     imports C-TYPING-SORTS
-     imports INT-SYNTAX
-     imports LIST
-     imports STRING-SYNTAX
-
+module LIBC-TYPES-SYNTAX
      syntax Map ::= "builtins" [function]
                   | "extensionBuiltins" [function]
 
@@ -17,31 +10,15 @@ module LIBC-SYNTAX
                    | "lconv" [function]
                    | "sighandler_t" [function]
                    | "size_t" [function]
-
-     syntax RValue ::= "eof" [function]
-
-     syntax RValue ::= "stdin"  [function]
-                     | "stdout" [function]
-                     | "stderr" [function]
-
-     syntax LValue ::= fileLVal(SymBase) [function]
-     syntax LValue ::= filePtr(SymBase) [function]
-
 endmodule
 
-module LIBC-INIT
+module LIBC-TYPES
      imports BOOL-SYNTAX
-     imports C-CONFIGURATION
-     imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-SYNTAX
-     imports K-IO
-     imports LIBC-SYNTAX
+     imports LIBC-TYPES-SYNTAX
      imports MAP
-     imports SYMLOC-SYNTAX
 
      // Types for library functions defined in the semantics. These are the
      // definitive types against which all calls are checked for compatibility.
@@ -190,15 +167,6 @@ module LIBC-INIT
      rule lconv => typeref("__kcc_typeref_lconv")
      rule sighandler_t => ptr(fun(void, int))
      rule size_t => type(cfg:sizeut)
-
-     rule eof => tv(-1, utype(int))
-
-     rule fileLVal(Base::SymBase) => lv(lnew(Base), file)
-     rule filePtr(Base::SymBase) => lv(lnew(Base), type(pointerType(file)))
-
-     rule stdin  => tv(opaque(#stdin, utype(file)), utype(file))
-     rule stdout => tv(opaque(#stdout, utype(file)), utype(file))
-     rule stderr => tv(opaque(#stderr, utype(file)), utype(file))
 
 endmodule
 

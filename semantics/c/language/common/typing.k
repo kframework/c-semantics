@@ -24,7 +24,7 @@ module C-TYPING-SYNTAX
      imports MAP
 
      syntax Qualifier // defined in C-SYNTAX
-     syntax Storage // defined in C-SYNTAX
+     syntax StorageClassSpecifier // defined in C-SYNTAX
 
      syntax Type ::= t(Quals, Set, SimpleType) // possibly-qualified type
      syntax UType ::= ut(Set, SimpleUType)     // unqualified type
@@ -329,7 +329,7 @@ module C-TYPING-SYNTAX
 
      syntax Type ::= addQualifier(Qualifier, Type) [function]
      syntax Type ::= addQualifiers(Quals, Type) [function]
-     syntax Type ::= addStorage(Storage, Type) [function]
+     syntax Type ::= addStorage(StorageClassSpecifier, Type) [function]
 
      syntax Type ::= addModifiers(Set, Type) [function]
      syntax Type ::= addModifier(Modifier, Type) [function]

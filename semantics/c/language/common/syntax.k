@@ -1,8 +1,8 @@
 module C-SORTS
-     syntax Storage
+     syntax StorageClassSpecifier
      syntax Qualifier
      syntax Modifier ::= Qualifier
-     syntax Modifier ::= Storage
+     syntax Modifier ::= StorageClassSpecifier
 endmodule
 
 module C-SYNTAX
@@ -10,7 +10,7 @@ module C-SYNTAX
      imports C-REVAL-SYNTAX
      imports INT-SYNTAX
      imports STRING-SYNTAX
-     imports COMMON-SORTS
+     imports COMMON-SYNTAX
 
      syntax KResult ::= SpecifierElem
 
@@ -20,7 +20,7 @@ module C-SYNTAX
      syntax C ::= Expression
      syntax C ::= SpecifierElem
      syntax C ::= Statement
-     syntax C ::= Storage
+     syntax C ::= StorageClassSpecifier
 
      syntax Statement ::= Block(Int, K) [avoid]
 
@@ -51,17 +51,6 @@ module C-SYNTAX
      syntax Statement ::= Zero(K) [strict]
      syntax Statement ::= InitPadding(K, CId) [strict(1)]
 
-     /*
-     and storage =
-     NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER
-     */
-     // this will be used as the actual atomic modifier
-     syntax Storage ::= NoStorage()
-     syntax Storage ::= Auto()
-     syntax Storage ::= Static()
-     syntax Storage ::= Extern()
-     syntax Storage ::= Register()
-     syntax Storage ::= ThreadLocal()
 
      /*
      and cvspec =
@@ -81,10 +70,10 @@ module C-SYNTAX
      // the following are because I flattened SpecifierElem
      syntax SpecifierElem ::= Modifier
 
+     syntax StorageClassSpecifier ::= AutoSpecifier
      syntax Modifier ::= FunctionSpecifier
-     syntax FunctionSpecifier ::= Inline()
      syntax FunctionSpecifier ::= Noreturn()
-     syntax FunctionSpecifier ::= SpecExtendsTuOf(CId)
+                                | SpecExtendsTuOf(CId)
 
      /*
      | IF of expression * statement * statement * cabsloc
@@ -290,12 +279,6 @@ module C-SYNTAX
      syntax Expression ::= K "." CId [left, strict(1)]
 
      syntax Expression ::= GnuBody(K)
-
-     /*
-     and init_expression =
-     | NO_INIT
-     */
-     syntax KItem ::= NoInit()
 
      /*
      and attribute = String * expression list

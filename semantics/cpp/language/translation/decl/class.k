@@ -1028,7 +1028,7 @@ module CPP-TRANSLATION-DECL-CLASS
      // associated with any field. This is important for understanding the
      // effect of the gcc et al. padding attr as applied to a particular field.
 
-     syntax Int ::= pad(Int, CPPType) [function]
+     syntax Int ::= pad(Int, CPPType) [function, klabel(cppPad)]
      // Non-bitfields are aligned according to their type (if we note that
      // fields tagged with the Packed() attribute have an alignment of 1 byte).
      rule pad(V::Int, T::CPPType) => padTo(V, byteAlignofType(T))

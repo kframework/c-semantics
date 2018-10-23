@@ -34,7 +34,6 @@ module CPP-TRANSLATION-OVERLOADING
      imports K-EQUAL
      imports STRING
      imports COMPAT-SYNTAX
-     imports C-LINKING-RESOLUTION-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-CLASS-SYNTAX
      imports CPP-CONVERSION-SYNTAX

@@ -1,5 +1,4 @@
 module C-CONFIGURATION
-     imports C-LINKING-INIT-SYNTAX
      imports COMMON-CONFIGURATION
      imports COMMON-THREAD-LOCAL
      imports CPP-DYNAMIC-SYNTAX
@@ -27,9 +26,7 @@ module C-CONFIGURATION
 
      <k color="green">
           $PGM:K
-          ~> builtinTu
-          ~> load($OBJS:K)
-          ~> link
+          ~> reportSuccess
           ~> cleanup
      </k>
 
@@ -39,7 +36,7 @@ module C-CONFIGURATION
      <deferred-class-actions> .K </deferred-class-actions>
 
      <compile-time-evaluation> false </compile-time-evaluation>
-     <thread-local/>
+     <thread-local />
 
      <curr-state>
          <curr-tr-tu color="lightgray"> "" </curr-tr-tu>

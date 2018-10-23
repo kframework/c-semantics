@@ -146,7 +146,6 @@ endmodule
 
 module C-DYNAMIC
      imports C-DYNAMIC-SYNTAX
-     imports C-CONFIGURATION
      imports BOOL
      imports K-EQUAL
      imports C-CHECK-USE-SYNTAX

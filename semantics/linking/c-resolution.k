@@ -1,23 +1,18 @@
-module C-LINKING-RESOLUTION-SYNTAX
-     imports BASIC-K
+module LINKING-C-RESOLUTION-SYNTAX
+     imports MAP
 
-     syntax KItem ::= "resolveReferences"
-     syntax KItem ::= "removeUnusedIdentifiers"
-     syntax Bool ::= isCLinkage(K) [function]
+     syntax KItem ::= resolveCReferences(Map)
+                    | "resolveMain"
 endmodule
 
-module C-LINKING-RESOLUTION
-     imports C-LINKING-RESOLUTION-SYNTAX
-     imports COMMON-RESOLUTION-SYNTAX
-     imports COMMON-LINKING-INTERFACE-SYNTAX
+module LINKING-C-RESOLUTION
+     imports LINKING-C-RESOLUTION-SYNTAX
      imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports C-CONFIGURATION
-     imports COLLECTIONS
-     imports LIST
+     imports BOOL
      imports MAP
      imports STRING
      imports COMMON-SORTS
-     imports COMPAT-SYNTAX
      imports ERROR-SYNTAX
      imports SYMLOC-SYNTAX
 
@@ -25,22 +20,6 @@ module C-LINKING-RESOLUTION
      // environment of every TU where it appears.
 
      syntax KItem ::= resolveCReference(CId)
-                    | resolveCPPReferences(Set)
-                    | resolveCReferences(Map)
-
-     rule <k> resolveReferences
-               => resolveCPPReferences(OdrUses)
-               ~> resolveCReferences(Uses)
-          ...</k>
-          <odr-uses> OdrUses::Set => .Set </odr-uses>
-          <external-uses> Uses::Map => .Map </external-uses>
-
-     rule (.K => resolveCPPReference(Base))
-          ~> resolveCPPReferences((SetItem(Base::SymBase) => .Set) _::Set)
-          [structural]
-     rule resolveCPPReferences(.Set) => .K
-          [structural]
-
      rule (.K => setTranslationLoc(L) ~> resolveCReference(X))
                ~> resolveCReferences((X:CId |-> L:CabsLoc => .Map) _)
           [structural]
@@ -85,7 +64,7 @@ module C-LINKING-RESOLUTION
 
      // Now everything left in <external-uses> should be an unresolved
      // reference.
-     rule resolveCReferences(.Map) => setTranslationLoc(UnknownCabsLoc) ~> resolveMain
+     rule resolveCReferences(.Map) => .K
 
      // Remember which TU has the definition of main.
      rule <k> resolveMain => .K ...</k>
@@ -111,31 +90,5 @@ module C-LINKING-RESOLUTION
           <functions> Functions:Map </functions>
           requires notBool (Main in_keys(Functions))
           [structural]
-
-     syntax KItem ::= removeFromExternalDecls(List, tu: String)
-     syntax KItem ::= removeUnusedIdentifiers2(tu: String)
-
-     rule removeUnusedIdentifiers => removeUnusedIdentifiers2(nameOfCurrentTranslationUnit())
-
-     rule <k> removeUnusedIdentifiers2(Tu::String) => removeFromExternalDecls(Set2List(keys(Env) -Set Uses), Tu) ...</k>
-          <tu-id> Tu </tu-id>
-          <genv> Env:Map => removeAll(Env, (keys(Env) -Set Uses)) </genv>
-          <gtypes> Types:Map => removeAll(Types, (keys(Types) -Set Uses)) </gtypes>
-          (<tu-linking-state>...
-               <uses> Uses:Set </uses>
-          ...</tu-linking-state> => .Bag)
-
-     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _, Tu::String) ...</k>
-          <tu-id> Tu </tu-id>
-          <external-decls>... X |-> (SetItem(Tu) S::Set => S) ...</external-decls>
-          requires S =/=K .Set
-     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _, Tu::String) ...</k>
-          <tu-id> Tu </tu-id>
-          <external-decls>... X |-> SetItem(Tu) => .Map ...</external-decls>
-     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _, Tu::String) ...</k>
-          <tu-id> Tu </tu-id>
-          <external-decls> Decls:Map </external-decls>
-          requires notBool (X in_keys(Decls))
-     rule removeFromExternalDecls(.List, _) => .K
 
 endmodule

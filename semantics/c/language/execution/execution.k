@@ -1,6 +1,5 @@
 require "check-effective.k"
 require "check-restrict.k"
-require "configuration.k"
 require "env.k"
 require "error.k"
 require "init.k"
@@ -29,15 +28,10 @@ require "expr/sequencing.k"
 require "decl/local.k"
 require "decl/typedef.k"
 
-require "c-extensions-execution.k"
-require "../../../common/execution/execution.k"
-
 module C-EXECUTION
-     imports C-CONFIGURATION
      imports C-ENV
      imports C-EXECUTION-ERROR
      imports C-EXECUTION-INIT
-     imports COMMON-EXECUTION
 
      imports C-CHECK-EFFECTIVE
      imports C-CHECK-RESTRICT
@@ -66,7 +60,6 @@ module C-EXECUTION
      imports C-DECL-LOCAL
      imports C-DECL-TYPEDEF
 
-     imports C-EXECUTION-EXTENSIONS
 endmodule
 
 

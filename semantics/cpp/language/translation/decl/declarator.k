@@ -27,13 +27,10 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports C-CONFIGURATION
      imports K-REFLECTION
-     imports STRING
      imports OPTIONS-SYNTAX
-     imports C-LINKING-RESOLUTION-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-CLASS-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
@@ -565,8 +562,8 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                     | restoreThreadLocal2(K)
 
 
-     rule <k> preserveThreadLocal(Computation::K)
-              => Computation ~> restoreThreadLocal1(TL)
+     rule <k> preserveThreadLocal(Comp::K)
+              => Comp ~> restoreThreadLocal1(TL)
           ...</k> <thread-local> TL::Bag </thread-local>
 
      rule restoreThreadLocal1(TL::K) => popBlock ~> restoreThreadLocal2(TL)

@@ -53,7 +53,7 @@ module CPP-TRANSLATION-EXPR-LITERAL
           ...</k>
           <mem>... obj(0, Align, string(S)) |-> _ ...</mem>
 
-     syntax KItem ::= allocString(SymBase, CPPType, String)
+     syntax KItem ::= allocString(SymBase, CPPType, String) [klabel(allocStringCpp)]
      rule allocString(Base::SymBase, T::CPPType, S::String)
           => allocObject(Base, T, lengthString(S))
           ~> initString(lnew(Base), S)

@@ -4,38 +4,25 @@ module C-TRANSLATION-INIT
      imports STRING
      imports COMPAT-SYNTAX
      imports OPTIONS-SYNTAX
-     imports LIBC-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-CONFIGURATION
      imports C-DECL-RESOLUTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
-     imports C-LINKING-INIT-SYNTAX
-     imports C-LINKING-RESOLUTION-SYNTAX
      imports C-SYNTAX
+     imports COMMON-INIT-SYNTAX
      imports COMMON-TRANSLATION-UNIT-SYNTAX
 
      rule ToIdentifier("___missing_field_name") => #NoName
      rule ToIdentifier(S:String) => Identifier(S)
           requires S =/=String "___missing_field_name"
 
-     rule <k> builtinTu
-               => makeTu("builtin")
-               ~> addBuiltins(builtins)
-               ~> removeUnusedIdentifiers
-          ...</k>
-          <options>... SetItem(Builtins()) ...</options>
-
-     rule <k> builtinTu => .K ...</k>
-          <options> Opts:Set </options>
-          requires notBool (Builtins() in Opts)
-
-     rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
-               => makeTu(TU +String Uuid)
+     rule <k> TranslationUnit(Tu:String, list(Strings:List), list(Decls:List))
+               => makeTu(Tu +String Uuid)
                ~> preDeclareStrings(Strings)
                ~> listToK(Decls)
                ~> allocateIncompleteTentatives
-               ~> removeUnusedIdentifiers
+               ~> removeUnusedIdentifiers(Tu +String Uuid)
           ...</k>
           <uuid> Uuid::String </uuid>
 
@@ -81,6 +68,12 @@ module C-TRANSLATION-INIT
 
      rule NothingExpression() => {emptyValue}:>Expression
 
-     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tu>TU::String</curr-tu> ...</generatedTop>) => TU
+     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tu> Tu::String </curr-tu> ...</generatedTop>) => Tu
 
+     rule (<T>...
+               <k> cleanup </k>
+               <options> Opts:Set </options>
+          ...</T> => .Bag)
+          requires notBool (Debug() in Opts)
+          [structural]
 endmodule

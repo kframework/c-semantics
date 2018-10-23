@@ -14,6 +14,8 @@ endmodule
 module CPP-TRANSLATION-ODR
      imports CPP-TRANSLATION-ODR-SYNTAX
      imports C-CONFIGURATION
+     imports COMPAT-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
 
      rule <k> makeOdrUsed(Base::SymBase) => .K ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>

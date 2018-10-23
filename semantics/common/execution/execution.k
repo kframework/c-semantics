@@ -1,4 +1,3 @@
-require "../common.k"
 require "delete-object.k"
 require "function-call.k"
 require "thread_local.k"
