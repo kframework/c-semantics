@@ -223,7 +223,7 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
-               ListItem(noMoreFields => next)
+               (ListItem(noMoreFields) => ListItem(next))
                ListItem(ncle(_ .init _::CId, _))
           ...</curr-subobject>
           [structural]
@@ -253,7 +253,7 @@ module C-DECL-INITIALIZER
 
      rule <k> fillInit(InitFragment(NextInit(), Exp:K)) => fillInit(Exp) ...</k>
           <curr-subobject>
-               ListItem(K:K)
+               ListItem(K:KItem)
           ...</curr-subobject>
           requires K =/=K next andBool K =/=K noMoreFields
           [structural]
@@ -262,7 +262,7 @@ module C-DECL-INITIALIZER
                ~> fillInit(InitFragment(NextInit(), _))
           ...</k>
           <curr-subobject>
-               ListItem(K:K) L::List
+               ListItem(K:KItem) L::List
           </curr-subobject>
           requires K ==K noMoreIndices orBool
                (K ==K noMoreFields andBool notBool isFieldAccess(L))
@@ -404,7 +404,7 @@ module C-DECL-INITIALIZER
                (.List => ListItem(findStruct(t(Qs, S, structType(X)))))
                L:List
           </curr-subobject>
-          requires {L[0]}<:K =/=K next
+          requires {L[0]}<:KItem =/=K next
           [structural]
 
      syntax KItem ::= findStruct(Type)
@@ -528,13 +528,13 @@ module C-DECL-INITIALIZER
           [structural]
      rule <k> fillInit-aux(SingleInit(StringLiteral(""))) => .K ...</k>
           <curr-subobject>
-               ListItem(K:K => next)
+               ListItem(K:KItem) => ListItem(next)
           ...</curr-subobject>
           requires notBool isSubObjectControl(K)
           [structural]
      rule <k> fillInit-aux(SingleInit(WStringLiteral(list(.List)))) => .K ...</k>
           <curr-subobject>
-               ListItem(K:K => next)
+               ListItem(K:KItem) => ListItem(next)
           ...</curr-subobject>
           requires notBool isSubObjectControl(K)
           [structural]

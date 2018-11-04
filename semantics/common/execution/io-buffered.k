@@ -27,7 +27,7 @@ module COMMON-IO-BUFFERED
           requires notBool isNativeLoc(loc(Base, Offset))
           [structural]
      rule <buffer>
-               ListItem(bwrite((Loc::SymLoc => Loc +bytes 1), ((ListItem(V:K) => writeNativeByte(Loc, V)) _::List)))
+               ListItem(bwrite((Loc::SymLoc => Loc +bytes 1), ((ListItem(V:KItem) => writeNativeByte(Loc, V)) _::List)))
           ...</buffer>
           requires isNativeLoc(Loc)
      rule <buffer>

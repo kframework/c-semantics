@@ -22,7 +22,7 @@ module C-DECL-RESOLUTION
                ~> allocateIncompleteTentatives
           ...</k>
           <externals>...
-               (X:CId |-> Decl:K => .Map)
+               (X:CId |-> Decl:KItem => .Map)
           ...</externals>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>

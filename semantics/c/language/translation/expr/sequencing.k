@@ -8,10 +8,10 @@ module C-EXPR-SEQUENCING
      imports C-TYPING-SYNTAX
 
      syntax KItem ::= commaListHolder(K)
-     rule Comma(list(ListItem(K:K) L:List))
+     rule Comma(list(ListItem(K:KItem) L:List))
           => toRVal(K) ~> comma ~> commaListHolder(.K) ~> Comma(list(L))
           requires L =/=K .List
-     rule commaListHolder(CL:K) ~> Comma(list(ListItem(K:K) L:List))
+     rule commaListHolder(CL:K) ~> Comma(list(ListItem(K:KItem) L:List))
           => toRVal(K) ~> comma ~> commaListHolder(CL) ~> Comma(list(L))
           requires L =/=K .List
 
@@ -22,7 +22,7 @@ module C-EXPR-SEQUENCING
           ~> commaListHolder(_)
           requires notBool isHold(R)
 
-     rule commaListHolder(CL:K) ~> Comma(list(ListItem(K:K)))
+     rule commaListHolder(CL:K) ~> Comma(list(ListItem(K:KItem)))
           => toRVal(K) ~> commaListHolder(CL)
      rule toRVal(R:RValue) ~> commaListHolder(CL:K)
           => te(compoundExp(CL ~> toRVal(stripHold(R))), stripConstants(utype(R)))

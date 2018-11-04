@@ -174,7 +174,7 @@ module C-COMMON-EXPR-ADDITIVE
 
      rule newFromArray(loc(Base:SymBase, Offset:Int, .Set), _, _)
           => loc(Base, Offset, .Set)
-     rule newFromArray(loc(Base:SymBase, Offset:Int, SetItem(K:K) Prov:Set), T::UType, I:Int)
+     rule newFromArray(loc(Base:SymBase, Offset:Int, SetItem(K:KItem) Prov:Set), T::UType, I:Int)
           => #newFromArray(Base, Offset, K, Prov, .Set, T, I)
      rule newFromArray(Loc:SymLoc, _, _) => Loc
           requires notBool isFromArray(Loc)
@@ -187,10 +187,10 @@ module C-COMMON-EXPR-ADDITIVE
           => loc(Base, Offset, SetItem(K) Prov)
           requires getKLabel(K) =/=K #klabel(`fromArray`)
      rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int, Len:Int),
-               SetItem(K':K) S:Set, Prov:Set, T::UType, I:Int)
+               SetItem(K':KItem) S:Set, Prov:Set, T::UType, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(fromArray(ArrOffset +Int
                I *Int byteSizeofType(innerType(T)), Len)) Prov, T, I)
-     rule #newFromArray(Base:SymBase, Offset:Int, K:K, SetItem(K':K)
+     rule #newFromArray(Base:SymBase, Offset:Int, K:K, SetItem(K':KItem)
                S:Set, Prov:Set, T::UType, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(K) Prov, T, I)
           requires getKLabel(K) =/=K #klabel(`fromArray`)

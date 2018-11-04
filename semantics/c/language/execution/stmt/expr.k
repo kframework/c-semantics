@@ -44,7 +44,7 @@ module C-STMT-EXPR
           [structural]
 
      syntax Bool ::= fromArrayStatic(Type) [function]
-     rule fromArrayStatic(t(Qs::Quals, SetItem(K:K) S:Set, T::SimpleType))
+     rule fromArrayStatic(t(Qs::Quals, SetItem(K:KItem) S:Set, T::SimpleType))
           => (getKLabel(K) ==K #klabel(`arrayStatic`)) orBool fromArrayStatic(t(Qs, S, T))
      rule fromArrayStatic(_) => false [owise]
 
@@ -75,7 +75,7 @@ module C-STMT-EXPR
 
      rule getFirstMatch(S:Set, L:K) => getFirstMatch'(.K, S, L)
 
-     rule getFirstMatch'((.K => K), (SetItem(K:K) => .Set) _, _)
+     rule getFirstMatch'((.K => K), (SetItem(K:KItem) => .Set) _, _)
      rule getFirstMatch'((K:K => .K), _, L:K)
           requires getKLabel(K) =/=K L
                andBool K =/=K .K

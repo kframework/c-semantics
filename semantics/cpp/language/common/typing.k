@@ -681,7 +681,7 @@ module CPP-TYPING
 
      syntax Map ::= #getDirectBaseClassOffsets(result: Map, bases: List, currentOffset: Int, cenv: Map) [function]
      rule #getDirectBaseClassOffsets(M::Map, .List, _, _) => M
-     rule #getDirectBaseClassOffsets(M::Map, ListItem(B:Class => type(classType(B))) _, _, _)
+     rule #getDirectBaseClassOffsets(M::Map, (ListItem(B:Class) => ListItem(type(classType(B)))) _, _, _)
      rule #getDirectBaseClassOffsets(M::Map => M[B <- CurrentOffset +Int Offset],
                (ListItem(t(...st: classType(B::Class)) #as T::CPPType) => .List) _,
                CurrentOffset::Int, 

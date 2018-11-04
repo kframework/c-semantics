@@ -27,7 +27,7 @@ module CPP-EXECUTION-STMT-TRY
      // if there are still blocks in this function, pop them
      rule <k> (.K => popBlock) ~> throw(V::LVal) ...</k>
           <catch-handlers> .List </catch-handlers>
-          <block-stack> ListItem(B::K) Blocks::List </block-stack>
+          <block-stack> ListItem(B::KItem) Blocks::List </block-stack>
           <block-history> ListItem(Num::Int) ...</block-history>
           <call-stack> Funcs::List </call-stack>
           <loop-stack> Loops::List </loop-stack>
@@ -37,7 +37,7 @@ module CPP-EXECUTION-STMT-TRY
      // if we are at the root of a loop, pop it before popping further blocks
      rule <k> throw(V::LVal) ~> (_ => K) </k>
           <catch-handlers> .List </catch-handlers>
-          <block-stack> ListItem(B::K) Blocks::List </block-stack>
+          <block-stack> ListItem(B::KItem) Blocks::List </block-stack>
           <block-history> ListItem(Num::Int) ...</block-history>
           <call-stack> Funcs::List </call-stack>
           <loop-stack> ListItem(kpair(Num, K:K)) => .List ...</loop-stack>
@@ -47,7 +47,7 @@ module CPP-EXECUTION-STMT-TRY
      rule <k> (.K => unwindFunction) ~> throw(V::LVal) ...</k> 
           <catch-handlers> .List </catch-handlers>
           <block-stack> .List </block-stack>
-          <call-stack> ListItem(F::K) Funcs::List </call-stack>
+          <call-stack> ListItem(F::KItem) Funcs::List </call-stack>
           requires canUnwindStack(.List, .List, ListItem(F) Funcs, type(V))
 
      // handles calling terminate on uncaught exception or when an exception

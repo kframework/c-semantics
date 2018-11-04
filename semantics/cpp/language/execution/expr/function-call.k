@@ -32,7 +32,7 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
      rule <k> BuiltinCallOp(lv(loc(Base::SymBase, 0), _, T:CPPFunctionType), IsVirtual:Bool, Args::List)
               => prepareArguments(CurrLoc, Base, Fun, T, CPPLinkage, IsVirtual, Args)
           ...</k>
-          <functions>... Base |-> Fun:K ...</functions>
+          <functions>... Base |-> Fun:KItem ...</functions>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           requires isDirectBase(Base) orBool (isMethodPure(T) andBool IsVirtual)
      rule <k> BuiltinCallOp(lv(loc(obj(0, Align::Int, nativeSymbol(S::String)), _), _, T:CPPFunctionType), IsVirtual:Bool, Args::List)
@@ -41,16 +41,16 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
           <external-types>... Identifier(S) |-> CType::Type ...</external-types>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
 
-     syntax Expr ::= prepareArguments(CabsLoc, SymBase, K, EffectiveType, LanguageLinkage, Bool, List)
-     rule prepareArguments(CurrLoc::CabsLoc, Base::SymBase, Fun:K, CallT::EffectiveType, Linkage::LanguageLinkage, IsVirtual::Bool, Args::List)
+     syntax Expr ::= prepareArguments(CabsLoc, SymBase, KItem, EffectiveType, LanguageLinkage, Bool, List)
+     rule prepareArguments(CurrLoc::CabsLoc, Base::SymBase, Fun::KItem, CallT::EffectiveType, Linkage::LanguageLinkage, IsVirtual::Bool, Args::List)
           => evalArgs(CurrLoc, Base, Fun, CallT, Linkage, IsVirtual, list(Args))
 
-     syntax Expr ::= evalArgs(CabsLoc, SymBase, fun: K, EffectiveType, LanguageLinkage, Bool, args: StrictList)
+     syntax Expr ::= evalArgs(CabsLoc, SymBase, fun: KItem, EffectiveType, LanguageLinkage, Bool, args: StrictList)
      // evaluating arguments for call to C function
      context evalArgs(... fun: functionObject(_::CId, _, _), args: HOLE:StrictList => prval(HOLE))
      // evaluating arguments for call to C++ function
      context evalArgs(... fun: functionObject(_::QualId, _, _, _), args: HOLE:StrictList)
-     rule evalArgs(CurrLoc::CabsLoc, Base::SymBase, Fun:K, CallT::EffectiveType, Linkage::LanguageLinkage, false, krlist(Args::List))
+     rule evalArgs(CurrLoc::CabsLoc, Base::SymBase, Fun::KItem, CallT::EffectiveType, Linkage::LanguageLinkage, false, krlist(Args::List))
           => application(CurrLoc, Base, Fun, CallT, Linkage, krlist(Args))
      rule evalArgs(_, _, functionObject(Q::QualId, _, _, _), CallT::CPPType, _, true, krlist(ListItem(prv(Obj::SymLoc, _, _) #as Arg1::PRVal) Args::List))
           => virtualCall(CallT, computeFinalOverrider(Q, CallT, readBytes(stripProv(Obj), byteSizeofType(type(pointerType(type(void)))), type(pointerType(type(void))))), 

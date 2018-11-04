@@ -151,15 +151,15 @@ module LINKING-INIT
      syntax Map ::= mergeDecls(Map, Map) [function]
                   | #mergeDecls(Map, Map, Set) [function]
      rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M1:Map, updateMap(M1, M2), intersectSet(keys(M1), keys(M2)))
-     rule #mergeDecls(OldValues:Map, NewValues:Map, SetItem(Key:K) CommonKeys:Set)
-          => #mergeDecls(OldValues, NewValues[Key <- {{OldValues[Key]}<:K}:>Set {{NewValues[Key]}<:K}:>Set], CommonKeys)
+     rule #mergeDecls(OldValues:Map, NewValues:Map, SetItem(Key:KItem) CommonKeys:Set)
+          => #mergeDecls(OldValues, NewValues[Key <- {{OldValues[Key]}<:KItem}:>Set {{NewValues[Key]}<:KItem}:>Set], CommonKeys)
      rule #mergeDecls(_, NewValues:Map, .Set) => NewValues
 
      syntax Map ::= mergeDefs(Map, Map) [function]
                   | #mergeDefs(Map, Map, Set) [function]
      rule mergeDefs(M1::Map, M2::Map) => #mergeDefs(M1, updateMap(M1, M2), intersectSet(keys(M1), keys(M2)))
-     rule #mergeDefs(OldValues::Map, NewValues::Map, SetItem(Key:K) CommonKeys::Set)
-          => #mergeDefs(OldValues, NewValues[Key <- updateMap({{OldValues[Key]}<:K}:>Map, {{NewValues[Key]}<:K}:>Map)], CommonKeys)
+     rule #mergeDefs(OldValues::Map, NewValues::Map, SetItem(Key:KItem) CommonKeys::Set)
+          => #mergeDefs(OldValues, NewValues[Key <- updateMap({{OldValues[Key]}<:KItem}:>Map, {{NewValues[Key]}<:KItem}:>Map)], CommonKeys)
      rule #mergeDefs(_, NewValues::Map, .Set) => NewValues
 
      rule mergeObj(B:K, .K) => B

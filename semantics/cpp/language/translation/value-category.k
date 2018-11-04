@@ -41,7 +41,7 @@ module CPP-TRANSLATION-VALUE-CATEGORY
                      | ".SCatList"
      rule isKResult(.SCatList) => true
      rule isKResult(S1:K cats:: S2::SCatList) => isValueCategory(S1) andBool isKResult(S2)
-     rule toSCatList(ListItem(K:K) L::List) => K cats:: toSCatList(L)
+     rule toSCatList(ListItem(K:KItem) L::List) => K cats:: toSCatList(L)
      rule toSCatList(.List) => .SCatList
      rule ofSCatList(krlist(L1::List) cats:: L2::SCatList) => L1 ofSCatList(L2)
      rule ofSCatList(.SCatList) => .List
@@ -99,7 +99,7 @@ module CPP-TRANSLATION-VALUE-CATEGORY
      // 5.2.3:2
      rule catof(FunctionalCast(_, .List) => prvalue)
      // 5.2.3:1
-     rule catof(FunctionalCast(T::AType, ListItem(A::K)) => ParenthesizedCast(T, A))
+     rule catof(FunctionalCast(T::AType, ListItem(A::Expr)) => ParenthesizedCast(T, A))
      rule catof(FunctionalCast(_, ListItem(_) ListItem(_) _::List) => prvalue)
 
      rule unnamedCat(T::CPPType) => #if isUnnamedLValue(T) #then lvalue #else #if isUnnamedXValue(T) #then xvalue #else prvalue #fi #fi

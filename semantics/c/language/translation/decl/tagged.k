@@ -159,17 +159,17 @@ module C-DECL-TAGGED
      rule incompleteToFlexibleArrayMember(
           ListItem(typedDeclaration(t(Qs::Quals, Mods::Set, incompleteArrayType(T::Type)), X:CId)))
           => ListItem(typedDeclaration(t(Qs, Mods, flexibleArrayType(T)), X))
-     rule incompleteToFlexibleArrayMember(ListItem(D::K) L::List)
+     rule incompleteToFlexibleArrayMember(ListItem(D::KItem) L::List)
           => ListItem(D) incompleteToFlexibleArrayMember(L)
           [owise]
      rule incompleteToFlexibleArrayMember(.List) => .List
 
      syntax Bool ::= structFieldsComplete(List) [function]
-     rule structFieldsComplete(ListItem(D:K) L::List)
+     rule structFieldsComplete(ListItem(D::KItem) L::List)
           => isCompleteType(type(D)) andBool isRigidType(type(D))
                andBool structFieldsComplete(L)
           requires L =/=K .List
-     rule structFieldsComplete(ListItem(D::K))
+     rule structFieldsComplete(ListItem(D::KItem))
           => (isCompleteType(type(D)) andBool isRigidType(type(D))) orBool isIncompleteArrayType(type(D))
      rule structFieldsComplete(.List) => true
 

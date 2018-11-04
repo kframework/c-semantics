@@ -27,7 +27,7 @@ module C-TRANSLATION-INIT
           <uuid> Uuid::String </uuid>
 
      syntax KItem ::= preDeclareStrings(List)
-     rule preDeclareStrings(ListItem(K:K) L:List)
+     rule preDeclareStrings(ListItem(K:KItem) L:List)
           => K ~> discard
           ~> preDeclareStrings(L)
           [structural]

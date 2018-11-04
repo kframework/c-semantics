@@ -231,7 +231,7 @@ module C-STMT-GOTO
 
      syntax KItem ::= declVariables(Set)
      rule <k> (.K => Decl ~> enableInits)
-               ~> declVariables((SetItem(Decl:K) => .Set) _)
+               ~> declVariables((SetItem(Decl:KItem) => .Set) _)
           ...</k>
           <should-init> _ => false </should-init>
           [structural]
@@ -246,7 +246,7 @@ module C-STMT-GOTO
      // isSuffixOf(A, B) => true iff list A is a suffix of B
      syntax Bool ::= isSuffixOf(List, List) [function]
      rule isSuffixOf(.List, _) => true
-     rule isSuffixOf(L:List ListItem(K:K), L':List ListItem(K))
+     rule isSuffixOf(L:List ListItem(K:KItem), L':List ListItem(K))
           => isSuffixOf(L, L')
      rule isSuffixOf(_, _) => false [owise]
 

@@ -605,7 +605,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule getDefaultReturnOp(_, _) => prv(voidVal, noTrace, type(void)) [owise]
 
      syntax KItem ::= dummyBind(List)
-     rule (.K => K) ~> dummyBind((ListItem(K:K) => .List) _)
+     rule (.K => K) ~> dummyBind((ListItem(K:KItem) => .List) _)
      rule dummyBind(.List) => .K
      // as functions can have default arguments we allow any initializers here
      rule (declareObject(NoNamespace(), _, X::CId, _, T::CPPType, _, _, NoLinkage, AutoStorage, _)

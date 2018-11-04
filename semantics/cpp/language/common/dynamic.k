@@ -112,7 +112,8 @@ module CPP-DYNAMIC-SYNTAX
      syntax Decl ::= declareNonStaticObjectExec(id: CId, t: CPPType, init: K, DeclarationType, Duration, Set)
      syntax Decl ::= declareLocalStaticObject(CId, SymBase, CPPType)
      syntax KItem ::= frozenDeclaration(Int, Int, Decl) [klabel(frozenDeclarationCpp)]
-     syntax Expr ::= compoundInit(Expr, Expr) [strict(1)]
+     syntax Expr ::= CompoundInitExpr
+     syntax CompoundInitExpr ::= compoundInit(Expr, Expr) [strict(1)]
 
      syntax Expr ::= "callTerminate"
 
@@ -336,7 +337,7 @@ module CPP-DYNAMIC
                      | ".SPRValList"
      rule isKResult(.SPRValList) => true
      rule isKResult(S1::SPRValList prval:: S2::SPRValList) => isKResult(S1) andBool isKResult(S2)
-     rule toSPRValList(ListItem(K:K) L::List) => K prval:: toSPRValList(L)
+     rule toSPRValList(ListItem(K:KItem) L::List) => K prval:: toSPRValList(L)
      rule toSPRValList(.List) => .SPRValList
      rule ofSPRValList(krlist(L1::List) prval:: L2::SPRValList) => L1 ofSPRValList(L2)
      rule ofSPRValList(.SPRValList) => .List
@@ -355,7 +356,7 @@ module CPP-DYNAMIC
                      | ".STypeStrictList"
      rule isKResult(.STypeStrictList) => true
      rule isKResult(S1::STypeStrictList typeStrict:: S2::STypeStrictList) => isKResult(S1) andBool isKResult(S2)
-     rule toSTypeStrictList(ListItem(K:K) L::List) => K typeStrict:: toSTypeStrictList(L)
+     rule toSTypeStrictList(ListItem(K:KItem) L::List) => K typeStrict:: toSTypeStrictList(L)
      rule toSTypeStrictList(.List) => .STypeStrictList
      rule ofSTypeStrictList(krlist(L1::List) typeStrict:: L2::STypeStrictList) => L1 ofSTypeStrictList(L2)
      rule ofSTypeStrictList(.STypeStrictList) => .List

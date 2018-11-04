@@ -907,7 +907,7 @@ module CPP-TRANSLATION-DECL-CLASS
           => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
           requires FOffset <=Int Offset
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
-               <base-classes>... ListItem(C:Class => type(classType(C))) </base-classes>
+               <base-classes>... ListItem(C:Class) => ListItem(type(classType(C))) </base-classes>
           ...</class>, _)
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>

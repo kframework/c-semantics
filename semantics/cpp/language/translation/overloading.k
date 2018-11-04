@@ -384,7 +384,7 @@ module CPP-TRANSLATION-OVERLOADING
                andBool notBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA))
                andBool allViable(M, NArgs, Types, Cats)
      // TODO(traiansf): properly resolve default arguments for templates
-     rule allViable(T::CPPType |-> Val:K M::TypeMap, NArgs::Int, Types::List, Cats::List)
+     rule allViable(T::CPPType |-> Val:KItem M::TypeMap, NArgs::Int, Types::List, Cats::List)
           => isCPPFunctionType(T) andBool #fun(DA::DefaultArgumentsResult =>
                acceptsNArgs(NArgs, {T}:>CPPFunctionType, getDefaultArgsVals(DA))
                andBool notBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA)))(emptyDefaultArguments(T))
@@ -400,7 +400,7 @@ module CPP-TRANSLATION-OVERLOADING
                     | "noBestViable"
 
      rule computeBestViable(.Map, _, _, _) => noBestViable
-     rule computeBestViable(T::CPPFunctionType |-> K:K M::TypeMap, Types::List, Cats::List, O::OverloadType)
+     rule computeBestViable(T::CPPFunctionType |-> K:KItem M::TypeMap, Types::List, Cats::List, O::OverloadType)
           => #computeBestViable(T, K, Map2List(M), Types, Cats, O, .List)
      rule #computeBestViable(T1::CPPFunctionType, K1:K, (ListItem(kpair(T2::CPPFunctionType, K2:K)) => .List) _, Types::List, Cats::List, O::OverloadType, (.List => ListItem(kpair(T2, K2))) _)
           requires notBool isBetterFunctionThan(T2, K2, T1, K1, Types, Cats, O)

@@ -42,7 +42,7 @@ module CPP-TRANSLATION-TYPING-EXPR
                      | ".STypeList"
      rule isKResult(.STypeList) => true
      rule isKResult(S1:K types:: S2::STypeList) => isCPPDType(S1) andBool isKResult(S2)
-     rule toSTypeList(ListItem(K:K) L::List) => K types:: toSTypeList(L)
+     rule toSTypeList(ListItem(K:KItem) L::List) => K types:: toSTypeList(L)
      rule toSTypeList(.List) => .STypeList
      rule ofSTypeList(krlist(L1::List) types:: L2::STypeList) => L1 ofSTypeList(L2)
      rule ofSTypeList(.STypeList) => .List
@@ -111,7 +111,7 @@ module CPP-TRANSLATION-TYPING-EXPR
      // 5.2.3:2
      rule typeof(FunctionalCast(T:CPPType, .List) => T)
      // 5.2.3:1
-     rule typeof(FunctionalCast(T::CPPType, ListItem(A::K)) => ParenthesizedCast(T, A))
+     rule typeof(FunctionalCast(T::CPPType, ListItem(A::Expr)) => ParenthesizedCast(T, A))
      rule typeof(FunctionalCast(T:CPPType, ListItem(_) ListItem(_) _::List) => T)
 
      context typeof(NewExpr(_, HOLE:AType, _, _, _))

@@ -9,20 +9,20 @@ module CPP-EXECUTION-STMT-GOTO
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...
-               Base |-> (_::Map Lbl |-> K:K)
+               Base |-> (_::Map Lbl |-> K:KItem)
           ...</goto-map>
 
-     syntax KItem ::= "preprocessGoto" "(" K "," CId ")" [function]
+     syntax KItem ::= "preprocessGoto" "(" KItem "," CId ")" [function]
      rule preprocessGoto(gotoObject(_, _, Blk:K, _, _), funLabel(_))
           => Blk
-     rule preprocessGoto(GotoInfo:K, _) => processGoto(GotoInfo) [owise]
+     rule preprocessGoto(GotoInfo:KItem, _) => processGoto(GotoInfo) [owise]
 
      syntax Bool ::= isGotoKLabel(K) [function, klabelPredicate, klabel(isGotoKLabelCpp)]
      rule isGotoKLabel(#klabel(`processGotoCpp`)) => true
      rule isGotoKLabel(#klabel(`processGotoDownCpp`)) => true
      rule isGotoKLabel(_) => false [owise]
 
-     syntax KItem ::= processGoto(K) [klabel(processGotoCpp)]
-                    | processGotoDown(K) [klabel(processGotoDownCpp)]
+     syntax KItem ::= processGoto(KItem) [klabel(processGotoCpp)]
+                    | processGotoDown(KItem) [klabel(processGotoDownCpp)]
 
 endmodule

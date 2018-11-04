@@ -42,7 +42,7 @@ module C-DECL-DEFINITION
      context DeclarationDefinition(InitNameGroup(HOLE:KItem, _))
 
      rule DeclarationDefinition(
-               InitNameGroup(T:Type, list(ListItem(K:K) ListItem(K':K) L:List)))
+               InitNameGroup(T:Type, list(ListItem(K:KItem) ListItem(K':KItem) L:List)))
           => DeclarationDefinition(InitNameGroup(T, list(ListItem(K))))
                ~> DeclarationDefinition(InitNameGroup(T, list(ListItem(K') L)))
           [structural]
@@ -93,7 +93,7 @@ module C-DECL-DEFINITION
           => ListItem(variadic) elideList(L)
      rule elideList(.List) => .List
 
-     rule elideMap(K::K |-> T::Type M::Map)
+     rule elideMap(K::KItem |-> T::Type M::Map)
           => K |-> elideDeclParams(T) elideMap(M)
      rule elideMap(.Map) => .Map
 

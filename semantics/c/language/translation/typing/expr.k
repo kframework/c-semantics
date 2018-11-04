@@ -342,7 +342,7 @@ module C-TYPING-EXPR
           requires isAssignmentKLabel(#klabel(Lbl))
 
      // comma expression
-     rule typeof(Comma(list(_:List ListItem(K:K))) => K)
+     rule typeof(Comma(list(_:List ListItem(K:KItem))) => K)
 
      syntax Bool ::= isSpecifiedVariablyModifiedType(Type) [function]
      rule isSpecifiedVariablyModifiedType(T:FixedLengthArrayType)

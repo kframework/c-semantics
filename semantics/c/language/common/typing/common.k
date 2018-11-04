@@ -81,7 +81,7 @@ module C-TYPING-COMMON
      rule quals(Qs::Set) +Quals quals(Qs'::Set) => quals(Qs Qs')
 
      rule toQuals(SetItem(Q:Qualifier) S::Set) => toQuals(S) +Qual Q
-     rule toQuals(SetItem(K::K) S::Set) => toQuals(S)
+     rule toQuals(SetItem(K::KItem) S::Set) => toQuals(S)
           requires notBool isQualifier(K)
      rule toQuals(.Set) => noQuals
 

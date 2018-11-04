@@ -48,7 +48,7 @@ module CPP-TRANSLATION-EXPR-FUNCTION-CALL
           requires T =/=K type(no-type)
      rule bindParams(.List, .List, .List) => .List
      rule bindParams(ListItem(variadic), L::List, .List) => bindVariadic(L)
-     rule bindParams(ListItem(_) P::List, .List, ListItem(Arg:K) A::List)
+     rule bindParams(ListItem(_) P::List, .List, ListItem(Arg:KItem) A::List)
           => ListItem(Arg) bindParams(P, .List, A)
           requires Arg =/=K NoArg()
 

@@ -279,7 +279,7 @@ module SYMLOC
      rule isFromArray(Loc:SymLoc) => #isFromArray(Loc)
 
      syntax Bool ::= #isFromArray(SymLoc) [function]
-     rule #isFromArray(loc(Base:SymBase, Offset:Int, SetItem(K:K) S:Set))
+     rule #isFromArray(loc(Base:SymBase, Offset:Int, SetItem(K:KItem) S:Set))
           => getKLabel(K) ==K #klabel(`fromArray`) orBool #isFromArray(loc(Base, Offset, S))
      rule #isFromArray(_) => false [owise]
 
@@ -309,11 +309,11 @@ module SYMLOC
      rule setBitOffset(0, Loc::SymLoc) => Loc
      rule setBitOffset(Offset::Int, Loc::SymLoc) => addProv(bits(Offset), Loc) [owise]
 
-     rule stripProv(loc(Base::SymBase, Offset::Int, SetItem(K:K) S::Set), Lbl:K) => loc(Base, Offset, S)
+     rule stripProv(loc(Base::SymBase, Offset::Int, SetItem(K:KItem) S::Set), Lbl:K) => loc(Base, Offset, S)
           requires getKLabel(K) ==K Lbl
      rule stripProv(Loc::SymLoc, _) => Loc [owise]
 
-     rule getProv(loc(_, _, SetItem(K:K) _), Lbl:K) => K
+     rule getProv(loc(_, _, SetItem(K:KItem) _), Lbl:K) => K
           requires getKLabel(K) ==K Lbl
      rule getProv(_, _) => .K [owise]
 
@@ -368,7 +368,7 @@ module SYMLOC
      syntax String ::= showProvSet(Set) [function]
      rule showProvSet(SetItem(P:Provenance) Prov::Set) => ", " +String showProvenance(P) +String showProvSet(Prov)
      rule showProvSet(.Set) => ""
-     rule showProvSet(SetItem(P:K) Prov::Set) => ", " +String showK(P) +String showProvSet(Prov) [owise]
+     rule showProvSet(SetItem(P:KItem) Prov::Set) => ", " +String showK(P) +String showProvSet(Prov) [owise]
 
      syntax String ::= showProvenance(Provenance) [function]
      rule showProvenance(fromArray(A::Int, B::Int)) => "array" +String wrapParens(showInt(A) +String ", " +String showInt(B))

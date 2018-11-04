@@ -40,7 +40,7 @@ module CPP-EXECUTION-INIT
      syntax KItem ::= setupCppEnv(Int)
      rule <k> setupCppEnv(Argc::Int) => .K ...</k>
           // adjust environment to C++ form
-          <env>... mainArguments |-> (Argv::SymBase => (type(arrayType(type(pointerType(type(char))), Argc +Int 1)) |-> envEntry(Argv, false, NoDefArgs()))) ...</env>
+          <env>... mainArguments |-> Argv::SymBase => mainArguments |-> (type(arrayType(type(pointerType(type(char))), Argc +Int 1)) |-> envEntry(Argv, false, NoDefArgs())) ...</env>
           <types>... mainArguments |-> _ => .Map ...</types>
 
      rule <k> reval(V:PRVal) ~> callAtExit => AtExit:KItem ~> reval(V) ~> callAtExit ...</k>

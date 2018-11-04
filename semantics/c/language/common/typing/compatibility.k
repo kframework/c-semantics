@@ -263,8 +263,8 @@ module C-TYPING-COMPATIBILITY
 
      syntax Bool ::= #areParamsCompat(List, List, Set) [function]
      rule #areParamsCompat(
-               ListItem(T::K) L::List,
-               ListItem(T'::K) L'::List, Cache::Set)
+               ListItem(T::KItem) L::List,
+               ListItem(T'::KItem) L'::List, Cache::Set)
           => T ==K T' andBool #areParamsCompat(L, L', Cache)
           requires T ==K variadic orBool T' ==K variadic
      rule #areParamsCompat(

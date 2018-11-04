@@ -38,7 +38,7 @@ module C-STMT-SWITCH
           [structural]
 
      rule <k> handleSwitch(SN:Int, V:RValue)
-               => #handleSwitch-aux(SN, V, .K, M)
+               => #handleSwitch-aux(SN, V, nextCaseLabel, M)
           ...</k>
           <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
@@ -47,21 +47,20 @@ module C-STMT-SWITCH
           [structural]
 
      // K to be evaluated, val it should be, casehelper
-     syntax KItem ::= tryCase(K, RValue, K) [strict(1)]
+     syntax KItem ::= tryCase(K, RValue, CId) [strict(1)]
+     syntax CId ::= "nextCaseLabel"
+     syntax KItem ::= "#handleSwitch-aux" "(" Int "," RValue "," CId "," Map ")"
 
-     syntax KItem ::= "#handleSwitch-aux" "(" Int "," RValue "," K "," Map ")"
-
-     rule #handleSwitch-aux(_, _, .K, .Map) => .K
+     rule #handleSwitch-aux(_, _, nextCaseLabel, .Map) => .K
           [structural]
 
-     rule #handleSwitch-aux(SN:Int, V:RValue, .K,
-               (Key:K |-> _) M:Map)
+     rule #handleSwitch-aux(SN:Int, V:RValue, nextCaseLabel, (Key::CId |-> _) M:Map)
           => #handleSwitch-aux(SN, V, Key, M)
           [structural]
 
      rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN, Exp:RValue), M:Map)
-          => (tryCase(Exp, V, caseLabel(SN, Exp))
-          ~> #handleSwitch-aux(SN, V, .K, M))
+          => tryCase(Exp, V, caseLabel(SN, Exp))
+          ~> #handleSwitch-aux(SN, V, nextCaseLabel, M)
           requires Exp =/=K #klabel(`Default`) andBool notBool (isUnknown(value(V))  orBool isIntPtr(value(V)))
           [structural]
 
@@ -78,13 +77,13 @@ module C-STMT-SWITCH
           ~> Goto(caseLabel(SN, #klabel(`Default`))))
           [structural]
 
-     rule #handleSwitch-aux(SN:Int, _, (caseLabel(SN':Int, _:K) => .K), _)
+     rule #handleSwitch-aux(SN:Int, _, caseLabel(SN':Int, _:K) => .K, _)
           requires SN =/=Int SN'
           [structural]
 
-     rule #handleSwitch-aux(_:Int, _:RValue, (K:K => .K), _)
-          requires getKLabel(K) =/=K #klabel(`caseLabel`)
-               andBool K =/=K .K
+     rule #handleSwitch-aux(_:Int, _:RValue, X::CId => nextCaseLabel, _)
+          requires getKLabel(X) =/=K #klabel(`caseLabel`)
+               andBool X =/=K nextCaseLabel
           [structural]
 
      rule tryCase(
@@ -97,7 +96,7 @@ module C-STMT-SWITCH
           [structural]
      //  match found in value and type, goto it
      //  don't need to erase the rest of K since we're GOTOing
-     rule tryCase(tv(V:CValue, T'::UType), tv(V:CValue, T::UType), CaseLabel:K)
+     rule tryCase(tv(V:CValue, T'::UType), tv(V:CValue, T::UType), CaseLabel::CId)
           => Goto(CaseLabel)
           requires T ==Type T'
           [structural]

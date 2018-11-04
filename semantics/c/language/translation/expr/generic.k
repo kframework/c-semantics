@@ -14,11 +14,11 @@ module C-EXPR-GENERIC
      syntax KItem ::= evalGeneric(Type, List, List, K)
      rule (.K => DeclType(T', X))
           ~> evalGeneric(_, ListItem(GenericPair(T':K, X:K, _)) _, _, _)
-     rule (T':Type => .K) ~> evalGeneric(T::Type, (ListItem(K:K) => .List) _, _::List (.List => ListItem(K)), _)
+     rule (T':Type => .K) ~> evalGeneric(T::Type, (ListItem(K:KItem) => .List) _, _::List (.List => ListItem(K)), _)
           requires T ==Type T'
      rule (T':Type => .K) ~> evalGeneric(T::Type, (ListItem(_) => .List) _, _, _)
           requires T =/=Type T'
-     rule evalGeneric(_, (ListItem(GenericDefault(_) #as GDefault:K) => .List) _, _, .K => GDefault)
+     rule evalGeneric(_, (ListItem(GenericDefault(E:K)) => .List) _, _, .K => GenericDefault(E))
 
      rule evalGeneric(_, .List, ListItem(GenericPair(_, _, E:K)), _) => E
      rule evalGeneric(_, .List, .List, GenericDefault(E:K)) => E

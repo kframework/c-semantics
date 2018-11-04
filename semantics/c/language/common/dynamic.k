@@ -117,7 +117,7 @@ module C-DYNAMIC-SYNTAX
      rule hItem(V:RValue) => hrItem(V)
 
      rule toHeatList(.List) => .HeatList
-     rule toHeatList(ListItem(K:K) L:List) => hItem(K) hs:: toHeatList(L)
+     rule toHeatList(ListItem(K:KItem) L:List) => hItem(K) hs:: toHeatList(L)
 
      rule hListToList(.HeatList) => .List
      rule hListToList(hrItem(V:RValue) hs:: HL:HeatList) => ListItem(V) hListToList(HL)

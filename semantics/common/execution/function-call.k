@@ -6,5 +6,5 @@ module FUNCTION-CALL-SYNTAX
      imports MEMORY-SORTS
 
      // syntax for function call regardless of language of caller
-     syntax KItem ::= application(CabsLoc, SymBase, K, EffectiveType, LanguageLinkage, StrictList)
+     syntax KItem ::= application(CabsLoc, SymBase, KItem, EffectiveType, LanguageLinkage, StrictList)
 endmodule

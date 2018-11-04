@@ -39,7 +39,7 @@ module C-TYPING-CANONICALIZATION
                _,
                _::List (.List => ListItem(M)))
           [structural]
-     rule canonicalizeType'(_::List (ListItem(S:K) => .List),
+     rule canonicalizeType'(_::List (ListItem(S:KItem) => .List),
                _,
                _)
           requires notBool isModifier(S)
@@ -67,7 +67,7 @@ module C-TYPING-CANONICALIZATION
                _,
                _::List (.List => ListItem(alignas(A))))
           [structural]
-     rule canonicalizeType'(_ ListItem(S:K => SpecExtendsTuOf(getKccExtendsTuOfAttr(S))), _, _)
+     rule canonicalizeType'(_::List (ListItem(S:KItem) => ListItem(SpecExtendsTuOf(getKccExtendsTuOfAttr(S)))), _, _)
           requires getKccExtendsTuOfAttr(S) =/=K #NoName
           [structural]
      rule (.K => CV("TCANON3", "Function declared without a return type."))
@@ -112,11 +112,11 @@ module C-TYPING-CANONICALIZATION
           => addMods(Mods, addModifier(M, T))
           requires notBool isQualifier(M)
           [structural]
-     rule addMods(Mods::List (ListItem(S:K) => .List), _)
+     rule addMods(Mods::List (ListItem(S:KItem) => .List), _)
           requires notBool isModifier(S)
                andBool notBool isReducibleSpecifier(S)
           [structural]
-     rule addMods(_ ListItem(S:K => SpecExtendsTuOf(getKccExtendsTuOfAttr(S))), _)
+     rule addMods(_::List (ListItem(S:KItem) => ListItem(SpecExtendsTuOf(getKccExtendsTuOfAttr(S)))), _)
           requires getKccExtendsTuOfAttr(S) =/=K #NoName
           [structural]
      rule addMods(.List, T:Type) => T
@@ -163,7 +163,7 @@ module C-TYPING-CANONICALIZATION
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
-               andBool notBool (tag(X, Tu, global) in_keys({{Tags[Tu]}<:K}:>Map))
+               andBool notBool (tag(X, Tu, global) in_keys({{Tags[Tu]}<:KItem}:>Map))
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(EnumRef(X:CId, .K)))
                => type(enumType(tag(X, Tu, global)))
@@ -174,7 +174,7 @@ module C-TYPING-CANONICALIZATION
           <tu-id> Tu </tu-id>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
-               andBool notBool (tag(X, Tu, global) in_keys({{Tags[Tu]}<:K}:>Map))
+               andBool notBool (tag(X, Tu, global) in_keys({{Tags[Tu]}<:KItem}:>Map))
                andBool (isFileScope(S) ==K true
                     orBool isPrototypeScope(S) ==K true)
           [structural]
@@ -196,7 +196,7 @@ module C-TYPING-CANONICALIZATION
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
-               andBool notBool (tag(X, Tu, global) in_keys({{Tags[Tu]}<:K}:>Map))
+               andBool notBool (tag(X, Tu, global) in_keys({{Tags[Tu]}<:KItem}:>Map))
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId, .K)))
                => type(structType(tag(X, Tu, global)))
@@ -207,7 +207,7 @@ module C-TYPING-CANONICALIZATION
           <tu-id> Tu </tu-id>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
-               andBool notBool (tag(X, Tu, global) in_keys({{Structs[Tu]}<:K}:>Map))
+               andBool notBool (tag(X, Tu, global) in_keys({{Structs[Tu]}<:KItem}:>Map))
                andBool (isFileScope(S) ==K true
                     orBool isPrototypeScope(S) ==K true)
           [structural]
@@ -229,7 +229,7 @@ module C-TYPING-CANONICALIZATION
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
-               andBool notBool (tag(X, Tu, global) in_keys({{Structs[Tu]}<:K}:>Map))
+               andBool notBool (tag(X, Tu, global) in_keys({{Structs[Tu]}<:KItem}:>Map))
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId, .K)))
                => type(unionType(tag(X, Tu, global)))
@@ -240,17 +240,17 @@ module C-TYPING-CANONICALIZATION
           <tu-id> Tu </tu-id>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
-               andBool notBool (tag(X, Tu, global) in_keys({{Structs[Tu]}<:K}:>Map))
+               andBool notBool (tag(X, Tu, global) in_keys({{Structs[Tu]}<:KItem}:>Map))
                andBool (isFileScope(S) ==K true
                     orBool isPrototypeScope(S) ==K true)
           [structural]
 
      syntax BlockRef ::= canonicalizeLocalTag(CId, String, Int, List, Map) [function]
      rule canonicalizeLocalTag(X:CId, Tu:String, _, ListItem(CurrBlock:Int) _:List, Structs:Map) => CurrBlock
-          requires tag(X, Tu, CurrBlock) in_keys({{Structs[Tu]}<:K}:>Map)
+          requires tag(X, Tu, CurrBlock) in_keys({{Structs[Tu]}<:KItem}:>Map)
      rule canonicalizeLocalTag(X:CId, Tu:String, BlockNum:Int, ListItem(CurrBlock:Int) L:List, Structs:Map)
           => canonicalizeLocalTag(X, Tu, BlockNum, L, Structs)
-          requires notBool(tag(X, Tu, CurrBlock) in_keys({{Structs[Tu]}<:K}:>Map))
+          requires notBool(tag(X, Tu, CurrBlock) in_keys({{Structs[Tu]}<:KItem}:>Map))
      rule canonicalizeLocalTag(_, _, BlockNum:Int, .List, _) => BlockNum
 
      rule <k> canonicalizeSpecifier(_ ListItem(
@@ -281,7 +281,7 @@ module C-TYPING-CANONICALIZATION
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           [structural]
 
-     rule canonicalizeSpecifier((ListItem(S:K) => .List) _)
+     rule canonicalizeSpecifier((ListItem(S:KItem) => .List) _)
           requires notBool isTypeSpecifier(S)
                andBool notBool isReducibleSpecifier(S)
           [structural]

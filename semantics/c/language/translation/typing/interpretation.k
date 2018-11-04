@@ -96,7 +96,7 @@ module C-TYPING-INTERPRETATION
      // We "declare" function prototype parameters in the order they appear,
      // from left to right. This is mostly to (somewhat) handle VLA parameters.
      syntax KItem ::= "Prototype'" "(" Type "," List "," List "," Bool ")"
-     rule Prototype'(T:Type, ListItem(K:K) L1:List, L2:List, Var:Bool)
+     rule Prototype'(T:Type, ListItem(K:KItem) L1:List, L2:List, Var:Bool)
           => K ~> Prototype'(T, L1, L2, Var)
      rule t(Qs::Quals, Mods::Set, ST:SimpleType)
           ~> Prototype'(T::Type, L1::List, L2::List, Var::Bool)
@@ -209,7 +209,7 @@ module C-TYPING-INTERPRETATION
      rule SingleName(T:Type, Name(X:CId, K:K, list(Attrs::List)))
           => NameAndType(X, addMods(Attrs, DeclType(T, K)))
           [structural]
-     rule FieldGroup(T:Type, list(ListItem(C:K) ListItem(C':K) L:List))
+     rule FieldGroup(T:Type, list(ListItem(C:KItem) ListItem(C':KItem) L:List))
           => list(ListItem(FieldGroup(T, list(ListItem(C))))
                ListItem(FieldGroup(T, list(ListItem(C') L))))
           [structural]
@@ -224,7 +224,7 @@ module C-TYPING-INTERPRETATION
 
      context Typedef(NameGroup(HOLE:KItem, _))
 
-     rule Typedef(NameGroup(T:Type, list(ListItem(K:K) L:List)))
+     rule Typedef(NameGroup(T:Type, list(ListItem(K:KItem) L:List)))
           => defineType(SingleName(T, K)) ~> Typedef(NameGroup(T, list(L)))
           [structural]
      rule Typedef(NameGroup(_:Type, list(.List))) => .K
@@ -237,7 +237,7 @@ module C-TYPING-INTERPRETATION
 
      rule numberUnnamed(ListItem(typedDeclaration(T::Type, _:NoName)) Fs::List)
           => ListItem(typedDeclaration(T, #NoName(!N:Int))) numberUnnamed(Fs)
-     rule numberUnnamed(ListItem(K:K) Fs::List) => ListItem(K) numberUnnamed(Fs) [owise]
+     rule numberUnnamed(ListItem(K:KItem) Fs::List) => ListItem(K) numberUnnamed(Fs) [owise]
      rule numberUnnamed(.List) => .List
 
 endmodule

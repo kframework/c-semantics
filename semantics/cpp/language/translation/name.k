@@ -594,13 +594,13 @@ module CPP-TRANSLATION-NAME
      rule stripMemberFunctions(M::TypeMap T:CPPFunctionType |-> _) => stripMemberFunctions(M)
           requires isFunctionMember(T)
      rule stripMemberFunctions(.Map) => .Map
-     rule stripMemberFunctions(M::TypeMap T::CPPType |-> K:K) => T |-> K stripMemberFunctions(M) [owise]
+     rule stripMemberFunctions(M::TypeMap T::CPPType |-> K:KItem) => T |-> K stripMemberFunctions(M) [owise]
      syntax TypeMap ::= stripEnum1(TypeMap, CPPType) [function]
                   | stripEnum2(TypeMap, CPPType) [function]
      syntax Bool ::= stripEnum(Int, List, CPPType) [function]
-     rule stripEnum1(M::TypeMap T:CPPFunctionType |-> K:K, T1:CPPEnumType)
+     rule stripEnum1(M::TypeMap T:CPPFunctionType |-> K:KItem, T1:CPPEnumType)
           => #if stripEnum(0, getParams(T), T1) #then .Map #else T |-> K #fi stripEnum1(M, T1)
-     rule stripEnum2(M::TypeMap T:CPPFunctionType |-> K:K, T2:CPPEnumType)
+     rule stripEnum2(M::TypeMap T:CPPFunctionType |-> K:KItem, T2:CPPEnumType)
           => #if stripEnum(1, getParams(T), T2) #then .Map #else T |-> K #fi stripEnum1(M, T2)
 
      rule stripEnum(I::Int, L::List, T::CPPType)
@@ -608,8 +608,8 @@ module CPP-TRANSLATION-NAME
 
      rule stripEnum1(.Map, _) => .Map
      rule stripEnum2(.Map, _) => .Map
-     rule stripEnum1(M::TypeMap T::CPPType |-> K:K, T1::CPPType) => T |-> K stripEnum1(M, T1) [owise]
-     rule stripEnum2(M::TypeMap T::CPPType |-> K:K, T2::CPPType) => T |-> K stripEnum2(M, T2) [owise]
+     rule stripEnum1(M::TypeMap T::CPPType |-> K:KItem, T1::CPPType) => T |-> K stripEnum1(M, T1) [owise]
+     rule stripEnum2(M::TypeMap T::CPPType |-> K:KItem, T2::CPPType) => T |-> K stripEnum2(M, T2) [owise]
 
      rule addBuiltinCandidates(operator,, E1::Expr, _, _, E2::Expr, _, _, C1:CandidateSet, C2:CandidateSet)
           => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), Comma(E1, E2), BinaryOperator(operator,, E1, E2))

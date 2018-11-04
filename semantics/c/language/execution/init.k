@@ -268,7 +268,7 @@ module C-EXECUTION-INIT
      syntax Set ::= clearActiveBreakpoints(Set) [function]
      rule clearActiveBreakpoints(SetItem(ActiveBreakpoint(File::String, Line::Int)) Opts::Set)
           => SetItem(Breakpoint(File, Line)) clearActiveBreakpoints(Opts)
-     rule clearActiveBreakpoints(SetItem(K:K) Opts::Set)
+     rule clearActiveBreakpoints(SetItem(K:KItem) Opts::Set)
           => SetItem(K) clearActiveBreakpoints(Opts) [owise]
      rule clearActiveBreakpoints(.Set) => .Set
 

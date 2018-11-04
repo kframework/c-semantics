@@ -75,7 +75,7 @@ module C-TYPING-MISC
           => getFunctionSpecifiers'(getModifiers(T))
 
      syntax Set ::= "getFunctionSpecifiers'" "(" Set ")" [function]
-     rule getFunctionSpecifiers'((SetItem(S:K) => .Set) _)
+     rule getFunctionSpecifiers'((SetItem(S:KItem) => .Set) _)
           requires notBool isFunctionSpecifier(S)
      rule getFunctionSpecifiers'(S::Set) => S [owise]
 
@@ -195,7 +195,7 @@ module C-TYPING-MISC
      rule getRestrictBlock'(_, S:Set) => getRestrictBlock''(S) [owise]
 
      syntax Scope ::= "getRestrictBlock''" "(" Set ")" [function]
-     rule getRestrictBlock''(SetItem(K:K) S:Set) => getRestrictBlock'(K, S)
+     rule getRestrictBlock''(SetItem(K:KItem) S:Set) => getRestrictBlock'(K, S)
      rule getRestrictBlock''(.Set) => none
 
      rule getReadFromLoc(T::UType) => #getReadFromLoc(getModifiers(T))
@@ -418,7 +418,7 @@ module C-TYPING-MISC
           => fieldInfo(Decls, Sz, Types, Offsets, Padding Padding')
 
      syntax Map ::= addOffset(Int, Map) [function]
-     rule addOffset(Offset::Int, (K:K |-> N:Int) M::Map)
+     rule addOffset(Offset::Int, (K:KItem |-> N:Int) M::Map)
           => K |-> (N +Int Offset) addOffset(Offset, M)
      rule addOffset(_, _) => .Map [owise]
 
@@ -596,10 +596,10 @@ module C-TYPING-MISC
 
      syntax Set ::= computePaddingOffsets(List, Int, Map, Map) [function]
      rule computePaddingOffsets(ListItem(typedDeclaration(_, A::CId)) ListItem(typedDeclaration(BT::Type, B::CId)) L::List, Len::Int, Types::Map, Offsets::Map)
-          => getPaddingOffsets({{Offsets[A]}<:K}:>Int +Int bitSizeofType({{Types[A]}<:K}:>Type), {{Offsets[B]}<:K}:>Int)
+          => getPaddingOffsets({{Offsets[A]}<:KItem}:>Int +Int bitSizeofType({{Types[A]}<:KItem}:>Type), {{Offsets[B]}<:KItem}:>Int)
                computePaddingOffsets(ListItem(typedDeclaration(BT, B)) L, Len, Types, Offsets)
      rule computePaddingOffsets(ListItem(typedDeclaration(_, A::CId)), Len::Int, Types::Map, Offsets::Map)
-          => getPaddingOffsets({{Offsets[A]}<:K}:>Int +Int bitSizeofType({{Types[A]}<:K}:>Type), Len)
+          => getPaddingOffsets({{Offsets[A]}<:KItem}:>Int +Int bitSizeofType({{Types[A]}<:KItem}:>Type), Len)
      rule computePaddingOffsets(.List, _, _, _) => .Set
 
      syntax Set ::= getPaddingOffsets(Int, Int) [function]
@@ -614,8 +614,8 @@ module C-TYPING-MISC
 
      syntax Bool ::= isNonPaddingOffset(Int, List, Map, Map) [function]
      rule isNonPaddingOffset(Offset:Int, ListItem(typedDeclaration(_, F:CId)) Decls:List, Types:Map, Offsets:Map)
-          => ({{Offsets[F]}<:K}:>Int <=Int Offset andBool Offset <Int {{Offsets[F]}<:K}:>Int +Int
-               bitSizeofType({{Types[F]}<:K}:>Type))
+          => ({{Offsets[F]}<:KItem}:>Int <=Int Offset andBool Offset <Int {{Offsets[F]}<:KItem}:>Int +Int
+               bitSizeofType({{Types[F]}<:KItem}:>Type))
           orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
      rule isNonPaddingOffset(_, .List, _, _) => false
 

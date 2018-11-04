@@ -65,13 +65,11 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule <k> #figureInit(... init: ExprLoc(L::CabsLoc, I::Init) => I) ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
 
-
-
      // 8.5:6.1
      rule #zeroInit(Base:LVal, T:CPPScalarType, _) => le(Base, trace(Base), T) :=init interpret(prv(0, noTrace, T))
 
      // 8.5:6.2
-     rule <k> #zeroInit(Base:LVal, t(_, _, classType(C::Class)) #as T:CPPClassType, _) => zeroInitClass(Base, T, Bases, NSDM, .K /* Base*/) ...</k>
+     rule <k> #zeroInit(Base:LVal, t(_, _, classType(C::Class)) #as T:CPPClassType, _) => zeroInitClass(Base, T, Bases, NSDM, noExpr /* Base*/) ...</k>
           <class-id> C </class-id>
           <base-classes> Bases::List </base-classes>
           <non-static-data-members> NSDM::List </non-static-data-members>
@@ -79,43 +77,40 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // 8.5:6.3 TODO
 
      // 8.5:6.4
-     rule #zeroInit(Base:LVal, T:CPPArrayType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`#zeroInit`), 0, .K)
+     rule #zeroInit(Base:LVal, T:CPPArrayType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`#zeroInit`), 0, noExpr)
 
      // 8.5:6.5 TODO
 
-     syntax KItem ::= zeroInitClass(LVal, CPPClassType, bases: List, nsdm: List, init: Expr)
-     rule zeroInitClass(Base:LVal, _, .List, .List, E::Expr) => E
+     syntax KItem ::= zeroInitClass(LVal, CPPClassType, bases: List, nsdm: List, init: MaybeExpr)
+     rule zeroInitClass(Base:LVal, _, .List, .List, noExpr) => .K
+     rule zeroInitClass(Base:LVal, _, .List, .List, E:Expr) => E
      rule (.K => evalMany(ListItem(zeroInitBaseClass(Base, type(classType(BaseCl::Class)))), .List))
           ~> zeroInitClass(Base:LVal, _, (ListItem(BaseCl::Class) => .List) _, _, _)
 
      syntax KItem ::= zeroInitBaseClass(base: LVal, baseType: CPPClassType)
      rule zeroInitBaseClass(Base:LVal, B:CPPClassType) => zeroInit(le(getBaseClassSubobject(Base, B), noTrace, B), B)
 
-     rule <k> (.K => evalMany(ListItem(zeroInit(Base . no-template Name(C, X), T)) ListItem(zeroInitClassPadding(Base, NAOffset, Offset)), .List))
-          ~> zeroInitClass(Base:LVal, t(_, _, classType(C::Class)), .List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _)
-          ... </k>
+     rule <k> (.K => evalMany(ListItem(zeroInit(Base . no-template Name(C, X), T)) zeroInitClassPadding(Base, NAOffset, Offset), .List))
+               ~> zeroInitClass(Base:LVal, t(_, _, classType(C::Class)), .List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _)
+          ...</k>
           <class-id> C </class-id>
           <cenv>... X |-> (_::CPPType |-> classOffset(NAOffset::Int, Offset::Int)) ...</cenv>
 
      syntax KItem ::= evalMany(List, List)
-     rule (.K => K) ~> evalMany((ListItem(K:K) => .List) _, _)
+     rule (.K => K) ~> evalMany((ListItem(K:KItem) => .List) _, _)
      rule (V:Val => .K) ~> evalMany(_, (.List => ListItem(V)) _)
      rule evalMany(.List, .List) => .K
+     rule evalMany(.List, (ListItem(V:Val) => .List) _) ~> zeroInitClass(_, _, _, _, (E::MaybeExpr => compoundInitJoin(E, V)))
 
-
-     syntax Expr ::= zeroInitClassPadding(LVal, Int, Int) [function]
-
-     rule zeroInitClassPadding(_, NAOffset::Int, Offset::Int) => .K
+     syntax List ::= zeroInitClassPadding(LVal, Int, Int) [function]
+     rule zeroInitClassPadding(_, NAOffset::Int, Offset::Int) => .List
           requires NAOffset ==Int Offset
-
      rule zeroInitClassPadding(Base::LVal, NAOffset::Int, Offset::Int)
-          => zeroInitClassPadding2(Base, NAOffset, type(arrayType(type(char), (Offset -Int NAOffset) /Int cfg:bitsPerByte)))
+          => ListItem(zeroInitClassPadding2(Base, NAOffset, type(arrayType(type(char), (Offset -Int NAOffset) /Int cfg:bitsPerByte))))
           requires NAOffset <Int Offset
 
      syntax Expr ::= zeroInitClassPadding2(LVal, Int, CPPType) [function]
      rule zeroInitClassPadding2(Base::LVal, NAOffset::Int, T::CPPType) => zeroInit(fieldExp(Base, T, NAOffset), T)
-
-     rule evalMany(.List, (ListItem(V:Val) => .List) _) ~> zeroInitClass(_, _, _, _, (E::Expr => compoundInit(E, V)))
 
      // 8.5:12
      rule #figureInit(Base:LVal, DestT::CPPType, _, NoInit(), _, _, IsConstructor::ConstructorType)
@@ -124,7 +119,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule defaultInit(Base:LVal, t(... st: classType(C::Class)), IsConstructor::ConstructorType) => constructorInit(Base, DirectInit(), C, .List, IsConstructor)
 
      // 8.5:7.2 (array of classes)
-     rule defaultInit(Base:LVal, T:CPPArrayType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`defaultInit`), 0, .K)
+     rule defaultInit(Base:LVal, T:CPPArrayType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`defaultInit`), 0, noExpr)
           requires isCPPClassType(getMostDerivedArrayElement(T))
      // 8.5:7.2-7.3 (non-class, non-array-of-classes)
      rule defaultInit(Base:LVal, T::CPPType, _) => Base
@@ -151,7 +146,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                andBool (notBool hasConstructorThat(T, #klabel(`isDeletedDefaultConstructor2`)))
 
      // 8.5:8.3 (array)
-     rule #valueInit(Base:LVal, T:CPPArrayType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`#valueInit`), 0, .K)
+     rule #valueInit(Base:LVal, T:CPPArrayType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`#valueInit`), 0, noExpr)
 
      // 8.5:8.4 (non-class, non-array)
      rule #valueInit(Base:LVal, T::CPPType, _) => zeroInit(Base, T)
@@ -159,13 +154,13 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                andBool notBool isCPPArrayType(T)
                andBool notBool isCPPRefType(T)
 
-     syntax Expr ::= initEachElement(LVal, CPPArrayType, ConstructorType, K, Int, initExp: K)
+     syntax Expr ::= initEachElement(LVal, CPPArrayType, ConstructorType, K, Int, initExp: MaybeExpr)
 
-     rule (.K => Lbl(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, IsConstructor)) 
-          ~> initEachElement(Base::LVal, t(... st: arrayType(T::CPPType, N::Int)), IsConstructor::ConstructorType, #klabel(Lbl:KLabel), I::Int => I +Int 1, Res:K)
+     rule (.K => Lbl(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, IsConstructor))
+          ~> initEachElement(Base::LVal, t(... st: arrayType(T::CPPType, N::Int)), IsConstructor::ConstructorType, #klabel(Lbl:KLabel), I::Int => I +Int 1, _)
           requires I <Int N
-     rule (V:Val => .K) ~> initEachElement(... initExp: E::Expr => compoundInit(E, V))
-     rule initEachElement(Base::LVal, t(... st: arrayType(_, N::Int)), _, _, N, Res::Expr) => compoundInit(Res, Base)
+     rule (V:Val => .K) ~> initEachElement(... initExp: E::MaybeExpr => compoundInitJoin(E, V))
+     rule initEachElement(Base::LVal, t(... st: arrayType(_, N::Int)), _, _, N, E::MaybeExpr) => compoundInitJoin(E, Base)
 
      // 8.5:17.1 (list initializer)
      rule #figureInit(Base:LVal, DestT::CPPType, Type::InitType, BraceInit(L::List), _, _, CT::ConstructorType)
@@ -177,7 +172,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      // 8.5:17.3 (string literal)
      rule #figureInit(Base:LVal, DestT:CPPArrayType, _, StringLiteral(Kind::CharKind, S::String), _, _, _)
-          => strInit(Base, DestT, Kind, S, 0, .K)
+          => strInit(Base, DestT, Kind, S, 0, noExpr)
           requires isCPPCharType(innerType(DestT)) 
                orBool isCPPWideCharType(innerType(DestT))
 
@@ -202,10 +197,15 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule #figureInit(... base: lv(loc(Base::SymBase, _), _, _), init: S:Stmt)
           => functionDef(Base, S)
 
+     syntax MaybeExpr ::= Expr
+     syntax MaybeExpr ::= NoExpr
+     syntax KResult ::= NoExpr
+     syntax NoExpr ::= "noExpr"
+
      syntax KItem ::= listInit(LVal, CPPType, InitType, List, ConstructorType)
                     | aggInit(LVal, CPPType, List)
-                    | arrayInit(base: LVal, type: CPPType, current: Int, initList: List, result: K)
-                    | strInit(LVal, CPPType, CharKind, String, Int, K)
+                    | arrayInit(base: LVal, type: CPPType, current: Int, initList: List, result: MaybeExpr)
+                    | strInit(LVal, CPPType, CharKind, String, Int, MaybeExpr)
 
      // 8.5.4:3.1 (aggregate init)
      rule listInit(Base::LVal, T::CPPType, _, L::List, _)
@@ -235,40 +235,48 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule aggInit(_, (t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)) => t(Q, Mods, arrayType(T, size(L)))), L::List)
      rule aggInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), L::List)
-          => arrayInit(Base, t(Q, Mods, arrayType(T, N)), 0, L, .K)
+          => arrayInit(Base, t(Q, Mods, arrayType(T, N)), 0, L, noExpr)
 
      rule <k> aggInit(Base::LVal, t(_, _, classType(C::Class)), L::List)
-           => classAndUnionAggInit(getTag(C), Base, NSDM, L, Inits, C, .K)
+               => classAndUnionAggInit(getTag(C), Base, NSDM, L, Inits, C)
           ...</k>
           <class-id> C </class-id>
           <non-static-data-members> NSDM::List </non-static-data-members>
           <initializers> Inits::Map </initializers>
 
-     syntax Expr ::= classAndUnionAggInit(tag: Tag, base: LVal, fields: List, initList: List, initializers: Map, class: Class, initExp: Expr) [function]
+     syntax Expr ::= classAndUnionAggInit(tag: Tag, base: LVal, fields: List, initList: List, initializers: Map, class: Class) [function]
 
-     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(X:K) _, ListItem(XInit::Init), InitMap::Map, C::Class, Init::Expr)
-       => classAggInit(Base, ListItem(X), ListItem(XInit), InitMap, C, Init)
+     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(X:KItem) _, ListItem(XInit::Init), InitMap::Map, C::Class)
+       => classAggInit(Base, ListItem(X), ListItem(XInit), InitMap, C, noExpr)
 
      rule classAndUnionAggInit(... tag: Union(),
-                                   fields: (ListItem(kpair(X::CId, _)) => .List) _,
+                                   fields: (ListItem(kpair(X:CId, _)) => .List) _::List,
                                    initList: .List,
-                                   initializers: (X |-> (_ |-> NoInit())) _)
+                                   initializers: InitMap::Map)
+         requires notBool hasInit(X, InitMap)
 
-     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(kpair(X::CId, T::CPPType)) _::List, .List, (X |-> (_ |-> XInit::Init) _) #as InitMap::Map, C::Class, Init::Expr)
-       => classAggInit(Base, ListItem(kpair(X, T)), .List, InitMap, C, Init)
-       requires XInit =/=K NoInit()
+     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(kpair(X::CId, T::CPPType)) _::List, .List, InitMap::Map, C::Class)
+       => classAggInit(Base, ListItem(kpair(X, T)), .List, InitMap, C, noExpr)
+       requires hasInit(X, InitMap)
 
-     rule classAndUnionAggInit(T::Tag, Base::LVal, Fields::List, InitL::List, InitMap::Map, C::Class, Init::Expr)
-       => classAggInit(Base, Fields, InitL, InitMap, C, Init)
+     rule classAndUnionAggInit(T::Tag, Base::LVal, Fields::List, InitL::List, InitMap::Map, C::Class)
+       => classAggInit(Base, Fields, InitL, InitMap, C, noExpr)
        requires T =/=K Union()
 
-     syntax Expr ::= classAggInit(base: LVal, fields: List, initList: List, initializers: Map, class: Class, initExp: Expr)
+     syntax Bool ::= hasInit(CId, Map) [function]
+     rule hasInit(X:CId, X |-> M::TypeMap _) => notBool isNoInit(M)
+
+     syntax Bool ::= isNoInit(TypeMap) [function]
+     rule isNoInit(_ |-> NoInit()) => true
+     rule isNoInit(_ |-> _) => false [owise]
+
+     syntax Expr ::= classAggInit(base: LVal, fields: List, initList: List, initializers: Map, class: Class, initExp: K)
 
      rule classAggInit(... base: Base::LVal,
                            fields: .List,
                            initList: .List,
-                           initExp: E::Expr)
-       => compoundInit(E, Base)
+                           initExp: E::MaybeExpr)
+          => compoundInitJoin(E, Base)
      // technically this should reject programs where Init is a narrowing
      // conversion on T. However, in this case the initialization is
      // ill-formed. The only case in the semantics so far where we care whether
@@ -298,14 +306,20 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                            class: C::Class)
           requires isAggregateType(T)
            andBool notBool isBraceInit(Init)
-     rule (classAggInit(... fields: .List, initList: L::List, initExp: E2::Expr) => .K)
-          ~> classAggInit(... initList: .List => L, initExp: E1::Expr => compoundInitJoin(E1, E2))
+     rule (classAggInit(... fields: .List, initList: L::List, initExp: E2::MaybeExpr) => .K)
+          ~> classAggInit(... initList: .List => L, initExp: E1::MaybeExpr => compoundInitJoin(E1, E2))
 
-     syntax Expr ::= compoundInitJoin(Expr, Expr) [function]
-     rule compoundInitJoin(E1::Expr, compoundInit(E2::Expr, V::Expr)) => compoundInit(compoundInitJoin(E1, E2), V)
-     rule compoundInitJoin(E::Expr, .K) => E
+     syntax MaybeExpr ::= compoundInitJoin(MaybeExpr, MaybeExpr) [function]
+     rule compoundInitJoin(E1::MaybeExpr, compoundInit(E2::Expr, V::Expr))
+          => maybeCompoundInit(compoundInitJoin(E1, E2), V)
+     rule compoundInitJoin(E1::MaybeExpr, noExpr) => E1
+     rule compoundInitJoin(E1::MaybeExpr, E2::Expr) => maybeCompoundInit(E1, E2) [owise]
 
-     rule (V:Val => .K) ~> classAggInit(... initExp: (E::Expr => compoundInit(E, V)))
+     syntax Expr ::= maybeCompoundInit(MaybeExpr, Expr) [function]
+     rule maybeCompoundInit(noExpr, E2::Expr) => E2
+     rule maybeCompoundInit(E1::Expr, E2::Expr) => compoundInit(E1, E2) [owise]
+
+     rule (V:Val => .K) ~> classAggInit(... initExp: (E::MaybeExpr => compoundInitJoin(E, V)))
 
      rule (.K => figureInit(Base . no-template Name(C, F), T, #evalBraceOrEqualInitializer(C, Base, Init), CopyInit()))
        ~> classAggInit(... base: Base::LVal,
@@ -333,7 +347,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule E::Expr [ I::Int ] => (E[prv(I, noTrace, t(noQuals, .Set, size_t))])
 
 
-     rule (V:Val => .K) ~> arrayInit(... result:(E::Expr => compoundInit(E, V)))
+     rule (V:Val => .K) ~> arrayInit(... result:(E::MaybeExpr => compoundInitJoin(E, V)))
 
      // No initializers left, but we still need to initialize
      // the rest of the array.
@@ -352,8 +366,8 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                type:     t(... st: arrayType(_, Size::Int)),
                current:  I::Int,
                initList: .List,
-               result:   E::Expr
-          ) => compoundInit(E, Base)
+               result:   E::MaybeExpr
+          ) => compoundInitJoin(E, Base)
           requires I ==Int Size
 
      rule (.K => braceElisionNo()) ~>
@@ -435,21 +449,21 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                type:     t(... st: arrayType(_, Size::Int)),
                current:  Current::Int,
                initList: L::List,
-               result:   E2::Expr
+               result:   E2::MaybeExpr
             ) => .K
           ) ~>
           arrayInit(...
                initList: .List => L,
-               result:   (E1::Expr => compoundInitJoin(E1, E2))
+               result:   (E1::MaybeExpr => compoundInitJoin(E1, E2))
           )
           requires (Current ==Int Size) andBool (L =/=K .List)
 
      // This is similar: we elided an opening brace and the member initialization is now done,
      // but now the member was an aggregate class.
-     rule (classAggInit(... fields: .List, initList: L::List, initExp: E2::Expr) => .K) ~>
+     rule (classAggInit(... fields: .List, initList: L::List, initExp: E2::MaybeExpr) => .K) ~>
           arrayInit(...
                initList: .List => L,
-               result:   (E1::Expr => compoundInitJoin(E1, E2))
+               result:   (E1::MaybeExpr => compoundInitJoin(E1, E2))
           )
 
      // *** </ Aggregate initialization of an array >
@@ -463,29 +477,31 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           <class-id> C </class-id>
           <cenv>... ConstructorId(X) |-> M::TypeMap ...</cenv>
 
-     rule stripExplicit(T::CPPFunctionType |-> K1:K M::TypeMap) => T |-> K1 stripExplicit(M)
+     rule stripExplicit(T::CPPFunctionType |-> K1:KItem M::TypeMap) => T |-> K1 stripExplicit(M)
           requires notBool isMethodExplicit(T)
      rule stripExplicit(_ |-> _ M::TypeMap) => stripExplicit(M) [owise]
      rule stripExplicit(.Map) => .Map
 
-     rule V:Val ~> constructorInit(Base::LVal, _, _, _, NoConstructorInit) => compoundInit(compoundInit(le(beginConstruction(Base, false), trace(Base), type(Base)), V), le(endConstruction(Base, false), trace(Base), type(Base)))
-     rule V:Val ~> constructorInit(Base::LVal, _, _, _, ConstructorInit(IsBaseClass::Bool)) => compoundInit(compoundInit(le(beginConstruction(Base, IsBaseClass), trace(Base), type(Base)), V), le(endConstruction(Base, true), trace(Base), type(Base)))
+     rule V:Val ~> constructorInit(Base::LVal, _, _, _, NoConstructorInit)
+          => compoundInit(compoundInit(le(beginConstruction(Base, false), trace(Base), type(Base)), V), le(endConstruction(Base, false), trace(Base), type(Base)))
+     rule V:Val ~> constructorInit(Base::LVal, _, _, _, ConstructorInit(IsBaseClass::Bool))
+          => compoundInit(compoundInit(le(beginConstruction(Base, IsBaseClass), trace(Base), type(Base)), V), le(endConstruction(Base, true), trace(Base), type(Base)))
 
      rule (.K => figureInit(Base[I], innerType(T), CharacterLiteral(C, ordChar(firstChar(S))), CopyInit())) ~> strInit(Base:LVal, T::CPPArrayType, C::CharKind, (S::String => butFirstChar(S)), (I::Int => I +Int 1), _)
           requires S =/=String ""
      rule (.K => figureInit(Base[I], T, CharacterLiteral(C, 0), CopyInit())) ~> strInit(Base:LVal, t(_, _, arrayType(T::CPPType, N::Int)), C::CharKind, "", (I::Int => I +Int 1), _)
           requires I <Int N
      rule (V:Val => .K)
-          ~> strInit(_, _, _, _, _, (E::Expr => compoundInit(E, V)))
-     rule strInit(Base:LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), _, "", N, E::Expr)
-          => compoundInit(E, Base)
+          ~> strInit(_, _, _, _, _, (E::MaybeExpr => compoundInitJoin(E, V)))
+     rule strInit(Base:LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), _, "", N, E::MaybeExpr)
+          => compoundInitJoin(E, Base)
 
-     rule compoundInit(.K, E::Expr) => E
      rule compoundInit(V:TExpr, LV:LVal) => le(compoundInit(stripCompoundInit(V), LV), noTrace, type(LV))
      rule compoundInit(V:TExpr, XV:XVal) => xe(compoundInit(stripCompoundInit(V), XV), noTrace, type(XV))
      rule compoundInit(V:TExpr, PRV:PRVal) => pre(compoundInit(stripCompoundInit(V), PRV), noTrace, type(PRV))
      rule compoundInit(V:Val, E::Expr) => E
           requires isEvalVal(V)
+
      syntax Expr ::= stripCompoundInit(Val) [function]
      rule stripCompoundInit(le(compoundInit(E1::Expr, E2::Expr), _, _)) => compoundInit(E1, E2)
      rule stripCompoundInit(V::Val) => V [owise]

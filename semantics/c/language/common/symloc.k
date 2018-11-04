@@ -46,7 +46,7 @@ module C-SYMLOC
      rule notBase(basedOn(_, _)) => false
      rule notBase(_) => true [owise]
 
-     rule ifFromArrayInBounds(loc(_, _, SetItem(K:K) S:Set), T::UType, I:Int)
+     rule ifFromArrayInBounds(loc(_, _, SetItem(K:KItem) S:Set), T::UType, I:Int)
           => #ifFromArrayInBounds(K, S, T, I)
      rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
           requires notBool isFromArray(Loc)
@@ -62,7 +62,7 @@ module C-SYMLOC
                orBool (Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len)
      rule #ifFromArrayInBounds(K:K, .Set, _, _) => true
           requires getKLabel(K) =/=K #klabel(`fromArray`)
-     rule #ifFromArrayInBounds(K:K, SetItem(K':K) S:Set, T::UType, I:Int)
+     rule #ifFromArrayInBounds(K:K, SetItem(K':KItem) S:Set, T::UType, I:Int)
           => #ifFromArrayInBounds(K', S, T, I)
           requires getKLabel(K) =/=K #klabel(`fromArray`)
 

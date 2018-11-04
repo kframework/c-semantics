@@ -30,6 +30,6 @@ module DELETE-OBJECT
      syntax List ::= filterBuffer(List, SymBase) [function]
      rule filterBuffer(.List, _) => .List
      rule filterBuffer(ListItem(bwrite(loc(Base::SymBase, _), _)) L::List, Base) => filterBuffer(L, Base)
-     rule filterBuffer(ListItem(K:K) L::List, Base::SymBase) => ListItem(K) filterBuffer(L, Base) [owise]
+     rule filterBuffer(ListItem(K:KItem) L::List, Base::SymBase) => ListItem(K) filterBuffer(L, Base) [owise]
 
 endmodule

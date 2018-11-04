@@ -65,7 +65,7 @@ module C-EXPR-ASSIGNMENT
           => getRelevantTags'(.K, stripProv(Loc'), getBases(Loc))
 
      syntax Set ::= "getRelevantTags'" "(" K "," SymLoc "," Set ")" [function]
-     rule getRelevantTags'((.K => K), _, (SetItem(K:K) => .Set) _)
+     rule getRelevantTags'((.K => K), _, (SetItem(K:KItem) => .Set) _)
      rule getRelevantTags'((basedOn(Base, _) => .K), loc(Base:SymBase, _), _)
      rule getRelevantTags'(basedOn(Base':SymBase, Tag:Scope),
                loc(Base:SymBase, Offset:Int), Bases:Set)
