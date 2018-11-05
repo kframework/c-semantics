@@ -13,3 +13,4 @@ semantics/.depend*
 semantics/.lock
 semantics/build
 scripts/cdecl-*
+.vagrant
