@@ -7,12 +7,12 @@ module CPP-TRANSLATION-STMT-TRY
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR-SYNTAX
      imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
      imports CPP-TRANSLATION-ELABORATOR-SYNTAX
      imports CPP-TRANSLATION-ODR-SYNTAX
      imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
-
 
      rule (.K => elaborate(Try, listToK(Catch)))
           ~> TryStmt(Try::Stmt, Catch::List)
@@ -23,30 +23,31 @@ module CPP-TRANSLATION-STMT-TRY
      rule <k> elaborateDone(S:K) ~> TCatchAnyOp(_) => .K ...</k>
           <elab>... .K => CatchAnyOp(S) </elab>
 
-     context evalThrow(HOLE:Expr, _) [result(Val)]
+     context Throw.eval(HOLE:Expr, _) [result(Val)]
 
      rule Throw(E::Expr)
        => Odr.newUse(obj(0, 0, builtinCppSymbol("::std::terminate()")))
-       ~> prepareThrow(E, E)
+       ~> Throw.prepare(E, E)
 
-     syntax Expr ::= prepareThrow(AExpr, K)
-     context prepareThrow(_, HOLE:TypeExpr => typeof(HOLE)) [result(CPPTypeExpr)]
-     context prepareThrow(_, HOLE:CPPTypeExpr)
+     syntax Expr ::= "Throw.prepare" "(" AExpr "," K ")"
+
+     context Throw.prepare(_, HOLE:TypeExpr => typeof(HOLE)) [result(CPPTypeExpr)]
+     context Throw.prepare(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     rule prepareThrow(_, T:CPPArrayTypeExpr => type(pointerType(innerType(T))))
-     rule prepareThrow(_, T:CPPFunctionTypeExpr => type(pointerType(T)))
-     rule prepareThrow(E::Expr, T:CPPType)
-          => evalThrow(figureInit(le(temp(!I:Int, utype(T)), noTrace, utype(T)), utype(T), E, CopyInit()), E)
-     rule prepareThrow(E::Expr, T:CPPTypeExpr)
-          => prd(prepareThrow(E, T), hasTrace(Throw(E)), type(void), T)
+     rule Throw.prepare(_, T:CPPArrayTypeExpr => type(pointerType(innerType(T))))
+     rule Throw.prepare(_, T:CPPFunctionTypeExpr => type(pointerType(T)))
+     rule Throw.prepare(E::Expr, T:CPPType)
+          => Throw.eval(figureInit(le(temp(!I:Int, utype(T)), noTrace, utype(T)), utype(T), E, CopyInit()), E)
+     rule Throw.prepare(E::Expr, T:CPPTypeExpr)
+          => prd(Throw.prepare(E, T), hasTrace(Throw(E)), type(void), T)
           requires isDependentInScope(T)
-     rule prepareThrow(NoExpression(), NoExpression())
+     rule Throw.prepare(NoExpression(), NoExpression())
           => pre(ThrowOp(exceptionObject(type(no-type))), hasTrace(Throw(NoExpression())), type(void))
 
-     syntax Expr ::= evalThrow(Expr, Expr)
+     syntax Expr ::= "Throw.eval" "(" Expr "," Expr ")"
 
-     rule evalThrow(V:Val, E::Expr) => pre(ThrowOp(V), hasTrace(E), type(void))
+     rule Throw.eval(V:Val, E::Expr) => pre(ThrowOp(V), hasTrace(E), type(void))
 
      rule exceptionObject(T::CPPType) => le(exceptionObject(T), noTrace, T)
           requires Translation()
