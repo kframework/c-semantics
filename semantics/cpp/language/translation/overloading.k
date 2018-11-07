@@ -357,7 +357,7 @@ module CPP-TRANSLATION-OVERLOADING
      // do not actually perform overload resolution, this was a function call
      // in which the postfix expression was a function pointer
      rule #resolveOverload(cSet(... candidates: T:CPPPointerType |-> envEntry(... base: Base::SymBase), id: X::QualId), list(Args::List), _, _, E::Expr, _)
-          => makeOdrUsed(Base)
+          => Odr.newUse(Base)
           ~> updateExternalUses(Base)
           ~> checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T))))))
           requires isCPPFunctionType(innerType(T)) andBool Base =/=K nonStatic
@@ -368,7 +368,7 @@ module CPP-TRANSLATION-OVERLOADING
 
      // only one viable candidate
      rule bestViable(T::CPPFunctionType, envEntry(... base: Base::SymBase, defaultArgs: defArgs(... vals: DArgs::StrictListResult))) ~> #resolveOverload(cSet(... id: X::QualId), list(Args::List), _, _, E::Expr, _)
-          => #if isMethodPure(T) andBool isVirtualCall(hasTrace(E), T) #then .K #else makeOdrUsed(Base) #fi
+          => #if isMethodPure(T) andBool isVirtualCall(hasTrace(E), T) #then .K #else Odr.newUse(Base) #fi
           ~> updateExternalUses(Base)
           ~> checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), DArgs))
 
@@ -658,7 +658,7 @@ module CPP-TRANSLATION-OVERLOADING
      rule (lv(loc(Base::SymBase, 0), _, _) => .K) ~> bestViable(T::CPPFunctionType, (_ => envEntry(Base, false, emptyDefaultArguments(T))))
 
      rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase), id: X::QualId), E::Expr, _)
-          => makeOdrUsed(Base)
+          => Odr.newUse(Base)
           ~> updateExternalUses(Base)
           ~> lv(lnew(Base), hasTrace(E), T)
           requires Base =/=K nonStatic

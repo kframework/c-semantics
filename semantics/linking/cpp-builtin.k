@@ -51,7 +51,7 @@ module LINKING-CPP-BUILTIN
 
      syntax KItem ::= declareCppBuiltinFunction(QualId, CPPType, SymBase)
      rule <k> declareCppBuiltinFunction(N::Namespace :: X::CId, T::CPPType, Base::SymBase)
-               => newOdrDef(N :: X, T, Base)
+               => Odr.newDef(N :: X, T, Base)
           ...</k>
           <mem> Mem::Map => Mem[Base <- object(T, 0, makeEmptyArray(0))] </mem>
           <functions> Fun::Map => Fun[Base <- functionObject(N :: X, T, getDummyParams(T), callBuiltin)] </functions>
