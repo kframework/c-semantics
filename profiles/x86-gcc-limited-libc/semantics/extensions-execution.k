@@ -1,4 +1,4 @@
-require "c/c-extensions-common.k"
+require "c-extensions-common.k"
 
 module C-CONFIGURATION-EXTENSIONS
 
