@@ -46,6 +46,9 @@ endmodule
 module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
      imports CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR-SYNTAX
      imports CPP-TRANSLATION-ODR-SYNTAX
+     imports CPP-SYNTAX // DestructorId
+     imports CPP-SYMLOC-SYNTAX // envEntry, SymBase
+     imports C-CONFIGURATION
 
      // N4296 3.2/3
      // N4778 6.2/8

@@ -16,11 +16,12 @@ module CPP-TRANSLATION-EXPR-NEW
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-BUILTIN-SYNTAX
-     imports CPP-TRANSLATION-DECL-CLASS-SYNTAX
-     imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TRANSLATION-DECL-CLASS-SYNTAX
+     imports CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR-SYNTAX
+     imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
+     imports CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
@@ -96,8 +97,34 @@ module CPP-TRANSLATION-EXPR-NEW
      rule ExprOrNothing(E:Expr) => E
      rule ExprOrNothing(_) => .K [owise]
 
-     rule computeNewInit(R::Expr, T::CPPType, Size::K, E::Expr, I::Int, Init:KResult)
-          => pre(NewOp(T, R, Init, ExprOrNothing(Size), I), hasTrace(E), type(pointerType(T)))
+     rule computeNewInit(R::Expr, T::CPPType, Size::AExpr, E::Expr, I::Int, Init:KResult)
+          => New.potentiallyInvokeDestructor(T)
+          ~> pre(NewOp(T, R, Init, ExprOrNothing(Size), I), hasTrace(E), type(pointerType(T)))
+
+
+     // TODO(jan.tusil) test this with multidimensional arrays
+     //
+     // N4296 5.3.4/19
+     // N4778 7.6.2.4/21
+     // <quote>
+     // If the new-expression creates an array of objects of class type,
+     // the destructor is potentially invoked.
+     // </quote>
+     // <group>
+
+     syntax KItem ::= "New.potentiallyInvokeDestructor" "(" CPPType ")"
+
+     rule New.potentiallyInvokeDestructor(T:CPPArrayType)
+          => #if isCPPClassType(innerType(T)) #then
+               Class.potentiallyInvokeDestructor(classFromType(innerType(T)))
+             #else
+               .K
+             #fi
+
+     rule New.potentiallyInvokeDestructor(T::CPPType) => .K
+          requires notBool isCPPArrayType(T)
+
+     // </group>
 
      rule getSecondDeleteArg(M::TypeMap, V::PRVal)
           => #getSecondDeleteArg(M, func(type(void), ptr(type(void))), func(type(void), ptr(type(void)), type(size_t)), V)
