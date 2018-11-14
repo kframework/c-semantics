@@ -32,7 +32,11 @@ $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
-use constant KRUN         => IS_CYGWIN? 'krun.bat' : 'krun';
+use constant KRUN         => do {
+	my $path = defined($ENV{'K_BIN'})? catfile($ENV{'K_BIN'}, 'krun') : 'krun';
+	my $ext = IS_CYGWIN? '.bat' : '';
+	$path . $ext;
+};
 use constant PRINTF       => IS_CYGWIN? 'printf %%s' : 'printf %s';
 use constant QUOTE_INT    => IS_CYGWIN? backslash("\"Int\"") : "\"Int\"";
 use constant QUOTE_STRING => IS_CYGWIN? backslash("\"String\"") : "\"String\"";

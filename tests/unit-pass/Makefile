@@ -1,6 +1,15 @@
 TUS = $(wildcard ./*.c) $(wildcard ./*.C)
 EXCLUDES=
+OS_EXCLUDES = \
+	./stdio-scanf11.c ./stdio-scanf12.c ./stdio-scanf15.c \
+	./stdio-bug3.c ./stdio-bug5.c ./stdio-bug7.c ./stdio-bug12.c ./stdio-bug18.c ./stdio-bug19.c \
+	./stdio-bug20.c \
+	./stdio-fwrite.c ./stdio-temptest.c ./compcertTSO-2.c \
+	./stdio-ferror.c ./stdio-fgets.c ./stdio-fseek.c ./stdio-scanf-flush.c ./stdio-ungetc.c \
+	./inst-check.c ./pthreads-starve.c \
+	./j016.c
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
+OS_TESTS = $(filter-out $(OS_EXCLUDES), $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS}))))
 CPP_TESTS = $(filter-out %.c, ${TESTS})
 C_TESTS = $(filter-out %.C, ${TESTS})
 GCC_COMPILED_TESTS = ${TESTS:=.gcc}
@@ -8,6 +17,7 @@ KCC_COMPILED_TESTS = ${TESTS:=.kcc}
 TEST_RESULTS = ${TESTS:=.out}
 REFERENCE_TEST_RESULTS = ${TESTS:=.ref}
 TEST_COMPARISON = ${TESTS:=.cmp}
+OS_TEST_COMPARISON = ${OS_TESTS:=.cmp}
 CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
 C_TEST_COMPARISON = ${C_TESTS:=.cmp}
 
@@ -30,11 +40,18 @@ CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else 
 .PHONY: test clean reference comparison
 .PRECIOUS: %.kcc %.out
 
+print:
+	echo excludes
+	echo $(OS_EXCLUDES)
+	echo tests
+	echo $(OS_TESTS)
+
 test: ${TEST_RESULTS}
 
 reference: ${REFERENCE_TEST_RESULTS}
 
 comparison: ${TEST_COMPARISON}
+os-comparison: ${OS_TEST_COMPARISON}
 
 c-comparison: ${C_TEST_COMPARISON}
 cpp-comparison: ${CPP_TEST_COMPARISON}

@@ -33,7 +33,12 @@ my $EXEC_DEF = catfile($SCRIPTS_DIR, "c11-cpp14-kompiled");
 my $EXEC_ND_DEF = catfile($SCRIPTS_DIR, "c11-nd-kompiled");
 my $EXEC_ND_THREAD_DEF = catfile($SCRIPTS_DIR, "c11-nd-thread-kompiled");
 
-my $KRUN = "krun";
+use constant IS_CYGWIN    => $^O eq "cygwin" || $^O eq "msys";
+use constant KRUN         => do {
+	my $path = defined($ENV{'K_BIN'})? catfile($ENV{'K_BIN'}, 'krun') : 'krun';
+	my $ext = IS_CYGWIN? '.bat' : '';
+	$path . $ext;
+};
 
 my @temporaryFiles = ();
 
@@ -145,7 +150,7 @@ sub main {
 
       # Execute krun with the arguments in @cmd
       print("'krun' '" . join("' '", @cmd) . "'\n") if defined $ENV{VERBOSE};
-      my $ret = system($KRUN, @cmd) >> 8;
+      my $ret = system(KRUN, @cmd) >> 8;
 
       if (defined $ENV{LTLMC} | defined $ENV{PROVE}) {
             return 0;

@@ -59,7 +59,8 @@ module C-SETTINGS
 
      rule cfg:intToPointer(0, _) => NullPointer
      rule cfg:intToPointer(_, _) => trap [owise]
-     rule cfg:pointerToInt(_, T::UType) => unknown(max(T))
+     rule cfg:pointerToInt(NullPointer, _) => 0
+     rule cfg:pointerToInt(L:SymLoc, _) => L [owise]
 
      rule cfg:maxHeapBound => (1 <<Int 32) -Int 2
 
