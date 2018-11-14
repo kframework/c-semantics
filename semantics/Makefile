@@ -1,4 +1,4 @@
-export K_OPTS := -Xmx2048m -Xss32m
+export K_OPTS := -Xmx8g -Xss32m
 KOMPILE = kompile -O2
 KDEP = kdep
 KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict --smt none
