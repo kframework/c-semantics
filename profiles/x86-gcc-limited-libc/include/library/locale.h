@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 #ifndef _KCC_EXPERIMENTAL_LOCALE
-#error locale.h not supported
+#warning locale.h not supported
 #endif
 
 struct lconv {
@@ -91,7 +91,15 @@ char int_n_sign_posn;
 #define LC_NUMERIC 5
 #define LC_TIME 6
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char *setlocale(int category, const char *locale);
 struct lconv *localeconv(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

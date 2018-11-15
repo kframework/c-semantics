@@ -19,6 +19,10 @@ enum memory_order {
 };
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* C1X 7.17.4.1
 Depending on the value of order, this operation:
 - has no effects, if order == memory_order_relaxed;
@@ -31,5 +35,9 @@ memory_order_acq_rel;
 memory_order_seq_cst.
 */
 void atomic_thread_fence(memory_order order);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

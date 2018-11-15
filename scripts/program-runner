@@ -82,7 +82,7 @@ sub main {
             print "DUMPALL --- leaves all the intermediate files in the current directory.\n";
             print "LTLMC --- LTL model checking.\n";
             print "VERBOSE --- verbose output.\n";
-            print "PROVE=<file> --- enable prover on specification file";
+            print "PROVE=<file> --- enable prover on specification file.\n";
             print "E.g., DEBUG=1 $0\n";
             print "\n";
             print "This message was displayed because the variable HELP was set.  Use HELP=1 $0 to turn off.\n";

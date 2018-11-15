@@ -2,15 +2,13 @@
 #define _STDARG_H
 #include <stddef.h>
 
-#ifndef __cplusplus
-typedef ptrdiff_t __builtin_va_list;
-#endif
+#define __builtin_va_list __kcc_va_list
+#define __gnuc_va_list __kcc_va_list
+typedef __kcc_va_list va_list;
 
-#ifndef __GNUC_VA_LIST
-#define __GNUC_VA_LIST
-typedef __builtin_va_list __gnuc_va_list;
+#ifdef __cplusplus
+extern "C" {
 #endif
-typedef __gnuc_va_list va_list;
 
 /* The va_arg macro expands to an expression that has the specified type and
  * the value of the next argument in the call. The parameter ap shall have been
@@ -43,5 +41,9 @@ void __kcc_va_end(va_list ap);
 /* void va_copy(va_list dst, va_list src); */
 #define va_copy(dst, src) (__kcc_va_copy((&(dst)), (src)))
 void __kcc_va_copy(va_list *dst, va_list src);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

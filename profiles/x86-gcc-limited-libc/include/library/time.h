@@ -24,6 +24,10 @@ struct tm {
       int tm_isdst; /* Daylight Saving Time flag */
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 clock_t clock(void);
 double difftime(time_t time1, time_t time0);
 time_t mktime(struct tm *timeptr);
@@ -33,6 +37,10 @@ char *asctime(const struct tm *timeptr);
 char *ctime(const time_t *timer);
 struct tm *gmtime(const time_t *timer);
 struct tm *localtime(const time_t *timer);
-size_t strftime(char * restrict s, size_t maxsize, const char * restrict format, const struct tm * restrict timeptr);
+size_t strftime(char * __restrict__ s, size_t maxsize, const char * __restrict__ format, const struct tm * __restrict__ timeptr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
