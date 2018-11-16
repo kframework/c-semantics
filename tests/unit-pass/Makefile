@@ -1,6 +1,22 @@
 TUS = $(wildcard ./*.c) $(wildcard ./*.C)
 EXCLUDES=
+OS_TUS = $(wildcard ./j*.c) $(wildcard ./*.C)
+OS_EXCLUDES = \
+	./stdio-scanf11.c ./stdio-scanf12.c ./stdio-scanf15.c \
+	./stdio-bug3.c ./stdio-bug5.c ./stdio-bug6.c ./stdio-bug7.c ./stdio-bug12.c ./stdio-bug18.c \
+	./stdio-bug19.c ./stdio-bug20.c \
+	./stdio-fwrite.c ./stdio-temptest.c ./compcertTSO-2.c \
+	./stdio-ferror.c ./stdio-fgets.c ./stdio-fseek.c ./stdio-scanf-flush.c ./stdio-ungetc.c \
+	./stdio-sscanf.c ./stdio-fileno.c \
+	./inst-check.c ./pthreads-starve.c ./fopen-enoent.c \
+	./oldstyle-main.c ./struct-ini-1.c ./j016.c \
+	$(OS_UNKNOWN_FAILURES)
+# TODO(chathhorn): not sure why these are failing with the OS profile.
+OS_UNKNOWN_FAILURES = \
+	./20051113-1.c ./nullptr21.C ./nullptr28.C ./nullptr.C ./new23.C ./new41.C \
+	./constructor-1.C ./throw-1.C ./throw-2.C ./throw-4.C ./mem-init-1.C ./direct-init-1.C
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
+OS_TESTS = $(filter-out $(OS_EXCLUDES), $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${OS_TUS}))))
 CPP_TESTS = $(filter-out %.c, ${TESTS})
 C_TESTS = $(filter-out %.C, ${TESTS})
 GCC_COMPILED_TESTS = ${TESTS:=.gcc}
@@ -8,6 +24,7 @@ KCC_COMPILED_TESTS = ${TESTS:=.kcc}
 TEST_RESULTS = ${TESTS:=.out}
 REFERENCE_TEST_RESULTS = ${TESTS:=.ref}
 TEST_COMPARISON = ${TESTS:=.cmp}
+OS_TEST_COMPARISON = ${OS_TESTS:=.cmp}
 CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
 C_TEST_COMPARISON = ${C_TESTS:=.cmp}
 
@@ -35,6 +52,7 @@ test: ${TEST_RESULTS}
 reference: ${REFERENCE_TEST_RESULTS}
 
 comparison: ${TEST_COMPARISON}
+os-comparison: ${OS_TEST_COMPARISON}
 
 c-comparison: ${C_TEST_COMPARISON}
 cpp-comparison: ${CPP_TEST_COMPARISON}

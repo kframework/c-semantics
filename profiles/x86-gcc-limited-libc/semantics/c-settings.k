@@ -37,7 +37,7 @@ module C-SETTINGS
 
      rule cfg:mtxPlain => 0
 
-     rule cfg:sizeut => unsigned-int
+     rule cfg:sizeut => unsigned-long-int
      rule cfg:wintut => unsigned-int
      rule cfg:wcharut => int
      rule cfg:ptrsize => 4
@@ -59,7 +59,8 @@ module C-SETTINGS
 
      rule cfg:intToPointer(0, _) => NullPointer
      rule cfg:intToPointer(_, _) => trap [owise]
-     rule cfg:pointerToInt(_, T::UType) => unknown(max(T))
+     rule cfg:pointerToInt(NullPointer, _) => 0
+     rule cfg:pointerToInt(L:SymLoc, _) => L [owise]
 
      rule cfg:maxHeapBound => (1 <<Int 32) -Int 2
 

@@ -36,6 +36,10 @@ enum {
       thrd_nomem = 4     /* returned by a function to indicate that the requested operation failed because it was unable to allocate memory. */
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Our threading primitive. */
 int __test_and_set(int *p, int value);
 
@@ -157,5 +161,9 @@ The thrd_join function returns thrd_success on success or thrd_error if the
 request could not be honored.
 */
 extern int thrd_join(thrd_t thr, int *res);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

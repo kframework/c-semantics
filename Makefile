@@ -1,3 +1,10 @@
+BUILD_DIR = $(CURDIR)/.build
+K_SUBMODULE = $(BUILD_DIR)/k
+export K_OPTS := -Xmx8g -Xss32m
+export K_BIN = $(K_SUBMODULE)/k-distribution/target/release/k/bin
+export KOMPILE = $(K_BIN)/kompile -O2
+export KDEP = $(K_BIN)/kdep
+
 SEMANTICS_DIR = semantics
 SCRIPTS_DIR = scripts
 PARSER_DIR = parser
@@ -51,17 +58,22 @@ define timestamp_of
     $(DIST_PROFILES)/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
-.PHONY: default check-vars semantics clean fast cpp-semantics translation-semantics execution-semantics test-build pass fail fail-compile parser/cparser $(CPPPARSER_DIR)/clang-kast $(PROFILE)-native
+.PHONY: default check-vars semantics clean stdlibs deps cpp-semantics translation-semantics execution-semantics test-build pass fail fail-compile parser/cparser $(CPPPARSER_DIR)/clang-kast $(PROFILE)-native
 
 default: test-build
 
-fast: $(LIBC_SO) $(LIBSTDCXX_SO) $(call timestamp_of,c11-cpp14)
+deps: $(K_SUBMODULE)/make.timestamp
 
-check-vars:
+$(K_SUBMODULE)/make.timestamp:
+	@echo "== submodule: $@"
+	git submodule update --init -- $(K_SUBMODULE)
+	cd $(K_SUBMODULE) \
+		&& mvn package -q -DskipTests -U
+	touch $(K_SUBMODULE)/make.timestamp
+
+check-vars: deps
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@if ! gcc -v > /dev/null 2>&1; then if ! clang -v > /dev/null 2>&1; then echo "ERROR: You don't seem to have gcc or clang installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi fi
-	@if ! kompile --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have kompile installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
-	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
 $(DIST_DIR)/writelong: $(SCRIPTS_DIR)/writelong.c
@@ -102,27 +114,25 @@ $(DIST_PROFILES)/$(PROFILE): $(DIST_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_F
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
 		cp -RLp $(DIST_PROFILES)/$(PROFILE)/native/* $(DIST_PROFILES)/$(shell basename $(d))/native;)
 
-$(PROFILE_DIR)/cpp-pp:
-
 $(call timestamp_of,c11-cpp14): execution-semantics $(DIST_PROFILES)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/c11-cpp14-kompiled $(DIST_PROFILES)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-cpp14-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/c11-cpp14-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
+		cp -RLp $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-cpp14-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
 
 $(call timestamp_of,c11-cpp14-linking): linking-semantics $(DIST_PROFILES)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/c11-cpp14-linking-kompiled $(DIST_PROFILES)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-cpp14-linking-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/c11-cpp14-linking-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
+		cp -RLp $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-cpp14-linking-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
 
 $(call timestamp_of,c11-translation): translation-semantics $(DIST_PROFILES)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/c11-translation-kompiled $(DIST_PROFILES)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-translation-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/c11-translation-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
+		cp -RLp $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-translation-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
 
 $(call timestamp_of,cpp14-translation): cpp-semantics $(DIST_PROFILES)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/build/$(PROFILE)/cpp14-translation-kompiled $(DIST_PROFILES)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/cpp14-translation-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/build/$(PROFILE)/cpp14-translation-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
+		cp -RLp $(SEMANTICS_DIR)/.build/$(PROFILE)/cpp14-translation-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
 
 $(LIBSTDCXX_SO): $(call timestamp_of,c11-cpp14-linking) $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) $(DIST_PROFILES)/$(PROFILE)
 	@echo "$(PROFILE): Translating the C++ standard library..."
@@ -154,7 +164,9 @@ $(DIST_PROFILES)/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c $(wildcard nat
 	mkdir -p $(dir $@)
 	gcc $(CFLAGS) -c $< -o $@ -I native-server
 
-test-build: fast
+stdlibs: $(LIBC_SO) $(LIBSTDCXX_SO) $(call timestamp_of,c11-cpp14)
+
+test-build: stdlibs
 	@echo "Testing kcc..."
 	printf "#include <stdio.h>\nint main(void) {printf(\"x\"); return 42;}\n" | $(DIST_DIR)/kcc --use-profile $(PROFILE) -x c - -o $(DIST_DIR)/testProgram.compiled
 	$(DIST_DIR)/testProgram.compiled 2> /dev/null > $(DIST_DIR)/testProgram.out; test $$? -eq 42
@@ -199,13 +211,16 @@ semantics: check-vars
 check:	pass fail fail-compile
 
 pass:	test-build
-	@$(MAKE) -C $(PASS_TESTS_DIR) c-comparison
+	@$(MAKE) -C $(PASS_TESTS_DIR) comparison
 
 fail:	test-build
-	@$(MAKE) -C $(FAIL_TESTS_DIR) c-comparison
+	@$(MAKE) -C $(FAIL_TESTS_DIR) comparison
 
 fail-compile:	test-build
-	@$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) c-comparison
+	@$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) comparison
+
+os-check:	test-build
+	@$(MAKE) -C $(PASS_TESTS_DIR) os-comparison
 
 clean:
 	-$(MAKE) -C $(PARSER_DIR) clean
@@ -215,5 +230,6 @@ clean:
 	-$(MAKE) -C $(PASS_TESTS_DIR) clean
 	-$(MAKE) -C $(FAIL_TESTS_DIR) clean
 	-$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) clean
-	@-rm -rf $(DIST_DIR)
-	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre 
+	-rm -f $(K_SUBMODULE)/make.timestamp
+	-rm -rf $(DIST_DIR)
+	-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre 

@@ -8,6 +8,10 @@
 typedef struct div_t_ {int quot; int rem;} div_t;
 typedef struct ldiv_t_ {long int quot; long int rem;} ldiv_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void *malloc(size_t size);
 void *realloc(void *ptr, size_t size);
 void free(void *pointer);
@@ -21,5 +25,9 @@ _Noreturn void abort(void);
 int atoi (const char * str);
 int atexit(void (*func)(void));
 int at_quick_exit(void (*func)(void));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

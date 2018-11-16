@@ -14,6 +14,11 @@
 
 #define __signed__ signed
 
+typedef long int __kcc_va_list;
+typedef long unsigned int __kcc_size_t;
+#undef __SIZE_TYPE__
+#define __SIZE_TYPE__ __kcc_size_t
+
 #ifndef __cplusplus
 
 /* We don't use the C parser for C++, so we need clang to recognize these
