@@ -330,7 +330,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <deferred-class-actions> _ |> _ |> (K:K => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type)) ~> K) |> .Ordering </deferred-class-actions>
           <curr-tr-scope> classScope(C, _) </curr-tr-scope>
           <class-id> C </class-id>
-          <function-members>... .List => ListItem(kpair(X, T)) </function-members>
+          <function-members>... .List => ListItem(Class.FunctionMember(X, T)) </function-members>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           requires notBool isVarDeclarationType(Type)
@@ -392,18 +392,18 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                   | #computeAggArraySize(fields: List, types: Map, initList: List, callStack: List, size: Int, agg: ClassInfo) [function]
 
      rule computeAggArraySize(CI::ClassInfo, L::List) => #computeAggArraySize(.List, .Map, L, .List, 0, CI)
-     rule #computeAggArraySize((.List => getNonStaticDataMembers(CI)), (_ => getDataMembersInitializers(CI)), ListItem(_) _, .List, (N::Int => N +Int 1), CI::ClassInfo)
+     rule #computeAggArraySize((.List => Class.getNonStaticDataMembers(CI)), (_ => Class.getDataMembersInitializers(CI)), ListItem(_) _, .List, (N::Int => N +Int 1), CI::ClassInfo)
      rule #computeAggArraySize(... fields: (.List => Fields), types: (_ => Types), callStack: (ListItem(kpair(Fields::List, Types::Map)) => .List) _)
      rule #computeAggArraySize(... initList: .List, size: N::Int) => N
      rule #computeAggArraySize(...
-                           fields: (ListItem(kpair(F:CId, _)) => .List) _,
+                           fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            types: (F |-> (T::CPPType |-> _)) _,
                            initList: (ListItem(Init::Expr) => .List) _
                            )
           requires (notBool isAggregateType(T) orBool isBraceInit(Init))
      rule #computeAggArraySize(...
-                           fields: (ListItem(kpair(F:CId, _)) Fields::List => getNonStaticDataMembers(getClassInfo(T))),
-                           types: (((F |-> (T::CPPClassType |-> _)) _) #as Types::Map => getDataMembersInitializers(getClassInfo(T))),
+                           fields: (ListItem(Class.DataMember(F:CId, _)) Fields::List => Class.getNonStaticDataMembers(getClassInfo(T))),
+                           types: (((F |-> (T::CPPClassType |-> _)) _) #as Types::Map => Class.getDataMembersInitializers(getClassInfo(T))),
                            initList: ListItem(Init::Expr) _,
                            callStack: (.List => ListItem(kpair(Fields, Types))) _
                            )

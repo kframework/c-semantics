@@ -716,7 +716,7 @@ module CPP-TYPING
 
      rule hasVirtualMembers(T::CPPClassType) => #hasVirtualMembers(getClassInfo(T))
      syntax Bool ::= #hasVirtualMembers(ClassInfo) [function]
-     rule #hasVirtualMembers(<class>... <function-members> ListItem(kpair(_, t(... st: functionType(... methodInfo: methodInfo(... virtual: false))))) => .List ...</function-members> ...</class>)
+     rule #hasVirtualMembers(<class>... <function-members> ListItem(Class.FunctionMember(_, t(... st: functionType(... methodInfo: methodInfo(... virtual: false))))) => .List ...</function-members> ...</class>)
      rule #hasVirtualMembers(<class>... <base-classes> ListItem(B::Class) => .List ...</base-classes> <virtual-bases> VirtualBases::Set </virtual-bases> ...</class>)
           requires notBool B in VirtualBases andBool notBool #hasVirtualMembers(getClassInfo(B))
      rule #hasVirtualMembers(<class>... <base-classes> .List </base-classes> <function-members> .List </function-members> ...</class>) => false

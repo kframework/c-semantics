@@ -1,5 +1,7 @@
 module CPP-CLASS-SORTS
      syntax ClassInfo
+     syntax ClassDataMember
+     syntax ClassFunctionMember
 endmodule
 
 module CPP-CLASS-SYNTAX
@@ -26,6 +28,9 @@ module CPP-CLASS-SYNTAX
      syntax ClassInfo ::= getClassInfo(CPPClassType) [function]
                         | getClassInfo(Class) [function, klabel(getClassInfoOfClass)]
      syntax ClassInfo ::= ClassCell | IncompleteInfo
+
+     syntax ClassDataMember ::= "Class.DataMember" "(" CId "," CPPType ")"
+     syntax ClassDataMember ::= "Class.FunctionMember" "(" CId "," CPPType ")"
 
 endmodule
 
