@@ -1,7 +1,7 @@
 BUILD_DIR = $(CURDIR)/.build
 K_SUBMODULE = $(BUILD_DIR)/k
 export K_OPTS := -Xmx8g -Xss32m
-export K_BIN = $(K_SUBMODULE)/k-distribution/target/release/k/bin
+export K_BIN ?= $(K_SUBMODULE)/k-distribution/target/release/k/bin
 export KOMPILE = $(K_BIN)/kompile -O2
 export KDEP = $(K_BIN)/kdep
 
@@ -62,9 +62,9 @@ endef
 
 default: test-build
 
-deps: $(K_SUBMODULE)/make.timestamp
+deps: $(K_BIN)/kompile
 
-$(K_SUBMODULE)/make.timestamp:
+$(K_BIN)/kompile:
 	@echo "== submodule: $@"
 	git submodule update --init -- $(K_SUBMODULE)
 	cd $(K_SUBMODULE) \
