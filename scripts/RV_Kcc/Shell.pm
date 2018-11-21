@@ -11,9 +11,15 @@ use File::Spec::Functions qw(catfile);
 use String::ShellQuote qw(shell_quote_best_effort);
 use Exporter;
 
-use RV_Kcc::Files qw(tempFile);
+use RV_Kcc::Files qw(tempFile IS_CYGWIN);
 
 use constant NULL => '/dev/null';
+
+use constant KBIN2TEXT         => do {
+	my $path = defined($ENV{'K_BIN'})? catfile($ENV{'K_BIN'}, 'k-bin-to-text') : 'k-bin-to-text';
+	my $ext = IS_CYGWIN? '.bat' : '';
+	$path . $ext;
+};
 
 our $VERSION = 1.00;
 our @ISA = qw(Exporter);
@@ -162,7 +168,7 @@ sub commandName {
             my ($retval) = @_;
             if ($retval) {
                   if ($debugFile && $isBinary) {
-                        shell("k-bin-to-text $debugFile kcc_config")->result();
+                        shell(KBIN2TEXT, "$debugFile kcc_config")->result();
                   } elsif ($debugFile) {
                         copy($debugFile, 'kcc_config');
                   }
