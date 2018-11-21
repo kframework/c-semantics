@@ -400,16 +400,47 @@ module CPP-TRANSLATION-OVERLOADING
                     | "noBestViable"
 
      rule computeBestViable(.Map, _, _, _) => noBestViable
+
      rule computeBestViable(T::CPPFunctionType |-> K:KItem M::TypeMap, Types::List, Cats::List, O::OverloadType)
           => #computeBestViable(T, K, Map2List(M), Types, Cats, O, .List)
-     rule #computeBestViable(T1::CPPFunctionType, K1:K, (ListItem(kpair(T2::CPPFunctionType, K2:K)) => .List) _, Types::List, Cats::List, O::OverloadType, (.List => ListItem(kpair(T2, K2))) _)
+
+     rule #computeBestViable(
+               T1::CPPFunctionType,
+               K1:K,
+               (ListItem(kpair(T2::CPPFunctionType, K2:K)) => .List) _,
+               Types::List,
+               Cats::List,
+               O::OverloadType,
+               (.List => ListItem(kpair(T2, K2))) _
+          )
           requires notBool isBetterFunctionThan(T2, K2, T1, K1, Types, Cats, O)
-     rule #computeBestViable((T1::CPPFunctionType => T2), (K1:K => K2), (ListItem(kpair(T2::CPPFunctionType, K2:K)) => .List) _, _, _, _, (.List => ListItem(kpair(T1, K1))) _) [owise]
+
+     rule #computeBestViable(
+               (T1::CPPFunctionType => T2),
+               (K1:K => K2),
+               (ListItem(kpair(T2::CPPFunctionType, K2:K)) => .List) _,
+               _,
+               _,
+               _,
+               (.List => ListItem(kpair(T1, K1))) _
+          )
+          [owise]
+
      rule #computeBestViable(T::CPPFunctionType, K:K, .List, Types::List, Cats::List, O::OverloadType, Others::List)
           => checkIsBest(T, K, Types, Cats, O, Others)
-     rule checkIsBest(T1::CPPFunctionType, K1:K, Types::List, Cats::List, O::OverloadType, (ListItem(kpair(T2::CPPFunctionType, K2:K)) => .List) _)
+
+     rule checkIsBest(
+               T1::CPPFunctionType,
+               K1:K,
+               Types::List,
+               Cats::List,
+               O::OverloadType,
+               (ListItem(kpair(T2::CPPFunctionType, K2:K)) => .List) _
+          )
           requires isBetterFunctionThan(T1, K1, T2, K2, Types, Cats, O)
+
      rule checkIsBest(T::CPPFunctionType, K:K, _, _, _, .List) => bestViable(T, K)
+
      rule checkIsBest(...) => noBestViable [owise]
 
      syntax Bool ::= isBetterFunctionThan(CPPFunctionType, K, CPPFunctionType, K, List, List, OverloadType) [function]
