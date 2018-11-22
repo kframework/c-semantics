@@ -168,7 +168,7 @@ sub commandName {
             my ($retval) = @_;
             if ($retval) {
                   if ($debugFile && $isBinary) {
-                        shell(KBIN2TEXT, "$debugFile kcc_config")->result();
+                        shell(KBIN2TEXT, $debugFile, 'kcc_config')->result();
                   } elsif ($debugFile) {
                         copy($debugFile, 'kcc_config');
                   }
