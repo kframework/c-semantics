@@ -91,7 +91,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule zeroInitBaseClass(Base:LVal, B:CPPClassType) => zeroInit(le(getBaseClassSubobject(Base, B), noTrace, B), B)
 
      rule <k> (.K => evalMany(ListItem(zeroInit(Base . no-template Name(C, X), T)) zeroInitClassPadding(Base, NAOffset, Offset), .List))
-               ~> zeroInitClass(Base:LVal, t(_, _, classType(C::Class)), .List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _)
+               ~> zeroInitClass(Base:LVal, t(_, _, classType(C::Class)), .List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _)
           ...</k>
           <class-id> C </class-id>
           <cenv>... X |-> (_::CPPType |-> classOffset(NAOffset::Int, Offset::Int)) ...</cenv>
@@ -250,13 +250,13 @@ module CPP-TRANSLATION-DECL-INITIALIZER
        => classAggInit(Base, ListItem(X), ListItem(XInit), InitMap, C, noExpr)
 
      rule classAndUnionAggInit(... tag: Union(),
-                                   fields: (ListItem(kpair(X:CId, _)) => .List) _::List,
+                                   fields: (ListItem(Class.DataMember(X:CId, _)) => .List) _::List,
                                    initList: .List,
                                    initializers: InitMap::Map)
          requires notBool hasInit(X, InitMap)
 
-     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(kpair(X::CId, T::CPPType)) _::List, .List, InitMap::Map, C::Class)
-       => classAggInit(Base, ListItem(kpair(X, T)), .List, InitMap, C, noExpr)
+     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(Class.DataMember(X::CId, T::CPPType)) _::List, .List, InitMap::Map, C::Class)
+       => classAggInit(Base, ListItem(Class.DataMember(X, T)), .List, InitMap, C, noExpr)
        requires hasInit(X, InitMap)
 
      rule classAndUnionAggInit(T::Tag, Base::LVal, Fields::List, InitL::List, InitMap::Map, C::Class)
@@ -292,7 +292,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // semantics for constant expressions.
      rule (.K => figureInit(Base . no-template Name(C, F), T, Init, CopyInit()))
        ~> classAggInit(... base: Base::LVal,
-                           fields: (ListItem(kpair(F:CId, _)) => .List) _,
+                           fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: (ListItem(Init::Expr) => .List) _,
                            initializers: (F |-> (T::CPPType |-> _)) _,
                            class: C::Class)
@@ -300,7 +300,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule (.K => figureInit(Base . no-template Name(C, F), T, BraceInit(L), CopyInit()))
        ~> classAggInit(... base: Base::LVal,
-                           fields: (ListItem(kpair(F:CId, _)) => .List) _,
+                           fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: (ListItem(Init::Expr) _) #as L::List  => .List,
                            initializers: (F |-> (T::CPPType |-> _)) _,
                            class: C::Class)
@@ -323,7 +323,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule (.K => figureInit(Base . no-template Name(C, F), T, #evalBraceOrEqualInitializer(C, Base, Init), CopyInit()))
        ~> classAggInit(... base: Base::LVal,
-                           fields: (ListItem(kpair(F:CId, _)) => .List) _,
+                           fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: .List,
                            initializers: (F |-> (T::CPPType |-> Init::Expr)) _,
                            class: C::Class)

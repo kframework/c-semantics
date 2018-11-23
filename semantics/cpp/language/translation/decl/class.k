@@ -30,8 +30,8 @@ module CPP-TRANSLATION-DECL-CLASS-SYNTAX
                    | hasConstructorThat(CPPClassType, K) [function]
                    | hasDestructorThat(CPPClassType, K) [function]
      syntax Bool ::= isPODLayoutType(CPPType) [function]
-     syntax List ::= getNonStaticDataMembers(ClassInfo) [function]
-     syntax Map ::= getDataMembersInitializers(ClassInfo) [function]
+     syntax List ::= "Class.getNonStaticDataMembers" "(" ClassInfo ")" [function]
+     syntax Map ::= "Class.getDataMembersInitializers" "(" ClassInfo ")" [function]
 endmodule
 
 module CPP-TRANSLATION-DECL-CLASS
@@ -129,7 +129,7 @@ module CPP-TRANSLATION-DECL-CLASS
      rule addMembersToScope(_, .List) => .K
      // TODO(traiansf): propagate addToEnv upward if getNNSVal(Scope) is an anonymous union.
      rule <k> (.K => addToEnv(getNNSVal(Scope) :: X, T, memberBase(unnamedObject(C), X, T), false))
-           ~> addMembersToScope(C::Class, (ListItem(kpair(X::CId, T::CPPType)) => .List) _)
+           ~> addMembersToScope(C::Class, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _)
           ...</k>
           <curr-tr-scope> Scope::Scope </curr-tr-scope>
 
@@ -272,7 +272,7 @@ module CPP-TRANSLATION-DECL-CLASS
      rule figureConstruct(... ctors: (ListItem(ConstructorBase(t(... st: classType(C::Class)), false, false, I::Init)) => .List) _, processedCtors: M::Map => M[C <- I])
 
      // 12.1:4
-     rule <k> figureConstruct(.List, _, .List, ListItem(kpair(X::CId, T::CPPType)) _, _, _, _) => Deleted() ...</k>
+     rule <k> figureConstruct(.List, _, .List, ListItem(Class.DataMember(X::CId, T::CPPType)) _, _, _, _) => Deleted() ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -282,7 +282,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           requires isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
      // 12.1:4.6-4.7
-     rule <k> (.K => checkCtorAndDtor(MemInit[X] orDefault .K, X, T, true, I, getMostDerivedArrayElement(T))) ~> figureConstruct(.List, MemInit::Map, .List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
+     rule <k> (.K => checkCtorAndDtor(MemInit[X] orDefault .K, X, T, true, I, getMostDerivedArrayElement(T))) ~> figureConstruct(.List, MemInit::Map, .List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -424,7 +424,7 @@ module CPP-TRANSLATION-DECL-CLASS
      rule #isTrivialDefaultConstructor(<class>... <base-classes> ListItem(C::Class) => .List ...</base-classes> ...</class>)
           requires hasConstructorThat(type(classType(C)), #klabel(`isTrivialDefaultConstructor`))
      // 12.1:4.9,4.11
-     rule #isTrivialDefaultConstructor(<class>... <non-static-data-members> ListItem(kpair(X::CId, T::CPPType)) => .List ...</non-static-data-members> <initializers>... X |-> (T |-> NoInit()) ...</initializers> ...</class>)
+     rule #isTrivialDefaultConstructor(<class>... <non-static-data-members> ListItem(Class.DataMember(X::CId, T::CPPType)) => .List ...</non-static-data-members> <initializers>... X |-> (T |-> NoInit()) ...</initializers> ...</class>)
           requires #if isCPPClassType(getMostDerivedArrayElement(T)) #then hasConstructorThat({getMostDerivedArrayElement(T)}:>CPPClassType, #klabel(`isTrivialDefaultConstructor`)) #else true #fi
      rule #isTrivialDefaultConstructor(<class>... <base-classes> .List </base-classes> <non-static-data-members> .List </non-static-data-members> ...</class>) => true
      rule #isTrivialDefaultConstructor(...) => false [owise]
@@ -465,7 +465,7 @@ module CPP-TRANSLATION-DECL-CLASS
      syntax Stmt ::= figureDestruct(bases: List, dataMembers: List, result: K)
 
      // 12.4:5
-     rule <k> figureDestruct(.List, ListItem(kpair(X::CId, T::CPPType)) _, _) => Deleted() ...</k>
+     rule <k> figureDestruct(.List, ListItem(Class.DataMember(X::CId, T::CPPType)) _, _) => Deleted() ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -474,7 +474,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           requires isDeletedDefaultDestructor(X, T, C, FuncT, VM)
      // 12.4:5.2
-     rule <k> (.K => checkDtor(X, T, getMostDerivedArrayElement(T), VM, FuncT)) ~> figureDestruct(.List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _) ...</k>
+     rule <k> (.K => checkDtor(X, T, getMostDerivedArrayElement(T), VM, FuncT)) ~> figureDestruct(.List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -541,7 +541,7 @@ module CPP-TRANSLATION-DECL-CLASS
      rule isTrivialDestructor(T::CPPFunctionType, K:K) => notBool isUserProvidedDestructor(T, K) andBool notBool isMethodVirtual(T) andBool #isTrivialDestructor(getClassInfo(getMethodClass(T)))     
      rule #isTrivialDestructor(<class>... <base-classes> ListItem(C::Class) => .List ...</base-classes> ...</class>)
           requires hasDestructorThat(type(classType(C)), #klabel(`isTrivialDestructor`))
-     rule #isTrivialDestructor(<class>... <non-static-data-members> ListItem(kpair(_, T::CPPType)) => .List ...</non-static-data-members> ...</class>)
+     rule #isTrivialDestructor(<class>... <non-static-data-members> ListItem(Class.DataMember(_, T::CPPType)) => .List ...</non-static-data-members> ...</class>)
           requires #if isCPPClassType(getMostDerivedArrayElement(T)) #then hasDestructorThat({getMostDerivedArrayElement(T)}:>CPPClassType, #klabel(`isTrivialDestructor`)) #else true #fi
      rule #isTrivialDestructor(<class>... <base-classes> .List </base-classes> <non-static-data-members> .List </non-static-data-members> ...</class>) => true
      rule #isTrivialDestructor(...) => false [owise]
@@ -592,7 +592,7 @@ module CPP-TRANSLATION-DECL-CLASS
                    | isPOD03Class(CPPType, ClassInfo) [function]
      rule isPODLayoutClass(_,
                <class>...
-                 <non-static-data-members> ListItem(kpair(X::CId, T::CPPType)) => .List ...</non-static-data-members>
+                 <non-static-data-members> ListItem(Class.DataMember(X::CId, T::CPPType)) => .List ...</non-static-data-members>
                  <access>... X |-> Public() ...</access>
                ...</class>)
           requires notBool (isCPPClassType(getMostDerivedArrayElement(T)) andBool notBool isPODLayoutType(T))
@@ -612,7 +612,7 @@ module CPP-TRANSLATION-DECL-CLASS
 
      rule isPOD03Class(_,
                <class>...
-                 <non-static-data-members> ListItem(kpair(X::CId, T::CPPType)) => .List ...</non-static-data-members>
+                 <non-static-data-members> ListItem(Class.DataMember(X::CId, T::CPPType)) => .List ...</non-static-data-members>
                  <access>... X |-> Public() ...</access>
                ...</class>)
           requires notBool (isCPPClassType(getMostDerivedArrayElement(T)) andBool notBool isPOD03Type(T))
@@ -679,7 +679,7 @@ module CPP-TRANSLATION-DECL-CLASS
             <class-type> Key::ClassKey </class-type>
             <class-id> C </class-id>
             <is-aggregate> B:Bool => B andBool (AS ==K Public()) </is-aggregate>
-            <non-static-data-members>... .List => ListItem(kpair(X, T)) </non-static-data-members>
+            <non-static-data-members>... .List => ListItem(Class.DataMember(X, T)) </non-static-data-members>
             <access-specifier> AS::AccessSpecifier </access-specifier>
             <access> AE::Map => AE[X <- AS] </access>
             <cenv> CE::Map => CE[X, T <- uninitialized] </cenv>
@@ -892,16 +892,16 @@ module CPP-TRANSLATION-DECL-CLASS
      syntax Set ::= getTypesAtOffsetForLayoutInStruct(CPPType, ClassInfo, Int) [function]
                   | getTypesAtOffsetForLayoutInUnion(CPPType, ClassInfo, Int) [function]
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
-               <non-static-data-members>... ListItem(kpair(X::CId, T::CPPType)) => .List </non-static-data-members>
+               <non-static-data-members>... ListItem(Class.DataMember(X::CId, T::CPPType)) => .List </non-static-data-members>
                <cenv>... X |-> (_::TypeMap T |-> classOffset(_, FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           requires FOffset >Int Offset
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
-               <non-static-data-members>... ListItem(kpair(X::CId, T::CPPType)) => .List </non-static-data-members>
+               <non-static-data-members>... ListItem(Class.DataMember(X::CId, T::CPPType)) => .List </non-static-data-members>
                <cenv>... X |-> (_::TypeMap T |-> uninitialized) ...</cenv>
           ...</class>, Offset::Int)
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
-               <non-static-data-members>... ListItem(kpair(X::CId, T'::CPPType)) </non-static-data-members>
+               <non-static-data-members>... ListItem(Class.DataMember(X::CId, T'::CPPType)) </non-static-data-members>
                <cenv>... X |-> (_::TypeMap T' |-> classOffset(_, FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
@@ -933,7 +933,7 @@ module CPP-TRANSLATION-DECL-CLASS
           ...</class>, _) => .Set
 
      rule getTypesAtOffsetForLayoutInUnion(T::CPPType, <class>
-               <non-static-data-members> ListItem(kpair(_, T'::CPPType)) Ds::List </non-static-data-members>
+               <non-static-data-members> ListItem(Class.DataMember(_, T'::CPPType)) Ds::List </non-static-data-members>
                Rest::Bag
           </class>, Offset::Int)
           => getTypesAtOffsetForLayout(T', Offset)
@@ -1078,6 +1078,6 @@ module CPP-TRANSLATION-DECL-CLASS
      rule <k> catof(V:ValueCategory) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
           <curr-tr-scope> _ => Scope </curr-tr-scope>
 
-     rule getNonStaticDataMembers(<class>... <non-static-data-members> L::List </non-static-data-members> ...</class>) => L
-     rule getDataMembersInitializers(<class>... <initializers> M::Map </initializers> ...</class>) => M
+     rule Class.getNonStaticDataMembers(<class>... <non-static-data-members> L::List </non-static-data-members> ...</class>) => L
+     rule Class.getDataMembersInitializers(<class>... <initializers> M::Map </initializers> ...</class>) => M
 endmodule
