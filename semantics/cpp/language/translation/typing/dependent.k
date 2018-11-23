@@ -1,5 +1,6 @@
 module CPP-TRANSLATION-TYPING-DEPENDENT
      imports CPP-TYPING-SYNTAX
+     imports CPP-CLASS-BASIC-SYNTAX
      imports C-CONFIGURATION
      imports K-REFLECTION
 

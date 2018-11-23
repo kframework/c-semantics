@@ -1,4 +1,40 @@
+// ------------------------------
+//      CPP-NAMESPACE
+// ------------------------------
+
+module CPP-NAMESPACE-SORTS
+
+     syntax Namespace
+     syntax NamespaceSpecifier
+     syntax UnnamedNamespace
+
+endmodule // CPP-NAMESPACE-SORTS
+
+module CPP-NAMESPACE-SYNTAX
+     imports CPP-NAMESPACE-SORTS // self
+
+     imports COMMON-SORTS // CId
+
+     syntax Namespace ::= Namespace "::" NamespaceSpecifier
+                        | NoNamespace() // signifies a declaration at block scope
+                        | UnnamedNamespace
+
+     syntax NamespaceSpecifier ::= Namespace(CId)
+
+endmodule // CPP-NAMESPACE-SYNTAX
+
+module CPP-NAMESPACE
+     imports CPP-NAMESPACE-SYNTAX // self
+
+     // ...
+
+endmodule // CPP-NAMESPACE
+
+
 module CPP-DYNAMIC-SORTS
+     imports CPP-CLASS-BASIC-SORTS // Class
+     imports CPP-NAMESPACE-SORTS
+
      syntax LVal
      syntax XVal
      syntax PRV
@@ -18,9 +54,6 @@ module CPP-DYNAMIC-SORTS
      syntax Enum
      syntax NNSVal ::= Namespace | Class | ClassTemplate | Enum
      syntax NNS ::= NNSVal | NNSSpecifier
-     syntax Namespace
-     syntax Class
-     syntax ClassTemplate
      syntax NNSSpecifier
      syntax DeclarationType
      syntax InitType
@@ -37,14 +70,15 @@ module CPP-DYNAMIC-SORTS
      syntax TemplateArg
      syntax CPPValue
      syntax ValueCategory
-endmodule
+endmodule // CPP-DYNAMIC-SORTS
 
 module CPP-REVAL-SYNTAX
      imports CPP-SORTS
      syntax Expr ::= reval(Expr) [strict, klabel(revalCpp)]
-endmodule
+endmodule // CPP-REVAL-SORTS
 
 module CPP-DYNAMIC-SYNTAX
+     imports CPP-NAMESPACE-SYNTAX
      imports COMMON-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports BITS-SORTS
@@ -117,32 +151,12 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax Expr ::= "callTerminate"
 
-     syntax UnnamedNamespace
      syntax NNS ::= NoNNS()
                   | NNS "::" NNSSpecifier [klabel(NestedName)]
      syntax NNSSpecifier ::= NNS(CId)
                            | TemplateNNS(CId)
                            | NNS(Name)
 
-     syntax Namespace ::= Namespace "::" NamespaceSpecifier
-                        | NoNamespace() // signifies a declaration at block scope
-                        | UnnamedNamespace
-     syntax NamespaceSpecifier ::= Namespace(CId)
-
-     syntax LocalQualifier ::= localQual(BlockScope)
-     // a large amount of code changes behavior based on whether it is within a namespace, a class, or a block.
-     // in the event that new values must be added to this sort, please make sure to extensively examine existing
-     // code involving ClassQualifier and NNSVal.
-     syntax ClassQualifier ::= Namespace | Class | LocalQualifier
-     syntax Class ::= ClassQualifier "::" ClassSpecifier
-     syntax LocalClass ::= LocalQualifier "::" ClassSpecifier
-     syntax InnerClass ::= Class "::" ClassSpecifier
-     syntax LocalInnerClass ::= LocalClass
-                             | LocalInnerClass "::" ClassSpecifier
-     syntax ClassSpecifier ::= Class(Tag, CId, TemplateArgs) [klabel(classSpecifier)]
-     syntax ClassTemplate ::= Namespace "::" ClassTemplateSpecifier
-     syntax ClassTemplateSpecifier ::= Class(Tag, CId, TemplateParams) [klabel(classSpecifier)]
-                                     | ClassSpecifier //not technically a class template, but this type exists primarily to support CPPClassTypeExpr, so it's needed
 
      syntax Enum ::= ClassQualifier "::" EnumSpecifier
      syntax EnumSpecifier ::= Enum(CId) [klabel(enumSpecifier)]
@@ -249,7 +263,8 @@ module CPP-DYNAMIC-SYNTAX
                        | ".Ordering"
 
      syntax KItem ::= odrDecl(String, QualId, CId, LanguageLinkage, CPPType)
-endmodule
+
+endmodule // CPP-DYNAMIC-SYNTAX
 
 module CPP-DYNAMIC
      imports CPP-DYNAMIC-SYNTAX
@@ -259,6 +274,7 @@ module CPP-DYNAMIC
      imports CPP-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-CLASS-BASIC-SYNTAX
 
      rule getOuterClass(C:Class :: _::ClassSpecifier) => C
      rule getOuterClass(_) => noNNS [owise]
@@ -547,4 +563,4 @@ module CPP-DYNAMIC
      // is given prval fully evaluated?
      rule isEPRVal(E:PRVal) => Translation() orBool isPRV(E)
 
-endmodule
+endmodule // CPP-DYNAMIC

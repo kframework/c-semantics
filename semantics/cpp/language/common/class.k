@@ -1,4 +1,60 @@
 // ------------------------------
+//      CPP-CLASS-BASIC
+// ------------------------------
+
+module CPP-CLASS-BASIC-SORTS
+
+     syntax Class
+     syntax ClassQualifier
+     syntax LocalQualifier
+     syntax LocalClass
+     syntax InnerClass
+     syntax ClassSpecifier
+     syntax ClassTemplate
+     syntax ClassTemplateSpecifier
+
+endmodule // CPP-CLASS-BASIC-SORTS
+
+module CPP-CLASS-BASIC-SYNTAX
+     imports CPP-CLASS-BASIC-SORTS // self
+
+     imports COMMON-SORTS // CId
+     imports CPP-SORTS // Tag
+     imports CPP-NAMESPACE-SORTS // Namespace
+
+     // remote sorts
+     syntax TemplateArgs
+     syntax TemplateParams
+     syntax BlockScope
+
+     syntax LocalQualifier ::= localQual(BlockScope)
+     // a large amount of code changes behavior based on whether it is within a namespace, a class, or a block.
+     // in the event that new values must be added to this sort, please make sure to extensively examine existing
+     // code involving ClassQualifier and NNSVal.
+     syntax ClassQualifier ::= Namespace | Class | LocalQualifier
+     syntax Class ::= ClassQualifier "::" ClassSpecifier
+     syntax LocalClass ::= LocalQualifier "::" ClassSpecifier
+     syntax InnerClass ::= Class "::" ClassSpecifier
+     syntax LocalInnerClass ::= LocalClass
+                             | LocalInnerClass "::" ClassSpecifier
+     syntax ClassSpecifier ::= Class(Tag, CId, TemplateArgs) [klabel(classSpecifier)]
+
+     syntax ClassTemplate ::= Namespace "::" ClassTemplateSpecifier
+     syntax ClassTemplateSpecifier ::= Class(Tag, CId, TemplateParams) [klabel(classSpecifier)]
+
+     //not technically a class template, but this type exists primarily to support CPPClassTypeExpr, so it's needed
+     syntax ClassTemplateSpecifier ::= ClassSpecifier
+
+endmodule // CPP-CLASS-BASIC-SYNTAX
+
+module CPP-CLASS-BASIC
+     imports CPP-CLASS-BASIC-SYNTAX // self
+
+     // ...
+
+endmodule // CPP-CLASS-BASIC
+
+// ------------------------------
 //      CPP-CLASS-INFO
 // ------------------------------
 
@@ -79,12 +135,14 @@ endmodule // CPP-CLASS-MEMBER
 
 module CPP-CLASS-SORTS
 
+     imports CPP-CLASS-BASIC-SORTS
      imports CPP-CLASS-INFO-SORTS
      imports CPP-CLASS-MEMBER-SORTS
 
 endmodule
 
 module CPP-CLASS-SYNTAX
+     imports CPP-CLASS-BASIC-SYNTAX
      imports CPP-CLASS-INFO-SYNTAX
      imports CPP-CLASS-MEMBER-SYNTAX
 
@@ -113,8 +171,8 @@ endmodule
 
 module CPP-CLASS
 
+     imports CPP-CLASS-BASIC
      imports CPP-CLASS-INFO
      imports CPP-CLASS-MEMBER
 
 endmodule
-

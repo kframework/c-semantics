@@ -9,6 +9,7 @@ module CPP-EXECUTION-STMT-BLOCK
      imports CPP-EXECUTION-ENV-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-CLASS-BASIC-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
 
      rule <k> pushBlock(Tag:Int)
