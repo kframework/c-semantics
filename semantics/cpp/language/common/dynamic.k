@@ -30,10 +30,49 @@ module CPP-NAMESPACE
 
 endmodule // CPP-NAMESPACE
 
+// ------------------------------
+//      CPP-TRACE
+// ------------------------------
+
+module CPP-TRACE-SORTS
+
+     syntax Trace
+
+endmodule // CPP-TRACE-SORTS
+
+module CPP-TRACE-SYNTAX
+     imports CPP-TRACE-SORTS // self
+
+     // remote sorts
+     syntax Typed
+     syntax K
+     syntax ValueCategory
+     syntax CPPType
+
+     syntax Trace ::= hasTrace(K) | "noTrace"
+
+     syntax Trace ::= trace(Typed) [function]
+                    | combine(Trace, K) [function]
+                    | combine(Trace, Trace, K) [function, klabel(combine2)]
+                    | combine(Trace, Trace, Trace, ValueCategory, CPPType) [function, klabel(combine3)]
+
+endmodule // CPP-TRACE-SYNTAX
+
+module CPP-TRACE
+     imports CPP-TRACE-SYNTAX // self
+
+     // ...
+ 
+endmodule // CPP-TRACE
+
+// ------------------------------
+//      CPP-DYNAMIC
+// ------------------------------
 
 module CPP-DYNAMIC-SORTS
      imports CPP-CLASS-BASIC-SORTS // Class
      imports CPP-NAMESPACE-SORTS
+     imports CPP-TRACE-SORTS
 
      syntax LVal
      syntax XVal
@@ -61,7 +100,6 @@ module CPP-DYNAMIC-SORTS
      syntax Duration
      syntax QualId
      syntax Scope
-     syntax Trace
      syntax Typed ::= Val | TExpr
      syntax TemplateArgs ::= List{TemplateArg, ","}
      syntax TemplateParams ::= List{TemplateParam, ","}
@@ -78,6 +116,7 @@ module CPP-REVAL-SYNTAX
 endmodule // CPP-REVAL-SORTS
 
 module CPP-DYNAMIC-SYNTAX
+     imports CPP-TRACE-SORTS // Trace
      imports CPP-NAMESPACE-SYNTAX
      imports COMMON-SYNTAX
      imports CPP-DYNAMIC-SORTS
@@ -133,11 +172,6 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax Bool ::= isEvalVal(K) [function]
 
-     syntax Trace ::= hasTrace(K) | trace(Typed) [function] | "noTrace"
-     syntax Trace ::= combine(Trace, K) [function]
-     syntax Trace ::= combine(Trace, Trace, K) [function, klabel(combine2)]
-     syntax Trace ::= combine(Trace, Trace, Trace, ValueCategory, CPPType) [function, klabel(combine3)]
- 
      syntax FunctionDeclarationType ::= Function(List) 
      syntax VarDeclarationType ::= Var(InitType)
      syntax InitType ::= CopyInit() | DirectInit()
