@@ -153,8 +153,9 @@ endmodule // CPP-REVAL-SORTS
 
 module CPP-DYNAMIC-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
-     imports CPP-TRACE-SORTS // Trace
+     imports CPP-TRACE-SYNTAX
      imports CPP-NAMESPACE-SYNTAX
+
      imports COMMON-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports BITS-SORTS
@@ -596,7 +597,16 @@ module CPP-DYNAMIC
      rule makeXVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType)) => xv(Loc, Tr, T)
      rule makeXVal(le(E::Expr, Tr::Trace, T::CPPType)) => xe(E, Tr, T)
 
-     rule callTerminate => BuiltinCallOp(lv(loc(obj(0, 0, builtinCppSymbol("::std::terminate()")), 0), noTrace, type(functionType(type(void), .CPPTypeExprs, noMethod, CLinkage, noexcept(false)))), false, .List) 
+     rule callTerminate
+          => BuiltinCallOp(
+               lv(
+                    loc(obj(0, 0, builtinCppSymbol("::std::terminate()")), 0),
+                    noTrace,
+                    type(functionType(type(void), .CPPTypeExprs, noMethod, CLinkage, noexcept(false)))
+               ),
+               false,
+               .List
+             )
 
      rule getId(_ :: X::CId) => X
      rule getQual(N::NNSVal :: _) => N
