@@ -66,10 +66,47 @@ module CPP-TRACE
 endmodule // CPP-TRACE
 
 // ------------------------------
+//      CPP-VALUE-CATEGORY
+// ------------------------------
+
+module CPP-VALUE-CATEGORY-SORTS
+
+     syntax ValueCategory
+
+endmodule // CPP-VALUE-CATEGORY-SORTS
+
+module CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-VALUE-CATEGORY-SORTS // self
+
+     imports LIST
+
+     syntax LValueCategory ::= "lvalue"
+     syntax XValueCategory ::= "xvalue"
+     syntax PRValueCategory ::= "prvalue"
+     syntax GLValueCategory ::= LValueCategory | XValueCategory
+     syntax RValueCategory ::= XValueCategory | PRValueCategory
+     syntax ValueCategory ::= GLValueCategory | RValueCategory | InitListCategory
+     syntax KResult ::= ValueCategory
+     syntax InitListCategory ::= initListCat(List)
+
+     syntax ValueCategory ::= NoInitValueCategory
+     syntax NoInitValueCategory ::= NoInitCat()
+
+endmodule // CPP-VALUE-CATEGORY-SYNTAX
+
+module CPP-VALUE-CATEGORY
+     imports CPP-VALUE-CATEGORY-SYNTAX // self
+
+     // ...
+
+endmodule // CPP-VALUE-CATEGORY
+
+// ------------------------------
 //      CPP-DYNAMIC
 // ------------------------------
 
 module CPP-DYNAMIC-SORTS
+     imports CPP-VALUE-CATEGORY-SORTS // ValueCategory
      imports CPP-CLASS-BASIC-SORTS // Class
      imports CPP-NAMESPACE-SORTS
      imports CPP-TRACE-SORTS
@@ -107,7 +144,6 @@ module CPP-DYNAMIC-SORTS
      syntax TemplateParam ::= TemplateArg
      syntax TemplateArg
      syntax CPPValue
-     syntax ValueCategory
 endmodule // CPP-DYNAMIC-SORTS
 
 module CPP-REVAL-SYNTAX
@@ -116,6 +152,7 @@ module CPP-REVAL-SYNTAX
 endmodule // CPP-REVAL-SORTS
 
 module CPP-DYNAMIC-SYNTAX
+     imports CPP-VALUE-CATEGORY-SYNTAX
      imports CPP-TRACE-SORTS // Trace
      imports CPP-NAMESPACE-SYNTAX
      imports COMMON-SYNTAX
@@ -151,19 +188,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax XExpr ::= xe(v: Expr, tr: Trace, t: CPPTypeExpr)
      syntax PRExpr ::= pre(v: Expr, tr: Trace, t: CPPTypeExpr)
 
-     syntax LValueCategory ::= "lvalue"
-     syntax XValueCategory ::= "xvalue"
-     syntax PRValueCategory ::= "prvalue"
-     syntax GLValueCategory ::= LValueCategory | XValueCategory
-     syntax RValueCategory ::= XValueCategory | PRValueCategory
-     syntax ValueCategory ::= GLValueCategory | RValueCategory | InitListCategory
-     syntax KResult ::= ValueCategory
-     syntax InitListCategory ::= initListCat(List)
-
      syntax ValueCategory ::= cat(Typed) [function]
-
-     syntax ValueCategory ::= NoInitValueCategory
-     syntax NoInitValueCategory ::= NoInitCat()
 
      syntax Bool ::= Execution() [function]
                    | Translation() [function]
