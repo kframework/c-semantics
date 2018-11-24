@@ -59,7 +59,7 @@ module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... DestructorId(X) |-> (_ |-> envEntry(... base: Base::SymBase)) ...</cenv>
+          <cenv>... DestructorId(X) |-> (_::CPPFunctionType |-> envEntry(... base: Base::SymBase)) ...</cenv>
 
      // N4296 12.4/11
      // N4778 10.3.6/12
