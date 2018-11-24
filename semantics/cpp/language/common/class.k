@@ -32,26 +32,61 @@ module CPP-CLASS-INFO
 
      syntax ClassInfo ::= #getClassInfo(Class, K) [function]
 
-     rule getClassInfo(t(... st: classType(C::Class))) => getClassInfo(C)
-     rule getClassInfo(C::Class) => #getClassInfo(C, getCurrentTranslationUnit())
-     rule #getClassInfo(C::Class, <tu>... <class> <class-id> C </class-id> B::Bag </class> ...</tu>) => <class> <class-id> C </class-id> B </class>
+     rule getClassInfo(t(... st: classType(C::Class)))
+          => getClassInfo(C)
+
+     rule getClassInfo(C::Class)
+          => #getClassInfo(C, getCurrentTranslationUnit())
+
+     rule #getClassInfo(C::Class, <tu>... <class> <class-id> C </class-id> B::Bag </class> ...</tu>)
+          => <class> <class-id> C </class-id> B </class>
+
      rule #getClassInfo(_, _) => #incomplete [owise]
 
 endmodule // CPP-CLASS-INFO
+
+// ------------------------------
+//      CPP-CLASS-MEMBER
+// ------------------------------
+
+module CPP-CLASS-MEMBER-SORTS
+
+     syntax ClassMember
+
+endmodule // CPP-CLASS-MEMBER-SORTS
+
+module CPP-CLASS-MEMBER-SYNTAX
+     imports CPP-CLASS-MEMBER-SORTS // self
+
+     imports COMMON-SORTS     // CId
+     imports CPP-TYPING-SORTS // CPPType
+
+     syntax ClassMember ::= "Class.DataMember" "(" CId "," CPPType ")"
+     syntax ClassMember ::= "Class.FunctionMember" "(" CId "," CPPType ")"
+
+endmodule // CPP-CLASS-MEMBER-SYNTAX
+
+module CPP-CLASS-MEMBER
+     imports CPP-CLASS-MEMBER-SYNTAX // self
+
+     // nothing yet
+
+endmodule // CPP-CLASS-MEMBER
 
 // ------------------------------
 //      CPP-CLASS
 // ------------------------------
 
 module CPP-CLASS-SORTS
-     imports CPP-CLASS-INFO-SORTS
 
-     syntax ClassDataMember
-     syntax ClassFunctionMember
+     imports CPP-CLASS-INFO-SORTS
+     imports CPP-CLASS-MEMBER-SORTS
+
 endmodule
 
 module CPP-CLASS-SYNTAX
      imports CPP-CLASS-INFO-SYNTAX
+     imports CPP-CLASS-MEMBER-SYNTAX
 
      imports CPP-CLASS-SORTS
      imports CPP-SORTS
@@ -74,11 +109,12 @@ module CPP-CLASS-SYNTAX
      syntax CId ::= BaseClass
      syntax Stmt ::= "writeVTables"
 
-     syntax ClassDataMember ::= "Class.DataMember" "(" CId "," CPPType ")"
-     syntax ClassDataMember ::= "Class.FunctionMember" "(" CId "," CPPType ")"
-
 endmodule
 
 module CPP-CLASS
+
      imports CPP-CLASS-INFO
+     imports CPP-CLASS-MEMBER
+
 endmodule
+
