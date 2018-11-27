@@ -1,0 +1,3 @@
+/tmp/cc5l9Z6k.o: In function `B::~B()':
+odr-destructor-in-constructor.C:(.text._ZN1BD2Ev[_ZN1BD5Ev]+0x14): undefined reference to `A::~A()'
+collect2: error: ld returned 1 exit status

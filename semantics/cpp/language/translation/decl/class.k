@@ -32,6 +32,42 @@ module CPP-TRANSLATION-DECL-CLASS-SYNTAX
      syntax Bool ::= isPODLayoutType(CPPType) [function]
      syntax List ::= "Class.getNonStaticDataMembers" "(" ClassInfo ")" [function]
      syntax Map ::= "Class.getDataMembersInitializers" "(" ClassInfo ")" [function]
+
+endmodule
+
+module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR-SYNTAX
+     imports CPP-TRANSLATION-DECL-CLASS-SYNTAX
+
+     syntax KItem ::= "Class.potentiallyInvokeDestructor" "(" Class ")"
+                    | "Class.invokeDestructor" "(" Class ")"
+
+endmodule
+
+module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
+     imports CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR-SYNTAX
+     imports CPP-TRANSLATION-ODR-SYNTAX
+     imports CPP-SYNTAX // DestructorId
+     imports CPP-SYMLOC-SYNTAX // envEntry, SymBase
+     imports C-CONFIGURATION
+
+     // N4296 3.2/3
+     // N4778 6.2/8
+     // <quote>
+     // [...] A destructor for a class is odr-used if it is potentially invoked.
+     // </quote>
+     rule <k> Class.potentiallyInvokeDestructor((_ :: Class(_, X::CId, _)) #as C::Class) => Odr.newUse(Base) ...</k>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
+          <tu-id> Tu </tu-id>
+          <class-id> C </class-id>
+          <cenv>... DestructorId(X) |-> (_::CPPFunctionType |-> envEntry(... base: Base::SymBase)) ...</cenv>
+
+     // N4296 12.4/11
+     // N4778 10.3.6/12
+     // <quote>
+     // A destructor is potentially invoked if it is invoked or as specified in [...]
+     // </quote>
+     rule Class.invokeDestructor(C::Class) => Class.potentiallyInvokeDestructor(C)
+
 endmodule
 
 module CPP-TRANSLATION-DECL-CLASS
@@ -61,6 +97,7 @@ module CPP-TRANSLATION-DECL-CLASS
      imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
 
      rule TypeDecl(ElaboratedTypeSpecifier(T:ClassKey, X::CId, NoNNS()) => declareClassName(T, X, true))
 

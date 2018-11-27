@@ -35,7 +35,7 @@ cpp-comparison: ${CPP_TEST_COMPARISON}
 
 %.C.kcc.out: %.C
 	@echo -n "Compiling $<... "
-	@../../dist/k++ -Werror -Wfatal-errors $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/k++ -fno-native-compilation -Werror -Wfatal-errors $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
 
 
 %.cmp: %.kcc.out %.ref

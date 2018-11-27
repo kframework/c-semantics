@@ -1,0 +1,3 @@
+/tmp/cc4dM4bV.o: In function `main':
+odr-destructor-throw.C:(.text+0x14): undefined reference to `E::~E()'
+collect2: error: ld returned 1 exit status
