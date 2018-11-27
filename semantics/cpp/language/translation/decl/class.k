@@ -47,6 +47,7 @@ module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
      imports CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR-SYNTAX
      imports CPP-TRANSLATION-ODR-SYNTAX
      imports CPP-SYNTAX // DestructorId
+     imports CPP-CLASS-BASIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX // envEntry, SymBase
      imports C-CONFIGURATION
 
