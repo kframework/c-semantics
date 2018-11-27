@@ -175,6 +175,8 @@ module CPP-DYNAMIC-SYNTAX
      syntax Bool ::= isClassQualId(QualId) [function]
 
      syntax Class ::= classFromScope(Scope) [function]
+                    | classFromType(CPPType) [function]
+                    | classFromSimpleType(CPPSimpleType) [function]
 
      syntax Linkage ::= "ExternalLinkage" | "InternalLinkage" | "NoLinkage"
      syntax Duration ::= "StaticStorage" | "ThreadStorage" | "AutoStorage" | "DynamicStorage"
@@ -285,6 +287,9 @@ module CPP-DYNAMIC
 
      rule classFromScope(classScope(C::Class, _)) => C
      rule classFromScope(blockScope(C:Class :: _::CId, _, _)) => C
+
+     rule classFromType(T:CPPClassType) => classFromSimpleType(simpleType(T))
+     rule classFromSimpleType(classType(C::Class)) => C
 
      rule enclosesNamespace(N::Namespace, N :: _) => true
      rule enclosesNamespace(N::Namespace, M::Namespace :: _) => enclosesNamespace(N, M)
