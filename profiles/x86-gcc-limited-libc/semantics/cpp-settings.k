@@ -15,6 +15,7 @@ module CPP-SETTINGS
      rule cfg:memberDataPtrAlign => 4
      rule cfg:memberFunctionPtrAlign => 8
      rule cfg:alignofReference => 4
+     rule cfg:alignofNullPtrT => 4
 
 endmodule
 
