@@ -1,4 +1,116 @@
+// ------------------------------
+//      CPP-NAMESPACE
+// ------------------------------
+
+module CPP-NAMESPACE-SORTS
+
+     syntax Namespace
+     syntax NamespaceSpecifier
+     syntax UnnamedNamespace
+
+endmodule // CPP-NAMESPACE-SORTS
+
+module CPP-NAMESPACE-SYNTAX
+     imports CPP-NAMESPACE-SORTS // self
+
+     imports COMMON-SORTS // CId
+
+     syntax Namespace ::= Namespace "::" NamespaceSpecifier
+                        | NoNamespace() // signifies a declaration at block scope
+                        | UnnamedNamespace
+
+     syntax NamespaceSpecifier ::= Namespace(CId)
+
+endmodule // CPP-NAMESPACE-SYNTAX
+
+module CPP-NAMESPACE
+     imports CPP-NAMESPACE-SYNTAX // self
+
+     // ...
+
+endmodule // CPP-NAMESPACE
+
+// ------------------------------
+//      CPP-TRACE
+// ------------------------------
+
+module CPP-TRACE-SORTS
+
+     syntax Trace
+
+endmodule // CPP-TRACE-SORTS
+
+module CPP-TRACE-SYNTAX
+     imports CPP-TRACE-SORTS // self
+
+     // remote sorts
+     syntax Typed
+     syntax K
+     syntax ValueCategory
+     syntax CPPType
+
+     syntax Trace ::= hasTrace(K) | "noTrace"
+
+     syntax Trace ::= trace(Typed) [function]
+                    | combine(Trace, K) [function]
+                    | combine(Trace, Trace, K) [function, klabel(combine2)]
+                    | combine(Trace, Trace, Trace, ValueCategory, CPPType) [function, klabel(combine3)]
+
+endmodule // CPP-TRACE-SYNTAX
+
+module CPP-TRACE
+     imports CPP-TRACE-SYNTAX // self
+
+     // ...
+ 
+endmodule // CPP-TRACE
+
+// ------------------------------
+//      CPP-VALUE-CATEGORY
+// ------------------------------
+
+module CPP-VALUE-CATEGORY-SORTS
+
+     syntax ValueCategory
+
+endmodule // CPP-VALUE-CATEGORY-SORTS
+
+module CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-VALUE-CATEGORY-SORTS // self
+
+     imports LIST
+
+     syntax LValueCategory ::= "lvalue"
+     syntax XValueCategory ::= "xvalue"
+     syntax PRValueCategory ::= "prvalue"
+     syntax GLValueCategory ::= LValueCategory | XValueCategory
+     syntax RValueCategory ::= XValueCategory | PRValueCategory
+     syntax ValueCategory ::= GLValueCategory | RValueCategory | InitListCategory
+     syntax KResult ::= ValueCategory
+     syntax InitListCategory ::= initListCat(List)
+
+     syntax ValueCategory ::= NoInitValueCategory
+     syntax NoInitValueCategory ::= NoInitCat()
+
+endmodule // CPP-VALUE-CATEGORY-SYNTAX
+
+module CPP-VALUE-CATEGORY
+     imports CPP-VALUE-CATEGORY-SYNTAX // self
+
+     // ...
+
+endmodule // CPP-VALUE-CATEGORY
+
+// ------------------------------
+//      CPP-DYNAMIC
+// ------------------------------
+
 module CPP-DYNAMIC-SORTS
+     imports CPP-VALUE-CATEGORY-SORTS // ValueCategory
+     imports CPP-CLASS-BASIC-SORTS // Class
+     imports CPP-NAMESPACE-SORTS
+     imports CPP-TRACE-SORTS
+
      syntax LVal
      syntax XVal
      syntax PRV
@@ -18,9 +130,6 @@ module CPP-DYNAMIC-SORTS
      syntax Enum
      syntax NNSVal ::= Namespace | Class | ClassTemplate | Enum
      syntax NNS ::= NNSVal | NNSSpecifier
-     syntax Namespace
-     syntax Class
-     syntax ClassTemplate
      syntax NNSSpecifier
      syntax DeclarationType
      syntax InitType
@@ -28,7 +137,6 @@ module CPP-DYNAMIC-SORTS
      syntax Duration
      syntax QualId
      syntax Scope
-     syntax Trace
      syntax Typed ::= Val | TExpr
      syntax TemplateArgs ::= List{TemplateArg, ","}
      syntax TemplateParams ::= List{TemplateParam, ","}
@@ -36,15 +144,18 @@ module CPP-DYNAMIC-SORTS
      syntax TemplateParam ::= TemplateArg
      syntax TemplateArg
      syntax CPPValue
-     syntax ValueCategory
-endmodule
+endmodule // CPP-DYNAMIC-SORTS
 
 module CPP-REVAL-SYNTAX
      imports CPP-SORTS
      syntax Expr ::= reval(Expr) [strict, klabel(revalCpp)]
-endmodule
+endmodule // CPP-REVAL-SORTS
 
 module CPP-DYNAMIC-SYNTAX
+     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRACE-SYNTAX
+     imports CPP-NAMESPACE-SYNTAX
+
      imports COMMON-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports BITS-SORTS
@@ -78,19 +189,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax XExpr ::= xe(v: Expr, tr: Trace, t: CPPTypeExpr)
      syntax PRExpr ::= pre(v: Expr, tr: Trace, t: CPPTypeExpr)
 
-     syntax LValueCategory ::= "lvalue"
-     syntax XValueCategory ::= "xvalue"
-     syntax PRValueCategory ::= "prvalue"
-     syntax GLValueCategory ::= LValueCategory | XValueCategory
-     syntax RValueCategory ::= XValueCategory | PRValueCategory
-     syntax ValueCategory ::= GLValueCategory | RValueCategory | InitListCategory
-     syntax KResult ::= ValueCategory
-     syntax InitListCategory ::= initListCat(List)
-
      syntax ValueCategory ::= cat(Typed) [function]
-
-     syntax ValueCategory ::= NoInitValueCategory
-     syntax NoInitValueCategory ::= NoInitCat()
 
      syntax Bool ::= Execution() [function]
                    | Translation() [function]
@@ -99,11 +198,6 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax Bool ::= isEvalVal(K) [function]
 
-     syntax Trace ::= hasTrace(K) | trace(Typed) [function] | "noTrace"
-     syntax Trace ::= combine(Trace, K) [function]
-     syntax Trace ::= combine(Trace, Trace, K) [function, klabel(combine2)]
-     syntax Trace ::= combine(Trace, Trace, Trace, ValueCategory, CPPType) [function, klabel(combine3)]
- 
      syntax FunctionDeclarationType ::= Function(List) 
      syntax VarDeclarationType ::= Var(InitType)
      syntax InitType ::= CopyInit() | DirectInit()
@@ -117,32 +211,12 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax Expr ::= "callTerminate"
 
-     syntax UnnamedNamespace
      syntax NNS ::= NoNNS()
                   | NNS "::" NNSSpecifier [klabel(NestedName)]
      syntax NNSSpecifier ::= NNS(CId)
                            | TemplateNNS(CId)
                            | NNS(Name)
 
-     syntax Namespace ::= Namespace "::" NamespaceSpecifier
-                        | NoNamespace() // signifies a declaration at block scope
-                        | UnnamedNamespace
-     syntax NamespaceSpecifier ::= Namespace(CId)
-
-     syntax LocalQualifier ::= localQual(BlockScope)
-     // a large amount of code changes behavior based on whether it is within a namespace, a class, or a block.
-     // in the event that new values must be added to this sort, please make sure to extensively examine existing
-     // code involving ClassQualifier and NNSVal.
-     syntax ClassQualifier ::= Namespace | Class | LocalQualifier
-     syntax Class ::= ClassQualifier "::" ClassSpecifier
-     syntax LocalClass ::= LocalQualifier "::" ClassSpecifier
-     syntax InnerClass ::= Class "::" ClassSpecifier
-     syntax LocalInnerClass ::= LocalClass
-                             | LocalInnerClass "::" ClassSpecifier
-     syntax ClassSpecifier ::= Class(Tag, CId, TemplateArgs) [klabel(classSpecifier)]
-     syntax ClassTemplate ::= Namespace "::" ClassTemplateSpecifier
-     syntax ClassTemplateSpecifier ::= Class(Tag, CId, TemplateParams) [klabel(classSpecifier)]
-                                     | ClassSpecifier //not technically a class template, but this type exists primarily to support CPPClassTypeExpr, so it's needed
 
      syntax Enum ::= ClassQualifier "::" EnumSpecifier
      syntax EnumSpecifier ::= Enum(CId) [klabel(enumSpecifier)]
@@ -251,7 +325,8 @@ module CPP-DYNAMIC-SYNTAX
                        | ".Ordering"
 
      syntax KItem ::= odrDecl(String, QualId, CId, LanguageLinkage, CPPType)
-endmodule
+
+endmodule // CPP-DYNAMIC-SYNTAX
 
 module CPP-DYNAMIC
      imports CPP-DYNAMIC-SYNTAX
@@ -261,6 +336,7 @@ module CPP-DYNAMIC
      imports CPP-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-CLASS-BASIC-SYNTAX
 
      rule getOuterClass(C:Class :: _::ClassSpecifier) => C
      rule getOuterClass(_) => noNNS [owise]
@@ -526,7 +602,16 @@ module CPP-DYNAMIC
      rule makeXVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType)) => xv(Loc, Tr, T)
      rule makeXVal(le(E::Expr, Tr::Trace, T::CPPType)) => xe(E, Tr, T)
 
-     rule callTerminate => BuiltinCallOp(lv(loc(obj(0, 0, builtinCppSymbol("::std::terminate()")), 0), noTrace, type(functionType(type(void), .CPPTypeExprs, noMethod, CLinkage, noexcept(false)))), false, .List) 
+     rule callTerminate
+          => BuiltinCallOp(
+               lv(
+                    loc(obj(0, 0, builtinCppSymbol("::std::terminate()")), 0),
+                    noTrace,
+                    type(functionType(type(void), .CPPTypeExprs, noMethod, CLinkage, noexcept(false)))
+               ),
+               false,
+               .List
+             )
 
      rule getId(_ :: X::CId) => X
      rule getQual(N::NNSVal :: _) => N
@@ -552,4 +637,4 @@ module CPP-DYNAMIC
      // is given prval fully evaluated?
      rule isEPRVal(E:PRVal) => Translation() orBool isPRV(E)
 
-endmodule
+endmodule // CPP-DYNAMIC
