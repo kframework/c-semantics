@@ -61,12 +61,19 @@ module CPP-CLASS-BASIC-SYNTAX
      //not technically a class template, but this type exists primarily to support CPPClassTypeExpr, so it's needed
      syntax ClassTemplateSpecifier ::= ClassSpecifier
 
+
+     syntax CId ::= "Class.id" "(" Class ")" [function, klabel(Class.Class.idClass)]
+
+     syntax CId ::= "Class.id" "(" ClassSpecifier ")" [function, klabel(Class.Class.idClassSpecifier)]
+
 endmodule // CPP-CLASS-BASIC-SYNTAX
 
 module CPP-CLASS-BASIC
      imports CPP-CLASS-BASIC-SYNTAX // self
 
-     // ...
+     rule Class.id(Class(_, X::CId, _)) => X
+
+     rule Class.id(_ :: S::ClassSpecifier) => Class.id(S)
 
 endmodule // CPP-CLASS-BASIC
 
