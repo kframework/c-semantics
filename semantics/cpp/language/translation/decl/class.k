@@ -334,10 +334,6 @@ module CPP-TRANSLATION-DECL-CLASS
           requires notBool DestructorId(X) in_keys(Env)
                andBool some(Bases, #klabel(`hasVirtualDestructor`))
 
-     syntax Bool ::= hasVirtualDestructor(Class) [function]
-
-     rule hasVirtualDestructor(C::Class) => hasDestructorThat(type(classType(C)), #klabel(`isVirtualDestructor`))
-
      syntax Stmt ::= "TwriteVTables"
 
      rule toExecution(TwriteVTables) => writeVTables
