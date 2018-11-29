@@ -12,11 +12,13 @@ module CPP-TRANSLATION-STMT-LOOP
           => CompoundAStmt(ListItem(Decl) ListItem(ForTStmt(Condition, Inc, Blk)))
 
      context ForTStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
+
      rule ForTStmt((Condition:PRVal => convertType(type(bool), Condition)), Inc::Stmt, Blk::Stmt)
           requires notBool isCPPBoolType(type(Condition))
 
      rule (.K => elaborate(Inc, Blk)) ~> ForTStmt(Condition:PRVal, Inc::Stmt, Blk::Stmt)
           requires isCPPBoolType(type(Condition))
+
      rule <k> elaborateDone(Inc:K, Blk:K)
               ~> ForTStmt(Condition::PRVal, _, _)
               => lintZero(Condition) ~> lintEmpty(Blk)
@@ -24,11 +26,13 @@ module CPP-TRANSLATION-STMT-LOOP
           <elab>... .K => ForStmt(Condition, Inc, Blk) </elab>
 
      context WhileTStmt((HOLE:Expr => reval(HOLE)), _) [result(PRVal)]
+
      rule WhileTStmt((Condition:PRVal => convertType(type(bool), Condition)), Blk::Stmt)
           requires notBool isCPPBoolType(type(Condition))
 
      rule (.K => elaborate(Blk)) ~> WhileTStmt(Condition:PRVal, Blk::Stmt)
           requires isCPPBoolType(type(Condition))
+
      rule <k> elaborateDone(Blk:K)
               ~> WhileTStmt(Condition::PRVal, _)
               => lintZero(Condition) ~> lintEmpty(Blk)

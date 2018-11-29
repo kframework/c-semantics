@@ -13,8 +13,10 @@ module CPP-EXECUTION-EXPR-REFERENCE
      context bindReference(HOLE:Expr, _) [result(LVal)]
 
      syntax SymLoc ::= referenceTarget(t1: CPPType, loc: SymLoc, t2: CPPType) [function]
+
      rule referenceTarget(T1:CPPClassType, Loc::SymLoc, T2:CPPClassType) => baseClassSubobject(Loc, T1, T2)
           requires isBaseClassOf(T1, T2)
+
      rule referenceTarget(... loc: Loc::SymLoc) => Loc [owise]
 
      rule <k> bindReference(lv(Loc1::SymLoc, Tr::Trace, T1::CPPType), lv(Loc2::SymLoc, _, T2::CPPType))

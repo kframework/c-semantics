@@ -3,7 +3,9 @@ module LIBCPP-BOOTSTRAP-SYNTAX
 
      syntax Expr ::= builtin(QualId, Val) [klabel(builtin1Cpp)]
                    | builtin(QualId) [klabel(builtin0Cpp)]
+
      syntax KItem ::= "initCPPBuiltins"
+
      syntax K ::= "initException" [function]
 
 endmodule
@@ -19,8 +21,11 @@ module LIBCPP-BOOTSTRAP
      imports CPP-TYPING-SYNTAX
 
      syntax Expr ::= prepareBuiltin(QualId, Bool, StrictList, StrictList) [klabel(prepareBuiltinCpp)]
+
      context prepareBuiltin(_, _, (HOLE:StrictList => prval(HOLE)), _)
+
      context prepareBuiltin(_, _, _, (HOLE:StrictList => prval(HOLE)))
+
      rule <k> callBuiltin
               => Return''(prepareBuiltin(F, variadic in getParams(T),
                    list(filterList(mapList(P, #klabel(`makeNamesFromCIds`)), #klabel(`notVarArg`))),
@@ -31,10 +36,12 @@ module LIBCPP-BOOTSTRAP
           <curr-function-params> P::List </curr-function-params>
 
      syntax ExecName ::= makeNamesFromCIds(CId) [function]
+
      rule makeNamesFromCIds(X::CId) => ExecName(NoNNS(), X)
 
      rule prepareBuiltin(Q::QualId, false, krlist(.List), krlist(.List))
           => builtin(Q)
+
      rule prepareBuiltin(Q::QualId, false, krlist(ListItem(V::Val)), krlist(.List))
           => builtin(Q, V)
 

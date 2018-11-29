@@ -14,6 +14,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
      imports CPP-SYNTAX
 
      syntax KItem ::= "waitingOnGotoMap"
+
      rule <k> calculateGotoMap(K:K) => waitingOnGotoMap ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
@@ -53,6 +54,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
           <computation> pushBlock(Tag::Int) => .K ...</computation>
           <goto-nesting-depth> N::Int => N +Int 1 </goto-nesting-depth>
           <goto-block-history> .List => ListItem(Tag) ...</goto-block-history>
+
      rule <k> waitingOnGotoMap ...</k>
           <computation> popBlock => .K ...</computation>
           <goto-nesting-depth> I::Int => I -Int 1 </goto-nesting-depth>
@@ -61,14 +63,19 @@ module CPP-TRANSLATION-PROCESS-LABEL
 
      rule <k> waitingOnGotoMap ...</k>
           <computation> ExpressionStmt(_) => .K ...</computation>
+
      rule <k> waitingOnGotoMap ...</k>
           <computation> BreakStmt() => .K ...</computation>
+
      rule <k> waitingOnGotoMap ...</k>
           <computation> ReturnOp(_) => .K ...</computation>
+
      rule <k> waitingOnGotoMap ...</k>
           <computation> GotoStmt(_) => .K ...</computation>
+
      rule <k> waitingOnGotoMap ...</k>
           <computation> addToConstructed(...) => .K ...</computation>
+
      rule <k> waitingOnGotoMap ...</k>
           <computation> writeVTables => .K ...</computation>
 

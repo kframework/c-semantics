@@ -4,11 +4,15 @@ module CPP-LINKING-INTERFACE
      imports C-CONFIGURATION
 
      rule currentTranslationScope() => #currentTranslationScope(#configuration)
+
      syntax Scope ::= #currentTranslationScope(K) [function]
+
      rule #currentTranslationScope(<generatedTop>... <curr-tr-scope>S::Scope</curr-tr-scope> ...</generatedTop>) => S
 
      rule currentTranslationLoc() => #currentTranslationLoc(#configuration)
+
      syntax CabsLoc ::= #currentTranslationLoc(K) [function]
+
      rule #currentTranslationLoc(<generatedTop>... <curr-tr-program-loc>Loc::CabsLoc</curr-tr-program-loc> ...</generatedTop>) => Loc
 
      rule <k> setTranslationLoc(Loc::CabsLoc) => .K ... </k>

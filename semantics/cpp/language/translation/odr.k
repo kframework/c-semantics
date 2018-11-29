@@ -6,7 +6,9 @@ module CPP-TRANSLATION-ODR-SYNTAX
      imports CPP-TYPING-SORTS
 
      syntax KItem ::= "Odr.newUse" "(" SymBase ")"
+
      syntax KItem ::= "Odr.newDef" "(" QualId "," CPPType "," SymBase ")"
+
      syntax KItem ::= "Odr.newDecl" "(" CId "," QualId "," CPPType "," SymBase ")"
 
 endmodule

@@ -38,6 +38,7 @@ module CPP-EXECUTION-STMT-BLOCK
      rule <k> updateScope => .K ...</k>
           <curr-scope> blockScope(_, _, (_ => Tag)) </curr-scope>
           <block-history> ListItem(Tag::Int) ...</block-history>
+
      rule <k> updateScope => .K ...</k>
           <curr-scope> blockScope(_, _, (_ => 0)) </curr-scope>
           <block-history> .List </block-history>
@@ -50,21 +51,26 @@ module CPP-EXECUTION-STMT-BLOCK
 
      rule <k> addToConstructed(L:LVal, T:CPPClassType) => .K ...</k>
           <locally-constructed> .List => ListItem(ktriple(L, false, false)) ...</locally-constructed>
+
      rule (.K => addToConstructed(L [ prv(N -Int 1, noTrace, type(size_t)) ], T))
           ~> addToConstructed(L:LVal, t(... st: arrayType(T::CPPType, N::Int => N -Int 1)))
           requires N >Int 0
+
      rule addToConstructed(_, t(... st: arrayType(_, 0))) => .K
 
      // we have to atomically remove the item from locally-constructed and call the destructor as a single operation
-     // because the destructor could throw an exception that unwinds back through this block, in which case the 
+     // because the destructor could throw an exception that unwinds back through this block, in which case the
      // destructor should not be called again. See http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#2176
-     rule <k> (.K => #if IsConstructor andBool notBool IsException #then .K #else destruct(V, CanBeVirtual) ~> fullExpression #fi) 
+     rule <k> (.K => #if IsConstructor andBool notBool IsException #then .K #else destruct(V, CanBeVirtual) ~> fullExpression #fi)
               ~> destructLocals(IsException:Bool)
           ...</k>
           <locally-constructed> ListItem(ktriple(lv(Loc::SymLoc, _, _) #as V::LVal, CanBeVirtual::Bool, IsConstructor:Bool)) => .List ...</locally-constructed>
+
      rule <k> destructLocals(...) => .K ...</k>
           <locally-constructed> .List </locally-constructed>
+
      syntax KItem ::= "unfoldBlockStack"
+
      rule <k> unfoldBlockStack => .K ...</k>
           (<block-control>... .Bag ...</block-control> => C)
           <block-stack> ListItem(C:BlockControlCell) => .List ...</block-stack>

@@ -26,6 +26,7 @@ module C-CPP-EXECUTION-EXPR-FUNCTION-CALL
                (T:CPPFunctionType => convertTypeToC(T)), _, krlist(L::List => mapList(L, #klabel(`convertValToC`))))
 
      syntax RValue ::= convertValToC(PRVal) [function]
+
      rule convertValToC(prv(V::CPPValue, _, T::CPPType)) => tv({V}:>CValue, utype(convertTypeToC(T)))
           requires isCValue(V)
 

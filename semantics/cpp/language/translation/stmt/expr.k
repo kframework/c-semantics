@@ -18,8 +18,11 @@ module CPP-TRANSLATION-STMT-EXPR
           requires isEvalVal(V) andBool notBool isConvertableDiscardedExpr(V)
 
      rule prDiscardedExpr(pre(E::Expr, Tr::Trace, T::CPPType)) => pre(prDiscardedExpr(E), Tr, T)
+
      rule glDiscardedExpr(le(E::Expr, Tr::Trace, T::CPPType)) => pre(glDiscardedExpr(E), Tr, T)
+
      rule glDiscardedExpr(xe(E::Expr, Tr::Trace, T::CPPType)) => pre(glDiscardedExpr(E), Tr, T)
+
      rule glDiscardedExpr(pre(E::Expr, Tr::Trace, T::CPPType)) => pre(glDiscardedExpr(E), Tr, T)
 
      rule NullStmt() => .K

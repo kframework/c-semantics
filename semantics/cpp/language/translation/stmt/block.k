@@ -10,6 +10,7 @@ module CPP-TRANSLATION-STMT-BLOCK
                     | "TpopBlock"
 
      rule toExecution(TpushBlock(Tag::Int)) => pushBlock(Tag)
+
      rule toExecution(TpopBlock) => popBlock
 
      rule <k> TpushBlock(Tag::Int) #as It:KItem => elaborateThen(It) ~> pushLocals ...</k>

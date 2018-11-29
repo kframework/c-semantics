@@ -3,7 +3,9 @@ module CPP-COMMON-IO-SYNTAX
      imports SYMLOC-SORTS
 
      syntax CPPType
+
      syntax K ::= assertInBounds(Int, Int) [klabel(cppAssertInBounds)]
+
      syntax Bits ::= getUninitializedBits(SymLoc, CPPType) [function, klabel(getUninitializedBitsCpp)]
 
 endmodule
@@ -17,6 +19,7 @@ module CPP-COMMON-IO
 
      rule getUninitializedBits(L::SymLoc, _) => piece(trap, cfg:bitsPerByte)
           requires notBool (isStaticDuration(L) orBool isThreadDuration(L))
+
      rule getUninitializedBits(L::SymLoc, _) => piece(0, cfg:bitsPerByte) [owise]
 
      syntax Error ::= "errorReadOutOfBounds"

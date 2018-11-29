@@ -5,12 +5,19 @@
 module CPP-CLASS-BASIC-SORTS
 
      syntax Class
+
      syntax ClassQualifier
+
      syntax LocalQualifier
+
      syntax LocalClass
+
      syntax InnerClass
+
      syntax ClassSpecifier
+
      syntax ClassTemplate
+
      syntax ClassTemplateSpecifier
 
 endmodule // CPP-CLASS-BASIC-SORTS
@@ -24,22 +31,31 @@ module CPP-CLASS-BASIC-SYNTAX
 
      // remote sorts
      syntax TemplateArgs
+
      syntax TemplateParams
+
      syntax BlockScope
 
      syntax LocalQualifier ::= localQual(BlockScope)
+
      // a large amount of code changes behavior based on whether it is within a namespace, a class, or a block.
      // in the event that new values must be added to this sort, please make sure to extensively examine existing
      // code involving ClassQualifier and NNSVal.
      syntax ClassQualifier ::= Namespace | Class | LocalQualifier
+
      syntax Class ::= ClassQualifier "::" ClassSpecifier
+
      syntax LocalClass ::= LocalQualifier "::" ClassSpecifier
+
      syntax InnerClass ::= Class "::" ClassSpecifier
+
      syntax LocalInnerClass ::= LocalClass
                              | LocalInnerClass "::" ClassSpecifier
+
      syntax ClassSpecifier ::= Class(Tag, CId, TemplateArgs) [klabel(classSpecifier)]
 
      syntax ClassTemplate ::= Namespace "::" ClassTemplateSpecifier
+
      syntax ClassTemplateSpecifier ::= Class(Tag, CId, TemplateParams) [klabel(classSpecifier)]
 
      //not technically a class template, but this type exists primarily to support CPPClassTypeExpr, so it's needed
@@ -118,6 +134,7 @@ module CPP-CLASS-MEMBER-SYNTAX
      imports CPP-TYPING-SORTS // CPPType
 
      syntax ClassMember ::= "Class.DataMember" "(" CId "," CPPType ")"
+
      syntax ClassMember ::= "Class.FunctionMember" "(" CId "," CPPType ")"
 
 endmodule // CPP-CLASS-MEMBER-SYNTAX
@@ -152,19 +169,33 @@ module CPP-CLASS-SYNTAX
      imports CPP-TYPING-SORTS
      imports INT
      syntax ClassOffset ::= classOffset(naoffset:Int, offset: Int)
+
      syntax Expr ::= evalBraceOrEqualInitializer(class: Class, object: Expr, initializer: Expr) [strict(2)]
+
      syntax KItem ::= returnFromBraceOrEqualInitializer(LVal, Scope)
+
      syntax This ::= This()
+
      syntax Expr ::= This
+
      syntax Expr ::= contrivedObject(CPPType)
+
      syntax ValResult ::= noObject()
+
      syntax NoArg ::= NoArg()
+
      syntax ValResult ::= NoArg
+
      syntax CId ::= unnamedObject(Class)
+
      syntax Expr ::= beginConstruction(Expr, isBaseClassSubobject: Bool) [strict]
+
      syntax Expr ::= endConstruction(Expr, isConstructor: Bool) [strict]
+
      syntax BaseClass ::= baseClass(Class)
+
      syntax CId ::= BaseClass
+
      syntax Stmt ::= "writeVTables"
 
 endmodule

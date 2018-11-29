@@ -26,10 +26,12 @@ module CPP-MEMORY-WRITING
      imports CPP-TYPING-SYNTAX
 
      context write(_, HOLE:K, _)
+
      rule write(Loc::SymLoc, V:PRVal, T::CPPType)
           => writeBytes(stripProv(Loc), splitBytes(V), T)
 
      context init(_, HOLE:K, _)
+
      rule init(Loc::SymLoc, V:PRVal, _)
           => initBytes(stripProv(Loc), splitBytes(V))
 

@@ -44,7 +44,7 @@ module CPP-EXECUTION-STMT-TRY
           requires canUnwindStack(.List, ListItem(B) Blocks, Funcs, type(V))
 
      // if there are still functions in the stack trace, pop them
-     rule <k> (.K => unwindFunction) ~> throw(V::LVal) ...</k> 
+     rule <k> (.K => unwindFunction) ~> throw(V::LVal) ...</k>
           <catch-handlers> .List </catch-handlers>
           <block-stack> .List </block-stack>
           <call-stack> ListItem(F::KItem) Funcs::List </call-stack>
@@ -127,29 +127,32 @@ module CPP-EXECUTION-STMT-TRY
 
      rule <k> throw(V::LVal) => catchWithHandler(CatchAnyOp(S), V) ...</k>
           <catch-handlers> ListItem(CatchAnyOp(S::Stmt)) ...</catch-handlers>
+
      rule <k> throw(V::LVal) => catchWithHandler(CatchOp(T, S), V) ...</k>
           <catch-handlers> ListItem(CatchOp(T::CPPType, S::Stmt)) ...</catch-handlers>
           requires handlerMatches(T, type(V))
+
      rule <k> throw(V::LVal) ... </k>
           <catch-handlers> ListItem(CatchOp(T::CPPType, _)) => .List ...</catch-handlers>
           requires notBool handlerMatches(T, type(V))
 
      syntax KItem ::= catchWithHandler(Stmt, LVal)
 
-     rule <k> catchWithHandler(CatchAnyOp({pushBlock(N::Int) ~> Rest:K}:>Stmt), V::LVal) 
-              ~> tryMark(I::Int) 
-              => popBlock 
+     rule <k> catchWithHandler(CatchAnyOp({pushBlock(N::Int) ~> Rest:K}:>Stmt), V::LVal)
+              ~> tryMark(I::Int)
+              => popBlock
               ~> pushBlock(N)
-              ~> setCurrentException(V) 
+              ~> setCurrentException(V)
               ~> activateHandler
               ~> Rest
               ~> deactivateHandler
           ...</k>
           <block-history> ListItem(I) ...</block-history>
-     rule <k> catchWithHandler(CatchOp(_, {pushBlock(N::Int) ~> declareNonStaticObjectExec(... id: X::CId) #as D:KItem ~> Rest:K}:>Stmt), V::LVal) 
+
+     rule <k> catchWithHandler(CatchOp(_, {pushBlock(N::Int) ~> declareNonStaticObjectExec(... id: X::CId) #as D:KItem ~> Rest:K}:>Stmt), V::LVal)
               ~> tryMark(I::Int)
-              => popBlock 
-              ~> pushBlock(N) 
+              => popBlock
+              ~> pushBlock(N)
               ~> setCurrentException(V)
               ~> #if X ==K #NoName #then .K #else D #fi
               ~> activateHandler
@@ -160,6 +163,7 @@ module CPP-EXECUTION-STMT-TRY
 
      rule <k> setCurrentException(V::LVal) => .K ...</k>
           <current-exception> _ => V </current-exception>
+
      rule <k> exceptionObject(_) => V ...</k>
           <current-exception> V::LVal </current-exception>
           requires Execution()
@@ -167,8 +171,10 @@ module CPP-EXECUTION-STMT-TRY
      syntax KItem ::= "activateHandler"
                     | "deactivateHandler"
                     | setCurrentException(LVal)
+
      rule <k> activateHandler => .K ...</k>
           <uncaught-exception> _ => false </uncaught-exception>
+
      rule <k> deactivateHandler => .K ...</k>
           <current-exception> _ => .K </current-exception>
 
@@ -182,6 +188,7 @@ module CPP-EXECUTION-STMT-TRY
           requires getKLabel(K) =/=K #klabel(`tryMark`)
 
      syntax Expr ::= "catchAndCallTerminate"
+
      rule <k> catchAndCallTerminate => callTerminate ...</k>
           <uncaught-exception> _ => false </uncaught-exception>
 
@@ -193,67 +200,93 @@ module CPP-EXECUTION-STMT-TRY
                    | isDynamicExceptionSpec(CPPType) [function]
 
      rule canUnwindStack((.List => L), (ListItem(<block-control>... <catch-handlers> L::List </catch-handlers> ...</block-control>) => .List) _, _, _)
+
      rule canUnwindStack((.List => L2), (.List => L), (ListItem(<call-stack-frame>... <stack-function-control> <function-control>... <uncaught-exception> false </uncaught-exception> <block-stack> L::List </block-stack> <catch-handlers> L2::List </catch-handlers> ...</function-control> </stack-function-control> ...</call-stack-frame>) => .List) _, _)
+
      rule canUnwindStack(.List, .List, ListItem(<call-stack-frame>... <stack-function-control> <function-control>... <uncaught-exception> true </uncaught-exception> ...</function-control> </stack-function-control> ...</call-stack-frame>) _, _) => false
 
      rule canUnwindStack(ListItem(CatchAnyOp(_)) _, _, _, _) => true
+
      rule canUnwindStack(ListItem(CatchOp(T::CPPType, _)) _, _, _, E::CPPType) => true
           requires handlerMatches(T, E)
+
      rule canUnwindStack((ListItem(CatchOp(T::CPPType, _)) => .List) _, _, _, E::CPPType)
           requires notBool handlerMatches(T, E)
+
      rule canUnwindStack(.List, .List, .List, _) => false
 
      rule canPopBlock(Num::Int, ListItem(kpair(Num, _)) _) => false
+
      rule canPopBlock(_, _) => true [owise]
 
      // 15.3:3.1
      rule handlerMatches(T::CPPType, E::CPPType) => true
           requires utype(T) ==Type utype(E)
+
      rule handlerMatches(t(... st: lvRefType(T::CPPType)), E::CPPType) => true
           requires utype(T) ==Type utype(E)
+
      // 15.3:3.2
      rule handlerMatches(T:CPPClassType, E:CPPClassType) => true
           requires isBaseClassOf(T, E)
+
      rule handlerMatches(t(... st: lvRefType(T:CPPClassType)), E:CPPClassType) => true
           requires isBaseClassOf(T, E)
+
      // 15.3:3.3.1
      rule handlerMatches(t(... st: pointerType(t(QT::Quals, _, _) #as T:CPPClassType)), t(... st: pointerType(t(QE::Quals, _, _) #as E:CPPClassType)))
           => true
           requires isBaseClassOf(T, E) andBool QE <=Quals QT
+
      rule handlerMatches(t(... st: pointerType(t(QT::Quals, _, void))), t(... st: pointerType(t(QE::Quals, _, _))))
           => true
           requires QE <=Quals QT
+
      rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(t(... st: pointerType(t(QT::Quals, _, _) #as T:CPPClassType)))), t(... st: pointerType(t(QE::Quals, _, _) #as E:CPPClassType)))
           => true
           requires isBaseClassOf(T, E) andBool QE <=Quals QT
+
      rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(t(... st: pointerType(t(QT::Quals, _, void))))), t(... st: pointerType(t(QE::Quals, _, _))))
           => true
           requires QE <=Quals QT
+
      // 15.3:3.3.2
      rule handlerMatches(T:CPPPointerType, E:CPPPointerType)
           => true
           requires isSimilar(T, E) andBool cvQualificationSignature(E) <=QualSig cvQualificationSignature(T)
+
      rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(T:CPPPointerType)), E:CPPPointerType)
           => true
           requires isSimilar(T, E) andBool cvQualificationSignature(E) <=QualSig cvQualificationSignature(T)
+
      // 15.3:3.4
      rule handlerMatches(T:CPPPointerType, E:CPPNullPtrTType) => true
+
      rule handlerMatches(T:CPPMemberPointerType, E:CPPNullPtrTType) => true
+
      rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(T:CPPPointerType)), E:CPPNullPtrTType) => true
+
      rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(T:CPPMemberPointerType)), E:CPPNullPtrTType) => true
+
      rule handlerMatches(_, _) => false [owise]
 
      rule canThrowException(t(... st: functionType(... exceptions: ES::ExceptionSet)), E::CPPType)
           => canThrowException(ES, E)
+
      rule canThrowException(noexcept(false), _) => true
+
      rule canThrowException(noexcept(true), _) => false
+
      rule canThrowException(exSet(SetItem(T::CPPType) _), E::CPPType)
           => true
           requires handlerMatches(T, E)
+
      rule canThrowException(exSet((SetItem(_) => .Set) _), _) [owise]
+
      rule canThrowException(exSet(.Set), _) => false
 
      rule isDynamicExceptionSpec(t(... st: functionType(... exceptions: exSet(_)))) => true
+
      rule isDynamicExceptionSpec(_) => false [owise]
 
 endmodule

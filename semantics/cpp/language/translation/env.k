@@ -12,16 +12,23 @@ module CPP-TRANSLATION-ENV-SYNTAX
                     | setScope(Scope)
                     | noEval(K)
                     | "skipToScopeEnd"
+
      syntax KItem ::= "pushLocals" | "popLocals"
+
      syntax KItem ::= updateDefaultArguments(QualId, CPPType, DefaultArguments) [strict(3)]
 
      syntax DefaultArguments ::= defArgs(vals: StrictList, types: StrictList, cats: StrictList) [strict(1)]
+
      syntax DefaultArguments ::= DefaultArgumentsResult
+
      syntax DefaultArgumentsResult ::= defArgs(vals: StrictListResult, types: StrictListResult, cats: StrictListResult)
+
      syntax KResult ::= DefaultArgumentsResult
 
      syntax List ::= getDefaultArgsVals(DefaultArgumentsResult) [function]
+
      syntax List ::= getDefaultArgsTypes(DefaultArgumentsResult) [function]
+
      syntax List ::= getDefaultArgsCats(DefaultArgumentsResult) [function]
 
 endmodule
@@ -38,10 +45,10 @@ module CPP-TRANSLATION-ENV
     imports CPP-TYPING-SYNTAX
     imports CPP-TYPE-MAP-SYNTAX
 
-    rule updateDefaultArguments(_, T::CPPType, _) => .K 
+    rule updateDefaultArguments(_, T::CPPType, _) => .K
          requires notBool isCPPFunctionType(T)
 
-    rule <k> addToEnv(N:Namespace :: X::CId, T:CPPFunctionType, Base::SymBase, IsUsing::Bool) 
+    rule <k> addToEnv(N:Namespace :: X::CId, T:CPPFunctionType, Base::SymBase, IsUsing::Bool)
              => .K
          ...</k>
          <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -57,7 +64,7 @@ module CPP-TRANSLATION-ENV
          <nenv>... X |-> (_::TypeMap T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</nenv>
          requires N =/=K NoNamespace()
 
-    rule <k> addToEnv(N:Namespace :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
+    rule <k> addToEnv(N:Namespace :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool)
              => .K
          ...</k>
          <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -66,7 +73,7 @@ module CPP-TRANSLATION-ENV
          <nenv> NE::Map => NE[X <- T |-> envEntry(Base, IsUsing, NoDefArgs())] </nenv>
          requires N =/=K NoNamespace() andBool notBool isCPPFunctionType(T)
 
-    rule <k> addToEnv(NoNamespace() :: X::CId, T:CPPFunctionType, Base::SymBase, IsUsing::Bool) 
+    rule <k> addToEnv(NoNamespace() :: X::CId, T:CPPFunctionType, Base::SymBase, IsUsing::Bool)
              => .K
          ...</k>
          <tr-env> NE::Map => NE[X <- updateFnEnv(NE, X, T, Base, IsUsing)] </tr-env>
@@ -74,13 +81,13 @@ module CPP-TRANSLATION-ENV
     rule <k> updateDefaultArguments(NoNamespace() :: X::CId, T:CPPFunctionType, A1:DefaultArgumentsResult) => .K ...</k>
          <tr-env>... X |-> (_::TypeMap T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</tr-env>
 
-    rule <k> addToEnv(NoNamespace() :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
+    rule <k> addToEnv(NoNamespace() :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool)
              => .K
          ...</k>
          <tr-env> NE::Map => NE[X <- T |-> envEntry(Base, IsUsing, NoDefArgs())] </tr-env>
          requires notBool isCPPFunctionType(T)
 
-    rule <k> addToEnv(C:Class :: X::CId, T:CPPFunctionType, Base::SymBase, IsUsing::Bool) 
+    rule <k> addToEnv(C:Class :: X::CId, T:CPPFunctionType, Base::SymBase, IsUsing::Bool)
              => .K
          ...</k>
          <class-id> C </class-id>
@@ -98,25 +105,33 @@ module CPP-TRANSLATION-ENV
          requires notBool isCPPFunctionType(T)
 
      rule getDefaultArgsVals(defArgs(... vals: krlist(Args::List))) => Args
+
      rule getDefaultArgsTypes(defArgs(... types: krlist(Types::List))) => Types
+
      rule getDefaultArgsCats(defArgs(... cats: krlist(Cats::List))) => Cats
 
      syntax TypeMap ::= updateFnEnv(Map, CId, CPPFunctionType, SymBase, Bool) [function]
+
      rule updateFnEnv(Env::Map, X::CId, T::CPPFunctionType, Base::SymBase, IsUsing::Bool) => T |-> envEntry(Base, IsUsing, emptyDefaultArguments(T))
           requires notBool X in_keys(Env)
+
      rule updateFnEnv(_ X |-> XEnv::TypeMap, X::CId, T::CPPFunctionType, Base::SymBase, IsUsing::Bool)
           => #updateFnEnv(XEnv, T, Base, IsUsing)
 
      syntax TypeMap ::= #updateFnEnv(TypeMap, CPPFunctionType, SymBase, Bool) [function]
+
      rule #updateFnEnv(XEnv::TypeMap T |-> Entry:EnvEntry, T::CPPFunctionType, Base::SymBase, IsUsing::Bool)
           => XEnv T |-> #fun(envEntry(... base: _ => Base, using: _ => IsUsing))(Entry)
+
      rule #updateFnEnv(XEnv::TypeMap, T::CPPFunctionType, Base::SymBase, IsUsing::Bool) => XEnv T |-> envEntry(Base, IsUsing, emptyDefaultArguments(T)) [owise]
 
      syntax DefaultArgumentsResult ::= #updateDefaultArgs(newArgs: DefaultArgumentsResult, oldArgs: DefaultArgumentsResult) [function]
+
      rule #updateDefaultArgs(NewArgs::DefaultArgumentsResult, OldArgs::DefaultArgumentsResult)
           => #updateDefaultArgs(NewArgs, OldArgs, defArgs(krlist(.List), krlist(.List), krlist(.List)))
 
      syntax DefaultArgumentsResult ::= #updateDefaultArgs(newArgs: DefaultArgumentsResult, oldArgs: DefaultArgumentsResult, resultArgs: DefaultArgumentsResult) [function, klabel(updateDefaultArgsHelper)]
+
     // The next rule compensates for the clang policy to aggregate existing default args from previous declarations
     // Hence, we'll trust clang to check that the user does not redefine an old def. arg.
      rule #updateDefaultArgs(
@@ -141,6 +156,7 @@ module CPP-TRANSLATION-ENV
             defArgs(krlist(_::List (.List => ListItem(I::Init))),
                     krlist(_::List (.List => ListItem(C::ValueCategory))),
                     krlist(_::List (.List => ListItem(T::CPPDType)))))
+
      rule #updateDefaultArgs(
             defArgs(krlist(.List), krlist(.List), krlist(.List)),
             defArgs(krlist(.List), krlist(.List), krlist(.List)),
@@ -173,11 +189,13 @@ module CPP-TRANSLATION-ENV
           <curr-eval-context> OldEval::EvalContext </curr-eval-context>
 
      syntax KItem ::= setEval(EvalContext)
+
      rule <k> setEval(Eval::EvalContext) => .K ...</k>
           <curr-eval-context> _ => Eval </curr-eval-context>
 
      rule skipToScopeEnd ~> (K:KItem => .K)
           requires K =/=K popLocals
+
      rule (skipToScopeEnd => .K) ~> popLocals
 
 endmodule

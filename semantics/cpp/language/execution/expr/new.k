@@ -10,6 +10,7 @@ module CPP-EXECUTION-EXPR-NEW
      imports CPP-TYPING-SYNTAX
 
      context NewOp(_, _, _, (HOLE:Expr => reval(HOLE)), _) requires Execution() [result(PRV)]
+
      rule <k> NewOp(T::CPPType, Allocator::Expr, Init::Expr, prv(Size:Int, _, _), I::Int) => callAllocationFunction(T, Allocator, Init, Size, I) ...</k>
           <new-size-map>... .Map => I |-> Size ...</new-size-map>
           requires Execution() andBool Size >=Int 0 andBool Size <=Int cfg:maxNewSize
@@ -19,7 +20,9 @@ module CPP-EXECUTION-EXPR-NEW
 
      syntax Expr ::= callAllocationFunction(CPPType, Expr, Expr, Int, Int) [klabel(callArrayAllocationFunction)]
                    | callAllocationFunction(CPPType, Expr, Expr, Int)
+
      context callAllocationFunction(_, (HOLE:Expr => reval(HOLE)), _, _, _) [result(PRV)]
+
      context callAllocationFunction(_, (HOLE:Expr => reval(HOLE)), _, _) [result(PRV)]
 
      rule <k> newSize(I::Int) => arithInterpret(type(size_t), Size, noTrace) ...</k>
@@ -36,6 +39,7 @@ module CPP-EXECUTION-EXPR-NEW
           ~> & Init
 
      syntax KItem ::= setEffectiveType(SymBase, CPPType) [klabel(setEffectiveTypeCpp)]
+
      rule <k> setEffectiveType(Base::SymBase, T::CPPType) => .K ...</k>
           <mem>... Base |-> object((_ => T), _, _) ...</mem>
 

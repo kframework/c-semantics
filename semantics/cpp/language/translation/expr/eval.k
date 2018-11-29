@@ -10,10 +10,13 @@ module CPP-TRANSLATION-EXPR-EVAL
 
      rule convertReval(le(E::Expr, Tr::Trace, T:CPPArrayType)) => pre(E, Tr, type(pointerType(innerType(T))))
           requires Translation()
+
      rule convertReval(xe(E::Expr, Tr::Trace, T:CPPArrayType)) => pre(E, Tr, type(pointerType(innerType(T))))
           requires Translation()
+
      rule convertReval(pre(E::Expr, Tr::Trace, T:CPPArrayType)) => pre(E, Tr, type(pointerType(innerType(T))))
           requires Translation()
+
      rule convertReval(le(E::Expr, Tr::Trace, T:CPPFunctionType)) => pre(E, Tr, type(pointerType(T)))
           requires Translation()
 

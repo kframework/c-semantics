@@ -26,6 +26,7 @@ module CPP-TRANSLATION-ELABORATOR
           <elab-stack>
                .List => ListItem(elabFrame(Cont, OldElab))
           ...</elab-stack>
+
      rule <k> .K => elaborateDone(K) ~> Cont </k>
           <elab> K:K => OldElab </elab>
           <elab-stack>
@@ -38,6 +39,7 @@ module CPP-TRANSLATION-ELABORATOR
           <elab-stack>
                .List => ListItem(elabTemplateFrame(Cont, OldElab, I))
           ...</elab-stack>
+
      rule <k> .K => elaborateDone(K) ~> Cont </k>
           <curr-template-context> _ => I </curr-template-context>
           <elab> K:K => OldElab </elab>
@@ -46,7 +48,9 @@ module CPP-TRANSLATION-ELABORATOR
           ...</elab-stack>
 
      syntax K ::= #toExecution(Int, K) [function]
+
      rule #toExecution(0, K::K) => toExecution(K)
+
      rule #toExecution(_, K::K) => K [owise]
 
      rule <k> elaborateThen(K::K) => .K ...</k>
@@ -54,11 +58,14 @@ module CPP-TRANSLATION-ELABORATOR
           <curr-template-depth> Depth::Int </curr-template-depth>
 
      rule (.K => K) ~> runInit(K:K)
+
      rule K:Val ~> runInit(_) => .K
 
      rule elaborate(K1:K, K2:K) => elaborate(K1) ~> elaborate(K2)
+
      rule elaborateDone(K1:K) ~> elaborate(K2:K)
           => elaborate(K2) ~> elaborateDone(K1)
+
      rule elaborateDone(K2:K) ~> elaborateDone(K1:K)
           => elaborateDone(K1:K, K2:K)
 

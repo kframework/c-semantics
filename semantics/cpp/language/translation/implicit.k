@@ -13,6 +13,7 @@ module CPP-TRANSLATION-IMPLICIT
      imports CPP-TYPING-SYNTAX
 
      syntax KItem ::= "func" "(" Namespace "," CId "," CPPType "," CPPTypes "," ExceptionSet ")" [function]
+
      rule implicitDecls
           => func(GlobalNamespace(), operatornew, ptr(type(void)), type(size_t), noexcept(false))
           ~> func(GlobalNamespace(), operatornew[], ptr(type(void)), type(size_t), noexcept(false))
@@ -22,6 +23,6 @@ module CPP-TRANSLATION-IMPLICIT
           ~> func(GlobalNamespace(), operatordelete[], type(void), ptr(type(void)), type(size_t), noexcept(true))
           ~> TypedefDecl(Identifier("__builtin_va_list"), type(ptrdiff_t))
 
-     rule func(N::Namespace, X::CId, Ret::CPPType, Args::CPPTypes, E::ExceptionSet) 
+     rule func(N::Namespace, X::CId, Ret::CPPType, Args::CPPTypes, E::ExceptionSet)
           => declareObject(N, N, X, X, type(functionType(Ret, Args, noMethod, CPPLinkage, E)), NoInit(), makeFunctionDeclarationType(N, Args), ExternalLinkage, StaticStorage, .Set)
 endmodule
