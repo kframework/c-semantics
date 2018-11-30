@@ -16,6 +16,7 @@ module CPP-TRANSLATION-ERROR
 
      rule lintZero(_) => .K
           requires notBool hasLint
+
      rule lintEmpty(_) => .K
           requires notBool hasLint
 

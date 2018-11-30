@@ -19,34 +19,50 @@ module CPP-ABSTRACT-SYNTAX
      syntax CPPIntegerType
 
      syntax LVal ::= LExpr
+
      syntax XVal ::= XExpr
+
      syntax PRVal ::= PRExpr
+
      syntax GLVal ::= GLExpr
+
      syntax RVal ::= RExpr
+
      syntax Val ::= TExpr
 
      syntax LDep ::= ld(Expr, Trace, CPPTypeExpr, TemplateParam)
+
      syntax XDep ::= xd(Expr, Trace, CPPTypeExpr, TemplateParam)
+
      syntax PRDep ::= prd(Expr, Trace, CPPTypeExpr, TemplateParam)
+
      syntax GLDep ::= LDep | XDep
+
      syntax RDep ::= XDep | PRDep
+
      syntax Dep ::= GLDep | RDep
 
      syntax LVal ::= LDep
+
      syntax XVal ::= XDep
+
      syntax PRVal ::= PRDep
+
      syntax GLVal ::= GLDep
-     syntax RVal ::= RDep 
+
+     syntax RVal ::= RDep
+
      syntax Val ::= Dep
 
      syntax Bool ::= isDepKLabel(K) [function, klabelPredicate]
 
      syntax TemplateParam ::= param(Dep) [function]
 
-     syntax SymBase ::= "nonStatic" 
+     syntax SymBase ::= "nonStatic"
 
      syntax TypeId ::= TypeId(AType)
                      | DestructorTypeId(AType)
+
      syntax CId ::= TypeId
 
      syntax Decl ::= TranslationUnit(String, List)
@@ -77,12 +93,15 @@ module CPP-ABSTRACT-SYNTAX
                          | BitFieldDecl(NNS, CId, AType, Expr) [strict(3)]
 
      syntax StorageClassSpecifier ::= Mutable()
+
      syntax FunctionSpecifier ::= Explicit()
+
      syntax Specifier ::= StorageClassSpecifier | FunctionSpecifier
                         | Constexpr() | AutoSpecifier
 
      syntax Decl ::= Template(Decl, List)
                    | TemplateWithInstantiations(Decl, List, List)
+
      syntax TemplateParameter ::= TypeTemplateParam(Bool, Bool, AType, AType)
                                 | ValueTemplateParam(Bool, NNS, CId, AType, AExpr)
                                 | TemplateTemplateParam(Bool, CId, AType, List)
@@ -114,11 +133,13 @@ module CPP-ABSTRACT-SYNTAX
                    | NoDecl()
 
      syntax BaseSpecifier ::= BaseClass(Bool, Bool, AccessSpecifier, AType)
+
      syntax Enumerator ::= Enumerator(CId, AExpr)
 
      syntax CPPType // defined in CPP-TYPING-SYNTAX
 
      syntax ATypeResult ::= NoType()
+
      syntax KResult ::= ATypeResult
 
      syntax AType ::= CPPTypeExpr
@@ -150,19 +171,27 @@ module CPP-ABSTRACT-SYNTAX
 
      context FunctionPrototype(HOLE:CPPTypeExpr, _, _, _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
+
      context FunctionPrototype(_, HOLE:StrictList => typeStrict(HOLE), _, _)
+
      context PointerType(HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
+
      context MemberPointerType(HOLE:CPPTypeExpr, _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
+
      context MemberPointerType(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
+
      context ArrayType(HOLE:CPPTypeExpr, _::Int)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
+
      context ArrayType(HOLE:CPPTypeExpr, _::AExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
+
      context LValRefType(HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
+
      context RValRefType(HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
@@ -171,12 +200,12 @@ module CPP-ABSTRACT-SYNTAX
                     | GnuEnumUnderlyingType1(AType)
                     | TypeofExpression(Expr) | TypeofType(AType)
 
-     syntax ExceptionSpec ::= NoExceptionSpec() 
+     syntax ExceptionSpec ::= NoExceptionSpec()
                             | NoexceptSpec(AExpr)
                             | ThrowSpec(StrictList) [strict]
 
      syntax TypeSpecifier ::= Void() | Char() | WChar() | Char16() | Char32()
-                            | Bool() | UChar() | UShort() | UInt() | ULong() 
+                            | Bool() | UChar() | UShort() | UInt() | ULong()
                             | ULongLong() | SChar() | Short() | Int() | Long()
                             | LongLong() | Float() | Double() | LongDouble()
                             | OversizedInt() | OversizedUInt()
@@ -185,10 +214,12 @@ module CPP-ABSTRACT-SYNTAX
      syntax AType ::= RefQualifier(RefQualifier, AType) [strict(2)]
 
      syntax AType ::= Qualifier(Qualifier, AType) [strict(2)]
+
      context Qualifier(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      syntax AStmt ::= Stmt
+
      syntax Stmt ::= DeclStmt(List)
                    | TGotoStmt(CId)
                    | TExpressionStmt(Expr) [strict]
@@ -273,18 +304,24 @@ module CPP-ABSTRACT-SYNTAX
 
      context IntegerLiteral(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
+
      context FloatingLiteral(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      syntax CaptureDefault ::= NoCaptureDefault() | CopyCapture() | RefCapture()
+
      syntax Capture ::= LambdaCapture(CaptureKind, Bool)
+
      syntax CaptureKind ::= Decl | This | RefCapture(Decl) [klabel(RefCapture1)]
 
      syntax CharKind ::= Ascii() | Wide() | UTF8() | UTF16() | UTF32()
 
      syntax BraceInit ::= BraceInit(List)
+
      syntax Init ::= BraceInit
+
      syntax ExpressionList ::= ExpressionList(List)
+
      syntax Init ::= ExpressionList
 
      // extensions
@@ -310,7 +347,7 @@ module CPP-TRANSLATION-ABSTRACT-REWRITING
      imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
 
-     rule MemberExpr(false, false, N::Name, E::Expr) 
+     rule MemberExpr(false, false, N::Name, E::Expr)
        => #if hasAnonymousUnionObject(E)
           #then N
           #else #if hasAnonymousUnionObject(N)
@@ -318,34 +355,48 @@ module CPP-TRANSLATION-ABSTRACT-REWRITING
                 #else E . no-template N
                 #fi
           #fi [anywhere]
+
      rule MemberExpr(true, false, N::Name, E::Expr) => BinaryOperator(operator->, E, N) [anywhere]
 
      syntax Bool ::= hasAnonymousUnionObject(Expr) [function]
+
      rule hasAnonymousUnionObject(ExprLoc(_, E::Expr) => E)
+
      rule hasAnonymousUnionObject(Name(NoNNS(), #NoName)) => true
+
      rule hasAnonymousUnionObject(_) => false [owise]
 
      rule Subscript(E1::Expr, E2::Expr) => BinaryOperator(operator[], E1, E2) [anywhere]
 
      rule MaterializeTemporaryExpr(E::Expr) => E [anywhere]
+
      // technically speaking this case could still be value initialization, but in that
      // case value initialization and default initialization have the same semantics.
      // ideally we would get the distinction between the two correct, but clang doesn't fully
      // distinguish by the time we reach the point of abstract syntax, so this will have to do.
      rule ConstructorCall(false, _, .List) => NoInit() [anywhere]
+
      rule ConstructorCall(true, _, .List) => ExpressionList(.List) [anywhere]
+
      rule ConstructorCall(_, _, ListItem(E::Expr)) => E [anywhere]
+
      rule ConstructorCall(_, _, L::List) => ExpressionList(L)
           requires size(L) >Int 1 [anywhere]
+
      rule TemporaryObjectExpr(T::AType, L::List) => FunctionalCast(T, L) [anywhere]
+
      rule TypeId(Name(NoNNS(), X::CId)) => ConstructorId(X) [anywhere]
+
      rule DestructorTypeId(Name(NoNNS(), X::CId)) => DestructorId(X) [anywhere]
+
      rule ExprLoc(_, DefaultArg()) => .K [anywhere]
 
      rule ld(E::Expr, _, _, T:CPPTypeExpr) => E
           requires notBool isDependentInScope(T)
+
      rule xd(E::Expr, _, _, T:CPPTypeExpr) => E
           requires notBool isDependentInScope(T)
+
      rule prd(E::Expr, _, _, T:CPPTypeExpr) => E
           requires notBool isDependentInScope(T)
 

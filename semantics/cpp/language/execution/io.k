@@ -30,6 +30,7 @@ module CPP-EXECUTION-IO
           requires Execution()
 
      syntax KItem ::= checkWrite(SymLoc, CPPType) [klabel(cppCheckWrite)]
+
      rule checkWrite(loc(Base::SymBase, Offset::Int), T::CPPType) => .K
           requires Execution()
 

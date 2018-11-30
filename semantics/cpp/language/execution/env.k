@@ -3,6 +3,7 @@ module CPP-EXECUTION-ENV-SYNTAX
      imports CPP-SYMLOC-SYNTAX
 
      syntax KItem ::= addToExecEnv(CId, CPPType, SymBase, Bool) [klabel(cppAddToExecEnv)]
+
      syntax KItem ::= addToHistory(Int) [klabel(cppAddToHistory)]
 
      syntax KItem ::= destructLocals(isException: Bool)

@@ -3,8 +3,11 @@ module CPP-TRANSLATION-CONSTANT-SYNTAX
      imports CPP-SORTS
 
      syntax Expr ::= compileTimeEval(K)
+
      syntax Expr ::= revalCoreConstantExpression(Expr)
+
      syntax Expr ::= evalCoreConstantExpressionInContext(expr: Expr, ctx: K)
+
      syntax Expr ::= evalCoreConstantExpressionUntil(expr: Expr, condition: K)
 
 
@@ -23,6 +26,7 @@ module CPP-TRANSLATION-CONSTANT
           <compile-time-evaluation> false => true </compile-time-evaluation>
 
      syntax KItem ::= "compileTimeEvalDone"
+
      rule <k> compileTimeEvalDone => .K ...</k>
      <compile-time-evaluation> true => false </compile-time-evaluation>
 
@@ -31,6 +35,7 @@ module CPP-TRANSLATION-CONSTANT
      requires isEvalVal(V)
 
      syntax KItem ::= evalCoreConstantExpressionHole(ctx: K)
+
      rule <k> evalCoreConstantExpressionInContext(E::Expr, #klabel(Ctx::KLabel)) => Ctx(E) ~> evalCoreConstantExpressionHole(#klabel(Ctx)) ...</k>
           <compile-time-evaluation> false => true </compile-time-evaluation>
           requires notBool isEvalVal(E)
@@ -49,6 +54,7 @@ module CPP-TRANSLATION-CONSTANT
 
 
      syntax KItem ::= "evalConstantExpressionHole"
+
      rule evalConstantExpression(E::Expr) => evalCoreConstantExpression(E) ~> evalConstantExpressionHole
           requires notBool isEvalVal(E)
 
@@ -56,11 +62,15 @@ module CPP-TRANSLATION-CONSTANT
           requires isEvalVal(V)
 
      syntax KItem ::= checkEvaluatedConstantExpression(Val)
+
      rule checkEvaluatedConstantExpression(V::Val) => evalConstantExpression(V)
 
      rule revalCoreConstantExpression(E::Expr) => evalCoreConstantExpressionInContext(E, #klabel(`revalCpp`))
+
      syntax KItem ::= identityContext(Expr) [strict]
+
      syntax Expr ::= evalCoreConstantExpression(Expr)
+
      rule evalCoreConstantExpression(E::Expr) => evalCoreConstantExpressionUntil(E, #klabel(`isEvalVal`))
 
 endmodule

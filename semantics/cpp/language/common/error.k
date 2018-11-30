@@ -17,12 +17,16 @@ module CPP-ERROR
 
      rule COND(Title:String, Msg:String)
           => EXIT(ErrorMsg(Cond(), Title, Msg))
+
      rule IMPL(Title:String, Msg:String)
           => EXIT(ErrorMsg(Impl(CPPLinkage), Title, Msg))
+
      rule UNDEF(Title:String, Msg:String)
           => EXIT(ErrorMsg(Undef(CPPLinkage), Title, Msg))
+
      rule UNSPEC(Title:String, Msg:String)
           => EXIT(ErrorMsg(Unspec(CPPLinkage), Title, Msg))
+
      rule DRAFTING(Title:String, Msg:String)
           => EXIT(ErrorMsg(Drafting(CPPLinkage), Title, Msg))
 

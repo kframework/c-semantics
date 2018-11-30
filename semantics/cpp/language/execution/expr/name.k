@@ -27,7 +27,7 @@ module CPP-EXECUTION-EXPR-NAME
      // TODO(dwightguth): temporaries need to be deleted at the end of the full expression, except
      // for the exception object (see translation/stmt/try.k), which is deleted at the end of the
      // catch statement.
-     rule <k> temp(I::Int, T::CPPType) 
+     rule <k> temp(I::Int, T::CPPType)
               => #if isCPPRefType(T) #then .K #else allocObject(bnew(!I:Int, T, .Set, D), T, byteSizeofType(T)) #fi
               ~> addToExecEnv(#NoName(I), T, bnew(!I:Int, T, .Set, D), false)
               ~> lv(lnew(bnew(!I:Int, T, .Set, D)), noTrace, T) ...</k>

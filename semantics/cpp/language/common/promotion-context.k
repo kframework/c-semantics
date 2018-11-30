@@ -13,34 +13,59 @@ module CPP-COMMON-PROMOTION-CONTEXT
      imports CPP-SYNTAX
 
      rule isArithBinConversionOp(#klabel(`_+__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_-__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_*__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_/__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_%__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_^__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_&__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_|__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_!=__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_==__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_<__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_<=__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_>__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(#klabel(`_>=__CPP-SYNTAX`)) => true
+
      rule isArithBinConversionOp(_) => false [owise]
 
      rule isCompositePointerOp(#klabel(`_!=__CPP-SYNTAX`)) => true
+
      rule isCompositePointerOp(#klabel(`_==__CPP-SYNTAX`)) => true
+
      rule isCompositePointerOp(#klabel(`_<__CPP-SYNTAX`)) => true
+
      rule isCompositePointerOp(#klabel(`_<=__CPP-SYNTAX`)) => true
+
      rule isCompositePointerOp(#klabel(`_>__CPP-SYNTAX`)) => true
+
      rule isCompositePointerOp(#klabel(`_>=__CPP-SYNTAX`)) => true
+
      rule isCompositePointerOp(_) => false [owise]
 
      rule isPromoteOp(#klabel(`-__CPP-SYNTAX`)) => true
+
      rule isPromoteOp(#klabel(`+__CPP-SYNTAX`)) => true
+
      rule isPromoteOp(#klabel(`~__CPP-SYNTAX`)) => true
+
      rule isPromoteOp(#klabel(`_<<__CPP-SYNTAX`)) => true
+
      rule isPromoteOp(#klabel(`_>>__CPP-SYNTAX`)) => true
+
      rule isPromoteOp(_) => false [owise]
 
 endmodule

@@ -14,6 +14,7 @@ module CPP-TRANSLATION-IO
      imports SYMLOC-SYNTAX
 
      rule freeNativeObject(B::SymBase) => .K
+
      rule writeNativeByte(L::SymLoc, K::K) => .List
 
 

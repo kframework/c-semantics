@@ -42,6 +42,7 @@ module CPP-TRANSLATION-DECL-USING
 
      rule makeUsing(T::CPPType |-> envEntry(Base::SymBase, _, Args::DefaultArgumentsResult) M::TypeMap)
           => T |-> envEntry(Base, true, Args) makeUsing(M)
+
      rule makeUsing(.Map) => .Map
 
 endmodule

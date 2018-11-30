@@ -20,6 +20,7 @@ module CPP-EXPR-ADDITIVE
           requires isCompleteType(innerType(T)) andBool isObjectType(innerType(T))
 
      syntax KItem ::= addToPointer(SymLoc, CPPType, Int, Trace) [klabel(addToPointerCPP)]
+
      rule addToPointer(Loc::SymLoc, T::CPPType, I::Int, Tr::Trace)
           => prv(newFromArray(Loc, T, I) +bytes (I *Int byteSizeofType(innerType(T))), Tr, T)
           requires ifFromArrayInBounds(Loc, T, I)
@@ -31,10 +32,13 @@ module CPP-EXPR-ADDITIVE
 
      syntax SymLoc ::= newFromArray(SymLoc, CPPType, Int) [function, klabel(newFromArrayCpp)]
                      | #newFromArray(SymLoc, K, Int) [function, klabel(#newFromArrayCpp)]
-     rule newFromArray(Loc::SymLoc, T::CPPType, I::Int) 
+
+     rule newFromArray(Loc::SymLoc, T::CPPType, I::Int)
           => #newFromArray(Loc, getProv(Loc, #klabel(`fromArray`)), byteSizeofType(innerType(T)) *Int I)
+
      rule #newFromArray(Loc::SymLoc, fromArray(ArrOffset::Int, Len::Int), NewOffset::Int)
           => addProv(fromArray(ArrOffset +Int NewOffset, Len), stripProv(Loc, #klabel(`fromArray`)))
+
      rule #newFromArray(Loc::SymLoc, .K, _) => Loc
 
      rule prv(Loc::SymLoc, Tr::Trace, T:CPPPointerType) - prv(Loc'::SymLoc, Tr'::Trace, T':CPPPointerType)
@@ -47,10 +51,12 @@ module CPP-EXPR-ADDITIVE
           requires notBool sameBase(Loc, Loc')
 
      syntax KItem ::= computePointerDifference(Int, Int, CPPType, Trace, String) [klabel(computePointerDifferenceCPP)]
+
      rule computePointerDifference(Diff::Int, Size::Int, T::CPPType, Tr::Trace, _)
           => prv(Diff /Int Size, Tr, T)
           requires (Diff %Int Size ==Int 0)
                andBool inRange(Diff /Int Size, T)
+
      rule (.K => UNDEF("CEA3", "Pointer difference outside the range that can be represented by object of type " +String S +String "."))
           ~> computePointerDifference(Diff::Int, Size::Int, T::CPPType, _, S::String)
           requires notBool inRange(Diff /Int Size, T)
@@ -73,6 +79,7 @@ module CPP-EXPR-ADDITIVE
 
 
      rule L:LVal [ R:Val ] => * (L + R)
+
      rule L:Val [ R:Val ] => * (L + R)
           requires isCPPPointerType(type(L))
 

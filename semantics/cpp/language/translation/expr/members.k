@@ -10,6 +10,7 @@ module CPP-TRANSLATION-EXPR-MEMBERS
           requires Translation()
 
      context CallExpr(HOLE:Expr . _ _, _, _)
+
      context CallExpr(BinaryOperator(operator->, _, _) #as HOLE:Expr, _, _) [result(ResolvedExpr), structural]
 
      rule fieldExp(E:LExpr, T::CPPType, Offset::Int)

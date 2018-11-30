@@ -9,6 +9,7 @@ module CPP-TRANSLATION-EXPR-UNARY
 
      rule &(le(E::Expr, Tr::Trace, T::CPPType))
           => pre(& E, combine(Tr, #klabel(`&__CPP-SYNTAX`)), type(pointerType(T)))
+
      rule getAddress(E:TExpr)
           => pre(getAddress(stripHold(E)), combine(trace(E), #klabel(`&__CPP-SYNTAX`)), type(pointerType(type(E))))
 

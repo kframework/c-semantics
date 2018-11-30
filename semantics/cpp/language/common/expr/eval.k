@@ -8,8 +8,10 @@ module CPP-EXPR-EVAL
 
      rule convertReval(lv(Loc::SymLoc, Tr::Trace, T:CPPArrayType))
           => convertArray(lv(Loc, Tr, T))
+
      rule convertReval(xv(Loc::SymLoc, Tr::Trace, T:CPPArrayType))
           => convertArray(xv(Loc, Tr, T))
+
      rule convertReval(prv(Loc::SymLoc, Tr::Trace, T:CPPArrayType))
           => convertArray(prv(Loc, Tr, T))
 

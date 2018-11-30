@@ -12,10 +12,13 @@ module CPP-EXPR-UNARY
 
      rule &(lv(Loc:SymLoc, Tr::Trace, T::CPPType))
           => prv(Loc, combine(Tr, #klabel(`&__CPP-SYNTAX`)), type(pointerType(T)))
+
      rule getAddress(lv(Loc:SymLoc, Tr::Trace, T::CPPType))
           => prv(Loc, combine(Tr, #klabel(`&__CPP-SYNTAX`)), type(pointerType(T)))
+
      rule getAddress(xv(Loc:SymLoc, Tr::Trace, T::CPPType))
           => prv(Loc, combine(Tr, #klabel(`&__CPP-SYNTAX`)), type(pointerType(T)))
+
      rule getAddress(prv(Loc:SymLoc, Tr::Trace, T::CPPType))
           => prv(Loc, combine(Tr, #klabel(`&__CPP-SYNTAX`)), type(pointerType(T)))
 
@@ -23,17 +26,21 @@ module CPP-EXPR-UNARY
           => prv(memberPointer(C, X, T), Tr, t(noQuals, .Set, memberPointerType(t(noQuals, .Set, classType(C)),T)))
 
      context - (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      rule - prv(I:Int, Tr::Trace, T::CPPType)
           => arithInterpret(T, 0 -Int I, combine(Tr, #klabel(`-__CPP-SYNTAX`)))
           requires isPromoted(T)
+
      rule - prv(F:Float, Tr::Trace, T::CPPType)
           => arithInterpret(T, --Float F, combine(Tr, #klabel(`-__CPP-SYNTAX`)))
           requires isPromoted(T)
 
      context + (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      rule + prv(I:Int, Tr::Trace, T::CPPType)
           => arithInterpret(T, I, combine(Tr, #klabel(`+__CPP-SYNTAX`)))
           requires isPromoted(T)
+
      rule + prv(F:Float, Tr::Trace, T::CPPType)
           => arithInterpret(T, F, combine(Tr, #klabel(`+__CPP-SYNTAX`)))
           requires isPromoted(T)

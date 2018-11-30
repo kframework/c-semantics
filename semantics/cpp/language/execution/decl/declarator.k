@@ -24,7 +24,7 @@ module CPP-EXECUTION-DECL-DECLARATOR
 
      rule declareNonStaticObjectExec(#NoName, _, Init::Expr, _, _, _) => ExpressionStmt(Init)
 
-     rule <k> initializeObjectExec(Init::Expr) 
+     rule <k> initializeObjectExec(Init::Expr)
               => ExpressionStmt(Init)
               ~> sequencePoint
           ...</k>

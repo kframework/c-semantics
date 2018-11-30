@@ -34,16 +34,19 @@ module CPP-EXECUTION-STMT-RETURN
      syntax KItem ::= "Return'" "(" K "," CPPType ")" [strict(1)]
 
      // compute value category of result
-     rule Return'(lv(Loc::SymLoc, Tr::Trace, T::CPPType), DeclT::CPPType) => 
+     rule Return'(lv(Loc::SymLoc, Tr::Trace, T::CPPType), DeclT::CPPType) =>
           Return''(makeCall2(Loc, Tr, T, DeclT))
 
      syntax Expr ::= makeCall2(SymLoc, Trace, CPPType, CPPType) [function]
+
      rule makeCall2(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
           => lv(Loc, Tr, T)
           requires isUnnamedLValue(DeclT)
+
      rule makeCall2(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
           => xv(Loc, Tr, T)
           requires isUnnamedXValue(DeclT)
+
      rule makeCall2(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
           => makePRVal(lv(Loc, Tr, T)) [owise]
 

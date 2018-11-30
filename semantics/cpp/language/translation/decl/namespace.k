@@ -46,6 +46,7 @@ module CPP-TRANSLATION-DECL-NAMESPACE
           ...</namespaces>
 
      rule NamespaceAliasDecl(X::CId, Y::CId, NoNNS()) => NamespaceNameAliasDecl(X, nameLookup(Y, NoTag(), namespaceMask))
+
      rule NamespaceAliasDecl(X::CId, Y::CId, N::NNS) => NamespaceNameAliasDecl(X, qualifiedNameLookup(Y, N, namespaceMask))
           requires N =/=K NoNNS()
 
@@ -58,6 +59,7 @@ module CPP-TRANSLATION-DECL-NAMESPACE
 
      syntax KItem ::= addInlineNamespace(Namespace, Namespace)
                     | addUsingDirective(Namespace)
+
      // the global namespace cannot be inline, because it's implicitly declared
      rule <k> addInlineNamespace((Enclosing::Namespace :: _) => Enclosing, N::Namespace) ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -65,6 +67,7 @@ module CPP-TRANSLATION-DECL-NAMESPACE
           <ns-id> Enclosing </ns-id>
           <inline-namespaces>... .Set => SetItem(N) ...</inline-namespaces>
           <is-inline> true </is-inline>
+
      rule <k> addInlineNamespace(Enclosing::Namespace :: _, N::Namespace) => .K ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
@@ -82,14 +85,17 @@ module CPP-TRANSLATION-DECL-NAMESPACE
           <nusing-namespaces>... .Set => SetItem(N) ...</nusing-namespaces>
 
      rule UsingDirective(X::CId, NoNNS()) => UsingNameDirective(nameLookup(X, NoTag(), namespaceMask))
+
      rule UsingDirective(X::CId, N::NNS) => UsingNameDirective(qualifiedNameLookup(X, N, namespaceMask))
           requires N =/=K NoNNS()
+
      rule <k> UsingNameDirective(nsRef(N::Namespace)) => .K ...</k>
           <curr-tr-scope> namespaceScope(Enclosing::Namespace) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> Enclosing </ns-id>
           <nusing-namespaces>... .Set => SetItem(N) ...</nusing-namespaces>
+
      rule <k> UsingNameDirective(nsRef(N::Namespace)) => .K ...</k>
           <curr-tr-scope> blockScope(...) </curr-tr-scope>
           <using-namespaces>... .Set => SetItem(N) ...</using-namespaces>

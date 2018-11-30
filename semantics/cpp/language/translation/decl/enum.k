@@ -28,33 +28,45 @@ module CPP-TRANSLATION-DECL-ENUM
           <tu-id> Tu </tu-id>
 
      syntax Enum ::= createEnumName(CId, Scope) [function]
+
      rule createEnumName(X::CId, namespaceScope(N::Namespace)) => N :: Enum(X)
+
      rule createEnumName(X::CId, classScope(C::Class, _)) => C :: Enum(X)
+
      rule createEnumName(X::CId, blockScope(_, _, _) #as B::BlockScope) => localQual(B) :: Enum(X)
 
      syntax CPPEnumType ::= declareEnumName(Enum, ut: CPPIntegerType, scoped: Bool, fixed: Bool) [function]
+
      rule declareEnumName(E::Enum, UT::CPPIntegerType, false, Fixed:Bool) => t(noQuals, .Set, unscopedEnum(E, UT, Fixed))
+
      rule declareEnumName(E::Enum, UT::CPPIntegerType, true, true)  => t(noQuals, .Set, scopedEnum(E, UT))
 
      syntax NNSVal ::= getEnumQualifier(Enum) [function]
+
      rule getEnumQualifier(N:Namespace :: _) => N
+
      rule getEnumQualifier(C:Class :: _) => C
+
      rule getEnumQualifier(localQual(_) :: _) => NoNamespace()
 
      syntax KItem ::= addEnumToEnv(CId, CPPEnumType)
+
      rule addEnumToEnv(X::CId, E::CPPEnumType) => #addEnumToEnv(X, getEnumQualifier(getEnumId(E)), E)
 
      syntax KItem ::= #addEnumToEnv(CId, NNSVal, CPPEnumType)
+
      rule <k> #addEnumToEnv(X::CId, N::Namespace, E::CPPEnumType) => . ... </k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <ntypes> NT::Map => NT[X <- E] </ntypes>
+
      rule <k> #addEnumToEnv(X::CId, C::Class, E::CPPEnumType) => . ... </k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <ctypes> NT::Map => NT[X <- E] </ctypes>
+
      rule <k> #addEnumToEnv(X::CId, NoNamespace(), E::CPPEnumType) => . ... </k>
           <tr-types> NT::Map => NT[X <- E] </tr-types>
 
@@ -67,6 +79,7 @@ module CPP-TRANSLATION-DECL-ENUM
           ~> #if Opaque #then .K #else inEnumScope(E, declareEnumerators(E, 0, 0, 0, int, Enumerators, Fixed, true)) #fi
 
      syntax KItem ::= inEnumScope(CPPEnumType, K)
+
      rule <k> inEnumScope(E::CPPEnumType, K:K) => K ~> setScope(OldScope) ... </k>
           <curr-tr-scope> OldScope::Scope => enumScope(getEnumId(E))  </curr-tr-scope>
 
@@ -153,9 +166,13 @@ module CPP-TRANSLATION-DECL-ENUM
      rule declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, prv(_, _, T:CPPUnscopedEnumType => underlyingType(T)))) _::List, _, _)
 
      context declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, HOLE:Expr => reval(HOLE))) _::List, _, _) [result(PRVal)]
+
      context declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, HOLE:PRVal => evalCoreConstantExpressionUntil(reval(HOLE), #klabel(`isRevalDone`)))) _::List, _, _) [result(PRV)]
+
      syntax Bool ::= isRevalDone(K) [function]
+
      rule isRevalDone(reval(prv(...))) => true
+
      rule isRevalDone(_) => false [owise]
 
      // Type of an enumerator inside the declaration is enum's underlying type
@@ -185,6 +202,7 @@ module CPP-TRANSLATION-DECL-ENUM
           requires notBool inRange(V, UT)
 
      syntax KItem ::= addEnumerator(enum: Enum, id: CId, v: PRVal)
+
      rule <k> addEnumerator(E::Enum, X::CId, V::PRVal) => addEnumeratorToEnv(E, X) ... </k>
          <enum-id> E </enum-id>
          <enumerators> ES::Map => ES[X <- V] </enumerators>
@@ -224,6 +242,7 @@ module CPP-TRANSLATION-DECL-ENUM
 
      // Possible underlying types according to 7.2:7
      syntax List ::= "integralTypesGreaterThanInt" [function]
+
      rule integralTypesGreaterThanInt
           => ListItem(int)
              ListItem(unsigned)
@@ -235,6 +254,7 @@ module CPP-TRANSLATION-DECL-ENUM
              ListItem(unsigned-oversized)
 
      syntax List ::= "allIntegralTypes" [function]
+
      rule allIntegralTypes
           => ListItem(signed-char)
              ListItem(unsigned-char)
@@ -243,16 +263,19 @@ module CPP-TRANSLATION-DECL-ENUM
              integralTypesGreaterThanInt
 
      syntax CPPSimpleType ::= firstSuitableType(Int, Int, List) [function]
+
      rule firstSuitableType(Min::Int, Max::Int, ListItem(T::CPPSimpleType) _) => T
           requires Min >=Int min(type(T)) andBool Max <=Int max(type(T))
 
      rule firstSuitableType(_, _, .List) => no-type
+
      rule firstSuitableType(_, _, (ListItem(_) => .List) _) [owise]
 
 
      syntax KItem ::= calculateEnumValues(CPPEnumType, min: Int, max: Int)
 
      syntax Int ::= calculateMaxEnumValue(emin: Int, emax: Int) [function]
+
      syntax Int ::= calculateMinEnumValue(emin: Int, emax: Int) [function]
 
      rule calculateMinEnumValue(EMin::Int, _) => 0
@@ -294,7 +317,7 @@ module CPP-TRANSLATION-DECL-ENUM
           <enum-id> N::Namespace :: Enum(X) </enum-id>
 
      // 7.2/3 ... or a declaration of a new enumeration.
-     rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPIntegerType) 
+     rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPIntegerType)
      => enumContext(X, declareEnumName(createEnumName(X, Sc), UT, Scoped, true), .List, true, UT, true) ...</k>
           <curr-tr-scope> Sc::Scope </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>

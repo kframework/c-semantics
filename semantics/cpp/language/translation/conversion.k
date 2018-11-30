@@ -7,6 +7,7 @@ module CPP-TRANSLATION-CONVERSION
      imports CPP-TYPING-SYNTAX
 
      rule convertType(T:CPPPointerType, prv(0, hasTrace(IntegerLiteral(0, T2::CPPType)), _)) => prv(NullPointer, hasTrace(IntegerLiteral(0, T2)), T)
+
      rule convertType(T:CPPNullPtrTType, prv(0, hasTrace(IntegerLiteral(0, T2::CPPType)), _)) => prv(nullptrVal, hasTrace(IntegerLiteral(0, T2)), T)
 
      rule convertType(T:CPPMemberPointerType, prv(0, hasTrace(IntegerLiteral(0, T2::CPPType)), _)) => prv(NullMemberPointer, hasTrace(IntegerLiteral(0, T2)), T)
@@ -14,6 +15,7 @@ module CPP-TRANSLATION-CONVERSION
      rule convertType(T::CPPType, pre(E::Expr, Tr::Trace, _)) => pre(ConvertType(T, E), Tr, T)
 
      rule isNullPointerConstant(prv(_, hasTrace(IntegerLiteral(0, _)), _)) => true
+
      rule isNullPointerConstant(pre(_, _, _)) => false
 
 endmodule

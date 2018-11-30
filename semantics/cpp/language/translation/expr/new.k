@@ -7,6 +7,7 @@ module CPP-TRANSLATION-EXPR-NEW-SYNTAX
      imports CPP-TYPE-MAP-SORTS
      imports CPP-TYPING-SORTS
      syntax KItem ::= lookupAllocationFunction(CId, CPPType, Bool)
+
      syntax List ::= getSecondDeleteArg(TypeMap, PRVal) [function]
 endmodule
 
@@ -47,13 +48,13 @@ module CPP-TRANSLATION-EXPR-NEW
                orIfNotFound
              qualifiedNameLookup(X, GlobalNamespace(), defaultMask)
 
-     rule (cSet(... id: Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(pre(newSize(!I), noTrace, type(size_t)) * prv(byteSizeofType(T), noTrace, type(size_t))) P), 
+     rule (cSet(... id: Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(pre(newSize(!I), noTrace, type(size_t)) * prv(byteSizeofType(T), noTrace, type(size_t))) P),
                                              Name(NoNNS(), operatornew[]))
           ~> !I:Int)
           ~> NewExpr(_, T::CPPType, _, _, P::List)
           requires getId(Q) ==K operatornew[]
 
-     rule (cSet(... id: Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(prv(byteSizeofType(T), noTrace, type(size_t))) P), 
+     rule (cSet(... id: Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(prv(byteSizeofType(T), noTrace, type(size_t))) P),
                                                                           Name(NoNNS(), operatornew)))
           ~> NewExpr(_, T:CPPType, _, _, P::List)
           requires getId(Q) ==K operatornew
@@ -94,7 +95,9 @@ module CPP-TRANSLATION-EXPR-NEW
      syntax Expr ::= computeNewInit(Expr, CPPType, AExpr, Expr, Int, K) [strict(6)]
 
      syntax K ::= ExprOrNothing(K) [function]
+
      rule ExprOrNothing(E:Expr) => E
+
      rule ExprOrNothing(_) => .K [owise]
 
      rule computeNewInit(R::Expr, T::CPPType, Size::AExpr, E::Expr, I::Int, Init:KResult)
@@ -130,7 +133,9 @@ module CPP-TRANSLATION-EXPR-NEW
           => #getSecondDeleteArg(M, func(type(void), ptr(type(void))), func(type(void), ptr(type(void)), type(size_t)), V)
 
      syntax List ::= #getSecondDeleteArg(TypeMap, CPPType, CPPType, PRVal) [function]
+
      rule #getSecondDeleteArg((T1 |-> _) (T2 |-> _) M::TypeMap, T1::CPPType, T2::CPPType, V::PRVal) => ListItem(V)
+
      rule #getSecondDeleteArg(...) => .List [owise]
 
      context DeleteExpr(_, _, (HOLE:Expr => reval(HOLE))) [result(PRVal)]

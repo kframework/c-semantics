@@ -1,14 +1,24 @@
 module CPP-SORTS
      syntax CId ::= OpId
+
      syntax Init ::= Stmt | Expr
+
      syntax NoArg
+
      syntax Expr ::= Name
+
      syntax Name
+
      syntax Stmt ::= Block
+
      syntax Block
+
      syntax OpId
+
      syntax RefQualifier
+
      syntax Tag
+
      syntax AccessSpecifier
 endmodule
 
@@ -80,12 +90,15 @@ module CPP-SYNTAX
                    | newSize(Int)
 
      syntax DestructorId ::= DestructorId(CId)
+
      syntax CId ::= DestructorId
                   | ConstructorId(CId)
                   | ConversionId(CPPType)
 
-     syntax ClassKey ::= Struct() | Union() | Class() 
+     syntax ClassKey ::= Struct() | Union() | Class()
+
      syntax Tag ::= ClassKey | Enum() | Typename() | NoTag()
+
      syntax AccessSpecifier ::= Public() | Private() | Protected() | NoAccessSpec()
 
      syntax RefQualifier ::= RefLValue() | RefRValue() | RefNone()
@@ -93,6 +106,7 @@ module CPP-SYNTAX
      syntax TemplateKeyword ::= "template" | "no-template"
 
      syntax Expr ::= ResolvedExpr
+
      syntax ResolvedExpr ::= left:
                      Expr "[" Expr "]" [strict]
                    | Expr "++" [strict]
@@ -107,6 +121,7 @@ module CPP-SYNTAX
                    | DeleteOp(Expr, Expr, K, Int)
                    | "*" Expr
                    | "&" Expr
+
                    // like & but applies to all objects including xvalues and class prvalues
                    | getAddress(Expr) [strict]
                    | "!" Expr
@@ -167,63 +182,112 @@ module CPP-SYNTAX
                    | Name(NNS, CId, List)
 
      syntax ExecName ::= ExecName(NNS, CId)
+
      syntax Expr ::= ExecName
 
      syntax Expr ::= ConvertType(CPPType, Expr)
                    | ExprLoc
+
      syntax ExprLoc ::= ExprLoc(CabsLoc, Expr)
 
      syntax Init ::= ExprLoc(CabsLoc, Init)
+
      syntax BraceInit ::= ExprLoc(CabsLoc, BraceInit)
 
      context _ := (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context _ :=init (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context _ += (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context _ -= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context _ *= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context _ /= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context _ %= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context _ ^= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context _ &= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context _ |= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context _ <<= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context _ >>= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context * (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) + _ [result(EPRVal)]
+
      context _ + (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) - _ [result(EPRVal)]
+
      context _ - (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) * _ [result(EPRVal)]
+
      context _ * (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) / _ [result(EPRVal)]
+
      context _ / (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) % _ [result(EPRVal)]
+
      context _ % (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) ^ _ [result(EPRVal)]
+
      context _ ^ (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) & _ [result(EPRVal)]
+
      context _ & (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) | _ [result(EPRVal)]
+
      context _ | (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) != _ [result(EPRVal)]
+
      context _ != (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) == _ [result(EPRVal)]
+
      context _ == (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) < _ [result(EPRVal)]
+
      context _ < (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) <= _ [result(EPRVal)]
+
      context _ <= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) > _ [result(EPRVal)]
+
      context _ > (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) >= _ [result(EPRVal)]
+
      context _ >= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) << _ [result(EPRVal)]
+
      context _ << (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+
      context (HOLE:Expr => reval(HOLE)) >> _ [result(EPRVal)]
+
      context _ >> (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
 
      syntax Block ::= BlockStmt(Int, List)
+
      syntax Decl
+
      syntax Stmt ::= LabelStmt(CId, List)
                    | GotoStmt(CId)
                    | ExpressionStmt(Expr) [strict]

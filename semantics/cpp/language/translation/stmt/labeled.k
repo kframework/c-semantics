@@ -7,6 +7,7 @@ module CPP-TRANSLATION-STMT-LABELED
      imports CPP-DYNAMIC-SYNTAX
 
      rule (.K => elaborate(listToK(L))) ~> TLabelStmt(_, L::List)
+
      rule <k> elaborateDone(K:K) ~> TLabelStmt(L:CId, _) => .K ...</k>
           <elab>... .K => LabelStmt(L, kSeqToList(K)) </elab>
 

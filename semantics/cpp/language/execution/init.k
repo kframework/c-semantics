@@ -30,15 +30,19 @@ module CPP-EXECUTION-INIT
           <status> _ => mainCalled </status>
 
      syntax Expr ::= #callCppEntryPoint(CPPType, SymBase, Int, CId, K)
+
      rule #callCppEntryPoint(T::CPPFunctionType, Base::SymBase, _, _, _)
           => BuiltinCallOp(lv(lnew(Base), noTrace, T), false, .List)
           requires getParams(T) ==K .List
+
      rule #callCppEntryPoint(T::CPPFunctionType, Base::SymBase, Argc:Int, X:CId, Args:K)
           => Args ~> setupCppEnv(Argc) ~> BuiltinCallOp(lv(lnew(Base), noTrace, T), false, ListItem(prv(Argc, noTrace, type(int))) ListItem(ExecName(NoNNS(), X)))
           requires size(getParams(T)) ==Int 2
 
      syntax KItem ::= setupCppEnv(Int)
+
      rule <k> setupCppEnv(Argc::Int) => .K ...</k>
+
           // adjust environment to C++ form
           <env>... mainArguments |-> Argv::SymBase => mainArguments |-> (type(arrayType(type(pointerType(type(char))), Argc +Int 1)) |-> envEntry(Argv, false, NoDefArgs())) ...</env>
           <types>... mainArguments |-> _ => .Map ...</types>
@@ -46,6 +50,7 @@ module CPP-EXECUTION-INIT
      rule <k> reval(V:PRVal) ~> callAtExit => AtExit:KItem ~> reval(V) ~> callAtExit ...</k>
           <atexit> AtExit:KItem => .K ...</atexit>
           <status> _ => mainExited </status>
+
      rule <k> reval(V:PRVal) ~> callAtExit => reval(V) ...</k>
           <atexit> .K </atexit>
           <status> _ => mainExited </status>
@@ -53,6 +58,7 @@ module CPP-EXECUTION-INIT
      rule <k> reval(V:PRVal) ~> callAtQuickExit => AtExit:KItem ~> reval(V) ~> callAtQuickExit ...</k>
           <at-quick-exit> AtExit:KItem => .K ...</at-quick-exit>
           <status> _ => mainExited </status>
+
      rule <k> reval(V:PRVal) ~> callAtQuickExit => reval(V) ...</k>
           <at-quick-exit> .K </at-quick-exit>
           <status> _ => mainExited </status>
@@ -67,11 +73,15 @@ module CPP-EXECUTION-INIT
           <result-value> _ => V </result-value>
 
      rule hasTrace(_) => noTrace [anywhere]
+
      rule combine(_, _) => noTrace
+
      rule combine(_, _::Trace, _) => noTrace
+
      rule combine(_, _, _::Trace, _, _) => noTrace
 
      syntax Expr ::= RValue
+
      rule <k> #ExecExprLoc(L::CabsLoc, V:RValue) => convertValToCPP(V) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
 endmodule

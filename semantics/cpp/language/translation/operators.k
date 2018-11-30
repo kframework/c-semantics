@@ -21,9 +21,12 @@ module CPP-TRANSLATION-OPERATORS
 
      syntax Expr ::= #BinaryOperator(OpId, Expr, TypeExpr, Init, K)
                    | #UnaryOperator(OpId, Expr, TypeExpr)
+
      context #BinaryOperator(_, _, (HOLE:TypeExpr => typeof(HOLE)), _, _) [result(CPPDType)]
+
      context #BinaryOperator(O::OpId, _, _, _, (HOLE:TypeExpr => typeof(HOLE)))
              requires O =/=K operator-> [result(CPPDType)]
+
      context #UnaryOperator(_, _, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
 
      rule #BinaryOperator(operator->, E1::Expr, T1:CPPType, E2::Init, _)
@@ -47,86 +50,125 @@ module CPP-TRANSLATION-OPERATORS
      rule #UnaryOperator(O::OpId, E1::Expr, T1:CPPDType)
           => resolveOverloadedOperator(O, E1, T1)
           requires isCPPClassType(T1) orBool isCPPEnumType(T1)
- 
+
 
      rule builtinOperator(operator=, E1::Expr, E2::Init)
           => E1 := E2
+
      rule builtinOperator(operator[], E1::Expr, E2::Expr)
           => E1[E2]
+
      rule builtinOperator(operator->, E1::Expr, E2::Name)
           => E1 -> no-template E2
+
      rule builtinOperator(operator+, E1::Expr, E2::Expr)
           => E1 + E2
+
      rule builtinOperator(operator-, E1::Expr, E2::Expr)
           => E1 - E2
+
      rule builtinOperator(operator*, E1::Expr, E2::Expr)
           => E1 * E2
+
      rule builtinOperator(operator/, E1::Expr, E2::Expr)
           => E1 / E2
+
      rule builtinOperator(operator%, E1::Expr, E2::Expr)
           => E1 % E2
+
      rule builtinOperator(operator||, E1::Expr, E2::Expr)
           => E1 || E2
+
      rule builtinOperator(operator&&, E1::Expr, E2::Expr)
           => E1 && E2
+
      rule builtinOperator(operator&, E1::Expr, E2::Expr)
           => E1 & E2
+
      rule builtinOperator(operator|, E1::Expr, E2::Expr)
           => E1 | E2
+
      rule builtinOperator(operator^, E1::Expr, E2::Expr)
           => E1 ^ E2
+
      rule builtinOperator(operator==, E1::Expr, E2::Expr)
           => E1 == E2
+
      rule builtinOperator(operator!=, E1::Expr, E2::Expr)
           => E1 != E2
+
      rule builtinOperator(operator<, E1::Expr, E2::Expr)
           => E1 < E2
+
      rule builtinOperator(operator<=, E1::Expr, E2::Expr)
           => E1 <= E2
+
      rule builtinOperator(operator>, E1::Expr, E2::Expr)
           => E1 > E2
+
      rule builtinOperator(operator>=, E1::Expr, E2::Expr)
           => E1 >= E2
+
      rule builtinOperator(operator+=, E1::Expr, E2::Expr)
           => E1 += E2
+
      rule builtinOperator(operator-=, E1::Expr, E2::Expr)
           => E1 -= E2
+
      rule builtinOperator(operator*=, E1::Expr, E2::Expr)
           => E1 *= E2
+
      rule builtinOperator(operator/=, E1::Expr, E2::Expr)
           => E1 /= E2
+
      rule builtinOperator(operator%=, E1::Expr, E2::Expr)
           => E1 %= E2
+
      rule builtinOperator(operator^=, E1::Expr, E2::Expr)
           => E1 ^= E2
+
      rule builtinOperator(operator&=, E1::Expr, E2::Expr)
           => E1 &= E2
+
      rule builtinOperator(operator|=, E1::Expr, E2::Expr)
           => E1 |= E2
+
      rule builtinOperator(operator<<, E1::Expr, E2::Expr)
           => E1 << E2
+
      rule builtinOperator(operator>>, E1::Expr, E2::Expr)
           => E1 >> E2
+
      rule builtinOperator(operator<<=, E1::Expr, E2::Expr)
           => E1 <<= E2
+
      rule builtinOperator(operator>>=, E1::Expr, E2::Expr)
           => E1 >>= E2
+
      rule builtinOperator(operator,, E1::Expr, E2::Expr)
           => Comma(E1, E2)
+
      rule builtinOperator(operator_++, E1::Expr)
           => E1 ++
+
      rule builtinOperator(operator_--, E1::Expr)
           => E1 --
+
      rule builtinOperator(operator++_, E1::Expr)
           => ++ E1
+
      rule builtinOperator(operator--_, E1::Expr)
           => -- E1
+
      rule builtinOperator(operator!, E1::Expr)
           => ! E1
+
      rule builtinOperator(operator-, E1::Expr)
           => - E1
+
      rule builtinOperator(operator&, E1::Expr)
           => & E1
+
      rule builtinOperator(operator*, E1::Expr)
           => * E1
 

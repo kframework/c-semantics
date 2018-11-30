@@ -14,6 +14,7 @@ module CPP-TRANSLATION-EXPR-CAST
      rule convertConst(T2::CPPType, pre(V::Expr, Tr::Trace, T1::CPPType))
           => pre(ConstCast(T2, V), Tr, T2)
           requires isSimilar(T2, T1)
+
      rule convertConst(T2:CPPLVRefType, le(Loc::Expr, Tr::Trace, T1::CPPType))
           => le(Loc, Tr, innerType(T2))
           requires isObjectType(T1) andBool isObjectType(innerType(T2))
@@ -25,10 +26,13 @@ module CPP-TRANSLATION-EXPR-CAST
           requires isObjectType(type(V)) andBool isObjectType(innerType(T2))
                andBool isSimilar(type(pointerType(innerType(T2))),
                                  type(pointerType(type(V))))
+
      //5.2.3:1
      rule FunctionalCast(T:CPPType, ListItem(E::Expr)) => ParenthesizedCast(T, E)
+
      rule FunctionalCast(T:CPPType, ListItem(E1::Expr) ListItem(E2::Expr) L::List)
           => makePRVal(figureInit(le(temp(!I:Int, T), noTrace, T), T, ExpressionList(ListItem(E1) ListItem(E2) L), DirectInit()))
+
      //5.2.3:2
      rule FunctionalCast(T:CPPType, .List)
           => makePRVal(valueInit(le(temp(!I:Int, T), noTrace, T), T))
@@ -48,14 +52,19 @@ module CPP-TRANSLATION-EXPR-CAST
      // about doing exactly what the standard says, we would have to exhaustively consider all intermediate types, which seems
      // very strange and is definitely /not/ what clang does.
      syntax CPPType ::= getStaticThenConstIntermediateType(CPPType) [function]
+
      rule getStaticThenConstIntermediateType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods::Set, T::CPPSimpleType))))
           => t(Q, Mods, pointerType(t(Q' +Qual Const() +Qual Volatile(), Mods, T)))
+
      rule getStaticThenConstIntermediateType(t(Q::Quals, Mods::Set, memberPointerType(C::CPPClassType, t(Q'::Quals, Mods::Set, T::CPPSimpleType))))
           => t(Q, Mods, memberPointerType(C, t(Q' +Qual Const() +Qual Volatile(), Mods, T)))
+
      rule getStaticThenConstIntermediateType(T::CPPType) => T [owise]
 
      syntax Expr ::= tryConvert(Expr, Expr) [strict(1)]
+
      rule tryConvert(cannot-convert, E::Expr) => E
+
      rule tryConvert(V:Val, _) => V
           requires V =/=K cannot-convert
 
@@ -77,11 +86,13 @@ module CPP-TRANSLATION-EXPR-CAST
           => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, V, DirectInit())) [owise]
 
      rule tryInit(T::CPPType, V::Val, ill-formed) => #convertStatic(T, makePRVal(V))
+
      rule tryInit(_, _, V:Val) => V
 
      rule convertStatic(_:CPPVoidType, V::Val, _)
           => prDiscardedExpr(V)
           requires isConvertableDiscardedExpr(V)
+
      rule convertStatic(_:CPPVoidType, V::Val, _)
           => glDiscardedExpr(V)
           requires notBool isConvertableDiscardedExpr(V)
@@ -91,6 +102,7 @@ module CPP-TRANSLATION-EXPR-CAST
           requires ((isObjectType(innerType(T2)) andBool isObjectType(type(V)))
                orBool (isCPPFunctionType(innerType(T2)) andBool isCPPFunctionType(type(V))))
                andBool isUnnamedLValue(T2)
+
      rule convertReinterpret(T2:CPPRefType, V:GLExpr)
           => xe(ReinterpretCast(T2, stripHold(V)), trace(V), innerType(T2))
           requires ((isObjectType(innerType(T2)) andBool isObjectType(type(V)))
@@ -99,7 +111,7 @@ module CPP-TRANSLATION-EXPR-CAST
 
      rule convertReinterpret(T2::CPPType, V:PRExpr)
           => pre(ReinterpretCast(T2, stripHold(V)), trace(V), T2)
-          requires (isCPPIntegerType(T2) andBool isCPPPointerType(type(V)) 
+          requires (isCPPIntegerType(T2) andBool isCPPPointerType(type(V))
                     andBool byteSizeofType(T2) >=Int byteSizeofType(type(V)))
 
      rule convertReinterpret(t(... st: pointerType(t(Q::Quals, _, _))) #as T::CPPType, V:PRVal)
