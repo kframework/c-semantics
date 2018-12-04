@@ -361,6 +361,9 @@ module CPP-TYPING-SYNTAX
      syntax Bool ::= acceptsNArgs(Int, CPPFunctionType, List) [function]
 
      syntax CPPType ::= const(CPPSimpleType) [function, klabel(constCpp)]
+                      | const(CPPType) [function, klabel(constCpp2)]
+                      | volatile(CPPSimpleType) [function, klabel(volatileCpp)]
+                      | volatile(CPPType) [function, klabel(volatileCpp2)]
 
      syntax CPPType ::= type(CPPSimpleTypeExpr) [function, klabel(cppType)]
 
@@ -422,6 +425,7 @@ module CPP-TYPING-SYNTAX
                    | isBaseClassOf(base: Class, derived: Class) [function, klabel(isClassBaseClassOf)]
                    | isPropperBaseClassOf(base: Class, derived: Class) [function, klabel(isClassPropperBaseClassOf)]
                    | isDirectBaseClassOf(base: Class, derived: Class) [function]
+                   | hasVirtualMembers(Class) [function, klabel(hasVirtualMembersCl)]
                    | hasVirtualMembers(CPPClassType) [function]
                    | isUnionLikeClass(Class) [function]
                    | isVirtualCall(Trace, CPPFunctionType) [function]
@@ -691,6 +695,12 @@ module CPP-TYPING
      rule setMIClass(noMethod => defaultMethodInfo(), C::Class)
 
      rule const(T::CPPSimpleType) => t(toQuals(SetItem(Const())), .Set, T)
+
+     rule const(T::CPPType) => addQuals(toQuals(SetItem(Const())), T)
+
+     rule volatile(T::CPPSimpleType) => t(toQuals(SetItem(Volatile())), .Set, T)
+
+     rule volatile(T::CPPType) => addQuals(toQuals(SetItem(Volatile())), T)
 
      rule type(T::CPPSimpleType) => t(noQuals, .Set, T)
 
@@ -1015,6 +1025,8 @@ module CPP-TYPING
               <base-classes> BC::List </base-classes>
             ...</generatedTop>)
           => B in BC
+
+     rule hasVirtualMembers(C::Class) => hasVirtualMembers(type(classType(C)))
 
      rule hasVirtualMembers(T::CPPClassType) => #hasVirtualMembers(getClassInfo(T))
 

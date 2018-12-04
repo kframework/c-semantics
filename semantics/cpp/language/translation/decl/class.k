@@ -17,9 +17,12 @@ module CPP-TRANSLATION-DECL-CLASS-SYNTAX
      // constructor. The exception is hasConstructorThat which checks
      // whether any constructor in a given class meets the specified constructor
      // property.
+     // Atomic constructor properties
      syntax Bool ::= isTrivialDefaultConstructor(CPPFunctionType, K) [function]
                    | isNonTrivialDefaultConstructor(CPPFunctionType, K) [function]
                    | isDefaultConstructor(CPPFunctionType, K) [function]
+                   | isCopyConstructor(CPPFunctionType, K) [function]
+                   | isMoveConstructor(CPPFunctionType, K) [function]
                    | isUserProvidedConstructor(CPPFunctionType, K) [function]
                    | isUserProvidedDefaultConstructor(CPPFunctionType, K) [function]
                    | isDeleted(CPPFunctionType, K) [function]
@@ -28,8 +31,32 @@ module CPP-TRANSLATION-DECL-CLASS-SYNTAX
                    | isTrivialDestructor(CPPFunctionType, K) [function]
                    | isUserProvidedDestructor(CPPFunctionType, K) [function]
                    | isVirtualDestructor(CPPFunctionType, K) [function]
-                   | hasConstructorThat(CPPClassType, K) [function]
+
+     // Compound constructor properties
+     syntax Bool ::= isUserProvidedMoveConstructor(CPPFunctionType, K) [function]
+                   | isUserProvidedCopyConstructor(CPPFunctionType, K) [function]
+
+
+     // Atomic method properties
+     syntax Bool ::= isCopyAssignOp(CPPFunctionType, K) [function]
+
+     // Compound method properties
+     syntax Bool ::= isUserProvidedMoveAssignOp(CPPFunctionType, K) [function]
+
+     // Class queries for constructors and other methods
+     syntax Bool ::= hasConstructorThat(CPPClassType, K) [function]
                    | hasDestructorThat(CPPClassType, K) [function]
+                   | hasConstructorThat(Class, K) [function, klabel(hasConstructorThat2)]
+                   | hasDestructorThat(Class, K) [function, klabel(hasDestructorThat2)]
+                   | hasConstructor(CPPClassType) [function]
+                   | hasConstructor(Class) [function, klabel(hasConstructor2)]
+                   | hasDestructor(CPPClassType) [function]
+                   | hasDestructor(Class) [function, klabel(hasDestructor2)]
+                   | hasCopyConstructor(Class) [function]
+                   | hasVirtualDestructor(Class) [function]
+                   | hasUserProvidedMoveAssignOp(Class) [function]
+                   | hasUserProvidedMoveConstructor(Class) [function]
+                   | hasUserProvidedCopyConstructor(Class) [function]
 
      syntax Bool ::= isPODLayoutType(CPPType) [function]
 
@@ -307,10 +334,6 @@ module CPP-TRANSLATION-DECL-CLASS
           requires notBool DestructorId(X) in_keys(Env)
                andBool some(Bases, #klabel(`hasVirtualDestructor`))
 
-     syntax Bool ::= hasVirtualDestructor(Class) [function]
-
-     rule hasVirtualDestructor(C::Class) => hasDestructorThat(type(classType(C)), #klabel(`isVirtualDestructor`))
-
      syntax Stmt ::= "TwriteVTables"
 
      rule toExecution(TwriteVTables) => writeVTables
@@ -517,6 +540,22 @@ module CPP-TRANSLATION-DECL-CLASS
 
      rule isDefaultConstructor(T::CPPFunctionType, envEntry(... defaultArgs: DA::DefaultArgumentsResult)) => acceptsNArgs(0, T, getDefaultArgsVals(DA))
 
+     // n4296 12.8:2, TODO: check non-template. TODO function parameter packs are not allowed
+     rule isCopyConstructor(
+               t(... st: functionType(... paramTypes: (t(... st: lvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPFunctionType,
+               envEntry(... defaultArgs: DA::DefaultArgumentsResult)
+          ) => acceptsNArgs(1, T, getDefaultArgsVals(DA))
+
+     rule isCopyConstructor(_, _) => false [owise]
+
+     // n4296 12.8:3 same as copy constructor, but rvalue reference
+     rule isMoveConstructor(
+               t(... st: functionType(... paramTypes: (t(... st: rvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPFunctionType,
+               envEntry(... defaultArgs: DA::DefaultArgumentsResult)
+          ) => acceptsNArgs(1, T, getDefaultArgsVals(DA))
+
+     rule isMoveConstructor(_, _) => false [owise]
+
      rule isUserProvidedConstructor(T::CPPFunctionType, _) => isMethodUserProvided(T)
 
      rule isUserProvidedDestructor(T::CPPFunctionType, _) => isMethodUserProvided(T)
@@ -524,6 +563,50 @@ module CPP-TRANSLATION-DECL-CLASS
      rule isVirtualDestructor(T::CPPFunctionType, _) => isMethodVirtual(T)
 
      rule isUserProvidedDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool isUserProvidedConstructor(T, K)
+
+     rule isUserProvidedMoveConstructor(T::CPPFunctionType, K:K) => isUserProvidedConstructor(T, K) andBool isMoveConstructor(T, K)
+
+     rule isUserProvidedCopyConstructor(T::CPPFunctionType, K:K) => isUserProvidedConstructor(T, K) andBool isCopyConstructor(T, K)
+
+     // 'has' queries
+     // -------------
+
+     rule hasUserProvidedMoveConstructor(C::Class)
+          => hasConstructorThat(C, #klabel(`isUserProvidedMoveConstructor`))
+
+     rule hasVirtualDestructor(C::Class)
+          => hasDestructorThat(C, #klabel(`isVirtualDestructor`))
+
+     rule hasCopyConstructor(C::Class)
+          => hasConstructorThat(C, #klabel(`isCopyConstructor`))
+
+     rule hasUserProvidedCopyConstructor(C::Class)
+          => hasConstructorThat(C, #klabel(`isUserProvidedCopyConstructor`))
+
+     rule hasUserProvidedMoveAssignOp(_)
+          => false // TODO(jantusil)
+
+     rule hasDestructor(T::CPPClassType)
+          => hasDestructorThat(T, #klabel(`isWhatever`))
+
+     rule hasDestructor(C::Class)
+          => hasDestructor(type(classType(C)))
+
+     rule hasConstructor(T::CPPClassType)
+          => hasConstructorThat(T, #klabel(`isWhatever`))
+
+     rule hasConstructor(C::Class)
+          => hasConstructor(type(classType(C)))
+
+     rule hasConstructorThat(C::Class, Lbl::K)
+          => hasConstructorThat(type(classType(C)), Lbl)
+
+     rule hasDestructorThat(C::Class, Lbl::K)
+          => hasDestructorThat(type(classType(C)), Lbl)
+
+     syntax Bool ::= isWhatever(CPPFunctionType, K) [function]
+
+     rule isWhatever(_, _) => true
 
      rule hasConstructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPClassType, Lbl:K) => #hasMethodThat(ConstructorId(X), getClassInfo(T), Lbl)
 
