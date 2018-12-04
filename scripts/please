@@ -1,0 +1,40 @@
+#!/bin/bash
+
+function run_command() {
+  find ./semantics/cpp -name "*.k" -print0 | xargs -0 "$@"
+}
+
+
+function main() {
+  cmd="$1"
+  shift
+  case "$cmd" in
+    "reformat")
+      run_command ./scripts/please.d/reformat.sh "$@"
+      ;;
+    "generate-module")
+      ./scripts/please.d/modgen.sh "$@"
+      ;;
+    "get-module-list")
+      run_command ./scripts/please.d/getModuleList.sh "$@"
+      ;;
+    "find-module")
+      run_command ./scripts/please.d/findModule.sh "$@"
+      ;;
+    "find-definition-of")
+      run_command ./scripts/please.d/findDefinitionOf.sh "$@"
+      ;;
+    *)
+      echo "Usage: $0 command"
+      echo "commands:"
+      echo "  reformat"
+      echo "  generate-module"
+      echo "  get-module-list"
+      echo "  find-module"
+      echo "  find-definition-of"
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"
