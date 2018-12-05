@@ -603,6 +603,7 @@ sub parse {
 }
 
 sub getStd {
+      state $c45 = ! shell('gcc -std=c45 -E /dev/null')->result(); # sanity check
       state $cpp14 = ! shell('g++ -std=c++14 -E /dev/null')->result();
       state $c11 = ! shell('gcc -std=c11 -E /dev/null')->result();
 
@@ -611,11 +612,11 @@ sub getStd {
       my $std;
       if (defined arg('-std=')) {
             $std = arg('-std=');
-      } elsif ($lang eq 'c++' && $cpp14) {
+      } elsif ($lang eq 'c++' && $cpp14 && !$c45) {
             $std = 'c++14';
       } elsif ($lang eq 'c++') {
             $std = 'c++11';
-      } elsif ($lang eq 'c' && $c11) {
+      } elsif ($lang eq 'c' && $c11 && !$c45) {
             $std = 'c11';
       } elsif ($lang eq 'c') {
             $std = 'c99';
