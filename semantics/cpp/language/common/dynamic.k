@@ -16,6 +16,7 @@ module CPP-NAMESPACE-SYNTAX
      imports CPP-NAMESPACE-SORTS // self
 
      imports COMMON-SORTS // CId
+     imports BOOL
 
      syntax Namespace ::= Namespace "::" NamespaceSpecifier
                         | NoNamespace() // signifies a declaration at block scope
@@ -23,12 +24,20 @@ module CPP-NAMESPACE-SYNTAX
 
      syntax NamespaceSpecifier ::= Namespace(CId)
 
+     syntax Bool ::= enclosesNamespace(Namespace, Namespace) [function]
+
 endmodule // CPP-NAMESPACE-SYNTAX
 
 module CPP-NAMESPACE
      imports CPP-NAMESPACE-SYNTAX // self
+     imports DOMAINS
 
-     // ...
+     rule enclosesNamespace(N::Namespace, N :: _) => true
+
+     rule enclosesNamespace(N::Namespace, M::Namespace :: _) => enclosesNamespace(N, M)
+          requires N =/=K M
+
+     rule enclosesNamespace(...) => false [owise]
 
 endmodule // CPP-NAMESPACE
 
@@ -55,8 +64,6 @@ module CPP-TRACE-SYNTAX
      syntax CPPType
 
      syntax Trace ::= hasTrace(K) | "noTrace"
-
-     syntax Trace ::= trace(Typed) [function]
                     | combine(Trace, K) [function]
                     | combine(Trace, Trace, K) [function, klabel(combine2)]
                     | combine(Trace, Trace, Trace, ValueCategory, CPPType) [function, klabel(combine3)]
@@ -115,14 +122,142 @@ module CPP-VALUE-CATEGORY
 endmodule // CPP-VALUE-CATEGORY
 
 // ------------------------------
-//      CPP-DYNAMIC
+//      CPP-SCOPE
 // ------------------------------
 
-module CPP-DYNAMIC-SORTS
-     imports CPP-VALUE-CATEGORY-SORTS // ValueCategory
-     imports CPP-CLASS-BASIC-SORTS // Class
+module CPP-SCOPE-SORTS
+
+     syntax NamespaceScope
+
+     syntax ClassScope
+
+     syntax BlockScope
+
+     syntax TemplateParameterScope
+
+     syntax FunctionPrototypeScope
+
+     syntax EnumScope
+
+     syntax Scope ::= NamespaceScope | ClassScope | BlockScope | TemplateParameterScope | FunctionPrototypeScope | EnumScope
+
+endmodule // CPP-SCOPE-SORTS
+
+module CPP-SCOPE-SYNTAX
+     imports CPP-SCOPE-SORTS // self
      imports CPP-NAMESPACE-SORTS
-     imports CPP-TRACE-SORTS
+     imports CPP-CLASS-SORTS
+     imports CPP-QUALID-SORTS // NNSVal
+     imports BOOL
+     imports INT
+
+     syntax SymBase
+
+     syntax Enum
+
+     syntax NamespaceScope ::= namespaceScope(Namespace)
+
+     syntax ClassScope ::= classScope(Class, isInBody: Bool)
+
+     syntax BlockScope ::= blockScope(QualId, SymBase, Int) [klabel(blockScopeCpp)]
+
+     syntax TemplateParameterScope ::= "templateParameterScope"
+
+     syntax FunctionPrototypeScope ::= "prototypeScope"
+
+     syntax EnumScope ::= enumScope(Enum)
+
+     syntax Bool ::= inClassScope(Scope) [function]
+
+     syntax NNSVal ::= getNNSVal(Scope) [function]
+
+     syntax Bool ::= "Scope.isClassScope" "(" Scope ")" [function]
+                   | "Scope.isNamespaceScope" "(" Scope ")" [function]
+                   | "Scope.isBlockScope" "(" Scope ")" [function]
+
+endmodule // CPP-SCOPE-SYNTAX
+
+module CPP-SCOPE
+     imports CPP-SCOPE-SYNTAX // self
+     imports CPP-NAMESPACE-SYNTAX // NoNamespace
+     imports CPP-QUALID-SYNTAX
+
+     rule inClassScope(_:NamespaceScope) => false
+     rule inClassScope(_:ClassScope) => true
+     rule inClassScope(blockScope(QX::QualId, _, _)) => isClassQualId(QX)
+     rule inClassScope(enumScope(_)) => false
+
+     syntax Bool ::= isClassQualId(QualId) [function]
+     rule isClassQualId(C:Class :: _::CId) => true
+     rule isClassQualId(_) => false [owise]
+
+     rule getNNSVal(namespaceScope(N::Namespace)) => N
+     rule getNNSVal(classScope(C::Class, _)) => C
+     rule getNNSVal(_:BlockScope) => NoNamespace()
+
+     rule Scope.isClassScope(classScope(_, _)) => true
+     rule Scope.isClassScope(_) => false [owise]
+
+     rule Scope.isNamespaceScope(namespaceScope(_)) => true
+     rule Scope.isNamespaceScope(_) => false [owise]
+
+     rule Scope.isBlockScope(blockScope(_,_,_)) => true
+     rule Scope.isBlockScope(_) => false [owise]
+
+endmodule // CPP-SCOPE
+
+// ------------------------------
+//      CPP-QUALID
+// ------------------------------
+
+module CPP-QUALID-SORTS
+
+     // Remote sorts
+     syntax Namespace
+     syntax Class
+     syntax ClassTemplate
+     syntax Enum
+
+     syntax NNSVal ::= Namespace | Class | ClassTemplate | Enum
+     syntax NNS ::= NNSVal | NNSSpecifier
+     syntax NNSSpecifier
+     syntax QualId
+
+endmodule // CPP-QUALID-SORTS
+
+module CPP-QUALID-SYNTAX
+     imports CPP-QUALID-SORTS // self
+     imports CPP-SORTS // CId, Name
+
+     syntax NNS ::= NoNNS()
+                  | NNS "::" NNSSpecifier [klabel(NestedName)]
+
+     syntax NNSSpecifier ::= NNS(CId)
+                           | TemplateNNS(CId)
+                           | NNS(Name)
+
+     syntax QualId ::= NNSVal "::" CId [klabel(QualId)]
+
+     syntax NNSVal ::= getQual(QualId) [function]
+
+     syntax CId ::= getId(QualId) [function]
+
+endmodule // CPP-QUALID-SYNTAX
+
+module CPP-QUALID
+     imports CPP-QUALID-SYNTAX // self
+
+    rule getId(_ :: X::CId) => X
+
+    rule getQual(N::NNSVal :: _) => N
+
+endmodule // CPP-QUALID
+
+// ------------------------------
+//      CPP-DYNAMIC-OTHER
+// ------------------------------
+
+module CPP-DYNAMIC-OTHER-SORTS
 
      syntax LVal
 
@@ -158,12 +293,6 @@ module CPP-DYNAMIC-SORTS
 
      syntax Enum
 
-     syntax NNSVal ::= Namespace | Class | ClassTemplate | Enum
-
-     syntax NNS ::= NNSVal | NNSSpecifier
-
-     syntax NNSSpecifier
-
      syntax DeclarationType
 
      syntax InitType
@@ -171,8 +300,6 @@ module CPP-DYNAMIC-SORTS
      syntax Linkage
 
      syntax Duration
-
-     syntax QualId
 
      syntax Scope
 
@@ -189,25 +316,22 @@ module CPP-DYNAMIC-SORTS
      syntax TemplateArg
 
      syntax CPPValue
-endmodule // CPP-DYNAMIC-SORTS
+endmodule // CPP-DYNAMIC-OTHER-SORTS
 
 module CPP-REVAL-SYNTAX
      imports CPP-SORTS
      syntax Expr ::= reval(Expr) [strict, klabel(revalCpp)]
 endmodule // CPP-REVAL-SORTS
 
-module CPP-DYNAMIC-SYNTAX
-     imports CPP-VALUE-CATEGORY-SYNTAX
-     imports CPP-TRACE-SYNTAX
-     imports CPP-NAMESPACE-SYNTAX
-
+module CPP-DYNAMIC-OTHER-SYNTAX
      imports COMMON-SYNTAX
-     imports CPP-DYNAMIC-SORTS
+     imports CPP-DYNAMIC-OTHER-SORTS
      imports BITS-SORTS
      imports CPP-SYMLOC-SORTS
      imports CPP-TYPING-SORTS
      imports CPP-DEPENDENT-SYNTAX
      imports CPP-REVAL-SYNTAX
+     imports CPP-QUALID-SORTS
      imports OPTIONS-SYNTAX
      imports FLOAT-SYNTAX
      imports INT-SYNTAX
@@ -272,14 +396,6 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax Expr ::= "callTerminate"
 
-     syntax NNS ::= NoNNS()
-                  | NNS "::" NNSSpecifier [klabel(NestedName)]
-
-     syntax NNSSpecifier ::= NNS(CId)
-                           | TemplateNNS(CId)
-                           | NNS(Name)
-
-
      syntax Enum ::= ClassQualifier "::" EnumSpecifier
 
      syntax EnumSpecifier ::= Enum(CId) [klabel(enumSpecifier)]
@@ -293,32 +409,6 @@ module CPP-DYNAMIC-SYNTAX
      syntax Bool ::= hasParentNamespace(Namespace) [function]
 
      syntax Namespace ::= getClassNamespace(Class) [function]
-
-     syntax QualId ::= NNSVal "::" CId [klabel(QualId)]
-
-     syntax NNSVal ::= getQual(QualId) [function]
-
-     syntax CId ::= getId(QualId) [function]
-
-     syntax NamespaceScope ::= namespaceScope(Namespace)
-
-     syntax ClassScope ::= classScope(Class, isInBody: Bool)
-
-     syntax BlockScope ::= blockScope(QualId, SymBase, Int) [klabel(blockScopeCpp)]
-
-     syntax TemplateParameterScope ::= "templateParameterScope"
-
-     syntax FunctionPrototypeScope ::= "prototypeScope"
-
-     syntax EnumScope ::= enumScope(Enum)
-
-     syntax Scope ::= NamespaceScope | ClassScope | BlockScope | TemplateParameterScope | FunctionPrototypeScope | EnumScope
-
-     syntax Bool ::= enclosesNamespace(Namespace, Namespace) [function]
-
-     syntax Bool ::= inClassScope(Scope) [function]
-
-     syntax Bool ::= isClassQualId(QualId) [function]
 
      syntax Class ::= classFromScope(Scope) [function]
                     | classFromType(CPPType) [function]
@@ -399,6 +489,8 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax Expr ::= makePRVal(K)
 
+     syntax Trace ::= trace(Typed) [function]
+
      syntax Expr ::= makeXVal(K)
 
      // synthetic sort for KResults that result from expressions, but aren't actually values
@@ -418,10 +510,10 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax KItem ::= odrDecl(String, QualId, CId, LanguageLinkage, CPPType)
 
-endmodule // CPP-DYNAMIC-SYNTAX
+endmodule // CPP-DYNAMIC-OTHER-SYNTAX
 
-module CPP-DYNAMIC
-     imports CPP-DYNAMIC-SYNTAX
+module CPP-DYNAMIC-OTHER
+     imports CPP-DYNAMIC-OTHER-SYNTAX
      imports C-CONFIGURATION
      imports STRING
      imports CPP-SYMLOC-SYNTAX
@@ -429,6 +521,11 @@ module CPP-DYNAMIC
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-CLASS-BASIC-SYNTAX
+     imports CPP-QUALID-SYNTAX
+     imports CPP-NAMESPACE-SYNTAX
+     imports CPP-SCOPE-SYNTAX
+     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRACE-SYNTAX
 
      rule getOuterClass(C:Class :: _::ClassSpecifier) => C
 
@@ -450,18 +547,6 @@ module CPP-DYNAMIC
 
      rule getClassNamespace(localQual(blockScope(C:Class :: _:CId, _, _)) :: _::ClassSpecifier => C)
 
-     rule inClassScope(_:NamespaceScope) => false
-
-     rule inClassScope(_:ClassScope) => true
-
-     rule inClassScope(blockScope(QX::QualId, _, _)) => isClassQualId(QX)
-
-     rule inClassScope(enumScope(_)) => false
-
-     rule isClassQualId(C:Class :: _::CId) => true
-
-     rule isClassQualId(_) => false [owise]
-
      rule classFromScope(classScope(C::Class, _)) => C
 
      rule classFromScope(blockScope(C:Class :: _::CId, _, _)) => C
@@ -469,13 +554,6 @@ module CPP-DYNAMIC
      rule classFromType(T:CPPClassType) => classFromSimpleType(simpleType(T))
 
      rule classFromSimpleType(classType(C::Class)) => C
-
-     rule enclosesNamespace(N::Namespace, N :: _) => true
-
-     rule enclosesNamespace(N::Namespace, M::Namespace :: _) => enclosesNamespace(N, M)
-          requires N =/=K M
-
-     rule enclosesNamespace(...) => false [owise]
 
      rule isValKLabel(#klabel(`prv`)) => true
 
@@ -868,10 +946,6 @@ module CPP-DYNAMIC
                .List
              )
 
-     rule getId(_ :: X::CId) => X
-
-     rule getQual(N::NNSVal :: _) => N
-
      context resolve(HOLE:Expr) [result(ResolvedExpr), structural]
 
      rule cat(prv(...)) => prvalue
@@ -899,5 +973,43 @@ module CPP-DYNAMIC
 
      // is given prval fully evaluated?
      rule isEPRVal(E:PRVal) => Translation() orBool isPRV(E)
+
+endmodule // CPP-DYNAMIC-OTHER
+
+// ------------------------------
+//      CPP-DYNAMIC
+// ------------------------------
+
+module CPP-DYNAMIC-SORTS
+
+     imports CPP-VALUE-CATEGORY-SORTS
+     imports CPP-CLASS-BASIC-SORTS
+     imports CPP-NAMESPACE-SORTS
+     imports CPP-TRACE-SORTS
+     imports CPP-SCOPE-SORTS
+     imports CPP-QUALID-SORTS
+     imports CPP-DYNAMIC-OTHER-SORTS
+
+endmodule // CPP-DYNAMIC-SORTS
+
+module CPP-DYNAMIC-SYNTAX
+
+     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-TRACE-SYNTAX
+     imports CPP-NAMESPACE-SYNTAX
+     imports CPP-SCOPE-SYNTAX
+     imports CPP-QUALID-SYNTAX
+     imports CPP-DYNAMIC-OTHER-SYNTAX
+
+endmodule // CPP-DYNAMIC-SYNTAX
+
+module CPP-DYNAMIC
+
+     imports CPP-NAMESPACE
+     imports CPP-TRACE
+     imports CPP-VALUE-CATEGORY
+     imports CPP-SCOPE
+     imports CPP-QUALID
+     imports CPP-DYNAMIC-OTHER
 
 endmodule // CPP-DYNAMIC

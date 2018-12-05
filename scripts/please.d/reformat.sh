@@ -6,20 +6,14 @@ my $startingLine="(?:(?<=\n) *(?:rule|syntax|context).*?\n)";
 my $token="(?:rule|syntax|context|import|module|endmodule)";
 my $continuingLine="(?:(?<=\n)(?!$commentLine) *(?!$token)[^ \n].*?\n)";
 EOF
-export reformat_prelude
 
-function reformat_apply() {
+function apply() {
   cmd="$1"
   shift
   perl -0777 -i -pe "$reformat_prelude;$cmd" "$@"
 }
 
-export -f reformat_apply
-
 function reformat() {
-  function apply() {
-    reformat_apply "$@"
-  }
 
   # Clear trailing space
   apply 's/ *\n/\n/igs' "$@"
@@ -34,11 +28,5 @@ function reformat() {
   apply 's/<BUBBLE>(.*?)<\/BUBBLE>/\1/gs' "$@"
 }
 
-export -f reformat
+reformat "$@"
 
-if [[ "$1" == "" ]]; then
-  echo "Reformating all"
-  find ./semantics/cpp -name "*.k" -print0 | xargs -0 bash -c  'reformat "$@"'
-else
-  reformat "$@"
-fi

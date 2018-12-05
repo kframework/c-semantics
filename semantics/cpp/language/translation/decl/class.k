@@ -213,42 +213,25 @@ module CPP-TRANSLATION-DECL-CLASS
           ...</k>
           <curr-tr-scope> Scope::Scope </curr-tr-scope>
 
-     syntax NNSVal ::= getNNSVal(Scope) [function]
+     syntax KItem ::= "Class.Declare.addToEnv" "(" Class ")"
 
-     rule getNNSVal(namespaceScope(N::Namespace)) => N
+     //TODO(jantusil) Reduce the duplication between the following two rules
 
-     rule getNNSVal(classScope(C::Class, _)) => C
-
-     rule getNNSVal(_:BlockScope) => NoNamespace()
-
-     rule <k> classContext(t(_, _, classType((N::Namespace :: Class(ClassKey::Tag, X::CId, _)) #as C::Class)) #as T::CPPType, Bases::List, Members::List)
-              => setScope(classScope(C, false))
-              ~> listToK(Bases)
-              ~> setScope(classScope(C, true))
-              ~> listToK(Members)
-              ~> implicitDeclarations()
-              ~> deferredActions(OldClass)
-              ~> setScope(OldScope)
-          ...</k>
-          <deferred-class-actions> OldClass:K => layoutBases(.List, .List) |> layoutVirtualBases(.List) |> .K |> .Ordering </deferred-class-actions>
-          <curr-template-context> noTemplate </curr-template-context>
-          <curr-tr-scope> OldScope::Scope </curr-tr-scope>
+     rule <k> Class.Declare.addToEnv((N::Namespace :: Class(_, X::CId, _)) #as C::Class) => .K ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <ntypes> NT::Map => NT[X <- T] </ntypes>
-          (.Bag => <class>...
-            <class-id> C </class-id>
-            <class-type> ClassKey </class-type>
+          <ntypes> NT::Map => NT[X <- type(classType(C))] </ntypes>
 
-            // injected class name
-            <ctypes> X |-> T </ctypes>
-            <access> X |-> Public() </access>
-            <access-specifier> getDefaultAccessType(ClassKey) </access-specifier>
-          ...</class>)
+     rule <k> Class.Declare.addToEnv((C2::Class :: Class(_, X::CId, _)) #as C::Class) => .K ...</k>
+          <curr-tr-tu> Tu::String </curr-tr-tu>
+          <tu-id> Tu </tu-id>
+          (<class-id> C2 </class-id>
+          <ctypes> CT::Map => CT[X <- type(classType(C))] </ctypes>)
 
-     rule <k> classContext(t(_, _, classType((C2::Class :: Class(ClassKey::Tag, X::CId, _)) #as C::Class)) #as T::CPPType, Bases::List, Members::List)
-              => setScope(classScope(C, false))
+     rule <k> classContext(t(_, _, classType((_ :: Class(ClassKey::Tag, X::CId, _)) #as C::Class)) #as T::CPPType, Bases::List, Members::List)
+              => Class.Declare.addToEnv(C)
+              ~> setScope(classScope(C, false))
               ~> listToK(Bases)
               ~> setScope(classScope(C, true))
               ~> listToK(Members)
@@ -261,8 +244,6 @@ module CPP-TRANSLATION-DECL-CLASS
           <curr-tr-scope> OldScope::Scope </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
-          (<class-id> C2 </class-id>
-          <ctypes> CT::Map => CT[X <- T] </ctypes>)
           (.Bag => <class>...
             <class-id> C </class-id>
             <class-type> ClassKey </class-type>
@@ -272,7 +253,6 @@ module CPP-TRANSLATION-DECL-CLASS
             <access> X |-> Public() </access>
             <access-specifier> getDefaultAccessType(ClassKey) </access-specifier>
           ...</class>)
-
 
      syntax KItem ::= deferredActions(K)
 
