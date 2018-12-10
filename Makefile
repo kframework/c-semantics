@@ -120,10 +120,10 @@ $(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
 #$(DIST_PROFILES)/$(PROFILE)/c11-cpp14-kompiled/c11-cpp14-kompiled/timestamp
 $(DIST_PROFILES)/$(PROFILE)/%-kompiled/timestamp: $(DIST_PROFILES)/$(PROFILE) $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
-	@echo 'Name: $(NAME)'
-	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/$(NAME)-kompiled $(DIST_PROFILES)/$(PROFILE)
-	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/.build/$(PROFILE)/$(NAME)-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
+	@echo "Distributing $(NAME)"
+	$(eval TARGETS := $(DIST_PROFILES)/$(PROFILE) $(addprefix $(DIST_PROFILES)/,$(notdir $(SUBPROFILES_DIRS))))
+	$(eval SRC := $(SEMANTICS_DIR)/.build/$(PROFILE)/$(NAME)-kompiled)
+	@for d in $(TARGETS); do cp -RLp $(SRC) "$$d"; done
 
 $(LIBSTDCXX_SO): $(call timestamp_of,c11-cpp14-linking) $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) $(DIST_PROFILES)/$(PROFILE)
 	@echo "$(PROFILE): Translating the C++ standard library..."
