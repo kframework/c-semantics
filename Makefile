@@ -58,7 +58,7 @@ define timestamp_of
     $(DIST_PROFILES)/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
-.PHONY: default check-vars semantics clean stdlibs deps cpp-semantics translation-semantics execution-semantics test-build pass fail fail-compile parser/cparser $(CPPPARSER_DIR)/clang-kast $(PROFILE)-native
+.PHONY: default check-vars semantics clean stdlibs deps cpp-translation-semantics c-translation-semantics c11-cpp14-semantics test-build pass fail fail-compile parser/cparser $(CPPPARSER_DIR)/clang-kast $(PROFILE)-native
 
 default: test-build
 
@@ -113,23 +113,23 @@ $(DIST_PROFILES)/$(PROFILE): $(DIST_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_F
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
 		cp -RLp $(DIST_PROFILES)/$(PROFILE)/native/* $(DIST_PROFILES)/$(shell basename $(d))/native;)
 
-$(call timestamp_of,c11-cpp14): execution-semantics $(DIST_PROFILES)/$(PROFILE)
+$(call timestamp_of,c11-cpp14): c11-cpp14-semantics $(DIST_PROFILES)/$(PROFILE)
 	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-cpp14-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-cpp14-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
 
-$(call timestamp_of,c11-cpp14-linking): linking-semantics $(DIST_PROFILES)/$(PROFILE)
+$(call timestamp_of,c11-cpp14-linking): c11-cpp14-linking-semantics $(DIST_PROFILES)/$(PROFILE)
 	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-cpp14-linking-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-cpp14-linking-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
 
-$(call timestamp_of,c11-translation): translation-semantics $(DIST_PROFILES)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-translation-kompiled $(DIST_PROFILES)/$(PROFILE)
+$(call timestamp_of,c-translation): c-translation-semantics $(DIST_PROFILES)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/c-translation-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp $(SEMANTICS_DIR)/.build/$(PROFILE)/c11-translation-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
 
-$(call timestamp_of,cpp14-translation): cpp-semantics $(DIST_PROFILES)/$(PROFILE)
-	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/cpp14-translation-kompiled $(DIST_PROFILES)/$(PROFILE)
+$(call timestamp_of,cpp-translation): cpp-translation-semantics $(DIST_PROFILES)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/cpp-translation-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp $(SEMANTICS_DIR)/.build/$(PROFILE)/cpp14-translation-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
 
