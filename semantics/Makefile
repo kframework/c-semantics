@@ -3,15 +3,6 @@ CPP_KOMPILE_FLAGS=--opaque-klabels c11-translation.k
 EXECUTION_KOMPILE_FLAGS=--opaque-klabels cpp14-translation.k --no-expand-macros --ocaml-serialize-config '$$PGM' --ocaml-dump-exit-code 139
 KDEP_DEFAULT_FLAGS=
 
-C11_TRANSLATION_FILES = $(wildcard *.k) \
-	$(wildcard language/translation/*.k) $(wildcard language/translation/*/*.k) \
-	$(wildcard language/common/*.k) $(wildcard language/common/*/*.k)
-	
-C11_FILES = $(wildcard *.k) \
-	$(wildcard language/execution/*.k) $(wildcard language/execution/*/*.k) \
-	$(wildcard language/common/*.k) $(wildcard language/common/*/*.k) \
-	$(wildcard library/*.k)
-
 .PHONY: default all fast nd thread clean .depend-$(PROFILE)-c-translation .depend-$(PROFILE)-c-cpp-execution .depend-$(PROFILE)-c-cpp-linking .depend-$(PROFILE)-nd .depend-$(PROFILE)-nd-thread .depend-$(PROFILE)-cpp-translation
 
 define timestamp_of
@@ -91,5 +82,6 @@ clean:
 -include .depend-$(PROFILE)-cpp-translation
 -include .depend-$(PROFILE)-c-cpp-linking
 -include .depend-$(PROFILE)-c-cpp-execution
+
 -include .depend-$(PROFILE)-nd
 -include .depend-$(PROFILE)-nd-thread
