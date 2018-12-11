@@ -110,9 +110,9 @@ $(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
 dist/profiles/$(PROFILE)/%-kompiled/timestamp: dist/profiles/$(PROFILE) $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
 	@echo "Distributing $(NAME)"
-	@cp -p -RL $(SEMANTICS_DIR)/.build/$(PROFILE)/$(NAME)-kompiled $(DIST_PROFILES)/$(PROFILE)
+	@cp -p -RL semantics/.build/$(PROFILE)/$(NAME)-kompiled $(DIST_PROFILES)/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_DIR)/.build/$(PROFILE)/$(NAME)-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
+		cp -RLp semantics/.build/$(PROFILE)/$(NAME)-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
 
 $(LIBSTDCXX_SO): $(call timestamp_of,c11-cpp14-linking) $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) dist/profiles/$(PROFILE)
 	@echo "$(PROFILE): Translating the C++ standard library..."
