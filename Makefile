@@ -16,14 +16,13 @@ TESTS_DIR = tests
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
 KCCFLAGS = -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
-CFLAGS = -std=gnu11 -Wall -Wextra -Werror -pedantic
+CFLAGS = -std=gnu99 -Wall -Wextra -Werror -pedantic
 PASS_TESTS_DIR = tests/unit-pass
 FAIL_TESTS_DIR = tests/unit-fail
 FAIL_COMPILE_TESTS_DIR = tests/unit-fail-compilation
 
 FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/kcc \
-	$(SCRIPTS_DIR)/k++ \
 	$(SCRIPTS_DIR)/kranlib \
 	$(SCRIPTS_DIR)/merge-kcc-obj \
 	$(SCRIPTS_DIR)/split-kcc-obj \
@@ -35,8 +34,6 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/program-runner \
 	$(SCRIPTS_DIR)/histogram-csv \
 	$(PARSER_DIR)/cparser \
-	$(CPPPARSER_DIR)/clang-kast \
-	$(CPPPARSER_DIR)/call-sites \
 	$(SCRIPTS_DIR)/cdecl-3.6/src/cdecl \
 	LICENSE \
 	licenses
@@ -52,7 +49,6 @@ PERL_MODULES = \
 
 DIST_PROFILES = $(DIST_DIR)/profiles
 LIBC_SO = $(DIST_PROFILES)/$(PROFILE)/lib/libc.so
-LIBSTDCXX_SO = $(DIST_PROFILES)/$(PROFILE)/lib/libstdc++.so
 
 define timestamp_of
     $(DIST_PROFILES)/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
@@ -133,14 +129,6 @@ $(call timestamp_of,cpp14-translation): cpp-semantics $(DIST_PROFILES)/$(PROFILE
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp $(SEMANTICS_DIR)/.build/$(PROFILE)/cpp14-translation-kompiled $(DIST_PROFILES)/$(shell basename $(d));)
 
-$(LIBSTDCXX_SO): $(call timestamp_of,c11-cpp14-linking) $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) $(DIST_PROFILES)/$(PROFILE)
-	@echo "$(PROFILE): Translating the C++ standard library..."
-	@cd $(PROFILE_DIR)/compiler-src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$(LIBSTDCXX_SO) *.C $(KCCFLAGS) -I .
-	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cd $(d)/compiler-src && \
-		$(shell pwd)/$(DIST_DIR)/kcc --use-profile $(shell basename $(d)) -shared -o $(shell pwd)/$(DIST_PROFILES)/$(shell basename $(d))/lib/libstdc++.so *.C $(KCCFLAGS) -I .;)
-	@echo "$(PROFILE): Done translating the C++ standard library."
-
 $(LIBC_SO): $(call timestamp_of,c11-cpp14-linking) $(call timestamp_of,c11-translation) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_PROFILES)/$(PROFILE)
 	@echo "$(PROFILE): Translating the C standard library..."
 	@cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$(LIBC_SO) *.c $(KCCFLAGS) -I .
@@ -163,7 +151,7 @@ $(DIST_PROFILES)/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c $(wildcard nat
 	mkdir -p $(dir $@)
 	gcc $(CFLAGS) -c $< -o $@ -I native-server
 
-stdlibs: $(LIBC_SO) $(LIBSTDCXX_SO) $(call timestamp_of,c11-cpp14)
+stdlibs: $(LIBC_SO) $(call timestamp_of,c11-cpp14)
 
 test-build: stdlibs
 	@echo "Testing kcc..."

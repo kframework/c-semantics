@@ -46,10 +46,7 @@ do
     fi
 done
 
-standard="c11"
-if (gcc -std=c11 |& grep -q unrecognized); then
-  standard="c99"
-fi
+standard="c99"
 
 gcc -Wall -Wextra -Wmissing-prototypes -x c -std=$standard -nostdlib \
       -U __GNUC__ -D__KCC__ \

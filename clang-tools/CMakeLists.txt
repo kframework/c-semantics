@@ -10,7 +10,7 @@ add_definitions(
 -D__STDC_CONSTANT_MACROS
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-unused-variable")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-variable")
 set(CLANG_KAST_FILES ClangKast.cc)
 set(CALL_SITES_FILES CallSites.cc)
 add_executable(clang-kast ${CLANG_KAST_FILES})

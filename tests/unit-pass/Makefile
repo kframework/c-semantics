@@ -29,7 +29,7 @@ CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
 C_TEST_COMPARISON = ${C_TESTS:=.cmp}
 
 ifeq ($(origin CC),default)
-	CC = gcc-4.9
+	CC = gcc
 endif
 
 ifeq ($(origin CXX),default)
@@ -87,7 +87,7 @@ zeroinit-class-padding.C.cmp:
 
 %-link1.c.gcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^ (reference)... "
-	@$(CC) $(LDFLAGS) -std=c11 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(LDFLAGS) -std=c99 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.C.gcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^ (reference)... "
@@ -95,7 +95,7 @@ zeroinit-class-padding.C.cmp:
 
 %.c.gcc: %.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) $(LDFLAGS) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(LDFLAGS) -std=c99 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.gcc: %.C
 	@echo -n "Compiling $< (reference)... "
 	@$(CXX) -std=c++14 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
