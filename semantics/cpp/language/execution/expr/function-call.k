@@ -38,8 +38,8 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           requires isDirectBase(Base) orBool (isMethodPure(T) andBool IsVirtual)
 
-     rule <k> BuiltinCallOp(lv(loc(obj(0, Align::Int, nativeSymbol(S::String)), _), _, T:CPPFunctionType), IsVirtual:Bool, Args::List)
-              => prepareArguments(CurrLoc, obj(0, Align, nativeSymbol(S)), functionObject(Identifier(S), CType, .List), T, CLinkage, IsVirtual, Args)
+     rule <k> BuiltinCallOp(lv(loc(obj(0, Align::Int, nativeSymbol(S::String)) #as Base::SymBase, _), _, T:CPPFunctionType), IsVirtual:Bool, Args::List)
+              => prepareArguments(CurrLoc, obj(0, Align, nativeSymbol(S)), functionObject(Base, Identifier(S), CType, .List), T, CLinkage, IsVirtual, Args)
           ...</k>
           <external-types>... Identifier(S) |-> CType::Type ...</external-types>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
@@ -52,7 +52,7 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
      syntax Expr ::= evalArgs(CabsLoc, SymBase, fun: KItem, EffectiveType, LanguageLinkage, Bool, args: StrictList)
 
      // evaluating arguments for call to C function
-     context evalArgs(... fun: functionObject(_::CId, _, _), args: HOLE:StrictList => prval(HOLE))
+     context evalArgs(... fun: functionObject(_, _::CId, _, _), args: HOLE:StrictList => prval(HOLE))
 
      // evaluating arguments for call to C++ function
      context evalArgs(... fun: functionObject(_::QualId, _, _, _), args: HOLE:StrictList)

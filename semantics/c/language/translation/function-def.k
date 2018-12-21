@@ -2,8 +2,9 @@ module C-FUNCTION-DEF-SYNTAX
      imports BASIC-K
      imports COMMON-SORTS
      imports C-DYNAMIC-SORTS
+     imports C-TYPING-SORTS
 
-     syntax KItem ::= initFunction(K, CId, RValue) [strict(1)]
+     syntax KItem ::= initFunction(K, CId, Type) [strict(1)]
 endmodule
 
 module C-FUNCTION-DEF
@@ -36,10 +37,9 @@ module C-FUNCTION-DEF
                initializer(initFunction(
                     &(X),
                     X,
-                    functionObject(X,
-                         // The return and parameter types from the definition.
-                         t(getQualifiers(T), getModifiers(T), functionType(utype(elideDeclParams(innerType(T))),
-                              elideList(getParams(emptyToVoid(T))))), .List)
+                    // The return and parameter types from the definition.
+                    t(getQualifiers(T), getModifiers(T), functionType(utype(elideDeclParams(innerType(T))),
+                         elideList(getParams(emptyToVoid(T)))))
                ))
           )
           ~> processFunDef(X, Blk)
@@ -66,7 +66,7 @@ module C-FUNCTION-DEF
           ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <functions>...
-               Base |-> functionObject(_, DefT::Type, _)
+               Base |-> functionObject(_, _, DefT::Type, _)
           ...</functions>
           <curr-function> _ => Base </curr-function>
           [structural]
@@ -144,13 +144,13 @@ module C-FUNCTION-DEF
           => true
      rule isArgvType(_) => false [owise]
 
-     rule <k> initFunction(tv(Loc:SymLoc, T::UType), X:CId, Fun:RValue) => .K ...</k>
-          <elab>... .K => initFunction(&(X), X, Fun) </elab>
+     rule <k> initFunction(tv(Loc:SymLoc, T::UType), X:CId, DeclT::Type) => .K ...</k>
+          <elab>... .K => initFunction(&(X), X, DeclT) </elab>
           requires isLinkerLoc(Loc)
-     rule <k> initFunction(tv(Loc:SymLoc, ut(_, pointerType(_:FunctionType))), _, Fun:RValue)
+     rule <k> initFunction(tv(Loc:SymLoc, ut(_, pointerType(_:FunctionType))), X::CId, DeclT::Type)
                => .K
           ...</k>
-          <functions> M:Map => M[base(Loc) <- Fun] </functions>
+          <functions> M:Map => M[base(Loc) <- functionObject(base(Loc), X, DeclT, .List)] </functions>
           requires notBool isLinkerLoc(Loc)
 
      syntax K ::= safeBody(CId, K) [function]

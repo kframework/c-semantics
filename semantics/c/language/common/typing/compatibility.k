@@ -18,6 +18,7 @@ module C-TYPING-COMPATIBILITY
      imports COMPAT-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
      rule T::Type ==Type T'::Type => areCompatible(T, T')
@@ -422,5 +423,6 @@ module C-TYPING-COMPATIBILITY
                _:List (.List => ListItem(typedDeclaration(compositeType(P, P'), X))))
 
      rule areDeclCompat(T::Type, T'::Type) => T ==Type T' andBool sameAlignas(getModifiers(T), getModifiers(T'))
+
 endmodule
 

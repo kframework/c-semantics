@@ -73,17 +73,17 @@ module C-EXPR-FUNCTION-CALL
           <functions>... Base |-> Fun:RValue ...</functions>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
-     rule <k> Call(tv(loc(obj(0, Align::Int, nativeAddress()), Address:Int), ut(_, pointerType(T:FunctionType))),
+     rule <k> Call(tv(loc(obj(0, Align::Int, nativeAddress()) #as Base::SymBase, Address:Int), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
                => sequencePoint
-               ~> application(CurrLoc, obj(0, Align, nativeAddress()), functionObject(nativeFunction(Address), makeNativeDecl(T), .List), T, CLinkage, krlist(L))
+               ~> application(CurrLoc, Base, functionObject(Base, nativeFunction(Address), makeNativeDecl(T), .List), T, CLinkage, krlist(L))
           ...</k>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
-     rule <k> Call(tv(loc(obj(0, Align::Int, nativeSymbol(S::String)), _), ut(_, pointerType(_:FunctionType))),
+     rule <k> Call(tv(loc(obj(0, Align::Int, nativeSymbol(S::String)) #as Base::SymBase, _), ut(_, pointerType(_:FunctionType))),
                rvlist(L:List))
                => sequencePoint
-               ~> application(CurrLoc, obj(0, Align, nativeSymbol(S)), functionObject(Identifier(S), T, .List), T, CLinkage, krlist(L))
+               ~> application(CurrLoc, Base, functionObject(Base, Identifier(S), T, .List), T, CLinkage, krlist(L))
           ...</k>
           <external-types>... Identifier(S) |-> T::Type ...</external-types>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
@@ -120,8 +120,8 @@ module C-EXPR-FUNCTION-CALL
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
      // Function call (into C function)
-     rule <k> application(CurrLoc:CabsLoc, Base:SymBase,
-                    functionObject(X:CId, DefT:Type, Locals:List),
+     rule <k> application(CurrLoc:CabsLoc, _,
+                    functionObject(Base::SymBase, X:CId, DefT:Type, Locals:List),
                     CallT:Type, CallingLang::LanguageLinkage, krlist(L:List))
                ~> K:K
                => enterNewTu(X, Base, DefT)
@@ -134,7 +134,6 @@ module C-EXPR-FUNCTION-CALL
                ~> #if isNativeLoc(Base) orBool isBuiltinLoc(Base)
                   #then callBuiltin #else Goto(funLabel) #fi
           </k>
-          <external-defs> Defs::Map </external-defs>
           <call-stack> (.List => ListItem(
                <call-stack-frame>
                     <continuation> K:K </continuation>
@@ -163,7 +162,7 @@ module C-EXPR-FUNCTION-CALL
           [structural]
      rule (.K => UNDEF("EFNC1", "Attempt to call the function "
                +String showCId(X) +String " through a pointer with incompatible type."))
-          ~> application(_, _, functionObject(X::CId, DefT::Type, _), CallT:Type, _, _)
+          ~> application(_, _, functionObject(_, X::CId, DefT::Type, _), CallT:Type, _, _)
           requires CallT =/=Type toPrototype(DefT)
           [structural]
 

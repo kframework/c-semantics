@@ -22,7 +22,7 @@ module C-CPP-EXECUTION-EXPR-FUNCTION-CALL
 
 
      // Function call conversion (C linkage)
-     rule application(_, _, functionObject(X::CId, _, _),
+     rule application(_, _, functionObject(_, X::CId, _, _),
                (T:CPPFunctionType => convertTypeToC(T)), _, krlist(L::List => mapList(L, #klabel(`convertValToC`))))
 
      syntax RValue ::= convertValToC(PRVal) [function]

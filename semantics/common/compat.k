@@ -61,6 +61,12 @@ module COMPAT-SYNTAX
      syntax List ::= mapList(List, K) [function]
                    | flatMapList(List, K) [function]
 
+     // Takes maps M1, M2 and returns a map M with x |-> M2[M1[x]] for all x in M1.
+     syntax Map ::= composeMaps(Map, Map) [function]
+
+     // Turns a (hopefully injective!) map with {k_1 |-> v_1, ..., k_n |-> v_n} into {v_1 |-> k_1, ..., v_n |-> k_n}.
+     syntax Map ::= invertMap(Map) [function]
+
      syntax SSList ::= toSSList(List) [function]
      syntax List ::= ofSSList(SSList) [function]
      syntax SList ::= toSList(List) [function]
@@ -287,4 +293,11 @@ module COMPAT
 
      rule fst(kpair(K:K, _)) => K
      rule snd(kpair(_, K:K)) => K
+
+     rule composeMaps((X::KItem |-> Y::KItem) M1::Map, (Y::KItem |-> Z::KItem) M2::Map)
+          => (X |-> Z) composeMaps(M1, M2)
+     rule composeMaps(_, _) => .Map [owise]
+
+     rule invertMap(K::KItem |-> V::KItem M::Map) => (V |-> K) invertMap(M)
+     rule invertMap(.Map) => .Map
 endmodule

@@ -4,12 +4,15 @@ module C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SORTS
      imports COMMON-SORTS
 
-     // Function id, def return type, def params, local declarations.
-     syntax RValue ::= functionObject(CId, Type, List)
+     // Location of function (for extra redirection), function id, def return type, def params, local declarations.
+     syntax RValue ::= functionObject(SymBase, CId, Type, List)
 
      syntax Type ::= adjustParams(Type) [function]
      syntax List ::= "adjustParams'" "(" List ")" [function]
 
+     syntax FunctionSpecifier ::= SpecOverride()
+
+     syntax Bool ::= override(Type) [function]
 endmodule
 
 module C-TYPING-COMMON
@@ -368,5 +371,7 @@ module C-TYPING-COMMON
      rule arrayToPtrType(t(Qs::Quals, Mods::Set, _:SimpleArrayType) #as T::Type)
           => t(Qs, Mods, pointerType(innerType(T)))
      rule arrayToPtrType(T::Type) => T [owise]
+
+     rule override(T::Type) => SpecOverride() in getModifiers(T)
 
 endmodule

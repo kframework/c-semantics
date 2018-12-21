@@ -21,6 +21,7 @@ module C-TYPING-CANONICALIZATION
      imports COMMON-SYNTAX
      imports COMPAT-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
      imports INT
      imports K-REFLECTION
@@ -70,6 +71,9 @@ module C-TYPING-CANONICALIZATION
      rule canonicalizeType'(_::List (ListItem(S:KItem) => ListItem(SpecExtendsTuOf(getKccExtendsTuOfAttr(S)))), _, _)
           requires getKccExtendsTuOfAttr(S) =/=K #NoName
           [structural]
+     rule canonicalizeType'(_::List (ListItem(S:KItem) => ListItem(SpecOverride())), _, _)
+          requires getKccOverride(S)
+          [structural]
      rule (.K => CV("TCANON3", "Function declared without a return type."))
           ~> canonicalizeType'(_::List ListItem(MissingType()), _, _)
           [structural]
@@ -85,6 +89,8 @@ module C-TYPING-CANONICALIZATION
      rule isReducibleSpecifier(MissingType()) => true
      rule isReducibleSpecifier(Attribute(_, list(Attrs::List))) => true
           requires getKccExtendsTuOf(Attrs) =/=K #NoName
+     rule isReducibleSpecifier(Attribute(_, list(Attrs::List))) => true
+          requires getKccOverride(Attrs)
      rule isReducibleSpecifier(_) => false [owise]
 
      syntax CId ::= getKccExtendsTuOfAttr(K) [function]
@@ -95,6 +101,15 @@ module C-TYPING-CANONICALIZATION
      rule getKccExtendsTuOf(ListItem(Call(Identifier("kcc_extends_tu_of"), list(ListItem(X::CId)))) _) => X
      rule getKccExtendsTuOf(.List) => #NoName
      rule getKccExtendsTuOf((ListItem(_) => .List) _) [owise]
+
+     syntax Bool ::= getKccOverride(K) [function]
+     rule getKccOverride(Attribute(_, list(Attrs::List))) => getKccOverride(Attrs)
+     rule getKccOverride(_) => false [owise]
+
+     syntax Bool ::= getKccOverride(List) [function]
+     rule getKccOverride(ListItem(Identifier("kcc_override")) _) => true
+     rule getKccOverride(.List) => false
+     rule getKccOverride((ListItem(_) => .List) _) [owise]
 
      rule addMods(Mods::List ListItem(RestrictReserved(Tok:String, _)), T:Type)
           => addMods(Mods, addQualifier(Restrict(), T))
@@ -118,6 +133,9 @@ module C-TYPING-CANONICALIZATION
           [structural]
      rule addMods(_::List (ListItem(S:KItem) => ListItem(SpecExtendsTuOf(getKccExtendsTuOfAttr(S)))), _)
           requires getKccExtendsTuOfAttr(S) =/=K #NoName
+          [structural]
+     rule addMods(_::List (ListItem(S:KItem) => ListItem(SpecOverride())), _)
+          requires getKccOverride(S)
           [structural]
      rule addMods(.List, T:Type) => T
           requires notBool isCompleteType(T)
