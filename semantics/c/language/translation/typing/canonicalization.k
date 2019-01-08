@@ -72,7 +72,7 @@ module C-TYPING-CANONICALIZATION
           requires getKccExtendsTuOfAttr(S) =/=K #NoName
           [structural]
      rule canonicalizeType'(_::List (ListItem(S:KItem) => ListItem(SpecOverride())), _, _)
-          requires getKccOverride(S)
+          requires hasKccOverride(S)
           [structural]
      rule (.K => CV("TCANON3", "Function declared without a return type."))
           ~> canonicalizeType'(_::List ListItem(MissingType()), _, _)
@@ -90,7 +90,7 @@ module C-TYPING-CANONICALIZATION
      rule isReducibleSpecifier(Attribute(_, list(Attrs::List))) => true
           requires getKccExtendsTuOf(Attrs) =/=K #NoName
      rule isReducibleSpecifier(Attribute(_, list(Attrs::List))) => true
-          requires getKccOverride(Attrs)
+          requires hasKccOverride(Attrs)
      rule isReducibleSpecifier(_) => false [owise]
 
      syntax CId ::= getKccExtendsTuOfAttr(K) [function]
@@ -102,14 +102,14 @@ module C-TYPING-CANONICALIZATION
      rule getKccExtendsTuOf(.List) => #NoName
      rule getKccExtendsTuOf((ListItem(_) => .List) _) [owise]
 
-     syntax Bool ::= getKccOverride(K) [function]
-     rule getKccOverride(Attribute(_, list(Attrs::List))) => getKccOverride(Attrs)
-     rule getKccOverride(_) => false [owise]
+     syntax Bool ::= hasKccOverride(K) [function]
+     rule hasKccOverride(Attribute(_, list(Attrs::List))) => hasKccOverride(Attrs)
+     rule hasKccOverride(_) => false [owise]
 
-     syntax Bool ::= getKccOverride(List) [function]
-     rule getKccOverride(ListItem(Identifier("kcc_override")) _) => true
-     rule getKccOverride(.List) => false
-     rule getKccOverride((ListItem(_) => .List) _) [owise]
+     syntax Bool ::= hasKccOverride(List) [function]
+     rule hasKccOverride(ListItem(Identifier("kcc_override")) _) => true
+     rule hasKccOverride(.List) => false
+     rule hasKccOverride((ListItem(_) => .List) _) [owise]
 
      rule addMods(Mods::List ListItem(RestrictReserved(Tok:String, _)), T:Type)
           => addMods(Mods, addQualifier(Restrict(), T))
@@ -135,7 +135,7 @@ module C-TYPING-CANONICALIZATION
           requires getKccExtendsTuOfAttr(S) =/=K #NoName
           [structural]
      rule addMods(_::List (ListItem(S:KItem) => ListItem(SpecOverride())), _)
-          requires getKccOverride(S)
+          requires hasKccOverride(S)
           [structural]
      rule addMods(.List, T:Type) => T
           requires notBool isCompleteType(T)
@@ -178,7 +178,7 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <tags> Tags:Map </tags>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <curr-scope> blockScope(... block: BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
                andBool notBool (tag(X, Tu, global) in_keys({{Tags[Tu]}<:KItem}:>Map))
@@ -211,7 +211,7 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <tags> Tags:Map </tags>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <curr-scope> blockScope(... block: BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
                andBool notBool (tag(X, Tu, global) in_keys({{Tags[Tu]}<:KItem}:>Map))
@@ -244,7 +244,7 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <tags> Structs:Map </tags>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <curr-scope> blockScope(... block: BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
                andBool notBool (tag(X, Tu, global) in_keys({{Structs[Tu]}<:KItem}:>Map))

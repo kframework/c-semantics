@@ -62,11 +62,11 @@ module C-FUNCTION-DEF
      syntax KItem ::= processFunDef(CId, K)
      rule <k> processFunDef(X:CId, Blk:K)
                => checkFunDefType(X, elideDeclParams(DefT))
-               ~> staticEval(X, DefT, Blk)
+               ~> staticEval(X, Base, DefT, Blk)
           ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <functions>...
-               Base |-> functionObject(_, _, DefT::Type, _)
+               Base |-> functionObject(... defType: DefT::Type)
           ...</functions>
           <curr-function> _ => Base </curr-function>
           [structural]
@@ -144,13 +144,13 @@ module C-FUNCTION-DEF
           => true
      rule isArgvType(_) => false [owise]
 
-     rule <k> initFunction(tv(Loc:SymLoc, T::UType), X:CId, DeclT::Type) => .K ...</k>
-          <elab>... .K => initFunction(&(X), X, DeclT) </elab>
+     rule <k> initFunction(tv(Loc:SymLoc, T::UType), X:CId, DefT::Type) => .K ...</k>
+          <elab>... .K => initFunction(&(X), X, DefT) </elab>
           requires isLinkerLoc(Loc)
-     rule <k> initFunction(tv(Loc:SymLoc, ut(_, pointerType(_:FunctionType))), X::CId, DeclT::Type)
+     rule <k> initFunction(tv(Loc:SymLoc, ut(_, pointerType(_:FunctionType))), X::CId, DefT::Type)
                => .K
           ...</k>
-          <functions> M:Map => M[base(Loc) <- functionObject(base(Loc), X, DeclT, .List)] </functions>
+          <functions> M:Map => M[base(Loc) <- functionObject(X, DefT, .List, .Map)] </functions>
           requires notBool isLinkerLoc(Loc)
 
      syntax K ::= safeBody(CId, K) [function]
@@ -160,17 +160,15 @@ module C-FUNCTION-DEF
      rule safeBody(Identifier("main"), Blk:K)
           => Blk ~> Return(tv(0, utype(int)))
 
-     syntax KItem ::= staticEval(CId, Type, K)
-     syntax KItem ::= calculateGotoMap(CId) [klabel(calculateGotoMap1)]
-
-     rule staticEval(X:CId, DefT:Type, Blk:K)
-          => scope(blockScope(X, 0),
+     syntax KItem ::= staticEval(CId, SymBase, Type, K)
+     rule staticEval(X::CId, Base::SymBase, DefT::Type, Blk:K)
+          => scope(blockScope(X, Base, 0),
                generateRuleAnnotation(X)
                ~> elaborate(dummyBind(getParams(DefT)) ~> Label(funLabel, safeBody(X, Blk)))
-               ~> calculateGotoMap(X))
+               ~> calculateGotoMap(.K))
 
-     rule elaborateDone(K:K) ~> calculateGotoMap(X:CId)
-          => calculateGotoMap(X, K)
+     rule elaborateDone(K:K) ~> calculateGotoMap(.K)
+          => calculateGotoMap(K)
 
      syntax Bool ::= hasDupParams(Type) [function]
      rule hasDupParams(t(_, _, functionType(_, P:List))) => hasDupIds(P)
@@ -224,7 +222,7 @@ module C-FUNCTION-DEF
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> Env::Map => Env[X <- obj(0, 0, nativeSymbol(S))] </genv>
-          <curr-scope> blockScope(Identifier(S::String) #as X::CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: Identifier(S::String) #as X::CId) </curr-scope>
           <block-stack>... ListItem(<block-control>... <env> Env::Map => Env[X <- obj(0, 0, nativeSymbol(S))] </env> ...</block-control>) </block-stack>
           <function-tus>... .Map => X |-> Tu </function-tus>
           <options> Opts::Set </options>
@@ -238,7 +236,7 @@ module C-FUNCTION-DEF
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv>... X |-> Def::SymBase ...</genv>
-          <curr-scope> blockScope(Identifier(S::String) #as X::CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: Identifier(S::String) #as X::CId) </curr-scope>
           <linkings> Linkings::Map => Linkings[Def <- obj(0, 0, nativeSymbol(S +String Uuid))] </linkings>
           <function-tus> FunctionTUs::Map => FunctionTUs[Identifier(S +String Uuid) <- Tu] </function-tus>
           <uuid> Uuid::String </uuid>
@@ -251,7 +249,7 @@ module C-FUNCTION-DEF
      rule <k> OtherStatement() => .K ...</k>
           <external-types> ExtTypes::Map </external-types>
           <genv>... X |-> Def::SymBase ...</genv>
-          <curr-scope> blockScope(Identifier(S::String) #as X::CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: Identifier(S::String) #as X::CId) </curr-scope>
           <uuid> Uuid::String </uuid>
           requires isNativeLoc(Def)
                orBool (Identifier(S +String Uuid) in_keys(ExtTypes))
@@ -263,7 +261,7 @@ module C-FUNCTION-DEF
                orBool isMainScope(S)
 
      syntax Bool ::= isMainScope(Scope) [function]
-     rule isMainScope(blockScope(Identifier("main"), _)) => true
+     rule isMainScope(blockScope(... functionId: Identifier("main"))) => true
      rule isMainScope(_) => false [owise]
 
      syntax KItem ::= lintFunElide(CId)

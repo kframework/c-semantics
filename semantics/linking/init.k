@@ -173,6 +173,7 @@ module LINKING-INIT
                <mem> M1:Map </mem>
                <references> R1:Map </references>
                <functions> F1:Map </functions>
+               <goto-map> GM1:Map </goto-map>
 
                <external-types> ExtTypes1:Map </external-types>
                <external-defs> ExtDefs1:Map </external-defs>
@@ -201,6 +202,7 @@ module LINKING-INIT
                <mem> M2:Map </mem>
                <references> R2:Map </references>
                <functions> F2:Map </functions>
+               <goto-map> GM2:Map </goto-map>
 
                <external-types> ExtTypes2:Map </external-types>
                <external-defs> ExtDefs2:Map </external-defs>
@@ -234,6 +236,7 @@ module LINKING-INIT
                     updateMap(F1, composeMaps(composeMaps(invertMap(getOverridden(ExtDefs1, ExtTypes2)), ExtDefs2), F2)),
                     updateMap(F2, composeMaps(composeMaps(invertMap(getOverridden(ExtDefs2, ExtTypes1)), ExtDefs1), F1)))
                </functions>
+               <goto-map> updateMap(GM1, GM2) </goto-map>
 
                <external-types> updateMap(ExtTypes1, ExtTypes2) </external-types>
                <external-defs> updateMap(

@@ -165,7 +165,7 @@ module C-DECL-LOCAL
      rule <k> addLocalToFunction(T:Type) => .K ...</k>
           <curr-scope> S:BlockScope </curr-scope>
           <curr-function> Base:SymBase </curr-function>
-          <functions>... Base |-> functionObject(_, _, _, (_:List (.List => ListItem(T)))) ...</functions>
+          <functions>... Base |-> functionObject(... locals: (_:List (.List => ListItem(T)))) ...</functions>
 
      rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, _))
                => addToEnv(X, T, nonStatic)

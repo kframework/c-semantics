@@ -65,7 +65,7 @@ module C-DYNAMIC-SYNTAX
      syntax LValue ::= Nclv | LHold | NCLHold | TrapLValue
      syntax KResult ::= RValue | Type | UType | DType | Nclv | TrapLValue
 
-     syntax BlockScope ::= blockScope(CId, Int)
+     syntax BlockScope ::= blockScope(functionId: CId, functionLoc: SymBase, block: Int)
      syntax PrototypeScope ::= "prototypeScope"
      syntax Scope ::= PrototypeScope | BlockScope
 
