@@ -11,9 +11,6 @@ module C-TYPING-COMMON-SYNTAX
      syntax Type ::= adjustParams(Type) [function]
      syntax List ::= "adjustParams'" "(" List ")" [function]
 
-     syntax FunctionSpecifier ::= SpecOverride()
-
-     syntax Bool ::= override(Type) [function]
 endmodule
 
 module C-TYPING-COMMON
@@ -372,7 +369,5 @@ module C-TYPING-COMMON
      rule arrayToPtrType(t(Qs::Quals, Mods::Set, _:SimpleArrayType) #as T::Type)
           => t(Qs, Mods, pointerType(innerType(T)))
      rule arrayToPtrType(T::Type) => T [owise]
-
-     rule override(T::Type) => SpecOverride() in getModifiers(T)
 
 endmodule

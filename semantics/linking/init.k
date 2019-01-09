@@ -100,10 +100,6 @@ module LINKING-INIT
      rule load(.K) => .K
 
      syntax KItem ::= checkMerge(K, K)
-                    | checkExtTypes(K, Set, Map, Set, Map, Map)
-                    | checkExtType(Bool)
-                    | checkExtDefs(K, Set, Map, Set, Map, Map)
-
      rule checkMerge(_, .K) => .K
      rule checkMerge(.K, _) => .K
      rule checkMerge(
@@ -122,6 +118,8 @@ module LINKING-INIT
           => checkExtTypes(.K, keys(Types), Types, keys(Types'), Types', updateMap(DeclLocs, DeclLocs'))
           ~> checkExtDefs(.K, keys(Defs), Types, keys(Defs'), Types', updateMap(Locs, Locs'))
 
+     syntax KItem ::= checkExtTypes(K, Set, Map, Set, Map, Map)
+     syntax KItem ::= checkExtType(Bool)
      rule checkExtTypes(.K => X, (SetItem(X::CId) => .Set) _, _, _, _, _)
      rule checkExtTypes(X:KItem => .K, _, _, Ids':Set, _, _)
           requires notBool (X in Ids')
@@ -140,16 +138,18 @@ module LINKING-INIT
                ~> checkExtType(false) ~> checkExtTypes(X:KItem, _, _, _, _, X |-> L::CabsLoc _)
      rule checkExtTypes(.K, .Set, _, _, _, _) => setTranslationLoc(UnknownCabsLoc)
 
+     syntax K ::= checkExtDefs(K, Set, Map, Set, Map, Map) [function]
+     syntax KItem ::= errorMultipleDefs(CId)
      rule checkExtDefs(.K => X, (SetItem(X::CId) => .Set) _, _, _, _, _)
      rule checkExtDefs(X:KItem => .K, _, _, Defs':Set, _, _)
           requires notBool (X in Defs')
      rule checkExtDefs(.K, .Set, _, _, _, _) => .K
-     rule checkExtDefs(X:KItem => .K, _, X |-> T::Type _, SetItem(X) _, X |-> T'::Type _, _)
-          requires override(T) xorBool override(T')
-     rule (.K => setTranslationLoc(L) ~> EXT-UNDEF("TIN2",
-               "Multiple external definitions for " +String showCId({X}:>CId) +String "."))
-               ~> checkExtDefs(X:KItem, _, X |-> T::Type _, SetItem(X) _, X |-> T'::Type _, X |-> L::CabsLoc _)
-          requires notBool (override(T) xorBool override(T'))
+     rule checkExtDefs(X:CId, Ids::Set, X |-> T::Type Types::Map, SetItem(X) Ids'::Set, X |-> T'::Type Types'::Map, X |-> L::CabsLoc Locs::Map)
+          => setTranslationLoc(L)
+          ~> EXT-UNDEF("TIN2", "Multiple external definitions for " +String showCId({X}:>CId) +String ".")
+          ~> errorMultipleDefs(X)
+          ~> checkExtDefs(.K, Ids, Types, Ids', Types', Locs)
+          [owise]
 
      syntax K ::= mergeObj(K, K) [function]
      syntax Map ::= mergeDecls(Map, Map) [function]
@@ -291,14 +291,6 @@ module LINKING-INIT
      rule (<T>... <k> cleanup </k> ...</T> => .Bag)
 
      syntax Map ::= getOverridden(Map, Map) [function]
-     rule getOverridden(Defs::Map, Types::Map) => getOverridden'(keys(Defs), Defs, Types)
-
-     syntax Map ::= "getOverridden'" "(" Set "," Map "," Map ")" [function]
-     rule getOverridden'(SetItem(X::KItem) Ids::Set, (X::KItem |-> Def::KItem) Defs::Map, X |-> T'::Type Types::Map)
-          => (X |-> Def) getOverridden'(Ids, Defs, Types)
-          requires override(T')
-     rule getOverridden'(SetItem(X::KItem) Ids::Set, (X::KItem |-> _) Defs::Map, Types::Map)
-          => getOverridden'(Ids, Defs, Types) [owise]
-     rule getOverridden'(.Set, _, _) => .Map
+     rule getOverridden(_, _) => .Map [owise]
 
 endmodule

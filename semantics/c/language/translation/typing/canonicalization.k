@@ -68,12 +68,6 @@ module C-TYPING-CANONICALIZATION
                _,
                _::List (.List => ListItem(alignas(A))))
           [structural]
-     rule canonicalizeType'(_::List (ListItem(S:KItem) => ListItem(SpecExtendsTuOf(getKccExtendsTuOfAttr(S)))), _, _)
-          requires getKccExtendsTuOfAttr(S) =/=K #NoName
-          [structural]
-     rule canonicalizeType'(_::List (ListItem(S:KItem) => ListItem(SpecOverride())), _, _)
-          requires hasKccOverride(S)
-          [structural]
      rule (.K => CV("TCANON3", "Function declared without a return type."))
           ~> canonicalizeType'(_::List ListItem(MissingType()), _, _)
           [structural]
@@ -87,29 +81,7 @@ module C-TYPING-CANONICALIZATION
      rule isReducibleSpecifier(AlignasExpression(_)) => true
      rule isReducibleSpecifier(AlignasType(_, _)) => true
      rule isReducibleSpecifier(MissingType()) => true
-     rule isReducibleSpecifier(Attribute(_, list(Attrs::List))) => true
-          requires getKccExtendsTuOf(Attrs) =/=K #NoName
-     rule isReducibleSpecifier(Attribute(_, list(Attrs::List))) => true
-          requires hasKccOverride(Attrs)
      rule isReducibleSpecifier(_) => false [owise]
-
-     syntax CId ::= getKccExtendsTuOfAttr(K) [function]
-     rule getKccExtendsTuOfAttr(Attribute(_, list(Attrs::List))) => getKccExtendsTuOf(Attrs)
-     rule getKccExtendsTuOfAttr(_) => #NoName [owise]
-
-     syntax CId ::= getKccExtendsTuOf(List) [function]
-     rule getKccExtendsTuOf(ListItem(Call(Identifier("kcc_extends_tu_of"), list(ListItem(X::CId)))) _) => X
-     rule getKccExtendsTuOf(.List) => #NoName
-     rule getKccExtendsTuOf((ListItem(_) => .List) _) [owise]
-
-     syntax Bool ::= hasKccOverride(K) [function]
-     rule hasKccOverride(Attribute(_, list(Attrs::List))) => hasKccOverride(Attrs)
-     rule hasKccOverride(_) => false [owise]
-
-     syntax Bool ::= hasKccOverride(List) [function]
-     rule hasKccOverride(ListItem(Identifier("kcc_override")) _) => true
-     rule hasKccOverride(.List) => false
-     rule hasKccOverride((ListItem(_) => .List) _) [owise]
 
      rule addMods(Mods::List ListItem(RestrictReserved(Tok:String, _)), T:Type)
           => addMods(Mods, addQualifier(Restrict(), T))
@@ -130,12 +102,6 @@ module C-TYPING-CANONICALIZATION
      rule addMods(Mods::List (ListItem(S:KItem) => .List), _)
           requires notBool isModifier(S)
                andBool notBool isReducibleSpecifier(S)
-          [structural]
-     rule addMods(_::List (ListItem(S:KItem) => ListItem(SpecExtendsTuOf(getKccExtendsTuOfAttr(S)))), _)
-          requires getKccExtendsTuOfAttr(S) =/=K #NoName
-          [structural]
-     rule addMods(_::List (ListItem(S:KItem) => ListItem(SpecOverride())), _)
-          requires hasKccOverride(S)
           [structural]
      rule addMods(.List, T:Type) => T
           requires notBool isCompleteType(T)

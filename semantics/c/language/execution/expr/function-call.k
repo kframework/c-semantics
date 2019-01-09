@@ -167,18 +167,6 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      syntax KItem ::= enterNewTu(CId, SymBase, Type)
-     rule <k> enterNewTu(F::CId, Base::SymBase, t(_, SetItem(SpecExtendsTuOf(X::CId)) _, _))
-               => extendTu(F, GT)
-               ~> #if (getTU(AltBase) =/=String OldTu) #then enterRestrictTU #else .K #fi
-               ~> checkStackDepth
-               ~> checkRecursion(F, Base, Calls)
-          ...</k>
-          <called-functions> Calls::Map => incrementCalled(Base, Calls) </called-functions>
-          <external-defs>... X |-> AltBase::SymBase ...</external-defs>
-          <curr-tu> OldTu::String => getTU(AltBase) </curr-tu>
-          <tu-id> OldTu </tu-id>
-          <gtypes>... F |-> GT::Type ... </gtypes>
-          [structural]
      rule <k> enterNewTu(F::CId, Base::SymBase, T::Type)
                => #if (getTU(Base) =/=String OldTu) #then enterRestrictTU #else .K #fi
                ~> checkStackDepth
@@ -187,13 +175,6 @@ module C-EXPR-FUNCTION-CALL
           <called-functions> Calls::Map => incrementCalled(Base, Calls) </called-functions>
           <curr-tu> OldTu::String => getTU(Base) </curr-tu>
           requires notBool extendsTu(T)
-          [structural]
-
-     syntax KItem ::= extendTu(CId, Type)
-     rule <k> extendTu(F::CId, GT'::Type) => .K ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <gtypes> GT::Map => GT[F <- GT'] </gtypes>
           [structural]
 
      syntax Bool ::= extendsTu(Type) [function]
