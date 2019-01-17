@@ -121,112 +121,68 @@ sub main {
 
       my $oval = arg('-o') || 'a.out';
 
-      if (arg('-frunner-script') || !$useCompile) {
-            debug("Building an executable using the runner script.\n");
-            open(FILE, $programConfFile) or error("Couldn't open file: $!\n");
-            my $programConf = join("", <FILE>);
-            close(FILE);
-            $programConf = encode_base64($programConf);
-            open(FILE, distDir('program-runner')) or error("Couldn't open file: $!\n");
-            my $template = join("", <FILE>);
-            close(FILE);
+      debug("Building a natively-compiled executable.\n");
+      my $sem = profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled');
+      my $d = tempDir('native');
+      my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
 
-            my $profDir = profileDir();
-            $template =~ s?EXTERN_SCRIPTS_DIR?$profDir?g;
-            $template =~ s?EXTERN_HEAP_SIZE?$heapSize?g;
+      setShellDebugFile($programConfFile, 1);
+      shell(catfile($sem, 'marshalvalue'),
+                  catfile($sem, 'realdef.cma'),
+                  '-c', 'ARGV', '`#argv`(.KList) ', 'text',
+                  '-c', 'OPTIONS', makeOptions(0), 'text',
+                  '-c', 'JSON', "#token($rvErrorJson, $string)", 'text',
+                  '--output-file', catfile($d, 'kore_term')
+            )->run();
+      shell(catfile($sem, 'marshalvalue'),
+                  catfile($sem, 'realdef.cma'), '-s', # -s before -c
+                  '-c', 'PGM', $programConfFile, 'binaryfile',
+                  '--output-file', catfile($d, 'marshal_term')
+            )->run();
 
-            open(my $programRunner, '>', $oval) or error("Couldn't open file: $!\n");
-            print $programRunner "$template\n";
-            print $programRunner "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
-            print $programRunner "sub nativeLibraries {\n return '" . join(' ', BASE_LIBS) . "';\n}\n";
+      open(my $pluginPath, '>', catfile($d, 'plugin_path')) or error("Couldn't open file: $!\n");
+      print $pluginPath catfile($sem, 'realdef.cma');
+      close($pluginPath);
 
-            if (nativeObjFiles()) {
-                  my $obj = tempFile('obj');
-                  shell('ld', '-r', '-o', $obj, nativeObjFiles())->run();
-                  open(FILE, $obj) or error("Couldn't open file: $!\n");
-                  my $programObj = join("", <FILE>);
-                  close(FILE);
-                  $programObj = encode_base64($programObj);
-                  print $programRunner "sub nativeObjFile {\nreturn <<'PROGRAMOBJ';\n$programObj\nPROGRAMOBJ\n}\n";
-            } else {
-                  print $programRunner "sub nativeObjFile {\n return undef;\n}\n";
-            }
+      my @lnk = (catfile($d, 'kore_term.o'), catfile($d, 'marshal_term.o'), catfile($d, 'plugin_path.o'));
 
-            my $encodedJsonAsPerlString = quote(backslash(getRVErrorJson()));
-            print $programRunner "sub getJson {\n return $encodedJsonAsPerlString;\n}\n";
+      my $native = profileDir('native');
+      if (arg('-fnative-binary')) {
+            debug("Linking all native objects into seperate binary.\n");
+            my @trampolineFiles = trampolineFiles();
+            my $trampolines = catfile($d, 'trampolines.txt');
+            shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
+            shell("cat '$trampolines' | awk -F '\t' '{if (\$1!=\"\") print \$1; }' | " . distDir("make-trampolines"))
+                  ->stdout($d, 'trampolines.h')->run();
+            shell("cat '$trampolines' | awk -F '\t' '{if (\$2!=\"\") print \$2; }'")
+                  ->stdout($d, 'used_symbols')->run(); 
+            shell("(cat '$trampolines' | awk -F '\t' '{if (\$1!=\"\") print \"__\" \$1; }'; comm -12 '" . catfile($d, 'used_symbols') . "' '" . dumpSymbols() . "') | sort | uniq | " . distDir("make-symbols"))
+                  ->stdout($d, 'symbols.c')->run();
+            shell('gcc', '-std=c11', '-o', catfile($d, 'native_binary'),
+                        catfile($native, 'server.c'),
+                        catfile($native, 'main.o'),
+                        catfile($native, 'builtins.o'),
+                        catfile($native, 'platform.o'),
+                        '-I', $native, '-I', $d, '-w', '-g',
+                        ldArgs())->run();
 
-            my $encodedOptsAsPerlString = quote(backslash(makeOptions(0)));
-            print $programRunner "sub getOptions {\n return $encodedOptsAsPerlString;\n}\n";
-
-            close($programRunner);
-            my $numFilesChanged = chmod(0755, $oval);
-
-            ($numFilesChanged == 1)
-                  or error("Call to chmod $oval failed.\n");
       } else {
-            debug("Building a natively-compiled executable.\n");
-            my $sem = profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled');
-            my $d = tempDir('native');
-            my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
-
-            setShellDebugFile($programConfFile, 1);
-            shell(catfile($sem, 'marshalvalue'),
-                        catfile($sem, 'realdef.cma'),
-                        '-c', 'ARGV', '`#argv`(.KList) ', 'text',
-                        '-c', 'OPTIONS', makeOptions(0), 'text',
-                        '-c', 'JSON', "#token($rvErrorJson, $string)", 'text',
-                        '--output-file', catfile($d, 'kore_term')
-                 )->run();
-            shell(catfile($sem, 'marshalvalue'),
-                        catfile($sem, 'realdef.cma'), '-s', # -s before -c
-                        '-c', 'PGM', $programConfFile, 'binaryfile',
-                        '--output-file', catfile($d, 'marshal_term')
-                 )->run();
-
-            open(my $pluginPath, '>', catfile($d, 'plugin_path')) or error("Couldn't open file: $!\n");
-            print $pluginPath catfile($sem, 'realdef.cma');
-            close($pluginPath);
-
-            my @lnk = (catfile($d, 'kore_term.o'), catfile($d, 'marshal_term.o'), catfile($d, 'plugin_path.o'));
-
-            my $native = profileDir('native');
-            if (arg('-fnative-binary')) {
-                  debug("Linking all native objects into seperate binary.\n");
-                  my @trampolineFiles = trampolineFiles();
-                  my $trampolines = catfile($d, 'trampolines.txt');
-                  shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
-                  shell("cat '$trampolines' | awk -F '\t' '{if (\$1!=\"\") print \$1; }' | " . distDir("make-trampolines"))
-                        ->stdout($d, 'trampolines.h')->run();
-                  shell("cat '$trampolines' | awk -F '\t' '{if (\$2!=\"\") print \$2; }'")
-                        ->stdout($d, 'used_symbols')->run(); 
-                  shell("(cat '$trampolines' | awk -F '\t' '{if (\$1!=\"\") print \"__\" \$1; }'; comm -12 '" . catfile($d, 'used_symbols') . "' '" . dumpSymbols() . "') | sort | uniq | " . distDir("make-symbols"))
-                        ->stdout($d, 'symbols.c')->run();
-                  shell('gcc', '-std=c11', '-o', catfile($d, 'native_binary'),
-                              catfile($native, 'server.c'),
-                              catfile($native, 'main.o'),
-                              catfile($native, 'builtins.o'),
-                              catfile($native, 'platform.o'),
-                              '-I', $native, '-I', $d, '-w', '-g',
-                              ldArgs())->run();
-
-            } else {
-                  debug("Linking native objects directly.\n");
-                  shell('touch', catfile($d, 'native_binary'))->run();
-                  push(@lnk, catfile($native, 'builtins.o'), ldArgs());
-            }
-
-            push(@lnk, catfile($d, 'native_binary.o'));
-
-            my $old_cwd = getcwd();
-            chdir($d);
-            shell('ld', '-r', '-b', 'binary', '-o', 'kore_term.o', 'kore_term')->run();
-            shell('ld', '-r', '-b', 'binary', '-o', 'marshal_term.o', 'marshal_term')->run();
-            shell('ld', '-r', '-b', 'binary', '-o', 'plugin_path.o', 'plugin_path')->run();
-            shell('ld', '-r', '-b', 'binary', '-o', 'native_binary.o', 'native_binary')->run();
-            chdir($old_cwd);
-
-            shell(nativeCompiler(), catfile($sem, 'execution_partial.o'), '-o', $oval, '-Wl,-E', @lnk)->run();
+            debug("Linking native objects directly.\n");
+            shell('touch', catfile($d, 'native_binary'))->run();
+            push(@lnk, catfile($native, 'builtins.o'), ldArgs());
       }
+
+      push(@lnk, catfile($d, 'native_binary.o'));
+
+      my $old_cwd = getcwd();
+      chdir($d);
+      shell('ld', '-r', '-b', 'binary', '-o', 'kore_term.o', 'kore_term')->run();
+      shell('ld', '-r', '-b', 'binary', '-o', 'marshal_term.o', 'marshal_term')->run();
+      shell('ld', '-r', '-b', 'binary', '-o', 'plugin_path.o', 'plugin_path')->run();
+      shell('ld', '-r', '-b', 'binary', '-o', 'native_binary.o', 'native_binary')->run();
+      chdir($old_cwd);
+
+      shell(nativeCompiler(), catfile($sem, 'execution_partial.o'), '-o', $oval, '-Wl,-E', @lnk)->run();
 
       return 0;
 }

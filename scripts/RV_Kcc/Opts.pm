@@ -448,7 +448,6 @@ sub parseOpts {
       { RV_Kcc::Opts::pushArg('cppArgs', "-d$chars"); }
   -ftranslation-depth=<depth>	Compile program up to a given depth. [undocumented]
   -fmessage-length=0	Write all error messages on a single line.
-  -frunner-script	Compile program to perl script with analysis tool options. [undocumented]
   -fissue-report=<file>	Write issues to the specified file.
 			Format (CSV/JSON) is inferred from the specified file extension.
   -finteractive-fail	Enter an interactive debugger-like session when
