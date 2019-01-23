@@ -6,7 +6,6 @@ my @requiredModules = qw(
       String::Escape
       String::ShellQuote
       UUID::Tiny
-      XML::LibXML::Reader
 );
 my @missingPackages = ();
 

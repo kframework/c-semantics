@@ -48,7 +48,6 @@ $ sudo apt-get install build-essential diffutils
     - String::Escape
     - String::ShellQuote
     - UUID::Tiny
-    - XML::LibXML::Reader
 
 You can also install them using apt-get with
 ```
@@ -57,12 +56,8 @@ $ sudo apt-get install libuuid-tiny-perl libxml-libxml-perl libgetopt-declare-pe
 
 Alternately, to install these modules using cpan:
 ```
-$ sudo cpan -i Getopt::Declare XML::LibXML::Reader String::Escape String::ShellQuote App::FatPacker
+$ sudo cpan -i Getopt::Declare String::Escape String::ShellQuote App::FatPacker
 ```
-
-If you are using CPAN to install XML::LibXML::Reader, you will likely also need
-the development packages for libcrypt, zlib, and libxml2.
-
 ### 3. Install K.
 - This version of the C semantics should be compatible with the latest version
   of Runtime Verification's version of the K Framework (<https://github.com/runtimeverification/k>).
