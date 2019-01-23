@@ -21,6 +21,7 @@ module LINKING-INIT
      imports LIBC-TYPES-SYNTAX
      imports OPTIONS-SYNTAX
      imports CPP-BUILTIN-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports CPP-TRANSLATION-IMPLICIT-SYNTAX
      imports LINKING-C-RESOLUTION-SYNTAX
@@ -44,7 +45,7 @@ module LINKING-INIT
      rule <k> cBuiltinTu(Tu::String)
                => makeTu(Tu)
             // ~> checkExtTypes(.K, keys(builtins), builtins, keys(Types), Types, DeclLocs)
-               ~> checkExtDefs(.K, keys(builtins), keys(Defs), Locs)
+               ~> checkExtDefs(.K, keys(builtins), builtins, keys(Defs), Types, Locs)
                ~> addCBuiltins(Tu, builtins)
                ~> removeUnusedIdentifiers(Tu)
           ...</k>
@@ -99,10 +100,6 @@ module LINKING-INIT
      rule load(.K) => .K
 
      syntax KItem ::= checkMerge(K, K)
-                    | checkExtTypes(K, Set, Map, Set, Map, Map)
-                    | checkExtType(Bool)
-                    | checkExtDefs(K, Set, Set, Map)
-
      rule checkMerge(_, .K) => .K
      rule checkMerge(.K, _) => .K
      rule checkMerge(
@@ -119,8 +116,10 @@ module LINKING-INIT
                <external-defs-loc> Locs':Map </external-defs-loc>
           ...</global>))
           => checkExtTypes(.K, keys(Types), Types, keys(Types'), Types', updateMap(DeclLocs, DeclLocs'))
-          ~> checkExtDefs(.K, keys(Defs), keys(Defs'), updateMap(Locs, Locs'))
+          ~> checkExtDefs(.K, keys(Defs), Types, keys(Defs'), Types', updateMap(Locs, Locs'))
 
+     syntax KItem ::= checkExtTypes(K, Set, Map, Set, Map, Map)
+     syntax KItem ::= checkExtType(Bool)
      rule checkExtTypes(.K => X, (SetItem(X::CId) => .Set) _, _, _, _, _)
      rule checkExtTypes(X:KItem => .K, _, _, Ids':Set, _, _)
           requires notBool (X in Ids')
@@ -139,13 +138,18 @@ module LINKING-INIT
                ~> checkExtType(false) ~> checkExtTypes(X:KItem, _, _, _, _, X |-> L::CabsLoc _)
      rule checkExtTypes(.K, .Set, _, _, _, _) => setTranslationLoc(UnknownCabsLoc)
 
-     rule checkExtDefs(.K => X, (SetItem(X::CId) => .Set) _, _, _)
-     rule checkExtDefs(X:KItem => .K, _, Defs':Set, _)
+     syntax K ::= checkExtDefs(K, Set, Map, Set, Map, Map) [function]
+     syntax KItem ::= errorMultipleDefs(CId)
+     rule checkExtDefs(.K => X, (SetItem(X::CId) => .Set) _, _, _, _, _)
+     rule checkExtDefs(X:KItem => .K, _, _, Defs':Set, _, _)
           requires notBool (X in Defs')
-     rule checkExtDefs(.K, .Set, _, _) => .K
-     rule (.K => setTranslationLoc(L) ~> EXT-UNDEF("TIN2",
-               "Multiple external definitions for " +String showCId({X}:>CId) +String "."))
-               ~> checkExtDefs(X:KItem, _, SetItem(X) _, X |-> L::CabsLoc _)
+     rule checkExtDefs(.K, .Set, _, _, _, _) => .K
+     rule checkExtDefs(X:CId, Ids::Set, X |-> T::Type Types::Map, SetItem(X) Ids'::Set, X |-> T'::Type Types'::Map, X |-> L::CabsLoc Locs::Map)
+          => setTranslationLoc(L)
+          ~> EXT-UNDEF("TIN2", "Multiple external definitions for " +String showCId({X}:>CId) +String ".")
+          ~> errorMultipleDefs(X)
+          ~> checkExtDefs(.K, Ids, Types, Ids', Types', Locs)
+          [owise]
 
      syntax K ::= mergeObj(K, K) [function]
      syntax Map ::= mergeDecls(Map, Map) [function]
@@ -169,6 +173,7 @@ module LINKING-INIT
                <mem> M1:Map </mem>
                <references> R1:Map </references>
                <functions> F1:Map </functions>
+               <goto-map> GM1:Map </goto-map>
 
                <external-types> ExtTypes1:Map </external-types>
                <external-defs> ExtDefs1:Map </external-defs>
@@ -197,6 +202,7 @@ module LINKING-INIT
                <mem> M2:Map </mem>
                <references> R2:Map </references>
                <functions> F2:Map </functions>
+               <goto-map> GM2:Map </goto-map>
 
                <external-types> ExtTypes2:Map </external-types>
                <external-defs> ExtDefs2:Map </external-defs>
@@ -225,10 +231,19 @@ module LINKING-INIT
           <global>
                <mem> updateMap(M1, M2) </mem>
                <references> updateMap(R1, R2) </references>
-               <functions> updateMap(F1, F2) </functions>
+               <functions> updateMap(
+                    // Override attribute: override function definitions.
+                    updateMap(F1, composeMaps(composeMaps(invertMap(getOverridden(ExtDefs1, ExtTypes2)), ExtDefs2), F2)),
+                    updateMap(F2, composeMaps(composeMaps(invertMap(getOverridden(ExtDefs2, ExtTypes1)), ExtDefs1), F1)))
+               </functions>
+               <goto-map> updateMap(GM1, GM2) </goto-map>
 
                <external-types> updateMap(ExtTypes1, ExtTypes2) </external-types>
-               <external-defs> updateMap(ExtDefs1, ExtDefs2) </external-defs>
+               <external-defs> updateMap(
+                    // Override attribute: override external definitions.
+                    removeAll(ExtDefs1, keys(getOverridden(ExtDefs1, ExtTypes2))),
+                    removeAll(ExtDefs2, keys(getOverridden(ExtDefs2, ExtTypes1))))
+               </external-defs>
                <odr-defs> mergeDefs(OdrDefs1, OdrDefs2) </odr-defs>
                <linkings> updateMap(Links1, Links2) </linkings>
                <function-tus> updateMap(Funcs1, Funcs2) </function-tus>
@@ -274,5 +289,8 @@ module LINKING-INIT
           <curr-tu> _ => Tu </curr-tu>
 
      rule (<T>... <k> cleanup </k> ...</T> => .Bag)
+
+     syntax Map ::= getOverridden(Map, Map) [function]
+     rule getOverridden(_, _) => .Map [owise]
 
 endmodule

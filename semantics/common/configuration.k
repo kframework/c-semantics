@@ -11,6 +11,7 @@ module COMMON-CONFIGURATION
      <mem> .Map </mem>
      <references> .Map </references>
      <functions color="lightgray"> .Map </functions>
+     <goto-map color="lightgray"> .Map </goto-map>
 
      <main-tu color="lightgray"> .Set </main-tu>
 
@@ -74,8 +75,6 @@ module COMMON-CONFIGURATION
                </tu-linking-state>
 
                <next-unnamed color="black"> 0 </next-unnamed>
-
-               <goto-map color="lightgray"> .Map </goto-map>
 
                // TODO(chathhorn): remove.
                <incomplete-tags> .Set </incomplete-tags>

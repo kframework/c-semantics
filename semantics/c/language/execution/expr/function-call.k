@@ -73,17 +73,17 @@ module C-EXPR-FUNCTION-CALL
           <functions>... Base |-> Fun:RValue ...</functions>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
-     rule <k> Call(tv(loc(obj(0, Align::Int, nativeAddress()), Address:Int), ut(_, pointerType(T:FunctionType))),
+     rule <k> Call(tv(loc(obj(0, Align::Int, nativeAddress()) #as Base::SymBase, Address:Int), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
                => sequencePoint
-               ~> application(CurrLoc, obj(0, Align, nativeAddress()), functionObject(nativeFunction(Address), makeNativeDecl(T), .List), T, CLinkage, krlist(L))
+               ~> application(CurrLoc, Base, functionObject(nativeFunction(Address), makeNativeDecl(T), .List, .Map), T, CLinkage, krlist(L))
           ...</k>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
-     rule <k> Call(tv(loc(obj(0, Align::Int, nativeSymbol(S::String)), _), ut(_, pointerType(_:FunctionType))),
+     rule <k> Call(tv(loc(obj(0, Align::Int, nativeSymbol(S::String)) #as Base::SymBase, _), ut(_, pointerType(_:FunctionType))),
                rvlist(L:List))
                => sequencePoint
-               ~> application(CurrLoc, obj(0, Align, nativeSymbol(S)), functionObject(Identifier(S), T, .List), T, CLinkage, krlist(L))
+               ~> application(CurrLoc, Base, functionObject(Identifier(S), T, .List, .Map), T, CLinkage, krlist(L))
           ...</k>
           <external-types>... Identifier(S) |-> T::Type ...</external-types>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
@@ -113,20 +113,20 @@ module C-EXPR-FUNCTION-CALL
      rule checkStackDepth => .K
           requires notBool hasLint
 
-     syntax K ::= checkRecursion(CId, String, Map) [function]
+     syntax K ::= checkRecursion(CId, SymBase, Map) [function]
      rule checkRecursion(_, _, _) => .K
           requires notBool hasLint
 
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
      // Function call (into C function)
-     rule <k> application(CurrLoc:CabsLoc, Base:SymBase,
-                    functionObject(X:CId, DefT:Type, Locals:List),
+     rule <k> application(CurrLoc:CabsLoc, Base::SymBase,
+                    functionObject(X:CId, DefT:Type, Locals:List, _),
                     CallT:Type, CallingLang::LanguageLinkage, krlist(L:List))
                ~> K:K
                => enterNewTu(X, Base, DefT)
                ~> sequencePoint
-               ~> enterRestrictBlock(blockScope(X, 0))
+               ~> enterRestrictBlock(blockScope(X, Base, 0))
                ~> populateFromGlobal(DefT)
                ~> declareInternalVariable(funLabel, type(no-type), initValue(funLabel, type(no-type), .K))
                ~> bind(getParams(DefT), getParams(CallT), L)
@@ -134,7 +134,6 @@ module C-EXPR-FUNCTION-CALL
                ~> #if isNativeLoc(Base) orBool isBuiltinLoc(Base)
                   #then callBuiltin #else Goto(funLabel) #fi
           </k>
-          <external-defs> Defs::Map </external-defs>
           <call-stack> (.List => ListItem(
                <call-stack-frame>
                     <continuation> K:K </continuation>
@@ -155,7 +154,7 @@ module C-EXPR-FUNCTION-CALL
           </function-control>
           => <function-control>...
                <curr-tu> OldTu </curr-tu>
-               <curr-scope> blockScope(X, 0) </curr-scope>
+               <curr-scope> blockScope(X, Base, 0) </curr-scope>
                <curr-program-loc> CurrLoc </curr-program-loc>
                <stack-depth> OldStackDepth +Int cfg:stackSize(mapList(L, #klabel(`type`)), Locals) </stack-depth>
           ...</function-control>)
@@ -163,40 +162,19 @@ module C-EXPR-FUNCTION-CALL
           [structural]
      rule (.K => UNDEF("EFNC1", "Attempt to call the function "
                +String showCId(X) +String " through a pointer with incompatible type."))
-          ~> application(_, _, functionObject(X::CId, DefT::Type, _), CallT:Type, _, _)
+          ~> application(_, _, functionObject(X::CId, DefT::Type, _, _), CallT:Type, _, _)
           requires CallT =/=Type toPrototype(DefT)
           [structural]
 
      syntax KItem ::= enterNewTu(CId, SymBase, Type)
-     rule <k> enterNewTu(F::CId, _, t(_, SetItem(SpecExtendsTuOf(X::CId)) _, _))
-               => extendTu(F, G, GT)
-               ~> #if (getTU(Base) =/=String OldTu) #then enterRestrictTU #else .K #fi
-               ~> checkStackDepth
-               ~> checkRecursion(F, getTU(Base), Calls)
-          ...</k>
-          <called-functions> Calls::Map => incrementCalled(F, getTU(Base), Calls) </called-functions>
-          <external-defs>... X |-> Base::SymBase ...</external-defs>
-          <curr-tu> OldTu::String => getTU(Base) </curr-tu>
-          <tu-id> OldTu </tu-id>
-          <goto-map>... F |-> G::Map ... </goto-map>
-          <gtypes>... F |-> GT::Type ... </gtypes>
-          [structural]
      rule <k> enterNewTu(F::CId, Base::SymBase, T::Type)
                => #if (getTU(Base) =/=String OldTu) #then enterRestrictTU #else .K #fi
                ~> checkStackDepth
-               ~> checkRecursion(F, getTU(Base), Calls)
+               ~> checkRecursion(F, Base, Calls)
           ...</k>
-          <called-functions> Calls::Map => incrementCalled(F, getTU(Base), Calls) </called-functions>
+          <called-functions> Calls::Map => incrementCalled(Base, Calls) </called-functions>
           <curr-tu> OldTu::String => getTU(Base) </curr-tu>
           requires notBool extendsTu(T)
-          [structural]
-
-     syntax KItem ::= extendTu(CId, Map, Type)
-     rule <k> extendTu(F::CId, G'::Map, GT'::Type) => .K ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map> G::Map => G[F <- G'] </goto-map>
-          <gtypes> GT::Map => GT[F <- GT'] </gtypes>
           [structural]
 
      syntax Bool ::= extendsTu(Type) [function]
@@ -211,11 +189,11 @@ module C-EXPR-FUNCTION-CALL
           </curr-function-params>
           [structural]
 
-     syntax Map ::= incrementCalled(CId, String, Map) [function]
-     rule incrementCalled(X::CId, Tu::String, (kpair(X, Tu) |-> N::Int) Calls::Map)
-          => (kpair(X, Tu) |-> (N +Int 1)) Calls
-     rule incrementCalled(X::CId, Tu::String, Calls::Map)
-          => (kpair(X, Tu) |-> 1) Calls
+     syntax Map ::= incrementCalled(SymBase, Map) [function]
+     rule incrementCalled(Base::SymBase, (Base |-> N::Int) Calls::Map)
+          => (Base |-> (N +Int 1)) Calls
+     rule incrementCalled(Base::SymBase, Calls::Map)
+          => (Base |-> 1) Calls
           [owise]
 
 endmodule
