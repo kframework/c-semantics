@@ -7,10 +7,10 @@ module C-STMT-BLOCK
      imports DELETE-OBJECT-SYNTAX
 
      rule <k> pushBlock(Tag:Int)
-               => enterRestrictBlock(blockScope(F, Tag))
+               => enterRestrictBlock(blockScope(F, Base, Tag))
           ...</k>
           <curr-tu> Tu::String </curr-tu>
-          <curr-scope> blockScope(F:CId, (_ => Tag)) </curr-scope>
+          <curr-scope> blockScope(F:CId, Base::SymBase, (_ => Tag)) </curr-scope>
           <block-control>
                C::Bag
                <local-vars> Vars:Set => .Set </local-vars>
@@ -30,10 +30,10 @@ module C-STMT-BLOCK
      syntax KItem ::= "updateScope"
 
      rule <k> updateScope => .K ...</k>
-          <curr-scope> blockScope(_, (_ => Tag)) </curr-scope>
+          <curr-scope> blockScope(... block: (_ => Tag)) </curr-scope>
           <block-history> ListItem(Tag:Int) ...</block-history>
      rule <k> updateScope => .K ...</k>
-          <curr-scope> blockScope(_, (_ => 0)) </curr-scope>
+          <curr-scope> blockScope(... block: (_ => 0)) </curr-scope>
           <block-history> .List </block-history>
 
      rule <k> popBlock => deleteObjects(Locals) ~> exitRestrictBlock(Locals) ~> updateScope ...</k>

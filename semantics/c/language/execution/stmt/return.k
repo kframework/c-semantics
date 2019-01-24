@@ -29,7 +29,7 @@ module C-STMT-RETURN
 
      // Return (from C function)
      rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <gtypes>...
@@ -39,7 +39,7 @@ module C-STMT-RETURN
           [structural]
 
      rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-tu> "builtin" </curr-tu>
           <types>...
                F |-> t(_, Mods:Set, functionType(T::UType, _))
@@ -47,7 +47,7 @@ module C-STMT-RETURN
           requires notBool (Noreturn() in Mods)
           [structural]
      rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-tu> "native" </curr-tu>
           <types>...
                F |-> t(_, Mods:Set, functionType(T::UType, _))
@@ -58,7 +58,7 @@ module C-STMT-RETURN
      rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn."))
                ~> Return(_)
           ...</k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <gtypes>...
@@ -70,7 +70,7 @@ module C-STMT-RETURN
      rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn."))
                ~> Return(_)
           ...</k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-tu> "native" </curr-tu>
           <types>...
                F:CId |-> t(_, Mods:Set, _)
@@ -108,11 +108,11 @@ module C-STMT-RETURN
           </k>
           (<function-control>
                <curr-tu> Tu::String </curr-tu>
-               <curr-scope> blockScope(X::CId, _) </curr-scope>
+               <curr-scope> blockScope(... functionLoc: Base::SymBase) </curr-scope>
                <live-va-lists> .Set </live-va-lists>
                <block-stack> .List </block-stack>
           ...</function-control> => <function-control> C </function-control>)
-          <called-functions> Calls::Map => decrementCalled(X, Tu, Calls) </called-functions>
+          <called-functions> Calls::Map => decrementCalled(Base, Calls) </called-functions>
           <call-stack>
                ListItem(
                     <call-stack-frame>
@@ -126,11 +126,11 @@ module C-STMT-RETURN
           ...</call-stack>
           [structural]
 
-     syntax Map ::= decrementCalled(CId, String, Map) [function]
-     rule decrementCalled(X::CId, Tu::String, (kpair(X, Tu) |-> 1) Calls::Map)
+     syntax Map ::= decrementCalled(SymBase, Map) [function]
+     rule decrementCalled(Base::SymBase, (Base |-> 1) Calls::Map)
           => Calls
-     rule decrementCalled(X::CId, Tu::String, (kpair(X, Tu) |-> N::Int) Calls::Map)
-          => (kpair(X, Tu) |-> (N -Int 1)) Calls
+     rule decrementCalled(Base::SymBase, (Base |-> N::Int) Calls::Map)
+          => (Base |-> (N -Int 1)) Calls
           [owise]
 
 endmodule

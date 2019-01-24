@@ -31,7 +31,7 @@ module C-ENV
           [structural]
      rule <k> populateFromGlobal(T::Type) => .K ...</k>
           <curr-tu> "native" </curr-tu>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <env> _ => .Map </env>
           <renv> _ => .Map </renv>
           <types> _ => F |-> T </types>

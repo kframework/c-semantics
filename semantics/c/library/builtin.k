@@ -65,7 +65,7 @@ module LIBC-BUILTIN
                     toHeatList(filterList(P, #klabel(`notVarArg`))),
                     toHeatList(filterList(P, #klabel(`isVarArg`)))))
           ...</k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
           <options> Opts::Set </options>
@@ -77,7 +77,7 @@ module LIBC-BUILTIN
                     toHeatList(filterList(P, #klabel(`notVarArg`))),
                     toHeatList(filterList(P, #klabel(`isVarArg`)))))
           ...</k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
           <options> Opts::Set </options>
@@ -89,7 +89,7 @@ module LIBC-BUILTIN
                     toHeatList(filterList(P, #klabel(`notVarArg`))),
                     toHeatList(filterList(P, #klabel(`isVarArg`)))))
           ...</k>
-          <curr-scope> blockScope(nativeFunction(_) #as F::CId, _) </curr-scope>
+          <curr-scope> blockScope(... functionId: nativeFunction(_) #as F::CId) </curr-scope>
           <curr-function-params> P:List </curr-function-params>
           [structural]
 
