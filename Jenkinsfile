@@ -27,7 +27,9 @@ pipeline {
       steps {
         sh '''
           apt-get update
-          apt-get install -y git build-essential m4 openjdk-8-jdk libgmp-dev libmpfr-dev pkg-config flex z3 libz3-dev maven opam python3
+          apt install -y build-essential coreutils diffutils flex git libffi-dev libgmp-dev libmpfr-dev \
+                         libstdc++6 libxml2 libz3-dev m4 maven opam openjdk-8-jdk pkg-config python3    \
+                         python-jinja2 python-pygments unifdef z3
         '''
       }
     }
