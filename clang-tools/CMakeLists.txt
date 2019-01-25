@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(clang-tools)
 
-set(CLANG_CMAKE /usr/share/llvm-6.0/cmake)
 set(LLVM_PATH /usr/lib/llvm-6.0 CACHE PATH "LLVM path")
 
 link_directories(${LLVM_PATH}/lib)
