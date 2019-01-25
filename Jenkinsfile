@@ -27,14 +27,7 @@ pipeline {
       steps {
         sh '''
           apt-get update
-          apt-get install -y git cmake clang-6.0 zlib1g-dev bison flex libboost-test-dev libgmp-dev libmpfr-dev libyaml-cpp-dev libjemalloc-dev curl
-          curl https://sh.rustup.rs -sSf | sh -s -- -y
-          . $HOME/.cargo/env
-          rustup toolchain install 1.28.0
-          rustup default 1.28.0
-          curl -sSL https://get.haskellstack.org/ | sh
-          mkdir -p ~/.stack
-          echo 'allow-different-user: true' > ~/.stack/config.yaml
+          apt-get install -y git build-essential m4 openjdk-8-jdk libgmp-dev libmpfr-dev pkg-config flex z3 libz3-dev maven opam python3
         '''
       }
     }
@@ -42,7 +35,9 @@ pipeline {
       steps {
         ansiColor('xterm') {
           sh '''
-            make os-check -j12
+            ./.build/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
+            eval $(opam config env)
+            mvn verify -U -DskipKTest -Dllvm.backend.skip -DbuildProfile=x86_64-gcc-glibc
           '''
         }
       }
