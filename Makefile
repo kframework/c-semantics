@@ -57,7 +57,7 @@ $(K_BIN)/kompile:
 	@echo "== submodule: $@"
 	git submodule update --init -- $(K_SUBMODULE)
 	cd $(K_SUBMODULE) \
-		&& mvn package -q -DskipTests -U
+		&& mvn package -q -Dllvm.backend.skip -DskipTests -U
 
 check-vars: deps
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
