@@ -39,6 +39,7 @@ pipeline {
       steps {
         ansiColor('xterm') {
           sh '''
+            cpan install App::FatPacker Getopt::Declare String::Escape String::ShellQuote UUID::Tiny
             ./.build/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
             eval $(opam config env)
             cd .build/k
