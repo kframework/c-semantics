@@ -4,24 +4,12 @@ pipeline {
       additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
     }
   }
-  options {
-    skipDefaultCheckout true
-  }
   stages {
     stage("Init title") {
       when { changeRequest() }
       steps {
         script {
           currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}"
-        }
-      }
-    }
-    stage('Checkout code') {
-      steps {
-        sh 'rm -rf ./*'
-        checkout scm
-        dir('rv-match') {
-          git url: 'git@github.com:kframework/rv-match.git'
         }
       }
     }
@@ -42,6 +30,9 @@ pipeline {
     }
     stage('RV-Match Integration') {
       steps {
+        dir('rv-match') {
+          git url: 'git@github.com:kframework/rv-match.git'
+        }
         ansiColor('xterm') {
           sh '''
             cd rv-match
