@@ -27,9 +27,11 @@ pipeline {
       steps {
         sh '''
           apt-get update
-          apt install -y build-essential coreutils diffutils flex git libffi-dev libgmp-dev libmpfr-dev \
-                         libstdc++6 libxml2 libz3-dev m4 maven opam openjdk-8-jdk pkg-config python3    \
-                         python-jinja2 python-pygments unifdef z3
+          apt install -y bison build-essential clang++-6.0 clang-6.0 cmake coreutils diffutils flex \
+                         git libboost-test-dev libffi-dev libgmp-dev libjemalloc-dev libmpfr-dev    \
+                         libstdc++6 libxml2 libyaml-cpp-dev libz3-dev llvm-6.0 m4 maven opam        \
+                         openjdk-8-jdk pkg-config python3 python-jinja2 python-pygments unifdef     \
+                         z3 zlib1g-dev
         '''
       }
     }
