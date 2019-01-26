@@ -21,6 +21,9 @@ pipeline {
       steps {
         sh 'rm -rf ./*'
         checkout scm
+        dir('rv-match') {
+          git url: 'git@github.com:kframework/rv-match.git'
+        }
       }
     }
     stage('Install dependencies') {
@@ -46,6 +49,21 @@ pipeline {
             mvn verify -U -DskipKTest -Dllvm.backend.skip -DbuildProfile=x86_64-gcc-glibc
             cd ../..
             make os-check -j12
+          '''
+        }
+      }
+    }
+    stage('RV-Match Integration') {
+      steps {
+        ansiColor('xterm') {
+          sh '''
+            cd rv-match
+            git submodule update --init
+            cd c-semantics
+            git fetch ../../
+            git checkout FETCH_HEAD
+            cd ../
+            mvn verify -U -DskipKTest -DbuildProfile=x86_64-gcc-glibc
           '''
         }
       }
