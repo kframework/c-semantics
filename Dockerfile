@@ -6,6 +6,7 @@ RUN apt install -y bison build-essential clang++-6.0 clang-6.0 cmake coreutils d
                    libstdc++6 libxml2 libyaml-cpp-dev llvm-6.0 m4 maven opam openjdk-8-jdk    \
                    pkg-config python3 python-jinja2 python-pygments unifdef zlib1g-dev
 RUN curl -sSL https://get.haskellstack.org/ | sh
+RUN cpan install App::FatPacker Getopt::Declare String::Escape String::ShellQuote UUID::Tiny
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
