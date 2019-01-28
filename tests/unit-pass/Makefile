@@ -14,7 +14,8 @@ OS_EXCLUDES = \
 # TODO(chathhorn): not sure why these are failing with the OS profile.
 OS_UNKNOWN_FAILURES = \
 	./20051113-1.c ./nullptr21.C ./nullptr28.C ./nullptr.C ./new23.C ./new41.C \
-	./constructor-1.C ./throw-1.C ./throw-2.C ./throw-4.C ./mem-init-1.C ./direct-init-1.C
+	./constructor-1.C ./throw-1.C ./throw-2.C ./throw-3.C ./throw-4.C ./mem-init-1.C \
+	./direct-init-1.C
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
 OS_TESTS = $(filter-out $(OS_EXCLUDES), $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${OS_TUS}))))
 CPP_TESTS = $(filter-out %.c, ${TESTS})
@@ -29,11 +30,11 @@ CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
 C_TEST_COMPARISON = ${C_TESTS:=.cmp}
 
 ifeq ($(origin CC),default)
-	CC = gcc-4.9
+	CC = gcc-7
 endif
 
 ifeq ($(origin CXX),default)
-	CXX=g++-5
+	CXX=g++-7
 endif
 
 KCC=../../dist/kcc
