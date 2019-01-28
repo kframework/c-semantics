@@ -9,7 +9,7 @@ OS_EXCLUDES = \
 	./stdio-ferror.c ./stdio-fgets.c ./stdio-fseek.c ./stdio-scanf-flush.c ./stdio-ungetc.c \
 	./stdio-sscanf.c ./stdio-fileno.c \
 	./inst-check.c ./pthreads-starve.c ./fopen-enoent.c \
-	./oldstyle-main.c ./struct-ini-1.c ./j016.c \
+	./oldstyle-main.c ./struct-ini-1.c ./j016.c ./include-time.C \
 	$(OS_UNKNOWN_FAILURES)
 # TODO(chathhorn): not sure why these are failing with the OS profile.
 OS_UNKNOWN_FAILURES = \
