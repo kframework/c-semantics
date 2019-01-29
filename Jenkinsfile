@@ -34,7 +34,7 @@ pipeline {
         ansiColor('xterm') {
           sh '''
             cd rv-match
-            git submodule update --init
+            git submodule update --init --recursive
             cd c-semantics
             git fetch ../../
             git checkout FETCH_HEAD
