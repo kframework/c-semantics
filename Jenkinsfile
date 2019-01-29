@@ -17,7 +17,6 @@ pipeline {
       steps {
         ansiColor('xterm') {
           sh '''
-            ./.build/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
             eval $(opam config env)
             cd .build/k
             mvn verify -U -DskipKTest -Dllvm.backend.skip -DbuildProfile=x86_64-gcc-glibc
