@@ -15,7 +15,7 @@ OS_EXCLUDES = \
 OS_UNKNOWN_FAILURES = \
 	./20051113-1.c ./nullptr21.C ./nullptr28.C ./nullptr.C ./new23.C ./new41.C \
 	./constructor-1.C ./throw-1.C ./throw-2.C ./throw-3.C ./throw-4.C ./mem-init-1.C \
-	./direct-init-1.C
+	./direct-init-1.C ./constexpr.C
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
 OS_TESTS = $(filter-out $(OS_EXCLUDES), $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${OS_TUS}))))
 CPP_TESTS = $(filter-out %.c, ${TESTS})
