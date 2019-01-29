@@ -33,6 +33,7 @@ pipeline {
         }
         ansiColor('xterm') {
           sh '''
+            source $HOME/.cargo/env
             cd rv-match
             git submodule update --init --recursive
             cd c-semantics
