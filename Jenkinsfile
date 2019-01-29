@@ -29,7 +29,7 @@ pipeline {
     stage('RV-Match Integration') {
       steps {
         dir('rv-match') {
-          git url: 'git@github.com:runtimeverification/rv-match.git'
+          git url: 'git@github.com:runtimeverification/rv-match.git', branch: 'jenkinsfile-testing'
         }
         ansiColor('xterm') {
           sh '''
