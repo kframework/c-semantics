@@ -47,7 +47,7 @@ define timestamp_of
     dist/profiles/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
-.PHONY: default check-vars semantics clean stdlibs deps cpp-translation-semantics c-translation-semantics c11-cpp14-semantics test-build pass fail fail-compile parser/cparser clang-tools/clang-kast $(PROFILE)-native
+.PHONY: default check-vars semantics clean stdlibs deps c11-cpp14-semantics test-build pass fail fail-compile parser/cparser clang-tools/clang-kast $(PROFILE)-native
 
 default: test-build
 
@@ -175,14 +175,14 @@ scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 
 # compatability targets
 # TODO: remove when not used in rv-match build
-.PHONY: translation-semantics
-translation-semantics: c11-translation-semantics
+.PHONY: c-translation-semantics
+c-translation-semantics: c11-translation-semantics
+.PHONY: cpp-translation-semantics
+cpp-translation-semantics: cpp14-translation-semantics
 .PHONY: linking-semantics
 linking-semantics: c11-cpp14-linking-semantics
 .PHONY: execution-semantics
 execution-semantics: c11-cpp14-semantics
-.PHONY: cpp-semantics
-cpp-semantics: cpp14-translation-semantics
 
 XYZ_SEMANTICS := $(addsuffix -semantics,c11-translation cpp14-translation c11-cpp14-linking c11-cpp14)
 .PHONY: $(XYZ_SEMANTICS)
