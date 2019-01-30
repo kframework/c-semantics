@@ -89,27 +89,7 @@ let cleanFileName str =
   let str1 =
     if str <> "" && String.get str 0 = '"' (* '"' ( *)
     then rem_quotes str else str in
-  let len = String.length str1 in
-  let str_set (s: string) (n: int) (c: char) : string =
-    let prefix = String.sub s 0 (n + 1) in
-    let postfix = String.sub s (n + 1) ((String.length s) - (n + 1)) in
-    String.concat "" [prefix; String.make 1 c; postfix] in
-  let rec loop (s: string) (copyto: int) (i: int) =
-    if i >= len then
-      String.sub s 0 copyto
-     else
-       let c = String.get s i in
-       if c <> '\\' then begin
-          loop (str_set s copyto c) (copyto + 1) (i + 1)
-       end else begin
-          let s = str_set s copyto '/' in
-          if i < len - 2 && String.get s (i + 1) = '\\' then
-              loop s (copyto + 1) (i + 2)
-          else
-              loop s (copyto + 1) (i + 1)
-       end
-  in
-  loop str1 0 0
+  String.concat "" (String.split_on_char '\\' str1)
 
 let readingFromStdin = ref false
 
