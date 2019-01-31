@@ -1,4 +1,6 @@
-needsInclude.c:2:21: fatal error: include.h: No such file or directory
+needsInclude.c:2:10: fatal error: include.h: No such file or directory
+ #include "include.h"
+          ^~~~~~~~~~~
 compilation terminated.
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
 kcc -d -Werror -Wfatal-errors needsInclude.c
