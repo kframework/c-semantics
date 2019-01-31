@@ -556,6 +556,8 @@ sub parseOpts {
 			during both compilation and linking. [undocumented]
   -fuse-native-std-lib	Use native implementations instead of semantics when
 			interpreting calls to standard library functions.
+  -fno-diagnostics-color	Disable color in diagnostics.
+      { RV_Kcc::Opts::pushArg('cppArgs', '-fno-diagnostics-color'); }
   -x <language>		Set language for input files.
       {
             $RV_Kcc::Opts::xLang = $language;

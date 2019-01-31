@@ -6,4 +6,3 @@ CV-CEA4-bad-static.c:6:3: error: Invalid operand types to subtraction.
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
-kcc -d CV-CEA4-bad-static.c

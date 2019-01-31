@@ -8,6 +8,10 @@ CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 CHECK_RESULT_CRASH = if [ $$? -ne 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
+KCC = kcc
+KCCFLAGS = -Wlint -fno-diagnostics-color -pthread
+CFLAGS = -fno-diagnostics-color -std=c11 -pthread
+
 .PHONY: clean comparison
 .PRECIOUS: %.kcc %.out
 
@@ -15,19 +19,19 @@ comparison: ${TEST_COMPARISON}
 
 %.kcc: %.c
 	@echo -n "Compiling $<... "
-	@kcc -Wlint -o $@ $< -pthread > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@kcc -Wlint -o $@ $^ -pthread > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 L-EFNCE1-good.kcc: L-EFNCE1-good.c
 	@echo -n "Compiling $^... "
-	@kcc -Wlint -Wno-L-EFNC3 -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) -Wno-L-EFNC3 -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 L-EFNCE1-bad.kcc: L-EFNCE1-bad.c
 	@echo -n "Compiling $^... "
-	@kcc -Wlint -Wno-L-EFNC3 -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) -Wno-L-EFNC3 -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.out: %-good.kcc
 	@echo -n "Running $<... "
@@ -46,11 +50,11 @@ L-EFNCE1-bad.kcc: L-EFNCE1-bad.c
 
 %-good.gcc: %-good.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) -pthread -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(CFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.gcc: %-good-link1.c %-good-link2.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) -pthread -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(CFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.output: %-good.gcc
 	@echo -n "Running $<... "

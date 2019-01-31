@@ -7,4 +7,3 @@
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
-kcc -d -Werror -Wfatal-errors j039e-link2.c
