@@ -163,10 +163,10 @@ public:
     }
 
     // Visit any attributes attached to this declaration.
-    for (auto *I : D->attrs()) {
-      if (!getDerived().TraverseAttr(I))
-        return false;
-    }
+    // for (auto *I : D->attrs()) {
+    //   if (!getDerived().TraverseAttr(I))
+    //     return false;
+    // }
     return true;
   }
 
