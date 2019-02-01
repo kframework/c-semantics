@@ -12,6 +12,13 @@ RUN apt install --yes                                                           
         libstdc++6 libxml2 libyaml-cpp-dev llvm-6.0 m4 maven opam openjdk-8-jdk      \
         pkg-config python3 python-jinja2 python-pygments unifdef zlib1g-dev
 
+RUN apt install --yes locales
+
+RUN locale-gen --no-purge en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
 RUN curl -sSL https://get.haskellstack.org/ | sh
@@ -31,3 +38,5 @@ ADD .build/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev .build/k/k
 ADD .build/k/k-distribution/src/main/scripts/lib/opam  /home/user/.tmp-opam/lib/opam/
 RUN    cd /home/user \
     && ./.tmp-opam/bin/k-configure-opam-dev
+
+RUN opam install linenoise
