@@ -7,4 +7,3 @@ bitfield-type.c:1:1: warning: Bit-field with type other than signed int, unsigne
         see MISRA-C section 8.6:1 http://rvdoc.org/MISRA-C/8.6
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
-kcc -d -Werror -Wfatal-errors bitfield-type.c

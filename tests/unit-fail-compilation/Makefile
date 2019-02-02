@@ -11,6 +11,11 @@ C_TEST_COMPARISON = ${C_TESTS:=.cmp}
 CHECK_RESULT_COMPILE = if [ $$? -eq 1 -o $$? -eq 255 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
+KCC = ../../dist/kcc
+KXX = ../../dist/k++
+
+KCCFLAGS = -fno-diagnostics-color -Werror -Wfatal-errors
+
 .PHONY: test clean reference comparison
 .PRECIOUS: %.kcc %.out
 
@@ -23,19 +28,23 @@ cpp-comparison: ${CPP_TEST_COMPARISON}
 
 %-link1.c.kcc.out: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@../../dist/kcc -Werror -Wfatal-errors $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@sed -i "/kcc -d/d" $@
 
 %-link1.C.kcc.out: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
-	@../../dist/k++ -Werror -Wfatal-errors $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KXX) $(KCCFLAGS) $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@sed -i "/k++ -d/d" $@
 
 %.c.kcc.out: %.c
 	@echo -n "Compiling $<... "
-	@../../dist/kcc -Werror -Wfatal-errors $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@sed -i "/kcc -d/d" $@
 
 %.C.kcc.out: %.C
 	@echo -n "Compiling $<... "
-	@../../dist/k++ -fno-native-compilation -Werror -Wfatal-errors $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KXX) -fno-native-compilation $(KCCFLAGS) $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@sed -i "/k++ -d/d" $@
 
 
 %.cmp: %.kcc.out %.ref

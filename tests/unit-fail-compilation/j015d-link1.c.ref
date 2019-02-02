@@ -4,4 +4,3 @@ j015d-link2.c:3: Undefined behavior: Identifier f declared with incompatible typ
    see CERT-C section DCL23-C http://rvdoc.org/CERT-C/DCL23-C
    see CERT-C section DCL40-C http://rvdoc.org/CERT-C/DCL40-C
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
-kcc -d -Werror -Wfatal-errors j015d-link1.c j015d-link2.c

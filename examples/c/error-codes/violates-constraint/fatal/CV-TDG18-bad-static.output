@@ -6,4 +6,3 @@ CV-TDG18-bad-static.c:4:7: error: Declaration for x appears with invalid storage
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
-kcc -d CV-TDG18-bad-static.c

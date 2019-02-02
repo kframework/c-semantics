@@ -6,4 +6,3 @@ CV-TDG8-bad-static.c:6:2: error: Declaration has initializer but incomplete type
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
-kcc -d CV-TDG8-bad-static.c

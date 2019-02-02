@@ -15,7 +15,7 @@
 
 using namespace clang;
 using namespace clang::tooling;
-using namespace llvm;
+namespace cl = llvm::cl;
 
 // Apply a custom category to all command-line options so that they are the
 // only ones displayed.
@@ -119,7 +119,7 @@ public:
     throw std::logic_error("unimplemented stmt");
   }
 
-  bool VisitType(Type *T) {
+  bool VisitType(clang::Type *T) {
     dup2(dupedFd, STDERR_FILENO);
     T->dump();
     printf("%s", T->getTypeClassName());
@@ -141,35 +141,34 @@ public:
     return RecursiveASTVisitor::TraverseStmt(S);
   }
 
-// copied from RecursiveASTVisitor.h with a change made: D->isImplicit() -> excludedDecl(D)
-bool TraverseDecl(Decl *D) {
-  if (!D)
-    return true;
+  // copied from RecursiveASTVisitor.h with a change made: D->isImplicit() -> excludedDecl(D)
+  bool TraverseDecl(Decl *D) {
+    if (!D)
+      return true;
 
-  if (excludedDecl(D))
-    return true;
+    if (excludedDecl(D))
+      return true;
 
-  AddKApplyNode("DeclLoc", 2);
-  AddCabsLoc(D->getLocation());
+    AddKApplyNode("DeclLoc", 2);
+    AddCabsLoc(D->getLocation());
 
-  switch (D->getKind()) {
+    switch (D->getKind()) {
 #define ABSTRACT_DECL(DECL)
 #define DECL(CLASS, BASE)                                                      \
-  case Decl::CLASS:                                                            \
-    if (!getDerived().Traverse##CLASS##Decl(static_cast<CLASS##Decl *>(D)))    \
-      return false;                                                            \
-    break;
+    case Decl::CLASS:                                                            \
+      if (!getDerived().Traverse##CLASS##Decl(static_cast<CLASS##Decl *>(D)))    \
+        return false;                                                            \
+      break;
 #include "clang/AST/DeclNodes.inc"
-  }
+    }
 
-  // Visit any attributes attached to this declaration.
-  for (auto *I : D->attrs()) {
-    if (!getDerived().TraverseAttr(I))
-      return false;
+    // Visit any attributes attached to this declaration.
+    // for (auto *I : D->attrs()) {
+    //   if (!getDerived().TraverseAttr(I))
+    //     return false;
+    // }
+    return true;
   }
-  return true;
-}
-
 
   void AddCabsLoc(SourceLocation loc) {
     SourceManager &mgr = Context->getSourceManager();
@@ -196,14 +195,14 @@ bool TraverseDecl(Decl *D) {
 
 #define STMT(CLASS, PARENT)                                                   \
   bool WalkUpFrom##CLASS(CLASS *S) {                                          \
-   WALK_UP_HELPER(Visit##CLASS(S));                                          \
+    WALK_UP_HELPER(Visit##CLASS(S));                                          \
     WALK_UP_HELPER(WalkUpFrom##PARENT(S));                                    \
     return true;                                                              \
   }
 #include "clang/AST/StmtNodes.inc"
 
 #define TYPE(CLASS, BASE)                                                     \
-  bool WalkUpFrom##CLASS##Type(CLASS##Type *T) {                              \
+  bool WalkUpFrom##CLASS##Type(clang::CLASS##Type *T) {                       \
     WALK_UP_HELPER(Visit##CLASS##Type(T));                                    \
     WALK_UP_HELPER(WalkUpFrom##BASE(T));                                      \
     return true;                                                              \
@@ -1229,7 +1228,7 @@ bool TraverseDecl(Decl *D) {
     return false;
   }
 
-  bool VisitPointerType(PointerType *T) {
+  bool VisitPointerType(clang::PointerType *T) {
     AddKApplyNode("PointerType", 1);
     return false;
   }
@@ -1239,8 +1238,8 @@ bool TraverseDecl(Decl *D) {
     return false;
   }
 
-  bool TraverseArrayHelper(ArrayType *T) {
-    if (T->getSizeModifier() != ArrayType::Normal) {
+  bool TraverseArrayHelper(clang::ArrayType *T) {
+    if (T->getSizeModifier() != clang::ArrayType::Normal) {
       doThrow("unimplemented: static/* array");
     }
     AddKApplyNode("ArrayType", 2);
@@ -2050,7 +2049,7 @@ bool TraverseDecl(Decl *D) {
     return false;
   }
 
-  bool TraverseLambdaCapture(LambdaExpr *E, const LambdaCapture *C) {
+  bool TraverseLambdaCapture(LambdaExpr *E, const LambdaCapture *C, Expr*) {
     AddKApplyNode("LambdaCapture", 2);
     switch(C->getCaptureKind()) {
     case LCK_This:
@@ -2093,11 +2092,10 @@ bool TraverseDecl(Decl *D) {
       }
     }
     AddKSequenceNode(i);
-    for (LambdaExpr::capture_iterator C = E->explicit_capture_begin(),
-                                      CEnd = E->explicit_capture_end();
-         C != CEnd; ++C) {
-      if(C->isExplicit()) {
-        TRY_TO(TraverseLambdaCapture(E, C));
+    for (unsigned I = 0, N = E->capture_size(); I != N; ++I) {
+      const LambdaCapture *C = E->capture_begin() + I;
+      if (C->isExplicit()) {
+        TRY_TO(TraverseLambdaCapture(E, C, E->capture_init_begin()[I]));
       }
     }
 
@@ -2118,7 +2116,7 @@ bool TraverseDecl(Decl *D) {
     AddKTokenNode(res, "String");
   }
 
-  void VisitAPInt(APInt i) {
+  void VisitAPInt(llvm::APInt i) {
     std::string *name = new std::string(i.toString(10, false));
     AddKTokenNode(name->c_str(), "Int");
   }
@@ -2130,7 +2128,7 @@ bool TraverseDecl(Decl *D) {
   }
 
 
-  void VisitAPFloat(APFloat f) {
+  void VisitAPFloat(llvm::APFloat f) {
     if (!f.isFinite()) {
       doThrow("unimplemented: special floats");
     }
@@ -2388,7 +2386,7 @@ private:
     AddKApplyNode("Identifier", 1);
     auto mangler = Context->createMangleContext();
     std::string mangledName;
-    raw_string_ostream s(mangledName);
+    llvm::raw_string_ostream s(mangledName);
     if (D->hasLinkage()) {
 		if (CXXConstructorDecl *CtorDecl = dyn_cast<CXXConstructorDecl>(D))
 			mangler->mangleCXXCtor(CtorDecl, Ctor_Complete, s);

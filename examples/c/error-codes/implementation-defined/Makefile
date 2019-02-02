@@ -10,15 +10,19 @@ CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else 
 .PHONY: clean comparison
 .PRECIOUS: %.kcc %.out
 
+KCC = kcc
+KCCFLAGS = -fno-native-compilation -fno-diagnostics-color
+CFLAGS = -fno-diagnostics-color -std=c11
+
 comparison: ${TEST_COMPARISON}
 
 %.kcc: %.c
 	@echo -n "Compiling $<... "
-	@kcc -fno-native-compilation -o $@ $< -pthread > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) -o $@ $< -pthread > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@kcc -fno-native-compilation -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.out: %-good.kcc
 	@echo -n "Running $<... "
@@ -33,11 +37,11 @@ comparison: ${TEST_COMPARISON}
 
 %-good.gcc: %-good.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) -std=c11 -o $@ $< -lm -pthread > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(CFLAGS) -o $@ $< -lm -pthread > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.gcc: %-good-link1.c %-good-link2.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(CFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.output: %-good.gcc
 	@echo -n "Running $<... "

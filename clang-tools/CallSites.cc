@@ -33,9 +33,7 @@ const char *char_type;
 class ProcessTypeVisitor
   : public RecursiveASTVisitor<ProcessTypeVisitor> {
 public:
-  explicit ProcessTypeVisitor(ASTContext *Context)
-    : Context(Context) {
-  }
+  explicit ProcessTypeVisitor(ASTContext *Context) { }
 
 #define WALK_UP_HELPER(CALL_EXPR)                                             \
   do {                                                                        \
@@ -44,9 +42,8 @@ public:
     } while (0)
 
 
-
 #define TYPE(CLASS, BASE)                                                     \
-  bool WalkUpFrom##CLASS##Type(CLASS##Type *T) {                              \
+  bool WalkUpFrom##CLASS##Type(clang::CLASS##Type *T) {                              \
     WALK_UP_HELPER(Visit##CLASS##Type(T));                                    \
     WALK_UP_HELPER(WalkUpFrom##BASE(T));                                      \
     return true;                                                              \
@@ -73,7 +70,7 @@ public:
     outs() << "p_";
     return true;
   }
-  bool TraversePointerType(PointerType *T) {
+  bool TraversePointerType(clang::PointerType *T) {
     outs() << "p_";
     return true;
   }
@@ -192,17 +189,15 @@ public:
     }
   }
 
-  bool VisitType(Type *T) {
+  bool VisitType(clang::Type *T) {
     T->dump();
     throw std::logic_error("unsupported type");
   }
 
-private:
-  ASTContext *Context;
 };
 
 void processType(QualType T, ASTContext *Context) {
-  const Type *type_ptr = T.getTypePtr();
+  const clang::Type *type_ptr = T.getTypePtr();
   ProcessTypeVisitor Visitor = ProcessTypeVisitor(Context);
   Visitor.TraverseType(T);
 }
@@ -217,10 +212,10 @@ public:
   bool VisitCallExpr(CallExpr *E) {
     Expr *callee = E->getCallee();
     QualType callee_type = callee->getType();
-    const Type *callee_type_ptr = callee_type.getTypePtr();
+    const clang::Type *callee_type_ptr = callee_type.getTypePtr();
     QualType pointee_type = callee_type_ptr->getPointeeType();
-    const Type *pointee_type_ptr = pointee_type.getTypePtr();
-    const FunctionType *function_type = pointee_type_ptr->getAs<FunctionType>();
+    const clang::Type *pointee_type_ptr = pointee_type.getTypePtr();
+    const clang::FunctionType *function_type = pointee_type_ptr->getAs<clang::FunctionType>();
     processType(function_type->getReturnType(), Context);
     if (const FunctionProtoType *prototype = function_type->getAs<FunctionProtoType>()) {
       unsigned nparams = prototype->getNumParams();
