@@ -17,6 +17,7 @@ require "syntax.k"
 require "template-deduction.k"
 require "value-category.k"
 
+require "decl/alias.k"
 require "decl/class.k"
 require "decl/declarator.k"
 require "decl/enum.k"
@@ -83,6 +84,7 @@ module CPP-TRANSLATION
      imports CPP-TRANSLATION-TEMPLATE-DEDUCTION
      imports CPP-TRANSLATION-VALUE-CATEGORY
 
+     imports CPP-TRANSLATION-DECL-ALIAS
      imports CPP-TRANSLATION-DECL-CLASS
      imports CPP-TRANSLATION-DECL-ENUM
      imports CPP-TRANSLATION-DECL-DECLARATOR
