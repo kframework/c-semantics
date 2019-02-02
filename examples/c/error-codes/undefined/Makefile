@@ -7,6 +7,10 @@ TEST_COMPARISON = ${TESTS:.c=.cmp}
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
+KCC = kcc
+KCCFLAGS = -frecover-all-errors -fno-native-compilation -fno-diagnostics-color
+CFLAGS = -fno-diagnostics-color -std=c11
+
 .PHONY: clean comparison
 .PRECIOUS: %.kcc %.out
 
@@ -14,11 +18,11 @@ comparison: ${TEST_COMPARISON}
 
 %.kcc: %.c
 	@echo -n "Compiling $<... "
-	@kcc -frecover-all-errors -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@kcc -frecover-all-errors -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.out: %-good.kcc
 	@echo -n "Running $<... "
@@ -33,11 +37,11 @@ comparison: ${TEST_COMPARISON}
 
 %-good.gcc: %-good.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(CFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.gcc: %-good-link1.c %-good-link2.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(CFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.output: %-good.gcc
 	@echo -n "Running $<... "

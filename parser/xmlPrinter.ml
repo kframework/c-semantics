@@ -1,6 +1,5 @@
 open Escape
 open Cabs
-open Base64
 open Big_int
 
 let counter = ref 0

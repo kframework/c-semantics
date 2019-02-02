@@ -5,4 +5,3 @@ j009f.c:6:7: error: Trying to look up identifier x, but no such identifier is in
         see CERT-C section DCL31-C http://rvdoc.org/CERT-C/DCL31-C
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
-kcc -d -Werror -Wfatal-errors j009f.c

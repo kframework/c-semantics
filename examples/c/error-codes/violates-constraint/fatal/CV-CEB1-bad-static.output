@@ -6,4 +6,3 @@ CV-CEB1-bad-static.c:5:3: error: Both bitwise shift operands must have integer t
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
-kcc -d CV-CEB1-bad-static.c

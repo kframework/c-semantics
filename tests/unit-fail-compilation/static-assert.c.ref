@@ -6,4 +6,3 @@ static-assert.c:1:16: error: Static assertion failed: fifty minus fifty must be 
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
-kcc -d -Werror -Wfatal-errors static-assert.c

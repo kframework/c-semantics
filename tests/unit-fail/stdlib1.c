@@ -5,6 +5,6 @@ int main(void) {
       if (nothing) abort();
 
 
-      char * user = getenv("USER");
+      char * user = getenv("PATH");
       *user = 'x';
 }
