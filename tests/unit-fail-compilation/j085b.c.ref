@@ -1,3 +1,2 @@
 j085b.c[1:5-19] : undeclared identifier in parameter identifier list
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
-kcc -d -Werror -Wfatal-errors j085b.c

@@ -11,6 +11,10 @@ CHECK_RESULT_COMPILE_FATAL = if [ $$? -eq 1 ] ; then echo "passed $<"; mv $@.tmp
 
 CHECK_RESULT_RUN_FATAL = if [ $$? -eq 139 ] ; then echo "passed $<"; cat $@.tmp > $@; rm $@.tmp; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
+KCC = kcc
+KCCFLAGS =  -fno-diagnostics-color
+CFLAGS = -fno-diagnostics-color -std=c11
+
 .PHONY: clean comparison
 .PRECIOUS: %.kcc %.out
 
@@ -18,14 +22,15 @@ comparison: ${TEST_COMPARISON}
 
 %-bad-static.out: %-bad-static.c
 	@echo -n "Compiling $<... "
-	@kcc $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE_FATAL}
+	@$(KCC) $(KCCFLAGS) $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE_FATAL}
+	@sed -i "/kcc -d/d" $@
 
 %-bad.kcc: %-bad.c
 	@echo -n "Compiling $<... "
-	@kcc -fno-native-compilation -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) -fno-native-compilation -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %-good.kcc: %-good.c
 	@echo -n "Compiling $<... "
-	@kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.out: %-good.kcc
 	@echo -n "Running $<... "
@@ -37,11 +42,11 @@ comparison: ${TEST_COMPARISON}
 
 %-good.gcc: %-good.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(CFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.gcc: %-good-link1.c %-good-link2.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) $(CFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.output: %-good.gcc
 	@echo -n "Running $<... "

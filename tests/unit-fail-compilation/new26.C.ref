@@ -1,17 +1,16 @@
-new26.C:14:1: warning: replacement function 'operator new' cannot be declared 'inline' [-Winline-new-delete]
+[1mnew26.C:14:1: [0m[0;1;35mwarning: [0m[1mreplacement function 'operator new' cannot be declared 'inline' [-Winline-new-delete][0m
 inline void *operator new(long unsigned int)
-^
-new26.C:19:1: warning: replacement function 'operator delete' cannot be declared 'inline' [-Winline-new-delete]
+[0;1;32m^
+[0m[1mnew26.C:19:1: [0m[0;1;35mwarning: [0m[1mreplacement function 'operator delete' cannot be declared 'inline' [-Winline-new-delete][0m
 inline void operator delete (void*) {}
-^
-new26.C:19:13: warning: function previously declared with an explicit exception specification redeclared with an implicit exception specification [-Wimplicit-exception-spec-mismatch]
+[0;1;32m^
+[0m[1mnew26.C:19:13: [0m[0;1;35mwarning: [0m[1mfunction previously declared with an explicit exception specification redeclared with an implicit exception specification [-Wimplicit-exception-spec-mismatch][0m
 inline void operator delete (void*) {}
-            ^
-3 warnings generated.
+[0;1;32m            ^
+[0m3 warnings generated.
 <unknown>: error: Declared replacement function operator delete(void *) but no operator delete(void *, std::size_t).
 
     Ill-formed program (ILF-TIN1):
         see C++14 section 18.6.1.1:11 http://rvdoc.org/C++14/18.6.1.1
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
-k++ -d -fno-native-compilation -Werror -Wfatal-errors new26.C

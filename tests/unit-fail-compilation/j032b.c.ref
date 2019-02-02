@@ -1,3 +1,2 @@
 j032b.c[2:7-10] : syntax error
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
-kcc -d -Werror -Wfatal-errors j032b.c

@@ -6,4 +6,3 @@ incompatible-compare.c:5:3: error: Incompatible types in relational expression.
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
-kcc -d -Werror -Wfatal-errors incompatible-compare.c

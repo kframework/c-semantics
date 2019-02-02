@@ -6,4 +6,3 @@ CV-CTI3-bad-static.c:3:1: error: The width of a bit field shall be an integer co
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
-kcc -d CV-CTI3-bad-static.c

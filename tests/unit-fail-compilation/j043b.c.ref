@@ -5,4 +5,3 @@ j043b.c:2:7: warning: Conversion from an integer to non-null pointer.
         see CERT section INT36-C http://rvdoc.org/CERT/INT36-C
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
-kcc -d -Werror -Wfatal-errors j043b.c
