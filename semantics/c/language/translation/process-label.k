@@ -2,7 +2,7 @@ module C-PROCESS-LABEL-SYNTAX
      imports BASIC-K
      imports COMMON-SORTS
 
-     syntax KItem ::= calculateGotoMap(CId, K)
+     syntax KItem ::= calculateGotoMap(K)
 endmodule
 
 module C-PROCESS-LABEL
@@ -15,6 +15,7 @@ module C-PROCESS-LABEL
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
 
      /*
      things I have to keep track of:
@@ -33,10 +34,7 @@ module C-PROCESS-LABEL
      */
 
      syntax KItem ::= "waitingOnGotoMap"
-     rule <k> calculateGotoMap(F:CId, K:K) => waitingOnGotoMap ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map> M:Map => M[F <- .Map] </goto-map>
+     rule <k> calculateGotoMap(K:K) => waitingOnGotoMap ...</k>
           <goto-map-calc>
                .Bag => (<goto-calc>...
                          <computation>
@@ -52,43 +50,33 @@ module C-PROCESS-LABEL
 
      rule <k> waitingOnGotoMap => .K ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map>... (F |-> (.Map)) => .Map ...</goto-map>
-     rule <k> waitingOnGotoMap => .K ...</k>
-          <goto-map-calc> .Bag </goto-map-calc>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map>... F |-> M:Map ...</goto-map>
-          requires M =/=K .Map
 
-     rule <computation> Nop() => .K ...</computation>
-          <k> waitingOnGotoMap ...</k>
-     rule <computation> Computation(_) => .K ...</computation>
-          <k> waitingOnGotoMap ...</k>
-     rule <computation> Break() => .K ...</computation>
-          <k> waitingOnGotoMap ...</k>
-     rule <computation> Continue() => .K ...</computation>
-          <k> waitingOnGotoMap ...</k>
-     rule <computation> Return(_) => .K ...</computation>
-          <k> waitingOnGotoMap ...</k>
-     rule <computation> Goto(_) => .K ...</computation>
-          <k> waitingOnGotoMap ...</k>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> Nop() => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> Computation(_) => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> Break() => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> Continue() => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> Return(_) => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> Goto(_) => .K ...</computation>
 
-     rule <computation> pushBlock(Tag::Int) => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> pushBlock(Tag::Int) => .K ...</computation>
           <goto-block-history> .List => ListItem(Tag) ...</goto-block-history>
-          <k> waitingOnGotoMap ...</k>
-     rule <computation> popBlock => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> popBlock => .K ...</computation>
           <goto-block-history> ListItem(_) => .List ...</goto-block-history>
-          <k> waitingOnGotoMap ...</k>
 
-     rule <computation> L:CabsLoc => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> L:CabsLoc => .K ...</computation>
           <curr-program-loc> _ => L </curr-program-loc>
-          <k> waitingOnGotoMap ...</k>
 
-     rule <computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation>
                declareInternalVariable(X::CId, T::Type, Init::KResult) => .K
           ...</computation>
           <decl-stack>...
@@ -97,17 +85,17 @@ module C-PROCESS-LABEL
                     declareInternalVariable(X, T, Init)))
           </decl-stack>
           <goto-block-history> ListItem(BlockNum::Int) ...</goto-block-history>
-          <k> waitingOnGotoMap ...</k>
 
-     rule <computation> typedef(X::CId, T::Type) => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> typedef(X::CId, T::Type) => .K ...</computation>
           <decl-stack>... .List
                => ListItem(frozenDeclaration(BlockNum, typedef(X, T)))
           </decl-stack>
           <goto-block-history> ListItem(BlockNum::Int) ...</goto-block-history>
-          <k> waitingOnGotoMap ...</k>
 
      // - should do this with a split
-     rule <goto-calc>
+     rule <k> waitingOnGotoMap ...</k>
+          <goto-calc>
                <computation>
                     (For(Control:K, Post:K, S:K) => .K)
                     ~> K:K
@@ -143,9 +131,9 @@ module C-PROCESS-LABEL
                     </goto-loop-stack>
                </goto-calc>
           )
-          <k> waitingOnGotoMap ...</k>
 
-     rule <computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation>
                (.K => S ~> loopMarked)
                ~> While(_, S:K)
                ~> (.K => popLoop)
@@ -156,13 +144,14 @@ module C-PROCESS-LABEL
           <goto-loop-stack>
                (.List => ListItem(kpair(Num, (K ~> Tail))))
           ...</goto-loop-stack>
-          <k> waitingOnGotoMap ...</k>
-     rule <computation>
+
+     rule <k> waitingOnGotoMap ...</k>
+          <computation>
                (loopMarked ~> While(_, _) => .K) ~> popLoop ~> _
           </computation>
-          <k> waitingOnGotoMap ...</k>
 
-     rule <goto-calc>
+     rule <k> waitingOnGotoMap ...</k>
+          <goto-calc>
                <computation> (DoWhile(E:K, S:K) => .K) ~> K:K </computation>
                <computation-tail> Tail:K </computation-tail>
                B::Bag
@@ -190,9 +179,9 @@ module C-PROCESS-LABEL
                     </goto-loop-stack>
                </goto-calc>
           )
-          <k> waitingOnGotoMap ...</k>
 
-     rule <goto-calc>
+     rule <k> waitingOnGotoMap ...</k>
+          <goto-calc>
                <computation>
                     (IfThenElse(_, S1:K, S2:K) => .K) ~> K:K
                </computation>
@@ -213,9 +202,9 @@ module C-PROCESS-LABEL
                     B
                </goto-calc>
           )
-          <k> waitingOnGotoMap ...</k>
 
-     rule <computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation>
                (Switch(_, _, S:K) => S ~> popLoop) ~> K:K
           </computation>
           <computation-tail> Tail:K </computation-tail>
@@ -223,62 +212,61 @@ module C-PROCESS-LABEL
           <goto-loop-stack>
                (.List => ListItem(kpair(Num, (K ~> Tail))))
           ...</goto-loop-stack>
-          <k> waitingOnGotoMap ...</k>
 
-     rule <computation> popLoop => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> popLoop => .K ...</computation>
           <goto-loop-stack> ListItem(_) => .List ...</goto-loop-stack>
-          <k> waitingOnGotoMap ...</k>
 
-     rule <computation> (Label(Target::CId, S:K) => S) ~> K:K </computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> (Label(Target::CId, S:K) => S) ~> K:K </computation>
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack::List </goto-loop-stack>
           <decl-stack> DeclStack::List </decl-stack>
-          <curr-scope> blockScope(F::CId, _) </curr-scope>
           <goto-block-history> BlockHistory::List </goto-block-history>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map>...
-               F |-> (M::Map => M[Target
+          <curr-scope> blockScope(... functionLoc: Base::SymBase) </curr-scope>
+          <functions>...
+               Base |-> functionObject(... gotoMap: (
+                    M::Map => M[Target
                          <- gotoObject(BlockHistory,
-                         (S ~> K ~> Tail), LoopStack, DeclStack)])
-          ...</goto-map>
-          <k> waitingOnGotoMap ...</k>
+                         (S ~> K ~> Tail), LoopStack, DeclStack)]
+               ))
+          ...</functions>
           requires notBool (Target in_keys(M))
 
-     rule <computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation>
                (Case(SwitchNum::Int, _, Val:K, S:K) => S) ~> K:K
           </computation>
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack::List </goto-loop-stack>
           <decl-stack> DeclStack::List </decl-stack>
-          <curr-scope> blockScope(F::CId, _) </curr-scope>
           <goto-block-history> BlockHistory::List </goto-block-history>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map>...
-               F:CId |-> (M::Map => M[caseLabel(SwitchNum, Val)
-                         <- gotoObject(BlockHistory,
-                         (S ~> K ~> Tail), LoopStack, DeclStack)])
-          ...</goto-map>
-          <k> waitingOnGotoMap ...</k>
+          <curr-scope> blockScope(... functionLoc: Base::SymBase) </curr-scope>
+          <functions>...
+               Base |-> functionObject(... gotoMap: (
+                    M::Map => M[caseLabel(SwitchNum, Val)
+                              <- gotoObject(BlockHistory,
+                              (S ~> K ~> Tail), LoopStack, DeclStack)]
+               ))
+          ...</functions>
           requires notBool (caseLabel(SwitchNum, Val) in_keys(M))
 
-     rule <computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation>
                (Default(SwitchNum::Int, S:K) => S) ~> K:K
           </computation>
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack::List </goto-loop-stack>
           <decl-stack> DeclStack::List </decl-stack>
-          <curr-scope> blockScope(F::CId, _) </curr-scope>
           <goto-block-history> BlockHistory::List </goto-block-history>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map>...
-               F:CId |-> (M::Map => M[caseLabel(SwitchNum, #klabel(`Default`))
-                         <- gotoObject(BlockHistory,
-                         (S ~> K ~> Tail), LoopStack, DeclStack)])
-          ...</goto-map>
-          <k> waitingOnGotoMap ...</k>
+          <curr-scope> blockScope(... functionLoc: Base::SymBase) </curr-scope>
+          <functions>...
+               Base |-> functionObject(... gotoMap: (
+                    M::Map => M[caseLabel(SwitchNum, #klabel(`Default`))
+                              <- gotoObject(BlockHistory,
+                              (S ~> K ~> Tail), LoopStack, DeclStack)]
+               ))
+          ...</functions>
           requires notBool (caseLabel(SwitchNum, #klabel(`Default`)) in_keys(M))
 
 endmodule

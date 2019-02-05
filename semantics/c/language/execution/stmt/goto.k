@@ -5,6 +5,7 @@ module C-STMT-GOTO
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-IO-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports DELETE-OBJECT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.1}{2}}}{
@@ -82,20 +83,14 @@ module C-STMT-GOTO
      */
 
      rule <k> Goto(Lbl:CId) => gotoUp({G[Lbl]}:>GotoObject) ...</k>
-          <curr-scope> blockScope(F::CId, _) </curr-scope>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map>...
-               F |-> G::Map
-          ...</goto-map>
+          <curr-scope> blockScope(... functionLoc: Base::SymBase) </curr-scope>
+          <functions>... Base |-> functionObject(... gotoMap: G::Map) ...</functions>
           requires Lbl =/=K funLabel
      rule <k> Goto(funLabel) ~> _ => Blk </k>
-          <curr-scope> blockScope(F::CId, _) </curr-scope>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map>...
-               F |-> (_ funLabel |-> gotoObject(_, Blk:K, _, _))
-          ...</goto-map>
+          <curr-scope> blockScope(... functionLoc: Base::SymBase) </curr-scope>
+          <functions>...
+               Base |-> functionObject(... gotoMap: (_ funLabel |-> gotoObject(_, Blk:K, _, _)))
+          ...</functions>
 
      // - as long as there are entries in the actual block history that differ
      // from the target block history, we need to pop

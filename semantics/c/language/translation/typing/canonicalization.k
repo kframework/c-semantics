@@ -21,6 +21,7 @@ module C-TYPING-CANONICALIZATION
      imports COMMON-SYNTAX
      imports COMPAT-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
      imports INT
      imports K-REFLECTION
@@ -67,9 +68,6 @@ module C-TYPING-CANONICALIZATION
                _,
                _::List (.List => ListItem(alignas(A))))
           [structural]
-     rule canonicalizeType'(_::List (ListItem(S:KItem) => ListItem(SpecExtendsTuOf(getKccExtendsTuOfAttr(S)))), _, _)
-          requires getKccExtendsTuOfAttr(S) =/=K #NoName
-          [structural]
      rule (.K => CV("TCANON3", "Function declared without a return type."))
           ~> canonicalizeType'(_::List ListItem(MissingType()), _, _)
           [structural]
@@ -83,18 +81,7 @@ module C-TYPING-CANONICALIZATION
      rule isReducibleSpecifier(AlignasExpression(_)) => true
      rule isReducibleSpecifier(AlignasType(_, _)) => true
      rule isReducibleSpecifier(MissingType()) => true
-     rule isReducibleSpecifier(Attribute(_, list(Attrs::List))) => true
-          requires getKccExtendsTuOf(Attrs) =/=K #NoName
      rule isReducibleSpecifier(_) => false [owise]
-
-     syntax CId ::= getKccExtendsTuOfAttr(K) [function]
-     rule getKccExtendsTuOfAttr(Attribute(_, list(Attrs::List))) => getKccExtendsTuOf(Attrs)
-     rule getKccExtendsTuOfAttr(_) => #NoName [owise]
-
-     syntax CId ::= getKccExtendsTuOf(List) [function]
-     rule getKccExtendsTuOf(ListItem(Call(Identifier("kcc_extends_tu_of"), list(ListItem(X::CId)))) _) => X
-     rule getKccExtendsTuOf(.List) => #NoName
-     rule getKccExtendsTuOf((ListItem(_) => .List) _) [owise]
 
      rule addMods(Mods::List ListItem(RestrictReserved(Tok:String, _)), T:Type)
           => addMods(Mods, addQualifier(Restrict(), T))
@@ -115,9 +102,6 @@ module C-TYPING-CANONICALIZATION
      rule addMods(Mods::List (ListItem(S:KItem) => .List), _)
           requires notBool isModifier(S)
                andBool notBool isReducibleSpecifier(S)
-          [structural]
-     rule addMods(_::List (ListItem(S:KItem) => ListItem(SpecExtendsTuOf(getKccExtendsTuOfAttr(S)))), _)
-          requires getKccExtendsTuOfAttr(S) =/=K #NoName
           [structural]
      rule addMods(.List, T:Type) => T
           requires notBool isCompleteType(T)
@@ -160,7 +144,7 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <tags> Tags:Map </tags>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <curr-scope> blockScope(... block: BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
                andBool notBool (tag(X, Tu, global) in_keys({{Tags[Tu]}<:KItem}:>Map))
@@ -193,7 +177,7 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <tags> Tags:Map </tags>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <curr-scope> blockScope(... block: BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
                andBool notBool (tag(X, Tu, global) in_keys({{Tags[Tu]}<:KItem}:>Map))
@@ -226,7 +210,7 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <tags> Structs:Map </tags>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <curr-scope> blockScope(... block: BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
                andBool notBool (tag(X, Tu, global) in_keys({{Structs[Tu]}<:KItem}:>Map))

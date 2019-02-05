@@ -345,7 +345,7 @@ void dynamic_buffer_overrun_018 ()
 {
 	int *buf=(int*) calloc(5,sizeof(int));
 	int indexes[4] = {3, 4, 5, 6};
-	int index = 4;
+	int index = 3;
 	if(buf!=NULL)
 	{
 	    *(buf+indexes[index]) = 1;/*Tool should detect this line as error*/ /*ERROR:Buffer overrun*/
@@ -529,7 +529,7 @@ void dynamic_buffer_overrun_028 ()
 		{
 	    	*(buf1+i)=i;
 		}
-    	*(buf2+*(buf1+5))=1;/*Tool should detect this line as error*/ /*ERROR:Buffer overrun*/
+    	*(buf2+*(buf1+4))=1;/*Tool should detect this line as error*/ /*ERROR:Buffer overrun*/
 	    free(buf1);
 	    free(buf2);
 }

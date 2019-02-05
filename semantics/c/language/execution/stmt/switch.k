@@ -8,6 +8,7 @@ module C-STMT-SWITCH
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
 
      // switch num, promoted value of controlling exp, int value of exp
      syntax KItem ::= handleSwitch(Int, K) [strict(2)]
@@ -40,10 +41,8 @@ module C-STMT-SWITCH
      rule <k> handleSwitch(SN:Int, V:RValue)
                => #handleSwitch-aux(SN, V, nextCaseLabel, M)
           ...</k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map>... F |-> M:Map ...</goto-map>
+          <curr-scope> blockScope(... functionLoc: Base::SymBase) </curr-scope>
+          <functions>... Base |-> functionObject(... gotoMap: M::Map) ...</functions>
           [structural]
 
      // K to be evaluated, val it should be, casehelper

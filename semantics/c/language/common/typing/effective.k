@@ -92,7 +92,7 @@ module C-TYPING-EFFECTIVE
           <mem>... Base |-> object(T::EffectiveType, Len::Int, _) ...</mem>
           [structural]
      rule <k> getEffectiveType(Base::SymBase) => T ...</k>
-          <functions>... Base |-> functionObject(_, t(...) #as T::Type, _) ...</functions>
+          <functions>... Base |-> functionObject(... defType: t(...) #as T::Type) ...</functions>
           [structural]
      rule <k> getEffectiveType(Base::SymBase) => type(no-type) ...</k>
           <mem> Mem::Map </mem>

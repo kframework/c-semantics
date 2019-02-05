@@ -14,4 +14,3 @@ CV-TSE1-bad-static.c:9:2: error: Conversion to or from non-scalar type.
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
-kcc -d CV-TSE1-bad-static.c

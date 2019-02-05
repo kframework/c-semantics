@@ -1,11 +1,12 @@
 module C-TYPING-COMMON-SYNTAX
      imports LIST
+     imports MAP
      imports BASIC-K
      imports C-TYPING-SORTS
      imports COMMON-SORTS
 
      // Function id, def return type, def params, local declarations.
-     syntax RValue ::= functionObject(CId, Type, List)
+     syntax RValue ::= functionObject(id: CId, defType: Type, locals: List, gotoMap: Map)
 
      syntax Type ::= adjustParams(Type) [function]
      syntax List ::= "adjustParams'" "(" List ")" [function]

@@ -16,8 +16,6 @@ module CPP-TRANSLATION-PROCESS-LABEL
      syntax KItem ::= "waitingOnGotoMap"
 
      rule <k> calculateGotoMap(K:K) => waitingOnGotoMap ...</k>
-          <curr-tr-tu> Tu::String </curr-tr-tu>
-          <tu-id> Tu </tu-id>
           <goto-map-calc>
                .Bag => (<goto-calc>...
                          <computation>
@@ -42,8 +40,6 @@ module CPP-TRANSLATION-PROCESS-LABEL
           <curr-tr-scope> blockScope(_, F::SymBase, _) </curr-tr-scope>
           <goto-nesting-depth> Depth::Int </goto-nesting-depth>
           <goto-block-history> BlockHistory::List </goto-block-history>
-          <curr-tr-tu> Tu::String </curr-tr-tu>
-          <tu-id> Tu </tu-id>
           <goto-map> M::Map =>
                M[F, Target <- gotoObject(Depth, BlockHistory,
                     (listToK(L) ~> K ~> Tail), LoopStack, DeclStack)]
