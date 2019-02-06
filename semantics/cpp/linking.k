@@ -12,6 +12,7 @@ require "language/translation/process-label.k"
 require "language/translation/syntax.k"
 require "language/translation/template-deduction.k"
 require "language/translation/value-category.k"
+require "language/translation/decl/alias.k"
 require "language/translation/decl/class.k"
 require "language/translation/decl/declarator.k"
 require "language/translation/decl/initializer.k"
@@ -31,6 +32,7 @@ module CPP-LINKING
      imports CPP-TRANSLATION-ODR
      imports CPP-TRANSLATION-OVERLOADING
      imports CPP-TRANSLATION-VALUE-CATEGORY
+     imports CPP-TRANSLATION-DECL-ALIAS
      imports CPP-TRANSLATION-DECL-DECLARATOR
      imports CPP-TRANSLATION-DECL-TEMPLATE
      imports CPP-TRANSLATION-DECL-TYPEDEF
