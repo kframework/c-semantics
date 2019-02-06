@@ -23,6 +23,7 @@ module OPTIONS-SYNTAX
 
      syntax Opt ::= RecoverAll()                      // Attempt recovery on all errors.
                   | InteractiveFail()                 // Enter interactive mode when recovery fails.
+                  | FatalErrors()                     // Don't attempt any error recovery.
 
      syntax String ::= showOpt(Opt) [function]
 
@@ -44,6 +45,7 @@ module OPTIONS
      rule showOpt(Heap(N::Int)) => "heap=" +String showInt(N)
      rule showOpt(RecoverAll()) => "recover-all"
      rule showOpt(InteractiveFail()) => "interactive-fail"
+     rule showOpt(FatalErrors()) => "fatal-errors"
      rule showOpt(Opt::Opt) => showK(Opt) [owise]
 
 endmodule

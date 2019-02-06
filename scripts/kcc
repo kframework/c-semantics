@@ -352,6 +352,10 @@ sub makeOptions {
             push(@options, "`InteractiveFail`(.KList)");
       }
 
+      if (arg('-Wfatal-errors')) {
+            push(@options, "`FatalErrors`(.KList)");
+      }
+
       for (breakpoints()) {
             my ($file, $line) = @{$_};
             $file = quote(backslash(quote(rel2abs($file))));
