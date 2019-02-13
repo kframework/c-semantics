@@ -25,8 +25,8 @@ FILES_TO_DIST = \
 	scripts/program-runner \
 	scripts/histogram-csv \
 	parser/cparser \
-	clang-tools/clang-kast \
-	clang-tools/call-sites \
+	clang-tools/build/clang-kast \
+	clang-tools/build/call-sites \
 	scripts/cdecl-3.6/src/cdecl \
 	LICENSE \
 	licenses
@@ -47,7 +47,7 @@ define timestamp_of
     dist/profiles/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
-.PHONY: default check-vars semantics clean stdlibs deps c11-cpp14-semantics test-build pass fail fail-compile parser/cparser clang-tools/clang-kast $(PROFILE)-native
+.PHONY: default check-vars semantics clean stdlibs deps c11-cpp14-semantics test-build pass fail fail-compile parser/cparser $(PROFILE)-native
 
 default: test-build
 
@@ -163,14 +163,15 @@ parser/cparser:
 	@echo "Building the C parser..."
 	@$(MAKE) -C parser
 
-clang-tools/call-sites: clang-tools/clang-kast
+clang-tools/build/call-sites: clang-tools/build/clang-kast
 
-clang-tools/clang-kast: clang-tools/Makefile
+clang-tools/build/clang-kast: clang-tools/build/Makefile
 	@echo "Building the C++ parser..."
-	@$(MAKE) -C clang-tools
+	@$(MAKE) -C clang-tools/build
 
-clang-tools/Makefile:
-	@cd clang-tools && cmake .
+clang-tools/build/Makefile:
+	@mkdir -p clang-tools/build
+	@cd clang-tools/build && cmake ..
 
 scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 	flock -w 120 $< sh -c 'cd scripts && tar xvf cdecl-$*.tar.gz && cd cdecl-$* && ./configure --without-readline && $(MAKE)' || true
@@ -210,7 +211,7 @@ os-check:	test-build
 
 clean:
 	-$(MAKE) -C parser clean
-	-$(MAKE) -C clang-tools clean
+	-rm -rf clang-tools/build
 	-$(MAKE) -C semantics clean
 	-$(MAKE) -C tests clean
 	-$(MAKE) -C tests/unit-pass clean
