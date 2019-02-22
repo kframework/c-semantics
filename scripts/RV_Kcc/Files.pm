@@ -14,6 +14,8 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw();
 our @EXPORT_OK = qw(
       profileDir
+      nativeCC
+      nativeCXX
       distDir
       currentProfile
       defaultProfile
@@ -81,16 +83,21 @@ sub profilesDir {
 }
 
 sub profileDir {
-      state $prof = do {
-            my $d = profilesDir(currentProfile());
-            if (IS_CYGWIN) {
-                  $d = shell("cygpath -w $d")->stdout()->run();
-                  chop($d);
-            }
-            $d;
-      };
+      my $prof = profilesDir(currentProfile());
+      if (IS_CYGWIN) {
+            $prof = shell("cygpath -w $prof")->stdout()->run();
+            chop($prof);
+      }
 
       return catfile($prof, @_);
+}
+
+sub nativeCC {
+      return profileDir("cc");
+}
+
+sub nativeCXX {
+      return profileDir("cxx");
 }
 
 sub getProfiles {
