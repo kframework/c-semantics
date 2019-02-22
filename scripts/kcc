@@ -33,9 +33,9 @@ $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
 use constant KRUN         => do {
-	my $path = defined($ENV{'K_BIN'})? catfile($ENV{'K_BIN'}, 'krun') : 'krun';
-	my $ext = IS_CYGWIN? '.bat' : '';
-	$path . $ext;
+      my $path = defined($ENV{'K_BIN'})? catfile($ENV{'K_BIN'}, 'krun') : 'krun';
+      my $ext = IS_CYGWIN? '.bat' : '';
+      $path . $ext;
 };
 use constant PRINTF       => IS_CYGWIN? 'printf %%s' : 'printf %s';
 use constant QUOTE_INT    => IS_CYGWIN? backslash("\"Int\"") : "\"Int\"";
@@ -201,7 +201,7 @@ sub main {
                         ->stdout($d, 'used_symbols')->run(); 
                   shell("(cat '$trampolines' | awk -F '\t' '{if (\$1!=\"\") print \"__\" \$1; }'; comm -12 '" . catfile($d, 'used_symbols') . "' '" . dumpSymbols() . "') | sort | uniq | " . distDir("make-symbols"))
                         ->stdout($d, 'symbols.c')->run();
-                  shell('gcc', '-std=c11', '-o', catfile($d, 'native_binary'),
+                  shell(nativeCC(), '-std=c11', '-o', catfile($d, 'native_binary'),
                               catfile($native, 'server.c'),
                               catfile($native, 'main.o'),
                               catfile($native, 'builtins.o'),
@@ -231,11 +231,19 @@ sub main {
       return 0;
 }
 
+sub nativeCC {
+      return profileDir("cc");
+}
+
+sub nativeCXX {
+      return profileDir("cxx");
+}
+
 sub nativeCompiler {
       if (arg('-Xk++')) {
-            return profileDir("cxx");
+            return nativeCXX();
       } else {
-            return profileDir("cc");
+            return nativeCC();
       }
 }
 
@@ -607,9 +615,9 @@ sub parse {
 }
 
 sub getStd {
-      state $c45 = ! shell('gcc -std=c45 -E /dev/null')->result(); # sanity check
-      state $cpp14 = ! shell('g++ -std=c++14 -E /dev/null')->result();
-      state $c11 = ! shell('gcc -std=c11 -E /dev/null')->result();
+      state $c45 = ! shell(nativeCC(), '-std=c45', '-E', '/dev/null')->result(); # sanity check
+      state $cpp14 = ! shell(nativeCXX(), '-std=c++14', '-E', '/dev/null')->result();
+      state $c11 = ! shell(nativeCC(), '-std=c11', '-E', '/dev/null')->result();
 
       my ($lang) = @_;
 
