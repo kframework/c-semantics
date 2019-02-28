@@ -595,8 +595,13 @@ sub parse {
       setShellDebugFile($kast, 0);
       if ($lang eq 'c++') {
             my $std = getStd('c++');
-            my $cppparser = distDir('clang-kast');
-            shell($cppparser, $ppResult, '--', '-x', 'c++-cpp-output', $std)->verbose()->stdout($kast)->run();
+            my $cppParser = distDir('clang-kast');
+            my @cppParserArgs = ('-x', 'c++-cpp-output', $std);
+            if (arg('-fno-diagnostics-color')) {
+                  push(@cppParserArgs, '-fno-diagnostics-color');
+            }
+
+            shell($cppParser, $ppResult, '--', @cppParserArgs)->verbose()->stdout($kast)->run();
 
             return $kast;
       }
