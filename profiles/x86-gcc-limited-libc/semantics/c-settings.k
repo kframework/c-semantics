@@ -30,14 +30,17 @@ module C-SETTINGS
      rule cfg:sizeofFloat => 4
      rule cfg:sizeofDouble => 8
      rule cfg:sizeofLongDouble => 16
+     rule cfg:sizeofOversizedFloat => 16
      rule cfg:thrdut => int
 
      rule cfg:precisionofFloat => 24
      rule cfg:precisionofDouble => 53
      rule cfg:precisionofLongDouble => 65
+     rule cfg:precisionofOversizedFloat => 113
      rule cfg:exponentofFloat => 8
      rule cfg:exponentofDouble => 11
      rule cfg:exponentofLongDouble => 15
+     rule cfg:exponentofOversizedFloat => 15
 
      rule cfg:largestUnsigned => unsigned-long-long-int
 
@@ -59,6 +62,7 @@ module C-SETTINGS
      rule cfg:alignofFloat => 4
      rule cfg:alignofDouble => 8
      rule cfg:alignofLongDouble => 16
+     rule cfg:alignofOversizedFloat => 16
      rule cfg:alignofPointer => 4
      // Max of the above.
      rule cfg:alignofMalloc => 16

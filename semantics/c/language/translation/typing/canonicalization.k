@@ -313,6 +313,7 @@ module C-TYPING-CANONICALIZATION
      rule canonicalizeSpecifier(ListItem(Float())) => type(float)
      rule canonicalizeSpecifier(ListItem(Long()) ListItem(Double())) => type(long-double)
      rule canonicalizeSpecifier(ListItem(Double()) ListItem(Long())) => type(long-double)
+     rule canonicalizeSpecifier(ListItem(OversizedFloat())) => type(oversized-float)
 
      rule canonicalizeSpecifier(ListItem(Complex()) ListItem(Double()))
           => t(noQuals, SetItem(Complex()), double)

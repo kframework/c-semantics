@@ -128,7 +128,7 @@ module C-TYPING-SYNTAX
      syntax SimpleSignedType ::= "short-int" | SimpleSignedIntType
                                | "long-int" | "long-long-int" | "oversized-int"
                                | SimpleSignedBitfieldType
-     syntax SimpleFloatType ::= "float" | "double" | "long-double"
+     syntax SimpleFloatType ::= "float" | "double" | "long-double" | "oversized-float"
      syntax SimpleSignedIntType ::= "int"
      syntax SimpleUnsignedType ::= SimpleBoolType | "unsigned-short-int"
                                  | SimpleUnsignedIntType | "unsigned-long-int"
@@ -232,7 +232,7 @@ module C-TYPING-SYNTAX
      rule signedIntegerUType => ut(?_, short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType #Or bitfieldType(short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType, ?_)) [macro]
      rule unsignedIntegerUType => ut(?_, bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType #Or bitfieldType(bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType, ?_)) [macro]
      rule charUType => ut(?_, signedCharType #Or unsignedCharType) [macro]
-     rule arithmeticUType => integerUType #Or ut(?_, float #Or double #Or long-double) [macro]
+     rule arithmeticUType => integerUType #Or ut(?_, float #Or double #Or long-double #Or oversized-float) [macro]
 
      rule structOrUnionType => t(?_, ?_, structType(?_) #Or unionType(?_)) [macro]
      rule arrayOrFunctionType => t(?_, ?_, arrayType(?_, ?_) #Or incompleteArrayType(?_) #Or flexibleArrayType(?_) #Or unspecifiedArrayType(?_) #Or variableLengthArrayType(?_, ?_) #Or functionType(?_, ?_)) [macro]
@@ -242,7 +242,7 @@ module C-TYPING-SYNTAX
      rule signedIntegerType => t(?_, ?_, short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType #Or bitfieldType(short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType, ?_)) [macro]
      rule unsignedIntegerType => t(?_, ?_, bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType #Or bitfieldType(bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType, ?_)) [macro]
      rule charType => t(?_, ?_, signedCharType #Or unsignedCharType) [macro]
-     rule arithmeticType => integerType #Or t(?_, ?_, float #Or double #Or long-double) [macro]
+     rule arithmeticType => integerType #Or t(?_, ?_, float #Or double #Or long-double #Or oversized-float) [macro]
 
      syntax Bool ::= isVoidType(Type) [function]
                    | isVariableLengthArrayType(Type) [function]

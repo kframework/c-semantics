@@ -35,6 +35,7 @@ typedef long unsigned int __kcc_size_t;
 #define __typeof__ __kcc_typeof
 #define __auto_type __kcc_auto_type
 #define __int128 __kcc_oversized_int
+#define __float128 __kcc_oversized_float
 typedef __int128 __int128_t;
 typedef unsigned __int128 __uint128_t;
 

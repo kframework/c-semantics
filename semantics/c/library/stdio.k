@@ -1936,10 +1936,11 @@ module LIBC-STDIO
           requires S ==String "d" orBool S ==String "i"
           [structural]
 
-     rule <k> formatter'(_) ...</k>
+     syntax KItem ::= "HALTHERE"
+     rule <k> formatter'(_) => HALTHERE ...</k>
           <format-arg> S:SymLoc => unknown(0) </format-arg>
           <format-state> State::String </format-state>
-          requires (State ==String "%d" orBool State ==String "%x" orBool State ==String "%X" orBool State ==String "%u" orBool State ==String "%o")
+          requires notBool isPointerType(getFormatType'(State, ""))
 
      rule <k> (.K => UNSPEC("STDIO2", "Printing an unspecified value.")) ~> formatter'(_) ...</k>
           <format-arg> unknown(_) </format-arg>
