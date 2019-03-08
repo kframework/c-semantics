@@ -1936,9 +1936,12 @@ module LIBC-STDIO
           requires S ==String "d" orBool S ==String "i"
           [structural]
 
-     syntax KItem ::= "HALTHERE"
-     rule <k> formatter'(_) => HALTHERE ...</k>
+     rule <k> formatter'(_) ...</k>
           <format-arg> S:SymLoc => unknown(0) </format-arg>
+          <format-state> State::String </format-state>
+          requires notBool isPointerType(getFormatType'(State, ""))
+     rule <k> formatter'(_) ...</k>
+          <format-arg> encodedPtr(_, _, _) => unknown(0) </format-arg>
           <format-state> State::String </format-state>
           requires notBool isPointerType(getFormatType'(State, ""))
 
