@@ -60,7 +60,7 @@ module LIBC-STDARG
 
      // va_list __kcc_va_start(va_list* ap, void* pN);
      rule [va-start]:
-          <k> builtin("__kcc_va_start", tv(Loc:SymLoc, T:PointerUType), _)
+          <k> builtin("__kcc_va_start", tv(Loc:SymLoc, ut(... st: pointerType(_)) #as T::UType), _)
                => checkVarArgs
                ~> checkDead(read(Loc, innerType(T)))
                ~> addVaList(!N:Int, tv(Loc, T), filterVarArgs(P))

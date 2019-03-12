@@ -6,8 +6,8 @@ module C-EXPR-EVAL
 
      rule reval(ncle(K:K, T::Type) => te(K, utype(T)))
           requires notBool isArrayOrFunctionType(T)
-     rule reval(ncle(K:K, T:ArrayType) => te(K, utype(arrayToPtrType(T))))
-     rule reval(ncle(K:K, T:FunctionType) => te(K, utype(pointerType(T))))
+     rule reval(ncle(K:K, t(... st: _:SimpleArrayType) #as T::Type) => te(K, utype(arrayToPtrType(T))))
+     rule reval(ncle(K:K, t(... st: functionType(...)) #as T::Type) => te(K, utype(pointerType(T))))
 
      rule le(K:K, T::Type) => ncle(K, T)
 

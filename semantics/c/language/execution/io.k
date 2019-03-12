@@ -278,14 +278,14 @@ module C-IO
      rule getZeroedBits(Offset::Int, N::Int, t(_, _, arrayType(T::Type, _)))
           => getZeroedBits(Offset %Int bitSizeofType(T), N, T)
           requires N =/=Int 0
-     rule getZeroedBits(Offset::Int, N::Int, T:StructOrUnionType)
+     rule getZeroedBits(Offset::Int, N::Int, structOrUnionType #as T::Type)
           => getZeroedBits(Offset, N, T, getFlatFields(T))
           requires N =/=Int 0
 
      syntax Bits ::= getZeroedBits(Int, Int, Type, FieldInfo) [function, klabel(getZeroedBits2)]
-     rule getZeroedBits(Offset::Int, N::Int, _:UnionType, fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _, _))
+     rule getZeroedBits(Offset::Int, N::Int, t(... st: unionType(_)), fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _, _))
           => getZeroedBits(Offset, N, T)
-     rule getZeroedBits(Offset::Int, N::Int, _:StructType, fieldInfo(
+     rule getZeroedBits(Offset::Int, N::Int, t(... st: structType(_)), fieldInfo(
             ((ListItem(typedDeclaration(_, FId::CId))) => .List) _,
             _,
             _::Map (FId |-> T::Type),
@@ -299,7 +299,7 @@ module C-IO
      rule getZeroedBits(_, N::Int, _, fieldInfo(.List, _, _, _, _))
           => piece(0, N)
 
-     rule getZeroedBits(Offset::Int, N::Int, BaseT::StructType, fieldInfo(
+     rule getZeroedBits(Offset::Int, N::Int, BaseT::Type, fieldInfo(
             (ListItem(typedDeclaration(_, FId::CId))) Fields::List,
             SI::Int,
             Types::Map (FId |-> T::Type),

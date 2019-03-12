@@ -14,7 +14,7 @@ module C-LITERAL
 
      syntax Bool ::= withinRange(Int, SimpleIntegerType) [function]
      rule withinRange(I::Int, T::SimpleIntegerType)
-          => intInRange(I, {utype(T)}:>IntegerUType)
+          => intInRange(I, utype(T))
 
      syntax String ::= simplifyForHex(String) [function]
      rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S))

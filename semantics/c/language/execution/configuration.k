@@ -74,7 +74,7 @@ module C-CONFIGURATION
           <file multiplicity="*" type="Set">
                <fid> .K </fid>
                <uri> .K </uri>
-               <pos> 0 </pos>
+               <pos> 0:IOInt </pos>
                <mode> "r" </mode>
                <next-byte> .K </next-byte>
                <read-buffer> "" </read-buffer>

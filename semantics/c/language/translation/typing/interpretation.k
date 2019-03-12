@@ -113,7 +113,7 @@ module C-TYPING-INTERPRETATION
      rule NoPrototype(T:Type, krlist(L:List), false)
           => pushTypeDown(T, makeOldStyleFunctionType(adjustParams'(L)))
 
-     rule pushTypeDown(T:BasicType, Lbl:K) => applyTypeFunction(Lbl, T)
+     rule pushTypeDown(t(... st: _:SimpleBasicType) #as T::Type, Lbl:K) => applyTypeFunction(Lbl, T)
      rule pushTypeDown(t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)), Lbl:K)
           => t(Qs, Mods, arrayType(pushTypeDown(T, Lbl), N))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, unspecifiedArrayType(T::Type)), Lbl:K)

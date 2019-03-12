@@ -203,7 +203,7 @@ module C-COMMON-EXPR-RELATIONAL
           requires (isPromoted(T1) orBool isFloatUType(T1))
                andBool T1 ==Type T2
      // pointers to qualified or unqualified versions of compatible object types
-     rule isCompatibleRelationalTypes(T1:PointerUType, T2:PointerUType) => true
+     rule isCompatibleRelationalTypes(ut(... st: pointerType(_)) #as T1::UType, ut(... st: pointerType(_)) #as T2::UType) => true
           requires utype(innerType(T1)) ==Type utype(innerType(T2))
                andBool notBool isFunctionType(innerType(T1))
      rule isCompatibleRelationalTypes(_, _) => false [owise]
@@ -225,12 +225,12 @@ module C-COMMON-EXPR-RELATIONAL
 
      rule tv(I1:Int, T::UType) == tv(I2:Int, T'::UType)
           => makeTruth(I1 ==K I2, T, T')
-          requires (isPromoted(T) orBool isPointerType(T))
+          requires (isPromoted(T) orBool isPointerUType(T))
                andBool T ==Type T'
           [structural]
      rule tv(I1:Int, T::UType) != tv(I2:Int, T'::UType)
           => makeTruth(I1 =/=K I2, T, T')
-          requires (isPromoted(T) orBool isPointerType(T))
+          requires (isPromoted(T) orBool isPointerUType(T))
                andBool T ==Type T'
           [structural]
 
@@ -470,15 +470,15 @@ module C-COMMON-EXPR-RELATIONAL
           requires (isPromoted(T1) orBool isFloatUType(T1))
                andBool T1 ==Type T2
      // pointers to qualified or unqualified versions of compatible types
-     rule isCompatibleEqualityTypes(T1:PointerUType, T2:PointerUType, _, _) => true
+     rule isCompatibleEqualityTypes(ut(... st: pointerType(_)) #as T1::UType, ut(... st: pointerType(_)) #as T2::UType, _, _) => true
           requires utype(innerType(T1)) ==Type utype(innerType(T2))
      // pointer to object and pointer to void
-     rule isCompatibleEqualityTypes(T1:PointerUType, T2:PointerUType, _, _) => true
+     rule isCompatibleEqualityTypes(ut(... st: pointerType(_)) #as T1::UType, ut(... st: pointerType(_)) #as T2::UType, _, _) => true
           requires (notBool isFunctionType(innerType(T1)) andBool isVoidType(innerType(T2)))
                orBool (notBool isFunctionType(innerType(T2)) andBool isVoidType(innerType(T1)))
      // null pointer
-     rule isCompatibleEqualityTypes(_:PointerUType, _, _, NullPointer) => true
-     rule isCompatibleEqualityTypes(_, _:PointerUType, NullPointer, _) => true
+     rule isCompatibleEqualityTypes(ut(... st: pointerType(_)), _, _, NullPointer) => true
+     rule isCompatibleEqualityTypes(_, ut(... st: pointerType(_)), NullPointer, _) => true
      rule isCompatibleEqualityTypes(_, _, _, _) => false [owise]
 
      // we check also that they aren't both arithmetic types because arithmetic types must be promoted

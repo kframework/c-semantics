@@ -45,7 +45,7 @@ module C-MEMORY-ALLOC
           ...</mem>
           requires notBool isNoType(T)
           [structural]
-     rule <k> alloc(Base:DirectBase, T:NoType, Len::Int) => .K ...</k>
+     rule <k> alloc(Base:DirectBase, t(... st: no-type) #as T::Type, Len::Int) => .K ...</k>
           <mem>...
                .Map => Base |-> object(dynamicType(T), Len, makeEmptyArray(Len))
           ...</mem>

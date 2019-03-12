@@ -129,7 +129,7 @@ module C-DECL-TAGGED
      rule asInt(_) => 0 [owise]
 
      syntax KItem ::= initEnum(CId, K) [strict(2)]
-     rule initEnum(X:CId, tv(Value:Int, T:IntegerUType)) => addEnum(X, Value)
+     rule initEnum(X:CId, tv(Value:Int, integerUType #as T::UType)) => addEnum(X, Value)
           requires IntegerConstant in getModifiers(T)
                andBool intInRange(Value, ut(.Set, int))
      rule (.K => CV("CDE1", "Enum initializer not an integer constant expression."))
@@ -137,7 +137,7 @@ module C-DECL-TAGGED
           requires isHold(R) orBool notBool isIntegerType(type(R))
                orBool notBool IntegerConstant in getModifiers(utype(R))
      rule (.K => CV("CDE2", "Enum initializer outside the range representable by int."))
-          ~> initEnum(_, tv(Value:Int, T:IntegerUType))
+          ~> initEnum(_, tv(Value:Int, integerUType #as T::UType))
           requires notBool intInRange(Value, ut(.Set, int))
                andBool (IntegerConstant in getModifiers(T))
 
@@ -151,7 +151,7 @@ module C-DECL-TAGGED
      rule hasNamedField(ListItem(typedDeclaration(T::Type, _:NoName)) L::List)
           => hasNamedField(L)
           requires notBool isStructOrUnionType(T)
-     rule hasNamedField(ListItem(typedDeclaration(T:StructOrUnionType, _:NoName)) L::List)
+     rule hasNamedField(ListItem(typedDeclaration(structOrUnionType #as T::Type, _:NoName)) L::List)
           => hasNamedField(findFieldNames(T) L)
      rule hasNamedField(.List) => false
 
