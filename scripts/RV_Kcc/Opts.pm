@@ -12,7 +12,7 @@ use File::Spec::Functions qw(catfile);
 use Getopt::Declare;
 
 use RV_Kcc::Shell qw(shell);
-use RV_Kcc::Files qw(distDir tempFile tempDir error);
+use RV_Kcc::Files qw(distDir tempFile tempDir nativeCC error);
 
 use constant MAGIC        => "\x7fKAST";
 use constant RVMAIN       => '__rvmatch_main'; # Symbol 'main' gets rewritten to in natively-compiled code.
@@ -291,7 +291,7 @@ sub pushArg {
 
 sub getopts {
       pushArg('ldArgs', BASE_LIBS, '-Wl,--unresolved-symbols=ignore-all', '-Wl,--no-as-needed', '-u', RVMAIN);
-      if ((split /\./, shell('gcc -dumpversion')->stdout()->run())[0] + 0 >= 5) { # gcc version >= 5
+      if ((split /\./, shell(nativeCC(), '-dumpversion')->stdout()->run())[0] + 0 >= 5) { # gcc version >= 5
             pushArg('ldArgs', '-no-pie');
       }
 

@@ -41,14 +41,14 @@ module C-DECL-INITIALIZER
           [structural]
 
      // aggregates
-     rule figureInit(X:CId, T:AggregateOrUnionType, CompoundInit(L:K))
+     rule figureInit(X:CId, aggregateOrUnionType #as T::Type, CompoundInit(L:K))
           => giveType(X, T)
           ~> figureInit-aux(X, T, startInit(T, X, CompoundInit(L)))
           [structural]
 
      rule figureInit(
                _,
-               t(_, _, arrayType(_:CharType, Len:Int)),
+               t(_, _, arrayType(charType, Len:Int)),
                (SingleInit(StringLiteral(S:String))
                => CompoundInit(list(ListItem(InitFragment(NextInit(),
                     SingleInit(StringLiteral(S)))))))
@@ -66,7 +66,7 @@ module C-DECL-INITIALIZER
           requires isWCharType(T) andBool (size(S) <=Int Len)
           [structural]
 
-     rule figureInit(_, t(_, _, (incompleteArrayType(T:CharType)
+     rule figureInit(_, t(_, _, (incompleteArrayType(charType #as T::Type)
           => arrayType(T, lengthString(S) +Int 1))),
                SingleInit(StringLiteral(S:String)))
           [structural]
@@ -77,7 +77,7 @@ module C-DECL-INITIALIZER
           requires isWCharType(T)
           [structural]
 
-     rule figureInit(X:CId, t(Qs::Quals, Mods::Set, incompleteArrayType(T:CharType)),
+     rule figureInit(X:CId, t(Qs::Quals, Mods::Set, incompleteArrayType(charType #as T::Type)),
                CompoundInit(list(ListItem(InitFragment(NextInit(),
                SingleInit(StringLiteral(S:String)))))))
           => figureInit(X, t(Qs, Mods, incompleteArrayType(T)),
@@ -155,7 +155,7 @@ module C-DECL-INITIALIZER
           <saved-init> K:K => .K </saved-init>
 
      syntax KItem ::= startInit(Type, CId, K)
-     rule <k> startInit(T:AggregateOrUnionType, X:CId, CompoundInit(list(L:List)))
+     rule <k> startInit(aggregateOrUnionType #as T::Type, X:CId, CompoundInit(list(L:List)))
                => fillInits(L) ~> getInit
           ...</k>
           <incomplete-length> _ => 0 </incomplete-length>
@@ -188,7 +188,7 @@ module C-DECL-INITIALIZER
           [structural]
      rule <curr-subobject>
                (ListItem(down) => ListItem(firstField(K, findFieldNames(T), T)))
-               ListItem(ncle(K:K, T:StructOrUnionType))
+               ListItem(ncle(K:K, structOrUnionType #as T::Type))
           ...</curr-subobject>
           [structural]
 
@@ -214,12 +214,12 @@ module C-DECL-INITIALIZER
      rule <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue .init F::CId, _))
                     => ListItem(followingField(K, F, findFieldNames(T), T)))
-               ListItem(ncle(K, T:StructType))
+               ListItem(ncle(K, t(... st: structType(_)) #as T::Type))
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue .init _, _)) => ListItem(noMoreFields))
-               ListItem(ncle(K, _:UnionType))
+               ListItem(ncle(K, t(... st: unionType(_))))
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
@@ -229,24 +229,24 @@ module C-DECL-INITIALIZER
           [structural]
 
      syntax KItem ::= "noMoreFields" | "noMoreIndices"
-     syntax KItem ::= thisField(K, CId, List, StructOrUnionType) [function]
-                    | followingField(K, CId, List, StructType) [function]
-                    | firstField(K, List, StructOrUnionType) [function]
+     syntax KItem ::= thisField(K, CId, List, Type) [function]
+                    | followingField(K, CId, List, Type) [function]
+                    | firstField(K, List, Type) [function]
 
-     rule thisField(K:K, F::CId, ListItem(F) _::List, T::StructOrUnionType)
+     rule thisField(K:K, F::CId, ListItem(F) _::List, T::Type)
           => ncle(K .init F, findFieldType(F, T))
      rule thisField(_, F::CId, (ListItem(F'::CId) => .List) _, _)
           requires F =/=K F'
      rule thisField(_, _, _, _) => noMoreFields [owise]
 
-     rule followingField(K:K, F::CId, ListItem(F) L::List, T::StructType)
+     rule followingField(K:K, F::CId, ListItem(F) L::List, T::Type)
           => firstField(K, L, T)
      rule followingField(_, F::CId, (ListItem(F'::CId) => .List) _, _)
           requires F =/=K F'
      rule followingField(_, _, _, _) => noMoreFields [owise]
 
      rule firstField(K:K, (ListItem(_:NoName) => .List) _, _)
-     rule firstField(K:K, ListItem(F::CId) _, T::StructOrUnionType)
+     rule firstField(K:K, ListItem(F::CId) _, T::Type)
           => ncle(K .init F, findFieldType(F, T))
           requires notBool isNoName(F)
      rule firstField(_, _, _) => noMoreFields [owise]
@@ -277,7 +277,7 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                (.List => ListItem(down))
-               ListItem(ncle(K:K, T:AggregateOrUnionType))
+               ListItem(ncle(K:K, aggregateOrUnionType #as T::Type))
                Remainder::List
           </curr-subobject>
           <curr-object>
@@ -313,7 +313,7 @@ module C-DECL-INITIALIZER
           <curr-subobject>
                _:List => ListItem(block) ListItem(ncle(K, T))
           </curr-subobject>
-          <curr-object> ListItem(ncle(K:K, T:StructOrUnionType)) ...</curr-object>
+          <curr-object> ListItem(ncle(K:K, structOrUnionType #as T::Type)) ...</curr-object>
           [structural]
      // fixme does this need to worry about incompleteLength_
      rule <k> fillInit(InitFragment(AtIndexInit(Index:K, K':K), Exp:K))
@@ -323,7 +323,7 @@ module C-DECL-INITIALIZER
           <curr-subobject>
                _:List => ListItem(block) ListItem(ncle(K, T))
           </curr-subobject>
-          <curr-object> ListItem(ncle(K:K, T:ArrayType)) ...</curr-object>
+          <curr-object> ListItem(ncle(K:K, t(... st: _:SimpleArrayType) #as T::Type)) ...</curr-object>
           [structural]
 
      syntax KItem ::= buildDesignator(K)
@@ -332,7 +332,7 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                ListItem(block) (.List => ListItem(thisField(K, F, findFieldNames(T), T)))
-                    ListItem(ncle(K:K, T:StructOrUnionType))
+                    ListItem(ncle(K:K, structOrUnionType #as T::Type))
           ...</curr-subobject>
           [structural]
 
@@ -347,7 +347,7 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                ListItem(block) (.List => ListItem(ncle(K[[N]], innerType(T))))
-                    ListItem(ncle(K::InitLValue, T:ArrayType))
+                    ListItem(ncle(K::InitLValue, t(... st: _:SimpleArrayType) #as T::Type))
           ...</curr-subobject>
           [structural]
 
@@ -392,7 +392,7 @@ module C-DECL-INITIALIZER
                andBool notBool isAggregateOrUnionType(T')
           [structural]
      syntax KItem ::= initFromAggregateRHS(K, Type)
-     rule T:StructOrUnionType ~> initializeSingleInit(K:KResult)
+     rule structOrUnionType #as T:Type ~> initializeSingleInit(K:KResult)
           => initFromAggregateRHS(K, T)
           [structural]
 
@@ -438,7 +438,7 @@ module C-DECL-INITIALIZER
      rule <k> fillInit(SingleInit(StringLiteral(_))) ...</k>
           <curr-subobject>
                (.List => ListItem(down))
-               ListItem(ncle(_, t(_, _, arrayType(_:CharType, _))))
+               ListItem(ncle(_, t(_, _, arrayType(charType, _))))
           ...</curr-subobject>
           [structural]
      rule <k> fillInit(SingleInit(WStringLiteral(_))) ...</k>
@@ -453,7 +453,7 @@ module C-DECL-INITIALIZER
                => fillInit-aux(SingleInit(StringLiteral(S)))
           ...</k>
           <curr-subobject>
-               ListItem(ncle(_, T:CharType))
+               ListItem(ncle(_, charType #as T::Type))
                ListItem(ncle(_, t(_, _, arrayType(T, Len::Int))))
           ...</curr-subobject>
           requires lengthString(S) ==Int Len
@@ -471,7 +471,7 @@ module C-DECL-INITIALIZER
                => fillInit(SingleInit(StringLiteral(S +String "\x00")))
           ...</k>
           <curr-subobject>
-               ListItem(ncle(_, T:CharType))
+               ListItem(ncle(_, charType #as T::Type))
                ListItem(ncle(_, t(_, _, arrayType(T, Len:Int))))
           ...</curr-subobject>
           requires lengthString(S) <Int Len
@@ -489,7 +489,7 @@ module C-DECL-INITIALIZER
                => fillInit-aux(SingleInit(StringLiteral(S +String "\x00")))
           ...</k>
           <curr-subobject>
-               ListItem(ncle(_, T:CharType))
+               ListItem(ncle(_, charType #as T::Type))
                ListItem(ncle(_, t(_, _, incompleteArrayType(T))))
           ...</curr-subobject>
           [structural]
@@ -506,7 +506,7 @@ module C-DECL-INITIALIZER
                => fillInit(initHead(S))
                ~> fillInit-aux(initTail(S))
           ...</k>
-          <curr-subobject> ListItem(ncle(_, _:CharType)) ...</curr-subobject>
+          <curr-subobject> ListItem(ncle(_, charType)) ...</curr-subobject>
           requires S =/=String ""
           [structural]
 

@@ -76,7 +76,7 @@ module C-COMMON-EXPR-BITWISE
           [structural]
      rule (.K => UNDEF("CEB4",
                "The left operand in a bitwise left-shift is negative."))
-          ~> tv(E1:Int, T1:SignedIntegerUType) << R:RValue
+          ~> tv(E1:Int, signedIntegerUType #as T1::UType) << R:RValue
           requires isPromoted(T1) andBool isPromoted(utype(R))
                andBool E1 <Int 0
           [structural]
@@ -123,7 +123,7 @@ module C-COMMON-EXPR-BITWISE
           [structural]
      rule (.K => IMPL("CEB8",
                "The left operand in a bitwise right-shift is negative."))
-          ~> tv(E1:Int, T1:SignedIntegerUType) >> R:RValue
+          ~> tv(E1:Int, signedIntegerUType #as T1::UType) >> R:RValue
           requires isPromoted(T1) andBool isPromoted(utype(R))
                andBool E1 <Int 0
           [structural]
@@ -249,9 +249,9 @@ module C-COMMON-EXPR-BITWISE
           [structural]
 
      syntax KItem ::= bitwiseInterpret(UType, Int, Bool)   [klabel(bitwiseInterpret3)]
-     rule bitwiseInterpret(T:UnsignedIntegerUType, N::Int, _) => intArithInterpret(T, N)
-     rule bitwiseInterpret(T:SignedIntegerUType, N::Int, true) => intArithInterpret(T, N)
-     rule bitwiseInterpret(T:SignedIntegerUType, N::Int, false)
+     rule bitwiseInterpret(unsignedIntegerUType #as T::UType, N::Int, _) => intArithInterpret(T, N)
+     rule bitwiseInterpret(signedIntegerUType #as T::UType, N::Int, true) => intArithInterpret(T, N)
+     rule bitwiseInterpret(signedIntegerUType #as T::UType, N::Int, false)
           => bitwiseInterpret(intArithInterpret(T, N))
 
      syntax KItem ::= bitwiseInterpret(K) [strict]

@@ -8,8 +8,8 @@ module C-TYPING-PREDICATES
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
 
-     rule hasSameSignedness(T:SignedIntegerUType, T':SignedIntegerUType) => true
-     rule hasSameSignedness(T:UnsignedIntegerUType, T':UnsignedIntegerUType) => true
+     rule hasSameSignedness(signedIntegerUType #as T::UType, signedIntegerUType #as T'::UType) => true
+     rule hasSameSignedness(unsignedIntegerUType #as T::UType, unsignedIntegerUType #as T'::UType) => true
      rule hasSameSignedness(_, _) => false [owise]
 
      rule isWCharType(t(_, _, T::SimpleType)) => true
@@ -19,23 +19,23 @@ module C-TYPING-PREDICATES
      rule isFlexibleArrayType(t(_, _, flexibleArrayType(_))) => true
      rule isFlexibleArrayType(_) => false [owise]
 
-     rule isVariablyModifiedType(T:FixedLengthArrayType)
+     rule isVariablyModifiedType(t(... st: _:SimpleFixedArrayType) #as T::Type)
           => isVariablyModifiedType(innerType(T))
-     rule isVariablyModifiedType(T:IncompleteArrayType)
+     rule isVariablyModifiedType(t(... st: _:SimpleIncompleteArrayType) #as T::Type)
           => isVariablyModifiedType(innerType(T))
-     rule isVariablyModifiedType(T:PointerType)
+     rule isVariablyModifiedType(t(... st: pointerType(_)) #as T::Type)
           => isVariablyModifiedType(innerType(T))
      rule isVariablyModifiedType(t(_, _, functionType(T::UType, Params:List)))
           => isVariablyModifiedType(type(T)) orBool some(Params, #klabel(`isVariablyModifiedType`))
-     rule isVariablyModifiedType(_:VariableLengthArrayType) => true
+     rule isVariablyModifiedType(t(... st: _:SimpleVariableArrayType)) => true
      rule isVariablyModifiedType(_) => false [owise]
 
-     rule isCompleteType(_:IncompleteArrayType) => false
-     rule isCompleteType(T:EnumType) => notBool isIncompleteEnumType(T)
-     rule isCompleteType(T:StructType) => notBool isIncompleteStructType(T)
-     rule isCompleteType(T:UnionType) => notBool isIncompleteUnionType(T)
-     rule isCompleteType(_:VoidType) => false
-     rule isCompleteType(_:NoType) => false
+     rule isCompleteType(t(... st: _:SimpleIncompleteArrayType)) => false
+     rule isCompleteType(t(... st: enumType(_)) #as T::Type) => notBool isIncompleteEnumType(T)
+     rule isCompleteType(t(... st: structType(_)) #as T::Type) => notBool isIncompleteStructType(T)
+     rule isCompleteType(t(... st: unionType(_)) #as T::Type) => notBool isIncompleteUnionType(T)
+     rule isCompleteType(t(... st: void)) => false
+     rule isCompleteType(t(... st: no-type)) => false
      rule isCompleteType(_) => true [owise]
 
      rule isCompletePointerType(t(_, _, pointerType(T::Type)))
@@ -73,9 +73,9 @@ module C-TYPING-PREDICATES
      rule fromConstantExpr(V:RValue) => fromConstantExpr(utype(V))
 
      // TODO(chathhorn): arithmetic and address constants
-     rule fromConstantExpr(T:IntegerUType) => true
+     rule fromConstantExpr(integerUType #as T::UType) => true
           requires IntegerConstant in getModifiers(T)
-     rule fromConstantExpr(T:PointerUType) => true
+     rule fromConstantExpr(ut(... st: pointerType(_)) #as T::UType) => true
           requires IntegerConstant in getModifiers(T)
      rule fromConstantExpr(_:UType) => false [owise]
 
@@ -102,8 +102,8 @@ module C-TYPING-PREDICATES
           => T ==K int andBool (V ==K 0 orBool V ==K 1)
 
      rule isFlexibleType(dynamicType(T::Type)) => isFlexibleType(T)
-     rule isFlexibleType(T:StructType) => isFlexibleStruct(getFields(T))
-     rule isFlexibleType(T:UnionType) => isFlexibleUnion(getFields(T))
+     rule isFlexibleType(t(... st: structType(_)) #as T::Type) => isFlexibleStruct(getFields(T))
+     rule isFlexibleType(t(... st: unionType(_)) #as T::Type) => isFlexibleUnion(getFields(T))
      rule isFlexibleType(_) => false [owise]
 
      syntax Bool ::= isFlexibleStruct(FieldInfo) [function]
@@ -117,5 +117,57 @@ module C-TYPING-PREDICATES
      rule isFlexibleUnion(fieldInfo(_:List (ListItem(typedDeclaration(T::Type, _)) => .List), _, _, _, _))
           requires notBool isFlexibleType(T)
      rule isFlexibleUnion(_) => false [owise]
+
+    rule isVoidType(t(... st: void)) => true
+    rule isVoidType(_) => false [owise]
+    rule isVariableLengthArrayType(t(... st: _:SimpleVariableArrayType)) => true
+    rule isVariableLengthArrayType(_) => false [owise]
+    rule isUnionType(t(... st: unionType(_))) => true
+    rule isUnionType(_) => false [owise]
+    rule isStructOrUnionType(structOrUnionType) => true
+    rule isStructOrUnionType(_) => false [owise]
+    rule isAggregateOrUnionType(aggregateOrUnionType) => true
+    rule isAggregateOrUnionType(_) => false [owise]
+    rule isPointerType(t(... st: pointerType(_))) => true
+    rule isPointerType(_) => false [owise]
+    rule isPointerUType(ut(... st: pointerType(_))) => true
+    rule isPointerUType(_) => false [owise]
+    rule isNoType(t(... st: no-type)) => true
+    rule isNoType(_) => false [owise]
+    rule isIntegerUType(integerUType) => true
+    rule isIntegerUType(_) => false [owise]
+    rule isIntegerType(integerType) => true
+    rule isIntegerType(_) => false [owise]
+    rule isSignedIntegerUType(signedIntegerUType) => true
+    rule isSignedIntegerUType(_) => false [owise]
+    rule isFunctionType(t(... st: functionType(...))) => true
+    rule isFunctionType(_) => false [owise]
+    rule isFloatUType(ut(... st: _:SimpleFloatType)) => true
+    rule isFloatUType(_) => false [owise]
+    rule isFloatType(t(... st: _:SimpleFloatType)) => true
+    rule isFloatType(_) => false [owise]
+    rule isCharUType(charUType) => true
+    rule isCharUType(_) => false [owise]
+    rule isCharType(charType) => true
+    rule isCharType(_) => false [owise]
+    rule isBoolUType(ut(... st: bool)) => true
+    rule isBoolUType(_) => false [owise]
+    rule isBoolType(t(... st: bool)) => true
+    rule isBoolType(_) => false [owise]
+    rule isBitfieldType(t(... st: bitfieldType(...))) => true
+    rule isBitfieldType(_) => false [owise]
+    rule isBasicType(T::Type) => isArithmeticType(T) orBool isVoidType(T) orBool isNoType(T)
+    rule isArrayOrFunctionType(arrayOrFunctionType) => true
+    rule isArrayOrFunctionType(_) => false [owise]
+    rule isArrayOrFunctionUType(arrayOrFunctionUType) => true
+    rule isArrayOrFunctionUType(_) => false [owise]
+    rule isArrayType(t(... st: _:SimpleArrayType)) => true
+    rule isArrayType(_) => false [owise]
+    rule isIncompleteArrayType(t(... st: _:SimpleIncompleteArrayType)) => true
+    rule isIncompleteArrayType(_) => false [owise]
+    rule isArithmeticType(arithmeticType) => true
+    rule isArithmeticType(_) => false [owise]
+    rule isUCharType(t(... st: unsignedCharType)) => true
+    rule isUCharType(_) => false [owise]
 
 endmodule

@@ -7,6 +7,6 @@ SE-CID1-bad-static.c:5:2: error: Trying to look up identifier printf, but no suc
 SE-CID1-bad-static.c: In function ‘main’:
 SE-CID1-bad-static.c:5:2: warning: implicit declaration of function ‘printf’ [-Wimplicit-function-declaration]
   printf("%d\n", 0);
-  ^~~~~~
+  ^
 SE-CID1-bad-static.c:5:2: warning: incompatible implicit declaration of built-in function ‘printf’
 SE-CID1-bad-static.c:5:2: note: include ‘<stdio.h>’ or provide a declaration of ‘printf’

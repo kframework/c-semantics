@@ -34,7 +34,7 @@ module C-STMT-SWITCH
      }*/
 
      // Promotions already handled.
-     rule Switch(SN:Int, tv(V::CValue, T:IntegerUType), _)
+     rule Switch(SN:Int, tv(V::CValue, integerUType #as T::UType), _)
           => sequencePoint ~> handleSwitch(SN, tv(V, T))
           [structural]
 

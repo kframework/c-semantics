@@ -30,7 +30,7 @@ module LINKING-C-BUILTIN
      // by the C and C++ standards, or for native symbols.
 
      syntax KItem ::= addBuiltin(tu: String, CId, Type, SymBase, Bool)
-     rule <k> addBuiltin(Tu::String, B::CId, T:FunctionType, Base::SymBase, AddAll:Bool)
+     rule <k> addBuiltin(Tu::String, B::CId, t(... st: functionType(...)) #as T::Type, Base::SymBase, AddAll:Bool)
                => declareBuiltinFunction(B, T, Base, Tu)
           ...</k>
           <external-uses> Uses:Map </external-uses>

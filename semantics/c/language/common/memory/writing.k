@@ -18,7 +18,7 @@ module C-MEMORY-WRITING-SYNTAX
      syntax KItem ::= initBytesFill(SymLoc, Int, Bits)
 
      // Traps padding and unnamed bit-fields in a struct or union.
-     syntax KItem ::= initPadding(SymLoc, StructOrUnionType, CId)
+     syntax KItem ::= initPadding(SymLoc, Type, CId)
 
      syntax KItem ::= setBytes(SymLoc, K, Int) [strict(2)]
 
@@ -153,27 +153,27 @@ module C-MEMORY-WRITING
      rule makePaddingUnknown(Base::SymBase, Offset::Int, dynamicType(EffT::Type))
           => makeStructUnionUnknown(Base, 0, Offset, EffT)
 
-     rule makeStructUnionUnknown(Base::SymBase, Offset::Int, RelOffset::Int, T:ArrayType)
+     rule makeStructUnionUnknown(Base::SymBase, Offset::Int, RelOffset::Int, t(... st: _:SimpleArrayType) #as T::Type)
           => makeStructUnionUnknown(Base, Offset +Int floorBitOffset(RelOffset, T),
                RelOffset %Int bitSizeofType(innerType(T)), getElementType(RelOffset, T))
-     rule makeStructUnionUnknown(Base::SymBase, Offset::Int, RelOffset::Int, T:StructType)
+     rule makeStructUnionUnknown(Base::SymBase, Offset::Int, RelOffset::Int, t(... st: structType(_)) #as T::Type)
           => initStructPadding(loc(Base, Offset /Int cfg:bitsPerByte), getFields(T), false)
           ~> initFieldPadding(loc(Base, Offset /Int cfg:bitsPerByte), T, getFieldAtOffset(RelOffset, T), false)
           ~> makeStructUnionUnknown(Base, Offset +Int floorBitOffset(RelOffset, T), RelOffset -Int floorBitOffset(RelOffset, T), getFieldTypeAtOffset(RelOffset, T))
-     rule makeStructUnionUnknown(Base::SymBase, Offset::Int, RelOffset::Int, T:UnionType)
+     rule makeStructUnionUnknown(Base::SymBase, Offset::Int, RelOffset::Int, t(... st: unionType(_)) #as T::Type)
           => initStructPadding(loc(Base, Offset /Int cfg:bitsPerByte), getFields(T), false)
           ~> initFieldPadding(loc(Base, Offset /Int cfg:bitsPerByte), T, getFieldAtOffset(RelOffset, T), false)
           ~> makeInactiveVariantUnknown(loc(Base, Offset /Int cfg:bitsPerByte), getActiveVariant(T), byteSizeofType(T))
           ~> makeStructUnionUnknown(Base, Offset, RelOffset, getActiveVariant(T))
      rule makeStructUnionUnknown(_, _, _, _) => .K [owise]
 
-     rule initPadding(Loc::SymLoc, T::StructOrUnionType, F::CId)
+     rule initPadding(Loc::SymLoc, T::Type, F::CId)
           => initStructPadding(Loc, getFields(T), true)
           ~> initFieldPadding(Loc, T, F, true)
           ~> trapUnnamed(Loc, findUnnamedBitfields(T), T)
 
-     syntax K ::= trapUnnamed(SymLoc, List, StructOrUnionType) [function]
-     rule trapUnnamed(Loc::SymLoc, ListItem(F::CId) Fs::List, T::StructOrUnionType)
+     syntax K ::= trapUnnamed(SymLoc, List, Type) [function]
+     rule trapUnnamed(Loc::SymLoc, ListItem(F::CId) Fs::List, T::Type)
           => initPaddingBits(Loc +bits findFieldOffset(F, T), bitSizeofType(findFieldType(F, T)), true)
           ~> trapUnnamed(Loc, Fs, T)
      rule trapUnnamed(_, .List, _) => .K
@@ -195,8 +195,8 @@ module C-MEMORY-WRITING
           ~> initStructPadding(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, (SetItem(I::Int) => .Set) _), Trap::Bool)
      rule initStructPadding(_, fieldInfo(_, _, _, _, .Set), _) => .K
 
-     syntax KItem ::= initFieldPadding(SymLoc, StructOrUnionType, CId, Bool) [function]
-     rule initFieldPadding(Loc::SymLoc, T::StructOrUnionType, F::CId, Trap::Bool)
+     syntax KItem ::= initFieldPadding(SymLoc, Type, CId, Bool) [function]
+     rule initFieldPadding(Loc::SymLoc, T::Type, F::CId, Trap::Bool)
           => initPaddingByte(Loc +bits (getFieldOffset(F, T) +Int bitSizeofType(getFieldType(F, T))), Trap)
           requires isBitfieldType(getFieldType(F, T))
                andBool (getFieldOffset(F, T) +Int bitSizeofType(getFieldType(F, T))
@@ -275,7 +275,7 @@ module C-MEMORY-WRITING
           => splitToBytes(piece(V, bitSizeofType(T)))
      rule splitBytes(tv(unknown(I:Int), T::UType))
           => makeUnknownBytes(splitBytes(tv(I, T)))
-     rule splitBytes(tv(agg(L:List), T:StructOrUnionUType))
+     rule splitBytes(tv(agg(L:List), structOrUnionUType #as T::UType))
           => splitStructBytes(L, T, byteSizeofType(T))
 
      syntax List ::= makeUnknownBytes(List) [function]
@@ -285,16 +285,16 @@ module C-MEMORY-WRITING
           => ListItem(B) makeUnknownBytes(L) [owise]
      rule makeUnknownBytes(.List) => .List
 
-     syntax List ::= splitStructBytes(List, StructOrUnionUType, Int) [function]
+     syntax List ::= splitStructBytes(List, UType, Int) [function]
      rule splitStructBytes(ListItem(piece(N::BitValue, PieceLen:Int)) Rest:List,
-               T::StructOrUnionUType, Len:Int)
+               T::UType, Len:Int)
           => ListItem(piece(N, PieceLen)) splitStructBytes(Rest, T, Len -Int 1)
           requires PieceLen ==Int cfg:bitsPerByte
                andBool Len >Int 0
                andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, getFields(T))
                     orBool isUnknown(N))
      rule splitStructBytes(ListItem(piece((N::BitValue => unknown(#if isInt(N) #then N #else 0 #fi)), _)) _,
-               T::StructOrUnionUType, Len::Int)
+               T::UType, Len::Int)
           requires isPaddingOffset(byteSizeofType(T) -Int Len, getFields(T))
                andBool notBool isUnknown(N)
      rule splitStructBytes(_, _, 0) => .List

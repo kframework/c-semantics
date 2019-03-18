@@ -72,6 +72,7 @@ module C-ABSTRACT-SYNTAX
      syntax TypeSpecifier ::= OversizedInt()
      syntax TypeSpecifier ::= Float()
      syntax TypeSpecifier ::= Double()
+     syntax TypeSpecifier ::= OversizedFloat()
      syntax TypeSpecifier ::= Signed()
      syntax TypeSpecifier ::= Unsigned()
      syntax Float ::= "inf"

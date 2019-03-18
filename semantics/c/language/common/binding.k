@@ -36,11 +36,11 @@ module C-BINDING
                (ListItem(V:RValue) => .List) _)
           requires notBool isVoidType(T)
           [structural]
-     rule bind(ListItem(typedDeclaration(_:VoidType, _)),
-               ListItem(_:VoidType), .List) => .K
+     rule bind(ListItem(typedDeclaration(t(... st: void), _)),
+               ListItem(t(... st: void)), .List) => .K
           [structural]
-     rule bind(ListItem(typedDeclaration(_:VoidType, _)),
-               ListItem(typedDeclaration(_:VoidType, _)), .List) => .K
+     rule bind(ListItem(typedDeclaration(t(... st: void), _)),
+               ListItem(typedDeclaration(t(... st: void), _)), .List) => .K
           [structural]
      // No prototype -- but the args must still have ids/types in the def.
      rule (.K => bindParam(X, T, argPromote(V)))
@@ -78,15 +78,15 @@ module C-BINDING
           ~> bind(.List, _, ListItem(_) _)
      rule (.K => UNDEF("CB4", "Function defined with no parameters "
                +String "called with arguments."))
-          ~> bind(ListItem(typedDeclaration(T:VoidType, _)), _, ListItem(_) _)
+          ~> bind(ListItem(typedDeclaration(t(... st: void) #as T::Type, _)), _, ListItem(_) _)
      // Variadic.
      rule bind(ListItem(variadic), ListItem(variadic), Vs:List)
           => bindVariadics(Vs, 0)
           [structural]
      // No params.
-     rule bind(ListItem(_:VoidType), .List, .List) => .K
+     rule bind(ListItem(t(... st: void)), .List, .List) => .K
           [structural]
-     rule bind(ListItem(typedDeclaration(T:VoidType, _)),
+     rule bind(ListItem(typedDeclaration(t(... st: void) #as T::Type, _)),
                .List, .List) => .K
           [structural]
      // Builtins -- they don't have named parameters.
@@ -112,8 +112,8 @@ module C-BINDING
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           requires T =/=K variadic
           [structural]
-     rule bind(ListItem(T:VoidType),
-               ListItem(T':VoidType), .List) => .K
+     rule bind(ListItem(t(... st: void) #as T::Type),
+               ListItem(t(... st: void) #as T'::Type), .List) => .K
           [structural]
      rule bind(.List, .List, .List) => .K
           [structural]
@@ -153,18 +153,18 @@ module C-BINDING
      rule #arePromotedTypesCompat(_, T::UType, T'::UType) => true
           requires type(argPromoteType(T)) ==Type type(argPromoteType(T'))
 
-     rule #arePromotedTypesCompat(V:Int, T::UType, T':SignedIntegerUType) => true
+     rule #arePromotedTypesCompat(V:Int, T::UType, signedIntegerUType #as T'::UType) => true
           requires (argPromoteType(T)
                     ==K correspondingUnsignedType(argPromoteType(T')))
                andBool representable(V, argPromoteType(T))
                andBool representable(V,
                     correspondingUnsignedType(argPromoteType(T')))
-     rule #arePromotedTypesCompat(V:Int, T:SignedIntegerUType, T'::UType) => true
+     rule #arePromotedTypesCompat(V:Int, signedIntegerUType #as T::UType, T'::UType) => true
           requires (argPromoteType(T') ==K correspondingUnsignedType(argPromoteType(T)))
                andBool representable(V, argPromoteType(T'))
                andBool representable(V,
                     correspondingUnsignedType(argPromoteType(T)))
-     rule #arePromotedTypesCompat(_, T:PointerUType, T':PointerUType) => true
+     rule #arePromotedTypesCompat(_, ut(... st: pointerType(_)) #as T::UType, ut(... st: pointerType(_)) #as T'::UType) => true
           requires (isCharType(innerType(argPromoteType(T)))
                     orBool isVoidType(innerType(argPromoteType(T))))
                andBool (isCharType(innerType(argPromoteType(T')))

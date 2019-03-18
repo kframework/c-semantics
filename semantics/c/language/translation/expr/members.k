@@ -6,15 +6,15 @@ module C-EXPR-MEMBERS
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule ncle(K::InitLValue, T:StructOrUnionType) .init F::CId
+     rule ncle(K::InitLValue, structOrUnionType #as T::Type) .init F::CId
           => le(K .init F, addQualifiers(getQualifiers(T), findFieldType(F, T)))
-     rule ncle(K:K, T:StructOrUnionType) . F:CId
+     rule ncle(K:K, structOrUnionType #as T::Type) . F:CId
           => le(K . F, addQualifiers(getQualifiers(T), findFieldType(F, T)))
           requires notBool (Atomic() inQuals getQualifiers(T))
 
-     rule te(K:K, T:StructOrUnionUType) . F:CId => te(K . F, utype(findFieldType(F, {type(T)}:>StructOrUnionType)))
+     rule te(K:K, structOrUnionUType #as T::UType) . F:CId => te(K . F, utype(findFieldType(F, type(T))))
 
-     rule ncle(K::InitLValue, T:ArrayType) [[ N::Int ]]
+     rule ncle(K::InitLValue, t(... st: _:SimpleArrayType) #as T::Type) [[ N::Int ]]
           => le(K [[ N ]], addQualifiers(getQualifiers(T), getElementType(N, T)))
 
 endmodule

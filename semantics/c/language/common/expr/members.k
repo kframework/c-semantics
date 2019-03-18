@@ -25,10 +25,10 @@ module C-COMMON-EXPR-MEMBERS
      an lvalue. If the first expression has qualified type, the result has the
      so-qualified version of the type of the designated member.
      }*/
-     rule nclv(Loc::SymLoc, T:StructOrUnionType) .init F:CId
+     rule nclv(Loc::SymLoc, structOrUnionType #as T::Type) .init F:CId
           => createLv(Loc, T, F, getLastAccessType(Loc), getFixedFieldType(Loc, F, T))
           [structural]
-     rule nclv(Loc::SymLoc, T:StructOrUnionType) . F:CId
+     rule nclv(Loc::SymLoc, structOrUnionType #as T::Type) . F:CId
           => createLv(Loc, T, F, getLastAccessType(Loc), getFixedFieldType(Loc, F, T))
           requires notBool (Atomic() inQuals getQualifiers(T))
           [structural]
@@ -43,33 +43,33 @@ module C-COMMON-EXPR-MEMBERS
                andBool isNCLKLabel(#klabel(Lbl))
           [structural]
 
-     rule nclv(Loc::SymLoc, T:ArrayType) [[ N::Int ]]
+     rule nclv(Loc::SymLoc, t(... st: _:SimpleArrayType) #as T::Type) [[ N::Int ]]
           => * (checkUse(tv(Loc, utype(arrayToPtrType(T)))) + tv(N, utype(int)))
           [structural]
 
-     syntax KItem ::= createLv(SymLoc, StructOrUnionType, CId, K, K) [strict(4, 5)]
+     syntax KItem ::= createLv(SymLoc, Type, CId, K, K) [strict(4, 5)]
      rule createLv(NullPointer => loc(obj(0, 1, nativeAddress()), 0), _, _, _, _)
-     rule createLv(Loc::SymLoc, T::StructOrUnionType, F::CId, LAT:EffectiveType, t(...) #as T'::Type)
+     rule createLv(Loc::SymLoc, T::Type, F::CId, LAT:EffectiveType, t(...) #as T'::Type)
           => lv(updateLastAccessVariant(Loc, F, LAT) +bits findFieldOffset(F, T), addQualifiers(getQualifiers(T), T'))
           requires Loc =/=K NullPointer andBool notBool isNoType(T')
      rule (.K => unknownMemberAccess)
-          ~> createLv(_, _, _, _, _:NoType)
+          ~> createLv(_, _, _, _, t(... st: no-type))
 
      // Same deal as above, only for byte lists.
-     rule tv(agg(L:List), T:StructOrUnionUType) . F:CId
+     rule tv(agg(L:List), structOrUnionUType #as T::UType) . F:CId
           => concretize(addModifiers(getModifiers(T) getModifiers(findFieldTypeU(F, T)), utype(findFieldTypeU(F, T))),
                fillToBytes(extractBitsFromList(dataList(L), findFieldOffsetU(F, T), bitSizeofType(findFieldTypeU(F, T)))))
           requires notBool isNoType(findFieldTypeU(F, T))
           [structural]
      rule (.K => unknownMemberAccess)
-          ~> tv(agg(L:List), T:StructOrUnionUType) . F:CId
+          ~> tv(agg(L:List), structOrUnionUType #as T::UType) . F:CId
           requires isNoType(findFieldTypeU(F, T))
 
-     syntax Type ::= findFieldTypeU(CId, StructOrUnionUType) [function]
-     rule findFieldTypeU(F::CId, T::StructOrUnionUType) => findFieldType(F, {type(T)}:>StructOrUnionType)
+     syntax Type ::= findFieldTypeU(CId, UType) [function]
+     rule findFieldTypeU(F::CId, T::UType) => findFieldType(F, type(T))
 
-     syntax Int ::= findFieldOffsetU(CId, StructOrUnionUType) [function]
-     rule findFieldOffsetU(F::CId, T::StructOrUnionUType) => findFieldOffset(F, {type(T)}:>StructOrUnionType)
+     syntax Int ::= findFieldOffsetU(CId, UType) [function]
+     rule findFieldOffsetU(F::CId, T::UType) => findFieldOffset(F, type(T))
 
      syntax KItem ::= "unknownMemberAccess" [function]
      rule unknownMemberAccess => CV("CEM3", "Attempting to access member but it does not exist.")

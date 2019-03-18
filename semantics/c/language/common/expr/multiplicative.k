@@ -91,7 +91,7 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool notBool isZero(V')
           [structural]
      rule (.K => UNDEF("CEMX3", "Signed integer overflow.")) ~>
-          tv(I1:Int, T:IntegerUType) % tv(I2:Int, T'::UType)
+          tv(I1:Int, integerUType #as T::UType) % tv(I2:Int, T'::UType)
           requires isPromoted(T) andBool T ==Type T'
                andBool notBool isZero(I2)
                andBool notBool (min(T) <=Int I1 /Int I2

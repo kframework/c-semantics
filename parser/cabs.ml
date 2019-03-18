@@ -65,6 +65,7 @@ type typeSpecifier = (* Merge all specifiers into one type *)
   | ToversizedInt
   | Tfloat
   | Tdouble
+  | ToversizedFloat
   | Tsigned
   | Tunsigned
   | Tnamed of string

@@ -79,7 +79,7 @@ module C-STMT-EXPR
      rule <k> Zero(ncle(L:K, T::Type)) => .K ...</k>
           <elab>... .K => Zero(L) </elab>
 
-     rule <k> InitPadding(nclv(Loc::SymLoc, T::StructOrUnionType), F::CId)
+     rule <k> InitPadding(nclv(Loc::SymLoc, T::Type), F::CId)
                => initPadding(Loc, T, F)
           ...</k>
           <mem> Mem::Map </mem>

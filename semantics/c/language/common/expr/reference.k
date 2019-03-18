@@ -63,7 +63,7 @@ module C-COMMON-EXPR-REFERENCE
      value has been assigned to the pointer, the behavior of the unary
      \cinline{*} operator is undefined.
      }*/
-     rule *(tv(Loc:SymLoc, T:PointerUType))
+     rule *(tv(Loc:SymLoc, ut(... st: pointerType(_)) #as T::UType))
           => checkLoc(Loc)
           ~> lv(stripFromArray(Loc), innerType(T))
           requires notBool isVoidType(innerType(T))

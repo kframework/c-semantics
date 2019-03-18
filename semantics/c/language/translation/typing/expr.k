@@ -113,7 +113,7 @@ module C-TYPING-EXPR
      rule typeof(Call((T:Type => innerType(T)), _))
           requires isPointerType(T)
 
-     rule typeof(T:StructOrUnionType . F:CId => findFieldType(F, T))
+     rule typeof((structOrUnionType #as T::Type) . F:CId => findFieldType(F, T))
 
      rule typeof(T:Type ++ => T)
      rule typeof(T:Type -- => T)
@@ -125,7 +125,7 @@ module C-TYPING-EXPR
      rule typeof(CompoundLiteralType(T:Type) => T)
 
      syntax Type ::= tryPromote(Type) [function]
-     rule tryPromote(T:IntegerType) => type(promote(utype(T)))
+     rule tryPromote(integerType #as T::Type) => type(promote(utype(T)))
      rule tryPromote(T::Type) => T [owise]
 
      // prefix expressions
@@ -172,12 +172,12 @@ module C-TYPING-EXPR
      rule typeof(T:Type % T':Type => usualArithmeticConversion(T, T'))
 
      // additive expressions
-     rule typeof(T:ArithmeticType + T':ArithmeticType => usualArithmeticConversion(T, T'))
-     rule typeof(T:ArithmeticType - T':ArithmeticType => usualArithmeticConversion(T, T'))
-     rule typeof(T:PointerOrArrayType + _:IntegerType => T)
-     rule typeof(_:IntegerType + T:PointerOrArrayType => T)
-     rule typeof(T:PointerOrArrayType - _:IntegerType => T)
-     rule typeof(_:PointerOrArrayType - _:PointerOrArrayType => type(cfg:ptrdiffut))
+     rule typeof((arithmeticType #as T::Type) + (arithmeticType #as T'::Type) => usualArithmeticConversion(T, T'))
+     rule typeof((arithmeticType #as T::Type) - (arithmeticType #as T'::Type) => usualArithmeticConversion(T, T'))
+     rule typeof((pointerOrArrayType #as T::Type) + integerType => T)
+     rule typeof(integerType + (pointerOrArrayType #as T::Type) => T)
+     rule typeof((pointerOrArrayType #as T::Type) - integerType => T)
+     rule typeof(pointerOrArrayType - pointerOrArrayType => type(cfg:ptrdiffut))
 
      // shift expressions
      rule typeof(T:Type << _ => tryPromote(T))
@@ -219,16 +219,16 @@ module C-TYPING-EXPR
      context elaborateDone(_, _) ~> typeof(_ ? _ : (HOLE:KItem => typeof(HOLE))) [result(Type)]
 
      // fixme, not handling qualifiers correctly
-     syntax Type ::= retype(ArrayOrFunctionType) [function]
-     rule retype(T:ArrayType) => type(pointerType(innerType(T)))
-     rule retype(T:FunctionType) => type(pointerType(T))
+     syntax Type ::= retype(Type) [function]
+     rule retype(t(... st: _:SimpleArrayType) #as T::Type) => type(pointerType(innerType(T)))
+     rule retype(t(... st: functionType(...)) #as T::Type) => type(pointerType(T))
 
      syntax Bool ::= isNPC(K) [function]
      rule isNPC(V:RValue) => isNullPointerConstant(V)
      rule isNPC(_) => false [owise]
 
-     rule elaborateDone(_, _) ~> typeof(_ ? (T:ArrayOrFunctionType => retype(T)) : _)
-     rule elaborateDone(_, _) ~> typeof(_ ? _ : (T:ArrayOrFunctionType => retype(T)))
+     rule elaborateDone(_, _) ~> typeof(_ ? (arrayOrFunctionType #as T::Type => retype(T)) : _)
+     rule elaborateDone(_, _) ~> typeof(_ ? _ : (arrayOrFunctionType #as T::Type => retype(T)))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
      If both the second and third operands have arithmetic type, the result
@@ -237,11 +237,11 @@ module C-TYPING-EXPR
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule elaborateDone(_, _) ~> typeof(_ ? T:ArithmeticType : T':ArithmeticType)
+     rule elaborateDone(_, _) ~> typeof(_ ? arithmeticType #as T::Type : (arithmeticType #as T'::Type))
           => typeof(usualArithmeticConversion(T, T'))
-     rule elaborateDone(_, _) ~> typeof(_ ? T:VoidType : _:VoidType)
+     rule elaborateDone(_, _) ~> typeof(_ ? t(... st: void) #as T::Type : t(... st: void))
           => typeof(T)
-     rule elaborateDone(_, _) ~> typeof(_ ? T:StructOrUnionType : T':StructOrUnionType)
+     rule elaborateDone(_, _) ~> typeof(_ ? structOrUnionType #as T::Type : (structOrUnionType #as T'::Type))
           => typeof(T)
           requires T ==Type T'
 
@@ -269,10 +269,10 @@ module C-TYPING-EXPR
           requires stripQualifiers(T) ==Type stripQualifiers(T')
                andBool getKLabel(K) =/=K #klabel(`SizeofExpression`)
 
-     rule elaborateDone(V:K, _) ~> typeof(_ ? _ : T:PointerType)
+     rule elaborateDone(V:K, _) ~> typeof(_ ? _ : (t(... st: pointerType(_)) #as T::Type))
           => typeof(T)
           requires isNPC(V)
-     rule elaborateDone(_, V:K) ~> typeof(_ ? T:PointerType : _)
+     rule elaborateDone(_, V:K) ~> typeof(_ ? t(... st: pointerType(_)) #as T::Type : _)
           => typeof(T)
           requires isNPC(V)
 
@@ -297,17 +297,17 @@ module C-TYPING-EXPR
      rule (.K => CV("TTE2",
                "if both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the"
                +String " other must be a pointer to void."))
-          ~> elaborateDone(_, _) ~> typeof(_ ? T:PointerType : T':PointerType)
+          ~> elaborateDone(_, _) ~> typeof(_ ? t(... st: pointerType(_)) #as T::Type : (t(... st: pointerType(_)) #as T'::Type))
           requires stripQualifiers(innerType(T)) =/=Type stripQualifiers(innerType(T'))
                andBool notBool (isVoidType(innerType(T)) orBool isVoidType(innerType(T')))
 
      rule (.K => CV("TTE3",
                "if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant."))
-          ~> elaborateDone(V:K, _) ~> typeof(_ ? _:IntegerType : _:PointerType)
+          ~> elaborateDone(V:K, _) ~> typeof(_ ? integerType : t(... st: pointerType(_)))
           requires notBool isNPC(V)
      rule (.K => CV("TTE3",
                "if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant."))
-          ~> elaborateDone(_, V:K) ~> typeof(_ ? _:PointerType : _:IntegerType)
+          ~> elaborateDone(_, V:K) ~> typeof(_ ? t(... st: pointerType(_)) : integerType)
           requires notBool isNPC(V)
 
      rule (.K => CV("TTE4",
@@ -320,7 +320,7 @@ module C-TYPING-EXPR
           requires T =/=K void
      rule (.K => CV("TTE5",
                "if one of a conditional expression's branches has struct or union type, the other must have the same type.") )
-          ~> elaborateDone(_, _) ~> typeof(_ ? T:StructOrUnionType : T':StructOrUnionType)
+          ~> elaborateDone(_, _) ~> typeof(_ ? structOrUnionType #as T::Type : (structOrUnionType #as T'::Type))
           requires T =/=Type T'
 
      syntax Bool ::= isAssignmentKLabel(K) [function, klabelPredicate]
@@ -345,11 +345,11 @@ module C-TYPING-EXPR
      rule typeof(Comma(list(_:List ListItem(K:KItem))) => K)
 
      syntax Bool ::= isSpecifiedVariablyModifiedType(Type) [function]
-     rule isSpecifiedVariablyModifiedType(T:FixedLengthArrayType)
+     rule isSpecifiedVariablyModifiedType(t(... st: _:SimpleFixedArrayType) #as T::Type)
           => isSpecifiedVariablyModifiedType(innerType(T))
-     rule isSpecifiedVariablyModifiedType(T:IncompleteArrayType)
+     rule isSpecifiedVariablyModifiedType(t(... st: _:SimpleIncompleteArrayType) #as T::Type)
           => isSpecifiedVariablyModifiedType(innerType(T))
-     rule isSpecifiedVariablyModifiedType(T:PointerType)
+     rule isSpecifiedVariablyModifiedType(t(... st: pointerType(_)) #as T::Type)
           => isSpecifiedVariablyModifiedType(innerType(T))
      rule isSpecifiedVariablyModifiedType(t(_, _, functionType(T::UType, Params:List)))
           => isSpecifiedVariablyModifiedType(type(T)) orBool some(Params, #klabel(`isSpecifiedVariablyModifiedType`))

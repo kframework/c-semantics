@@ -51,15 +51,15 @@ module C-TYPING-MISC
 
      rule flipSignedness(bool) => bool
 
-     rule intInRange(V::Int, T::IntegerUType)
+     rule intInRange(V::Int, T::UType)
           => (V <=Int max(T)) andBool (V >=Int min(T))
 
-     rule floatInRange(V::Float, T::FloatUType)
+     rule floatInRange(V::Float, T::UType)
           => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
                orBool isInfinite(V) orBool isNaN(V)
 
-     rule fmin(T:FloatUType) => zeroCFloat(T) -Float maxValueFloat(typePrecision(T), typeExponent(T))
-     rule fmax(T:FloatUType) => maxValueFloat(typePrecision(T), typeExponent(T))
+     rule fmin(ut(... st: _:SimpleFloatType) #as T::UType) => zeroCFloat(T) -Float maxValueFloat(typePrecision(T), typeExponent(T))
+     rule fmax(ut(... st: _:SimpleFloatType) #as T::UType) => maxValueFloat(typePrecision(T), typeExponent(T))
 
      rule getParams(t(_, _, functionType(_, P::List))) => P
      rule getParams(T::Type) => .List
@@ -217,19 +217,19 @@ module C-TYPING-MISC
 
      rule arrayLength(t(_, _, arrayType(_, N:Int))) => N
 
-     rule getFieldNames(T:StructOrUnionType) => getFieldNames'(getFields(T))
+     rule getFieldNames(structOrUnionType #as T::Type) => getFieldNames'(getFields(T))
      rule getFieldNames(_) => .List [owise]
 
-     rule findFieldNames(T:StructOrUnionType) => getFieldNames'(getFlatFields(T))
+     rule findFieldNames(structOrUnionType #as T::Type) => getFieldNames'(getFlatFields(T))
      rule findFieldNames(_) => .List [owise]
 
-     rule findUnnamedBitfields(T:StructOrUnionType) => getUnnamedBitfields'(getFlatFields(T))
+     rule findUnnamedBitfields(structOrUnionType #as T::Type) => getUnnamedBitfields'(getFlatFields(T))
      rule findUnnamedBitfields(_) => .List [owise]
 
-     rule getFieldTypes(T::StructOrUnionType) => getFieldTypes'(getFields(T))
+     rule getFieldTypes(T::Type) => getFieldTypes'(getFields(T))
 
      syntax List ::= "getUnnamedBitfields'" "(" FieldInfo ")" [function]
-     rule getUnnamedBitfields'(fieldInfo(ListItem(typedDeclaration(_, F:NoName)) Decls::List, Sz::Int, Types::Map (F |-> T:BitfieldType), Offsets::Map, Padding::Set))
+     rule getUnnamedBitfields'(fieldInfo(ListItem(typedDeclaration(_, F:NoName)) Decls::List, Sz::Int, Types::Map (F |-> t(... st: bitfieldType(...)) #as T::Type), Offsets::Map, Padding::Set))
           => ListItem(F) getUnnamedBitfields'(fieldInfo(Decls, Sz, Types, Offsets, Padding))
      rule getUnnamedBitfields'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Decls::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set))
           => getUnnamedBitfields'(fieldInfo(Decls, Sz, Types, Offsets, Padding)) [owise]
@@ -245,16 +245,16 @@ module C-TYPING-MISC
           => ListItem(F) getFieldNames'(fieldInfo(Fields, Sz, Types, Offsets, Padding))
      rule getFieldNames'(_) => .List [owise]
 
-     rule getFieldOffset(F::CId, T::StructOrUnionType) => getFieldOffset'(F, getFields(T))
+     rule getFieldOffset(F::CId, T::Type) => getFieldOffset'(F, getFields(T))
 
-     rule findFieldOffset(F::CId, T::StructOrUnionType) => getFieldOffset'(F, getFlatFields(T))
+     rule findFieldOffset(F::CId, T::Type) => getFieldOffset'(F, getFlatFields(T))
 
      syntax Int ::= "getFieldOffset'" "(" CId "," FieldInfo ")" [function]
      rule getFieldOffset'(F::CId, fieldInfo(_, _, _, F |-> Offset::Int _, _)) => Offset
 
-     rule getFieldType(F::CId, T::StructOrUnionType) => getFieldType'(F, getFields(T))
+     rule getFieldType(F::CId, T::Type) => getFieldType'(F, getFields(T))
 
-     rule findFieldType(F::CId, T:StructOrUnionType) => getFieldType'(F, getFlatFields(T))
+     rule findFieldType(F::CId, structOrUnionType #as T::Type) => getFieldType'(F, getFlatFields(T))
      rule findFieldType(_, _) => type(no-type) [owise]
 
      syntax Type ::= "getFieldType'" "(" CId "," FieldInfo ")" [function]
@@ -262,25 +262,25 @@ module C-TYPING-MISC
      rule getFieldType'(_, _) => type(no-type) [owise]
 
      syntax Modifier ::= activeVariant(CId)
-     rule getActiveVariant(t(_, SetItem(activeVariant(F::CId)) _, _) #as T::UnionType)
+     rule getActiveVariant(t(_, SetItem(activeVariant(F::CId)) _, _) #as T::Type)
           => getFieldType(F, T)
      rule getActiveVariant(_) => type(no-type) [owise]
 
      rule getActiveVariantId(t(_, SetItem(activeVariant(F'::CId)) _, _)) => F'
 
-     rule setActiveVariantId(F::CId, T::UnionType)
-          => {addModifier(activeVariant(F), clearActiveVariant(T))}:>UnionType
+     rule setActiveVariantId(F::CId, T::Type)
+          => addModifier(activeVariant(F), clearActiveVariant(T))
 
-     rule setActiveVariant(A::Type, t(_, SetItem(activeVariant(F'::CId)) _, _) #as T::UnionType)
-          => {setFieldType(F', A, T)}:>UnionType
-     rule setActiveVariant(_, T::UnionType) => T [owise]
+     rule setActiveVariant(A::Type, t(_, SetItem(activeVariant(F'::CId)) _, _) #as T::Type)
+          => setFieldType(F', A, T)
+     rule setActiveVariant(_, T::Type) => T [owise]
 
-     rule mergeVariants(t(_, SetItem(activeVariant(F::CId)) _, _) #as T:UnionType,
-               t(_, SetItem(activeVariant(F)) _, _) #as T':UnionType)
+     rule mergeVariants(t(_, SetItem(activeVariant(F::CId)) _, unionType(_)) #as T::Type,
+               t(_, SetItem(activeVariant(F)) _, unionType(_)) #as T'::Type)
           => setFieldType(F, {mergeVariants(getFieldType(F, T), getFieldType(F, T'))}:>Type, T')
-     rule mergeVariants(t(_, SetItem(elementTypes(ETs::Map)) _, _) #as _:ArrayType, t(_, SetItem(elementTypes(ETs'::Map)) _, _) #as T':ArrayType)
+     rule mergeVariants(t(_, SetItem(elementTypes(ETs::Map)) _, _:SimpleArrayType), t(_, SetItem(elementTypes(ETs'::Map)) _, _:SimpleArrayType) #as T'::Type)
           => setElementTypes(mergeElementVariants(ETs, ETs'), T')
-     rule mergeVariants(T:StructType, T':StructType)
+     rule mergeVariants(t(... st: structType(...)) #as T::Type, t(... st: structType(...)) #as T'::Type)
           => mergeStructVariants(T, T', getFieldNames(T'))
      rule mergeVariants(_, T'::EffectiveType) => T' [owise]
 
@@ -293,15 +293,15 @@ module C-TYPING-MISC
           requires notBool (N in_keys(ETs'))
      rule mergeElementVariants(.Map, ETs'::Map) => ETs'
 
-     syntax Type ::= mergeStructVariants(StructType, StructType, List) [function]
-     rule mergeStructVariants(T::StructType, T'::StructType, ListItem(F::CId) Fs'::List)
-          => mergeStructVariants(T, {setFieldType(F, {mergeVariants(getFieldType(F, T), getFieldType(F, T'))}:>Type, T')}:>StructType, Fs')
-     rule mergeStructVariants(_, T'::StructType, .List) => T'
+     syntax Type ::= mergeStructVariants(Type, Type, List) [function]
+     rule mergeStructVariants(T::Type, T'::Type, ListItem(F::CId) Fs'::List)
+          => mergeStructVariants(T, setFieldType(F, {mergeVariants(getFieldType(F, T), getFieldType(F, T'))}:>Type, T'), Fs')
+     rule mergeStructVariants(_, T'::Type, .List) => T'
 
      rule clearActiveVariant(t(_, _::Set (SetItem(activeVariant(_)) => .Set), unionType(_)))
      rule clearActiveVariant(T::Type) => T
           requires notBool isUnionType(T)
-     rule clearActiveVariant(T:UnionType)
+     rule clearActiveVariant(t(... st: unionType(_)) #as T::Type)
           => setFields(clearActiveVariant'(getFieldNames(T), getFields(T)), T) [owise]
 
      syntax FieldInfo ::= "clearActiveVariant'" "(" List "," FieldInfo ")" [function]
@@ -320,21 +320,21 @@ module C-TYPING-MISC
      rule getFieldFollowingOffset'(_, fieldInfo(.List, _, _, _, _)) => #NoName
      rule getFieldFollowingOffset'(_, fieldInfo(ListItem(typedDeclaration(_, F::CId)) _, _, _, _, _)) => F [owise]
 
-     rule floorBitOffset(Offset::Int, T:StructOrUnionType)
+     rule floorBitOffset(Offset::Int, structOrUnionType #as T::Type)
           => floorFieldOffset'(Offset, getFields(T))
           requires Offset >=Int 0
-     rule floorBitOffset(Offset::Int, T:ArrayType)
+     rule floorBitOffset(Offset::Int, t(... st: _:SimpleArrayType) #as T::Type)
           => (Offset /Int bitSizeofType(innerType(T))) *Int bitSizeofType(innerType(T))
           requires Offset >=Int 0 andBool bitSizeofType(innerType(T)) >Int 0
 
-     rule ceilBitOffset(Offset::Int, T:StructOrUnionType)
+     rule ceilBitOffset(Offset::Int, structOrUnionType #as T::Type)
           => ceilFieldOffset'(Offset, getFields(T))
           requires Offset >=Int 0
-     rule ceilBitOffset(Offset::Int, T:ArrayType)
+     rule ceilBitOffset(Offset::Int, t(... st: _:SimpleArrayType) #as T::Type)
           => (Offset /Int bitSizeofType(innerType(T)) +Int 1) *Int bitSizeofType(innerType(T))
           requires Offset >=Int 0 andBool bitSizeofType(innerType(T)) >Int 0
 
-     rule lastFieldByteOffset(T::StructType)
+     rule lastFieldByteOffset(T::Type)
           => getFieldOffset({(reverseList(getFieldNames(T)))[0]}:>CId, T) /Int cfg:bitsPerByte
 
      syntax Int ::= "floorFieldOffset'" "(" Int "," FieldInfo ")" [function]
@@ -349,7 +349,7 @@ module C-TYPING-MISC
      rule ceilFieldOffset'(Offset::Int, Fields::FieldInfo)
           => getFieldOffset'(getFieldFollowingOffset'(Offset, Fields), Fields) [owise]
 
-     rule getFieldTypeAtOffset(Offset::Int, T::StructOrUnionType)
+     rule getFieldTypeAtOffset(Offset::Int, T::Type)
           => getFieldTypeAtOffset'(Offset, getFields(T))
 
      syntax Type ::= "getFieldTypeAtOffset'" "(" Int "," FieldInfo ")" [function]
@@ -357,22 +357,22 @@ module C-TYPING-MISC
      rule getFieldTypeAtOffset'(Offset::Int, Fields::FieldInfo)
           => getFieldType'(getFieldAtOffset'(Offset, Fields), Fields) [owise]
 
-     rule getFieldAtOffset(Offset::Int, T::StructOrUnionType)
+     rule getFieldAtOffset(Offset::Int, T::Type)
           => getFieldAtOffset'(Offset, getFields(T))
 
-     rule resizeFlexibleType(T::StructOrUnionType, F::CId, N::Int)
+     rule resizeFlexibleType(T::Type, F::CId, N::Int)
           => setFieldsSize((N *Int cfg:bitsPerByte) +Int getFieldOffset(F, T), clearPaddingAfter(F, T))
 
-     syntax StructOrUnionType ::= setFieldsSize(Int, StructOrUnionType) [function]
-     rule setFieldsSize(Sz::Int, T::StructOrUnionType)
+     syntax Type ::= setFieldsSize(Int, Type) [function]
+     rule setFieldsSize(Sz::Int, T::Type)
           => setFields(setFieldsSize'(Sz, getFields(T)), T)
 
      syntax FieldInfo ::= "setFieldsSize'" "(" Int "," FieldInfo ")" [function]
      rule setFieldsSize'(Sz::Int, fieldInfo(Decls::List, _, Types::Map, Offsets::Map, Padding::Set))
           => fieldInfo(Decls, Sz, Types, Offsets, Padding)
 
-     syntax StructOrUnionType ::= clearPaddingAfter(CId, StructOrUnionType) [function]
-     rule clearPaddingAfter(F::CId, T::StructOrUnionType)
+     syntax Type ::= clearPaddingAfter(CId, Type) [function]
+     rule clearPaddingAfter(F::CId, T::Type)
           => setFields(clearPaddingAfter'(getFieldOffset(F, T), getFields(T)), T)
 
      syntax FieldInfo ::= "clearPaddingAfter'" "(" Int "," FieldInfo ")" [function]
@@ -380,13 +380,13 @@ module C-TYPING-MISC
           requires N >=Int Offset
      rule clearPaddingAfter'(_, Fields::FieldInfo) => Fields [owise]
 
-     rule getUnnamed(F::CId, T::StructOrUnionType)
+     rule getUnnamed(F::CId, T::Type)
           => getFieldAtOffset'(findFieldOffset(F, T), getFields(T))
           requires notBool isNoType(findFieldType(F, T))
 
-     rule getFirstField(T::StructOrUnionType) => getFieldAtOffset'(0, getFields(T))
+     rule getFirstField(T::Type) => getFieldAtOffset'(0, getFields(T))
 
-     rule getFlatFields(T::StructOrUnionType) => toFlatFieldInfo(getFields(T))
+     rule getFlatFields(T::Type) => toFlatFieldInfo(getFields(T))
 
      syntax FieldInfo ::= toFlatFieldInfo(TagInfo) [function]
      rule toFlatFieldInfo(Fields:FieldInfo) => flattenFieldInfo(.K, .K, Fields, fieldInfo(.List, 0, .Map, .Map, .Set))
@@ -394,7 +394,7 @@ module C-TYPING-MISC
 
      syntax FieldInfo ::= flattenFieldInfo(K, K, FieldInfo, FieldInfo) [function]
      rule flattenFieldInfo(.K => getFlatFields(T), .K => Offset,
-               fieldInfo((ListItem(typedDeclaration(T:StructOrUnionType, F:NoName)) => .List) _, _, _, (F |-> Offset::Int) _, _),
+               fieldInfo((ListItem(typedDeclaration(structOrUnionType #as T::Type, F:NoName)) => .List) _, _, _, (F |-> Offset::Int) _, _),
                _)
      rule flattenFieldInfo(.K, .K,
                fieldInfo((ListItem(typedDeclaration(T::Type, F::CId)) => .List) _,
@@ -427,38 +427,38 @@ module C-TYPING-MISC
           => SetItem(N +Int Offset) addPaddingOffset(Offset, S)
      rule addPaddingOffset(_, _) => .Set [owise]
 
-     rule setFieldType(F::CId, T'::Type, T::StructOrUnionType)
+     rule setFieldType(F::CId, T'::Type, T::Type)
           => setFields(setFieldType'(F, T', getFields(T)), T)
 
      syntax FieldInfo ::= "setFieldType'" "(" CId "," Type "," FieldInfo ")" [function]
      rule setFieldType'(F::CId, T::Type, fieldInfo(Decls::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set))
           => fieldInfo(Decls, Sz, Types[F <- T], Offsets, Padding)
 
-     syntax StructOrUnionType ::= setFields(FieldInfo, StructOrUnionType) [function]
+     syntax Type ::= setFields(FieldInfo, Type) [function]
      rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set) _::Set, structType(_)))
      rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set) _::Set, unionType(_)))
-     rule setFields(Fields::FieldInfo, T::StructOrUnionType) => {addModifier(Fields, T)}:>StructOrUnionType [owise]
+     rule setFields(Fields::FieldInfo, T::Type) => addModifier(Fields, T) [owise]
 
-     rule setFieldTypeAtOffset(Offset::Int, T'::Type, T::StructOrUnionType)
+     rule setFieldTypeAtOffset(Offset::Int, T'::Type, T::Type)
           => setFields(setFieldType'(getFieldAtOffset'(Offset, getFields(T)), T', getFields(T)), T)
 
      syntax Modifier ::= elementTypes(Map)
-     rule setElementType(Offset::Int, T::Type, A::ArrayType)
+     rule setElementType(Offset::Int, T::Type, A::Type)
           => setElementTypes((getElementTypes(A))[floorBitOffset(Offset, A) <- T], A)
           requires T =/=K innerType(A)
-     rule setElementType(_, _, A::ArrayType) => A [owise]
+     rule setElementType(_, _, A::Type) => A [owise]
 
-     rule getElementType(Offset::Int, A::ArrayType)
+     rule getElementType(Offset::Int, A::Type)
           => {(getElementTypes(A))[floorBitOffset(Offset, A)] orDefault innerType(A)}:>Type
 
-     syntax Map ::= getElementTypes(ArrayType) [function]
+     syntax Map ::= getElementTypes(Type) [function]
      rule getElementTypes(t(_, SetItem(elementTypes(ETs::Map)) _, _)) => ETs
      rule getElementTypes(_) => .Map [owise]
 
-     syntax ArrayType ::= setElementTypes(Map, ArrayType) [function]
+     syntax Type ::= setElementTypes(Map, Type) [function]
      rule setElementTypes(ETs::Map, t(Qs::Quals, SetItem(elementTypes(_)) Mods::Set, T::SimpleArrayType))
           => t(Qs, SetItem(elementTypes(ETs)) Mods, T)
-     rule setElementTypes(ETs::Map, T::ArrayType) => {addModifier(elementTypes(ETs), T)}:>ArrayType
+     rule setElementTypes(ETs::Map, T::Type) => addModifier(elementTypes(ETs), T)
           [owise]
 
      // TODO(chathhorn): move/refactor?
@@ -557,10 +557,10 @@ module C-TYPING-MISC
           requires notBool isBitfieldType(T)
      // Non-packed bitfields that would cross an alignment boundary and
      // zero-length bitfields have an alignment of the bitfield field type.
-     rule pad(V::Int, T:BitfieldType) => roundBits(V, byteAlignofType(innerType(T)))
+     rule pad(V::Int, t(... st: bitfieldType(...)) #as T::Type) => roundBits(V, byteAlignofType(innerType(T)))
           requires notBool (Packed() in getModifiers(T))
                andBool (V +Int bitSizeofType(T)) >Int roundBits(V, byteAlignofType(innerType(T)))
-     rule pad(V::Int, T:BitfieldType) => roundBits(V, byteAlignofType(innerType(T)))
+     rule pad(V::Int, t(... st: bitfieldType(...)) #as T::Type) => roundBits(V, byteAlignofType(innerType(T)))
           requires bitSizeofType(T) ==Int 0
      // Packed bitfields and non-packed bitfields that don't cross an alignment
      // boundary have 1-bit alignment (no padding).

@@ -14,7 +14,7 @@ use MIME::Base64 qw(encode_base64);
 use String::Escape qw(quote backslash);
 use UUID::Tiny qw(:std);
 
-use RV_Kcc::Files qw(profileDir distDir tempFile tempDir error IS_CYGWIN);
+use RV_Kcc::Files qw(profileDir nativeCC nativeCXX distDir tempFile tempDir error IS_CYGWIN);
 use RV_Kcc::Opts qw(
       getopts arg classify
       cppArgs suppressions ifdefs ldArgs nativeObjFiles srcFiles objFiles trampolineFiles breakpoints
@@ -33,9 +33,9 @@ $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
 use constant KRUN         => do {
-	my $path = defined($ENV{'K_BIN'})? catfile($ENV{'K_BIN'}, 'krun') : 'krun';
-	my $ext = IS_CYGWIN? '.bat' : '';
-	$path . $ext;
+      my $path = defined($ENV{'K_BIN'})? catfile($ENV{'K_BIN'}, 'krun') : 'krun';
+      my $ext = IS_CYGWIN? '.bat' : '';
+      $path . $ext;
 };
 use constant PRINTF       => IS_CYGWIN? 'printf %%s' : 'printf %s';
 use constant QUOTE_INT    => IS_CYGWIN? backslash("\"Int\"") : "\"Int\"";
@@ -201,7 +201,7 @@ sub main {
                         ->stdout($d, 'used_symbols')->run(); 
                   shell("(cat '$trampolines' | awk -F '\t' '{if (\$1!=\"\") print \"__\" \$1; }'; comm -12 '" . catfile($d, 'used_symbols') . "' '" . dumpSymbols() . "') | sort | uniq | " . distDir("make-symbols"))
                         ->stdout($d, 'symbols.c')->run();
-                  shell('gcc', '-std=c11', '-o', catfile($d, 'native_binary'),
+                  shell(nativeCC(), '-std=c11', '-o', catfile($d, 'native_binary'),
                               catfile($native, 'server.c'),
                               catfile($native, 'main.o'),
                               catfile($native, 'builtins.o'),
@@ -233,9 +233,9 @@ sub main {
 
 sub nativeCompiler {
       if (arg('-Xk++')) {
-            return profileDir("cxx");
+            return nativeCXX();
       } else {
-            return profileDir("cc");
+            return nativeCC();
       }
 }
 
@@ -538,7 +538,7 @@ sub getTranslationCommand {
 sub dumpSymbols {
       state $syms = do {
             my $tmp = tempFile('syms');
-            shell(distDir('gccsymdump'), profileDir('native', 'builtins.o'), ldArgs())->stdout($tmp)->run();
+            shell(distDir('gccsymdump'), nativeCC(), profileDir('native', 'builtins.o'), ldArgs())->stdout($tmp)->run();
             $tmp;
       };
       return $syms;
@@ -595,8 +595,13 @@ sub parse {
       setShellDebugFile($kast, 0);
       if ($lang eq 'c++') {
             my $std = getStd('c++');
-            my $cppparser = distDir('clang-kast');
-            shell($cppparser, $ppResult, '--', '-x', 'c++-cpp-output', $std)->verbose()->stdout($kast)->run();
+            my $cppParser = distDir('clang-kast');
+            my @cppParserArgs = ('-x', 'c++-cpp-output', $std);
+            if (arg('-fno-diagnostics-color')) {
+                  push(@cppParserArgs, '-fno-diagnostics-color');
+            }
+
+            shell($cppParser, $ppResult, '--', @cppParserArgs)->verbose()->stdout($kast)->run();
 
             return $kast;
       }
@@ -607,9 +612,9 @@ sub parse {
 }
 
 sub getStd {
-      state $c45 = ! shell('gcc -std=c45 -E /dev/null')->result(); # sanity check
-      state $cpp14 = ! shell('g++ -std=c++14 -E /dev/null')->result();
-      state $c11 = ! shell('gcc -std=c11 -E /dev/null')->result();
+      state $c45 = ! shell(nativeCC(), '-std=c45', '-E', '/dev/null')->result(); # sanity check
+      state $cpp14 = ! shell(nativeCXX(), '-std=c++14', '-E', '/dev/null')->result();
+      state $c11 = ! shell(nativeCC(), '-std=c11', '-E', '/dev/null')->result();
 
       my ($lang) = @_;
 
