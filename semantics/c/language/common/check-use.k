@@ -35,7 +35,7 @@ module C-CHECK-USE
           [structural]
      rule checkUse(tv(trap, T::UType)) => trap(T)
           [structural]
-     rule <k> checkUse(tv(V:SymLoc, T:PointerUType))
+     rule <k> checkUse(tv(V:SymLoc, ut(... st: pointerType(_)) #as T::UType))
                => checkLoc(resolveLinking(V, Linkings))
                ~> tv(resolveLinking(V, Linkings), T)
           ...</k>

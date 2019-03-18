@@ -176,7 +176,7 @@ module LIBC-STDLIB
           [structural]
 
      rule [atexit]:
-          <k> builtin("atexit", tv(Loc:SymLoc, T:PointerUType))
+          <k> builtin("atexit", tv(Loc:SymLoc, ut(... st: pointerType(_)) #as T::UType))
               => success
           ...</k>
           <atexit> (.K => Computation(Call(tv(Loc, T), list(.List)))) ...</atexit>
@@ -188,7 +188,7 @@ module LIBC-STDLIB
           <status> mainExited </status>
 
      rule [at-quick-exit]:
-          <k> builtin("at_quick_exit", tv(Loc:SymLoc, T:PointerUType))
+          <k> builtin("at_quick_exit", tv(Loc:SymLoc, ut(... st: pointerType(_)) #as T::UType))
               => success
           ...</k>
           <at-quick-exit> (.K => Computation(Call(tv(Loc, T), list(.List)))) ...</at-quick-exit>

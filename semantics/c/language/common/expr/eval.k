@@ -100,13 +100,13 @@ module C-COMMON-EXPR-EVAL
      undefined.
      }*/
 
-     rule reval(nclv(Loc::SymLoc, T:ArrayType)
+     rule reval(nclv(Loc::SymLoc, t(... st: _:SimpleArrayType) #as T::Type)
           => checkRegister(Loc)
           ~> checkUse(tv(arrayToPtrLoc(Loc, T), utype(arrayToPtrType(T)))))
           [structural]
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
-     rule arrayToPtrLoc(Loc::SymLoc, T:FixedLengthArrayType)
+     rule arrayToPtrLoc(Loc::SymLoc, t(... st: _:SimpleFixedArrayType) #as T::Type)
           => addProv(fromArray(0, byteSizeofType(T)), Loc)
      rule arrayToPtrLoc(Loc::SymLoc, _) => Loc [owise]
 
@@ -118,7 +118,7 @@ module C-COMMON-EXPR-EVAL
      expression that has type ``pointer to a function returning T''.
      }*/
 
-     rule reval(nclv(Loc::SymLoc, T:FunctionType)
+     rule reval(nclv(Loc::SymLoc, t(... st: functionType(...)) #as T::Type)
           => checkUse(tv(Loc, utype(pointerType(T)))))
           [structural]
 

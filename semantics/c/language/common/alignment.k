@@ -48,7 +48,7 @@ module C-ALIGNMENT
      rule byteAlignofType'(t(_, _, unsigned-long-int => long-int))
      rule byteAlignofType'(t(_, _, unsigned-long-long-int => long-long-int))
      rule byteAlignofType'(t(_, _, unsigned-oversized-int => oversized-int))
-     rule byteAlignofType'(T:ArrayType)  => byteAlignofType(innerType(T))
+     rule byteAlignofType'(t(... st: _:SimpleArrayType) #as T::Type)  => byteAlignofType(innerType(T))
      rule byteAlignofType'(t(_, _, pointerType(_))) => cfg:alignofPointer
 
      rule byteAlignofType'(t(_, _, enumType(S::TagId)))
@@ -86,8 +86,8 @@ module C-ALIGNMENT
      // by the type specifier, so we need to push past the declarators
      // to get to the type specifiers before we can check the modifiers
      rule getAlignas(T::Type) => #getAlignas(T, T)
-     rule #getAlignas((T:PointerType => innerType(T)), _)
-     rule #getAlignas((T:ArrayType => innerType(T)), _)
+     rule #getAlignas((t(... st: pointerType(_)) #as T::Type => innerType(T)), _)
+     rule #getAlignas((t(... st: _:SimpleArrayType) #as T::Type => innerType(T)), _)
      rule #getAlignas((t(_, _, functionType(T::UType, _)) => type(T)), _)
      rule #getAlignas(T::Type, T'::Type) => #getAlignas(getModifiers(T), byteAlignofType(T')) [owise]
      rule #getAlignas(Mods::Set, _) => getAlignasMod(Mods)

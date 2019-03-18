@@ -86,8 +86,8 @@ module C-TYPING-COMPATIBILITY
           => #areTagsCompat(getTag(S), getTag(S'))
 
      rule #areCompat(
-               t(Qs::Quals, _, structType(S::TagId)) #as T::StructType,
-               t(Qs, _, structType(S'::TagId)) #as T'::StructType, Cache::Set)
+               t(Qs::Quals, _, structType(S::TagId)) #as T::Type,
+               t(Qs, _, structType(S'::TagId)) #as T'::Type, Cache::Set)
           => true
           requires S ==K S'
                orBool kpair(S, S') in Cache
@@ -95,8 +95,8 @@ module C-TYPING-COMPATIBILITY
                     andBool #areStructsCompat(getFields(T), getFields(T'),
                     Cache SetItem(kpair(S, S'))))
      rule #areCompat(
-               t(Qs::Quals, _, unionType(S::TagId)) #as T::UnionType,
-               t(Qs, _, unionType(S'::TagId)) #as T'::UnionType, Cache::Set)
+               t(Qs::Quals, _, unionType(S::TagId)) #as T::Type,
+               t(Qs, _, unionType(S'::TagId)) #as T'::Type, Cache::Set)
           => true
           requires S ==K S'
                orBool kpair(S, S') in Cache
@@ -355,10 +355,10 @@ module C-TYPING-COMPATIBILITY
           => t(Qs +Quals Qs', Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(
                t(Qs::Quals, Mods:Set, arrayType(T:Type, N:Int)),
-               T':VariableLengthArrayType)
+               t(... st: _:SimpleVariableArrayType) #as T'::Type)
           => t(Qs +Quals getQualifiers(T'), Mods getModifiers(T'), arrayType(compositeType(T, innerType(T')), N))
      rule compositeType(
-               T:VariableLengthArrayType,
+               t(... st: _:SimpleVariableArrayType) #as T::Type,
                t(Qs'::Quals, Mods':Set, arrayType(T':Type, N:Int)))
           => t(getQualifiers(T) +Quals Qs', getModifiers(T) Mods', arrayType(compositeType(innerType(T), T'), N))
      rule compositeType(

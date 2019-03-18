@@ -104,12 +104,12 @@ module C-TYPING-COMMON
 
      rule getFieldInfo(Tag::TagId) => toFieldInfo(getTagInfo(Tag))
 
-     rule getFields(T:StructOrUnionType) => getFields({utype(T)}:>StructOrUnionUType)
+     rule getFields(structOrUnionType #as T::Type) => getFields(utype(T))
      rule getFields(ut(SetItem(Fields:FieldInfo) _, structType(_))) => Fields
      rule getFields(ut(SetItem(Fields:FieldInfo) _, unionType(_))) => Fields
-     rule getFields(T::StructOrUnionUType) => getFieldInfo(getTagId(T)) [owise]
+     rule getFields(T::UType) => getFieldInfo(getTagId(T)) [owise]
 
-     syntax TagId ::= getTagId(StructOrUnionUType) [function]
+     syntax TagId ::= getTagId(UType) [function]
      rule getTagId(ut(_, structType(S::TagId))) => S
      rule getTagId(ut(_, unionType(S::TagId))) => S
 
@@ -120,7 +120,7 @@ module C-TYPING-COMMON
      rule getTagInfo(S:TagId) => #getTagInfo(S, #configuration)
 
      syntax Bool ::= hasNoName(Map) [function]
-     rule hasNoName((_:NoName |-> _:StructOrUnionType) _::Map) => true
+     rule hasNoName((_:NoName |-> structOrUnionType) _::Map) => true
      rule hasNoName(_) => false [owise]
 
      syntax TagInfo ::= #getTagInfo(TagId, K) [function]
@@ -163,9 +163,9 @@ module C-TYPING-COMMON
      rule typeExponent(ut(_, long-double)) => cfg:exponentofLongDouble
      rule maxFloatExponent => 19
 
-     rule roundCFloat(T:FloatUType, F:Float) => roundFloat(F, typePrecision(T), typeExponent(T))
-     rule Int2CFloat(T:FloatUType, I:Int) => Int2Float(I, typePrecision(T), typeExponent(T))
-     rule zeroCFloat(T:FloatUType) => Int2CFloat(T, 0)
+     rule roundCFloat(ut(... st: _:SimpleFloatType) #as T::UType, F:Float) => roundFloat(F, typePrecision(T), typeExponent(T))
+     rule Int2CFloat(ut(... st: _:SimpleFloatType) #as T::UType, I:Int) => Int2Float(I, typePrecision(T), typeExponent(T))
+     rule zeroCFloat(ut(... st: _:SimpleFloatType) #as T::UType) => Int2CFloat(T, 0)
 
      syntax Int ::= numBits(SimpleType) [function]
      rule numBits(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte
@@ -200,7 +200,7 @@ module C-TYPING-COMMON
      rule max(ut(_, oversized-int))
           => (1 <<Int absInt(numBits(oversized-int) -Int 1)) -Int 1
 
-     rule min(_:UnsignedIntegerUType) => 0
+     rule min(unsignedIntegerUType) => 0
 
      rule max(ut(_, bool)) => 1
 
@@ -345,8 +345,8 @@ module C-TYPING-COMMON
      rule showFunctionDeclarator(.List) => ""
 
      syntax String ::= parens(Type, String) [function, klabel(showTypeParensC)]
-     rule parens(_:FunctionType, S::String) => "(" +String S +String ")"
-     rule parens(_:ArrayType, S::String) => "(" +String S +String ")"
+     rule parens(t(... st: functionType(...)), S::String) => "(" +String S +String ")"
+     rule parens(t(... st: _:SimpleArrayType), S::String) => "(" +String S +String ")"
      rule parens(_, S::String) => " " +String S [owise]
 
      rule adjustParams(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
@@ -363,7 +363,7 @@ module C-TYPING-COMMON
 
      rule adjustParam(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
           => type(pointerType(t(Qs, Mods, functionType(R, Params))))
-     rule adjustParam(T:ArrayType) => arrayToPtrType(T)
+     rule adjustParam(t(... st: _:SimpleArrayType) #as T::Type) => arrayToPtrType(T)
      rule adjustParam(T::Type) => T [owise]
 
      rule arrayToPtrType(t(Qs::Quals, Mods::Set, _:SimpleArrayType) #as T::Type)

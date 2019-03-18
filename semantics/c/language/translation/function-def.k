@@ -31,7 +31,7 @@ module C-FUNCTION-DEF
      imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule FunctionDefinition(typedDeclaration(T:FunctionType, X:CId), Blk:K)
+     rule FunctionDefinition(typedDeclaration(t(... st: functionType(...)) #as T::Type, X:CId), Blk:K)
           => declare'(
                typedDeclaration(toPrototype(emptyToVoid(T)), X),
                initializer(initFunction(
@@ -54,7 +54,7 @@ module C-FUNCTION-DEF
      // promoted types?
 
      syntax Type ::= emptyToVoid(Type) [function]
-     rule emptyToVoid(T:FunctionType)
+     rule emptyToVoid(t(... st: functionType(...)) #as T::Type)
           => setParams(T, ListItem(typedDeclaration(type(void), #NoName)))
           requires (getParams(T) ==K .List)
      rule emptyToVoid(T:Type) => T [owise]
@@ -83,7 +83,7 @@ module C-FUNCTION-DEF
                andBool (X ==K Identifier("main"))
           [structural]
      rule (.K => CV("FD2", "Invalid return type in function definition."))
-          ~> checkFunDefType(_, t(_, _, functionType(_:ArrayOrFunctionUType, _)))
+          ~> checkFunDefType(_, t(_, _, functionType(arrayOrFunctionUType, _)))
           [structural]
      rule (.K => CV("FD3", "Incomplete parameter type in "
                +String "function definition."))
@@ -147,7 +147,7 @@ module C-FUNCTION-DEF
      rule <k> initFunction(tv(Loc:SymLoc, T::UType), X:CId, DefT::Type) => .K ...</k>
           <elab>... .K => initFunction(&(X), X, DefT) </elab>
           requires isLinkerLoc(Loc)
-     rule <k> initFunction(tv(Loc:SymLoc, ut(_, pointerType(_:FunctionType))), X::CId, DefT::Type)
+     rule <k> initFunction(tv(Loc:SymLoc, ut(_, pointerType(t(... st: functionType(...))))), X::CId, DefT::Type)
                => .K
           ...</k>
           <functions> M:Map => M[base(Loc) <- functionObject(X, DefT, .List, .Map)] </functions>
@@ -205,7 +205,7 @@ module C-FUNCTION-DEF
           [structural]
      rule dummyBind(ListItem(variadic)) => .K
           [structural]
-     rule dummyBind(ListItem(typedDeclaration(_:VoidType, _))) => .K
+     rule dummyBind(ListItem(typedDeclaration(t(... st: void), _))) => .K
           [structural]
      rule dummyBind(ListItem(typedDeclaration(T:Type, X:CId)) Params:List)
           => addToEnv(X, T, nonStatic)

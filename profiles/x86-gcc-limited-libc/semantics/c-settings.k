@@ -1,3 +1,9 @@
+module C-TYPING-MACROS
+     imports C-TYPING-MACROS-SYNTAX
+     rule signedCharType => char #Or signed-char [macro]
+     rule unsignedCharType => unsigned-char [macro]
+endmodule
+
 module C-SETTINGS
      imports BOOL
      imports INT

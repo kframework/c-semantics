@@ -58,7 +58,7 @@ module C-DECL-GLOBAL
           requires notBool isFunctionType(T)
                andBool validLocalStorageClass(T)
           [structural]
-     rule <k> declare''(T:FunctionType, X:CId, K:K)
+     rule <k> declare''(t(... st: functionType(...)) #as T::Type, X:CId, K:K)
                => declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
           <curr-scope> _:BlockScope </curr-scope>
@@ -81,14 +81,14 @@ module C-DECL-GLOBAL
           requires validPrototypeStorageClass(T)
                andBool notBool isVoidType(T)
           [structural]
-     rule <k> declare''(T:VoidType, #NoName, NoInit()) => .K ...</k>
+     rule <k> declare''(t(... st: void) #as T::Type, #NoName, NoInit()) => .K ...</k>
           <curr-scope> prototypeScope </curr-scope>
           requires (getStorageSpecifiers(T) ==K .Set)
                andBool (getQualifiers(T) ==K noQuals)
           [structural]
 
      // File scope declarations.
-     rule <k> declare''(T:FunctionType, X:CId, K:K)
+     rule <k> declare''(t(... st: functionType(...)) #as T::Type, X:CId, K:K)
                => declareExternalVariable(X, T,
                     #if isNoInit(K)
                     #then NoInit()
@@ -115,7 +115,7 @@ module C-DECL-GLOBAL
      rule (.K => UNDEF("TDG1",
                "Declaration for the function " +String showCId(X) +String
                " appears with type qualifiers."))
-          ~> declare''(T:FunctionType, X:CId, _)
+          ~> declare''(t(... st: functionType(...)) #as T::Type, X:CId, _)
           requires getQualifiers(T) =/=K noQuals
           [structural]
 
@@ -129,7 +129,7 @@ module C-DECL-GLOBAL
      rule <k> (.K => UNDEF("TDG3",
                "Declaration for " +String showCId(X) +String
                " appears with invalid storage class specifiers."))
-               ~> declare''(T:FunctionType, X:CId, _)
+               ~> declare''(t(... st: functionType(...)) #as T::Type, X:CId, _)
           ...</k>
           <curr-scope> S:Scope </curr-scope>
           requires S =/=K fileScope
@@ -169,14 +169,14 @@ module C-DECL-GLOBAL
           [structural]
      rule <k> (.K => UNDEF("TDG6",
                "Void parameter appears with a storage class specifier."))
-               ~> declare''(T:VoidType, _, _)
+               ~> declare''(t(... st: void) #as T::Type, _, _)
           ...</k>
           <curr-scope> prototypeScope </curr-scope>
           requires getStorageSpecifiers(T) =/=K .Set
           [structural]
      rule <k> (.K => UNDEF("TDG7",
                "Void parameter appears with qualifiers."))
-               ~> declare''(T:VoidType, _, _)
+               ~> declare''(t(... st: void) #as T::Type, _, _)
           ...</k>
           <curr-scope> prototypeScope </curr-scope>
           requires getQualifiers(T) =/=K noQuals

@@ -71,7 +71,7 @@ sub main {
 
       my $argv = reduce { our ($a, $b); "`_List_`($a,$b)" } (map {qq|`ListItem`(#token($_, "String"))|} (map {quote(backslash(quote(backslash($_))))} ($0, @ARGV)));
 
-      my @cmd = ('--output', 'kast', '-d', $EXEC_DEF, "-cARGV=$argv", '-pARGV=printf %s', '-w', 'none', '--parser',
+      my @cmd = ('--output', 'kast', '--no-sort-collections', '--no-alpha-renaming', '-d', $EXEC_DEF, "-cARGV=$argv", '-pARGV=printf %s', '-w', 'none', '--parser',
                  'cat', $fileInput);
       my $options = getOptions();
 

@@ -261,9 +261,9 @@ module C-COMMON-PROMOTION
      with unsigned integer type.
      \end{itemize}\end{itemize}%
      */
-     rule usualArithmeticConversion-aux(T:SignedIntegerUType, T':UnsignedIntegerUType) => T'
+     rule usualArithmeticConversion-aux(signedIntegerUType #as T::UType, unsignedIntegerUType #as T'::UType) => T'
           requires rank(T') >=Int rank(T)
-     rule usualArithmeticConversion-aux(T:UnsignedIntegerUType, T':SignedIntegerUType) => T
+     rule usualArithmeticConversion-aux(unsignedIntegerUType #as T::UType, signedIntegerUType #as T'::UType) => T
           requires rank(T) >=Int rank(T')
 
      /*@
@@ -276,11 +276,11 @@ module C-COMMON-PROMOTION
      the type of the operand with signed integer type.
      \end{itemize}\end{itemize}%
      */
-     rule usualArithmeticConversion-aux(T:SignedIntegerUType, T':UnsignedIntegerUType) => T
+     rule usualArithmeticConversion-aux(signedIntegerUType #as T::UType, unsignedIntegerUType #as T'::UType) => T
           requires rank(T') <Int rank(T)
                andBool min(T) <=Int min(T')
                andBool max(T) >=Int max(T')
-     rule usualArithmeticConversion-aux(T:UnsignedIntegerUType, T':SignedIntegerUType) => T'
+     rule usualArithmeticConversion-aux(unsignedIntegerUType #as T::UType, signedIntegerUType #as T'::UType) => T'
           requires rank(T) <Int rank(T')
                andBool min(T') <=Int min(T)
                andBool max(T') >=Int max(T)
@@ -293,12 +293,12 @@ module C-COMMON-PROMOTION
      corresponding to the type of the operand with signed integer type.
      \end{itemize}\end{itemize}%
      */
-     rule usualArithmeticConversion-aux(T:SignedIntegerUType, T':UnsignedIntegerUType)
+     rule usualArithmeticConversion-aux(signedIntegerUType #as T::UType, unsignedIntegerUType #as T'::UType)
           => correspondingUnsignedType(T)
           requires rank(T') <Int rank(T)
                andBool (min(T) >Int min(T')
                     orBool max(T) <Int max(T'))
-     rule usualArithmeticConversion-aux(T:UnsignedIntegerUType, T':SignedIntegerUType)
+     rule usualArithmeticConversion-aux(unsignedIntegerUType #as T::UType, signedIntegerUType #as T'::UType)
           => correspondingUnsignedType(T')
           requires rank(T) <Int rank(T')
                andBool (min(T') >Int min(T)
@@ -316,7 +316,7 @@ module C-COMMON-PROMOTION
           => ut(Mods, double)
      rule argPromoteType(ut(Mods:Set, long-double))
           => ut(Mods, long-double)
-     rule argPromoteType(T:IntegerUType)
+     rule argPromoteType(integerUType #as T::UType)
           => promote(T)
      rule argPromoteType(T::UType) => T [owise]
 

@@ -86,7 +86,7 @@ module C-STMT-EXPR
      rule Zero(nclv(Loc::SymLoc, T::Type))
           => initBytesFill(Loc, byteSizeofType(T), piece(0, cfg:bitsPerByte))
 
-     rule InitPadding(nclv(Loc::SymLoc, T::StructOrUnionType), F::CId)
+     rule InitPadding(nclv(Loc::SymLoc, T::Type), F::CId)
           => initPadding(Loc, T, F)
 
 endmodule

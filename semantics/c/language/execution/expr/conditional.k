@@ -37,7 +37,7 @@ module C-EXPR-CONDITIONAL
           requires stripQualifiers(T) ==Type stripQualifiers(T')
           [structural]
      rule (.K => UNDEF("EEC1", "variably modified types in a conditional expression with unequal size expressions."))
-          ~> types(T1:PointerType, T2:PointerType)
+          ~> types(t(... st: pointerType(_)) #as T1::Type, t(... st: pointerType(_)) #as T2::Type)
           requires stripQualifiers(innerType(T1)) =/=Type stripQualifiers(innerType(T2))
           [structural]
 

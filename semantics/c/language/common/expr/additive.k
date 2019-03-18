@@ -83,17 +83,17 @@ module C-COMMON-EXPR-ADDITIVE
      operator that is evaluated.
      }*/
 
-     rule tv(Loc:SymLoc, T':PointerUType) + tv(I:Int, _:IntegerUType)
+     rule tv(Loc:SymLoc, ut(... st: pointerType(_)) #as T'::UType) + tv(I:Int, integerUType)
           => addToPointer(Loc, T', I)
           requires notBool isFunctionType(innerType(T'))
                andBool isCompleteType(innerType(T'))
           [structural]
-     rule tv(I:Int, _:IntegerUType) + tv(Loc:SymLoc, T':PointerUType)
+     rule tv(I:Int, integerUType) + tv(Loc:SymLoc, ut(... st: pointerType(_)) #as T'::UType)
           => addToPointer(Loc, T', I)
           requires notBool isFunctionType(innerType(T'))
                andBool isCompleteType(innerType(T'))
           [structural]
-     rule tv(Loc:SymLoc, T':PointerUType) - tv(I:Int, _:IntegerUType)
+     rule tv(Loc:SymLoc, ut(... st: pointerType(_)) #as T'::UType) - tv(I:Int, integerUType)
           => addToPointer(Loc, T', 0 -Int I)
           requires notBool isFunctionType(innerType(T'))
                andBool isCompleteType(innerType(T'))
@@ -225,9 +225,9 @@ module C-COMMON-EXPR-ADDITIVE
                andBool stripQualifiers(T) ==Type stripQualifiers(T')
           [structural]
 
-     rule tv(L1:SymLoc, T:IntegerUType)
-               - tv(L2:SymLoc, T':IntegerUType)
-          => computePointerDifference(offset(L1) -Int offset(L2), 1, T, #if isSignedIntegerType(T) #then "intptr_t" #else "uintptr_t" #fi)
+     rule tv(L1:SymLoc, integerUType #as T::UType)
+               - tv(L2:SymLoc, integerUType #as T'::UType)
+          => computePointerDifference(offset(L1) -Int offset(L2), 1, T, #if isSignedIntegerUType(T) #then "intptr_t" #else "uintptr_t" #fi)
           requires sameBase(L1, L2)
                andBool isPromoted(T) andBool T ==Type T'
 

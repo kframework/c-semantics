@@ -56,7 +56,7 @@ module C-MEMORY-READING
                readBytes(Loc, byteSizeofType(T), T))
           requires notBool isBitfieldType(T)
           [structural]
-     rule readActual(Loc::SymLoc, T:BitfieldType)
+     rule readActual(Loc::SymLoc, t(... st: bitfieldType(...)) #as T::Type)
           => concretize(updateReadFrom(utype(T), Loc),
               fillToBytes(extractBitsFromMem(Loc, T)))
           [structural]
@@ -88,11 +88,11 @@ module C-MEMORY-READING
           [structural]
 
      rule (.K => UNSPEC("CMR1", "Trying to reinterpret integer bytes as floating bytes.") ) ~>
-          concretize(_:FloatUType, dataList(L::List))
+          concretize(ut(... st: _:SimpleFloatType), dataList(L::List))
           requires hasInt(L)
           [structural]
      rule (.K => UNSPEC("CMR2", "Trying to reinterpret floating bytes as integer bytes.") ) ~>
-          concretize(T:IntegerUType, dataList(L::List))
+          concretize(integerUType #as T::UType, dataList(L::List))
           requires hasFloat(L)
                andBool notBool isCharUType(T)
           [structural]
@@ -172,13 +172,13 @@ module C-MEMORY-READING
      rule extractBitsFromList-aux(_, 0, 0, Done::List) => dataList(Done)
 
      syntax RValue ::= interpret(UType, BitValue) [function]
-     rule interpret(T:IntegerUType, I:Int)
+     rule interpret(integerUType #as T::UType, I:Int)
           => #if max(T) >=Int I #then tv(I, T) #else interpret(T, I -Int (1 <<Int absInt(bitSizeofType(T)))) #fi
-     rule interpret(T:IntegerUType, encodedPtr(NullPointer, _, _)) => tv(unknown(0), T)
-     rule interpret(T:PointerUType, I:Int) => tv(cfg:intToPointer(I, T), T)
-     rule interpret(T:FloatUType, 0) => tv(zeroCFloat(T), T)
-     rule interpret(T:FloatUType, encodedPtr(NullPointer, _, _)) => tv(unknown(zeroCFloat(T)), T)
-     rule interpret(T:FloatUType, I:Int) => tv(cfg:floatFromBits(I, T), T)
+     rule interpret(integerUType #as T::UType, encodedPtr(NullPointer, _, _)) => tv(unknown(0), T)
+     rule interpret(ut(... st: pointerType(_)) #as T::UType, I:Int) => tv(cfg:intToPointer(I, T), T)
+     rule interpret(ut(... st: _:SimpleFloatType) #as T::UType, 0) => tv(zeroCFloat(T), T)
+     rule interpret(ut(... st: _:SimpleFloatType) #as T::UType, encodedPtr(NullPointer, _, _)) => tv(unknown(zeroCFloat(T)), T)
+     rule interpret(ut(... st: _:SimpleFloatType) #as T::UType, I:Int) => tv(cfg:floatFromBits(I, T), T)
           requires I =/=Int 0
      rule interpret(T::UType, encodedPtr(Loc:SymLoc, 0, To::Int)) => tv(Loc, T)
           requires To ==Int (cfg:ptrsize *Int cfg:bitsPerByte)

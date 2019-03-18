@@ -53,24 +53,24 @@ module C-EXPR-RELATIONAL
 
      //- comparison of ints with pointers
      // fixme there are further restrictions on pointers
-     rule (tv(N:Int, T::UType) => tv(NullPointer, T')) == tv(_, T':PointerUType)
+     rule (tv(N:Int, T::UType) => tv(NullPointer, T')) == tv(_, ut(... st: pointerType(_)) #as T'::UType)
           requires isPromoted(T) andBool isNullPointerConstant(tv(N, T))
-     rule (tv(N:Int, T::UType) => tv(NullPointer, T')) == te(_, T':PointerUType)
-          requires isPromoted(T) andBool isNullPointerConstant(tv(N, T))
-
-     rule tv(_, T:PointerUType) == (tv(N:Int, T'::UType) => tv(NullPointer, T))
-          requires isPromoted(T') andBool isNullPointerConstant(tv(N, T'))
-     rule te(_, T:PointerUType) == (tv(N:Int, T'::UType) => tv(NullPointer, T))
-          requires isPromoted(T') andBool isNullPointerConstant(tv(N, T'))
-
-     rule (tv(N:Int, T::UType) => tv(NullPointer, T')) != tv(_, T':PointerUType)
-          requires isPromoted(T) andBool isNullPointerConstant(tv(N, T))
-     rule (tv(N:Int, T::UType) => tv(NullPointer, T')) != te(_, T':PointerUType)
+     rule (tv(N:Int, T::UType) => tv(NullPointer, T')) == te(_, ut(... st: pointerType(_)) #as T'::UType)
           requires isPromoted(T) andBool isNullPointerConstant(tv(N, T))
 
-     rule te(_, T:PointerUType) != (tv(N:Int, T'::UType) => tv(NullPointer, T))
+     rule tv(_, ut(... st: pointerType(_)) #as T::UType) == (tv(N:Int, T'::UType) => tv(NullPointer, T))
           requires isPromoted(T') andBool isNullPointerConstant(tv(N, T'))
-     rule tv(_, T:PointerUType) != (tv(N:Int, T'::UType) => tv(NullPointer, T))
+     rule te(_, ut(... st: pointerType(_)) #as T::UType) == (tv(N:Int, T'::UType) => tv(NullPointer, T))
+          requires isPromoted(T') andBool isNullPointerConstant(tv(N, T'))
+
+     rule (tv(N:Int, T::UType) => tv(NullPointer, T')) != tv(_, ut(... st: pointerType(_)) #as T'::UType)
+          requires isPromoted(T) andBool isNullPointerConstant(tv(N, T))
+     rule (tv(N:Int, T::UType) => tv(NullPointer, T')) != te(_, ut(... st: pointerType(_)) #as T'::UType)
+          requires isPromoted(T) andBool isNullPointerConstant(tv(N, T))
+
+     rule te(_, ut(... st: pointerType(_)) #as T::UType) != (tv(N:Int, T'::UType) => tv(NullPointer, T))
+          requires isPromoted(T') andBool isNullPointerConstant(tv(N, T'))
+     rule tv(_, ut(... st: pointerType(_)) #as T::UType) != (tv(N:Int, T'::UType) => tv(NullPointer, T))
           requires isPromoted(T') andBool isNullPointerConstant(tv(N, T'))
 
 endmodule

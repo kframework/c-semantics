@@ -65,7 +65,7 @@ module C-EXPR-FUNCTION-CALL
 
      // Function call (from C function)
      rule <k> Call(
-               tv(loc(Base:SymBase, 0), ut(_, pointerType(T:FunctionType))),
+               tv(loc(Base:SymBase, 0), ut(_, pointerType(t(... st: functionType(...)) #as T::Type))),
                rvlist(L:List))
                => sequencePoint
                ~> application(CurrLoc, Base, Fun, T, CLinkage, krlist(L))
@@ -73,14 +73,14 @@ module C-EXPR-FUNCTION-CALL
           <functions>... Base |-> Fun:RValue ...</functions>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
-     rule <k> Call(tv(loc(obj(0, Align::Int, nativeAddress()) #as Base::SymBase, Address:Int), ut(_, pointerType(T:FunctionType))),
+     rule <k> Call(tv(loc(obj(0, Align::Int, nativeAddress()) #as Base::SymBase, Address:Int), ut(_, pointerType(t(... st: functionType(...)) #as T::Type))),
                rvlist(L:List))
                => sequencePoint
                ~> application(CurrLoc, Base, functionObject(nativeFunction(Address), makeNativeDecl(T), .List, .Map), T, CLinkage, krlist(L))
           ...</k>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
-     rule <k> Call(tv(loc(obj(0, Align::Int, nativeSymbol(S::String)) #as Base::SymBase, _), ut(_, pointerType(_:FunctionType))),
+     rule <k> Call(tv(loc(obj(0, Align::Int, nativeSymbol(S::String)) #as Base::SymBase, _), ut(_, pointerType(t(... st: functionType(...))))),
                rvlist(L:List))
                => sequencePoint
                ~> application(CurrLoc, Base, functionObject(Identifier(S), T, .List, .Map), T, CLinkage, krlist(L))

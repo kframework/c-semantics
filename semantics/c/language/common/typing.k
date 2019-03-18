@@ -1,8 +1,7 @@
 module C-TYPING-SORTS
      syntax EffectiveType ::= Type
-     syntax Type ::= FunctionType
+     syntax Type
      syntax CId
-     syntax FunctionType
      syntax UType
      syntax DType
      syntax ParamDecl
@@ -12,7 +11,18 @@ module C-TYPING-SORTS
      syntax FieldInfo
      syntax TagInfo
      syntax Variadic
-     syntax StructOrUnionType
+endmodule
+
+module C-TYPING-MACROS-SYNTAX
+     syntax SimpleIntegerType ::= "signedCharType" | "unsignedCharType"
+     syntax SimpleSignedCharType ::= "signed-char"
+     syntax SimpleUnsignedCharType ::= "unsigned-char"
+     syntax SimpleCharType ::= "char"
+     syntax SimpleIntegerType ::= SimpleCharType
+                                | SimpleSignedType
+                                | SimpleUnsignedType
+     syntax SimpleUnsignedType ::= SimpleUnsignedCharType
+     syntax SimpleSignedType ::= SimpleSignedCharType
 endmodule
 
 module C-TYPING-SYNTAX
@@ -23,11 +33,13 @@ module C-TYPING-SYNTAX
      imports STRING-SYNTAX
      imports MAP
 
+     imports C-TYPING-MACROS
+
      syntax Qualifier // defined in C-SYNTAX
      syntax StorageClassSpecifier // defined in C-SYNTAX
 
-     syntax Type ::= t(Quals, Set, SimpleType) // possibly-qualified type
-     syntax UType ::= ut(Set, SimpleUType)     // unqualified type
+     syntax Type ::= t(q: Quals, m: Set, st: SimpleType) // possibly-qualified type
+     syntax UType ::= ut(m: Set, st: SimpleUType)     // unqualified type
      syntax DType ::= typedDeclaration(Type, CId)
      syntax ParamDecl ::= Type | DType
 
@@ -53,33 +65,33 @@ module C-TYPING-SYNTAX
      syntax EnumInfo ::= enumInfo(enumAlias: SimpleBasicType, ctMap: Map)
      syntax TagInfo ::= FieldInfo | EnumInfo
      syntax SimpleBasicType ::= getEnumAlias(TagId) [function]
-     syntax FieldInfo ::= getFields(StructOrUnionType) [function]
-     syntax FieldInfo ::= getFields(StructOrUnionUType) [function]
-     syntax FieldInfo ::= getFlatFields(StructOrUnionType) [function]
+     syntax FieldInfo ::= getFields(Type) [function]
+     syntax FieldInfo ::= getFields(UType) [function]
+     syntax FieldInfo ::= getFlatFields(Type) [function]
      syntax List ::= getFieldNames(Type) [function]
-     syntax List ::= getFieldTypes(StructOrUnionType) [function]
-     syntax Int  ::= getFieldOffset(CId, StructOrUnionType) [function]
-     syntax Type ::= getFieldType(CId, StructOrUnionType) [function]
-     syntax Type ::= getActiveVariant(UnionType) [function]
-     syntax UnionType ::= setActiveVariant(Type, UnionType) [function]
-     syntax CId ::= getActiveVariantId(UnionType) [function]
-     syntax UnionType ::= setActiveVariantId(CId, UnionType) [function]
+     syntax List ::= getFieldTypes(Type) [function]
+     syntax Int  ::= getFieldOffset(CId, Type) [function]
+     syntax Type ::= getFieldType(CId, Type) [function]
+     syntax Type ::= getActiveVariant(Type) [function]
+     syntax Type ::= setActiveVariant(Type, Type) [function]
+     syntax CId ::= getActiveVariantId(Type) [function]
+     syntax Type ::= setActiveVariantId(CId, Type) [function]
      syntax EffectiveType ::= mergeVariants(EffectiveType, EffectiveType) [function]
      syntax Type ::= clearActiveVariant(Type) [function]
      syntax Int  ::= floorBitOffset(Int, Type) [function]
      syntax Int  ::= ceilBitOffset(Int, Type) [function]
-     syntax CId ::= getFieldAtOffset(Int, StructOrUnionType) [function]
-     syntax Type ::= getFieldTypeAtOffset(Int, StructOrUnionType) [function]
-     syntax StructOrUnionType ::= setFieldType(CId, Type, StructOrUnionType) [function]
-     syntax StructOrUnionType ::= setFieldTypeAtOffset(Int, Type, StructOrUnionType) [function]
-     syntax Int ::= lastFieldByteOffset(StructType) [function]
-     syntax StructOrUnionType ::= resizeFlexibleType(StructOrUnionType, CId, Int) [function]
-     syntax CId ::= getUnnamed(CId, StructOrUnionType) [function]
-     syntax CId ::= getFirstField(StructOrUnionType) [function]
+     syntax CId ::= getFieldAtOffset(Int, Type) [function]
+     syntax Type ::= getFieldTypeAtOffset(Int, Type) [function]
+     syntax Type ::= setFieldType(CId, Type, Type) [function]
+     syntax Type ::= setFieldTypeAtOffset(Int, Type, Type) [function]
+     syntax Int ::= lastFieldByteOffset(Type) [function]
+     syntax Type ::= resizeFlexibleType(Type, CId, Int) [function]
+     syntax CId ::= getUnnamed(CId, Type) [function]
+     syntax CId ::= getFirstField(Type) [function]
 
      // These include anonymous structs/unions when looking up fields.
      syntax List ::= findFieldNames(Type) [function]
-     syntax Int  ::= findFieldOffset(CId, StructOrUnionType) [function]
+     syntax Int  ::= findFieldOffset(CId, Type) [function]
      syntax Type ::= findFieldType(CId, Type) [function]
      syntax List ::= findUnnamedBitfields(Type) [function]
 
@@ -115,18 +127,13 @@ module C-TYPING-SYNTAX
 
      syntax SimpleSignedType ::= "short-int" | SimpleSignedIntType
                                | "long-int" | "long-long-int" | "oversized-int"
-                               | SimpleSignedCharType
                                | SimpleSignedBitfieldType
      syntax SimpleFloatType ::= "float" | "double" | "long-double"
-     syntax SimpleSignedCharType ::= "signed-char"
      syntax SimpleSignedIntType ::= "int"
-     syntax SimpleUnsignedCharType ::= "unsigned-char"
-     syntax SimpleCharType ::= "char"
      syntax SimpleUnsignedType ::= SimpleBoolType | "unsigned-short-int"
                                  | SimpleUnsignedIntType | "unsigned-long-int"
                                  | "unsigned-long-long-int"
                                  | "unsigned-oversized-int"
-                                 | SimpleUnsignedCharType
                                  | SimpleUnsignedBitfieldType
      syntax SimpleUnsignedIntType ::= "unsigned-int"
      syntax SimpleBoolType ::= "bool"
@@ -135,10 +142,8 @@ module C-TYPING-SYNTAX
      syntax BitfieldFieldType ::= SignedBitfieldFieldType | UnsignedBitfieldFieldType
      syntax SignedBitfieldFieldType ::= SimpleSignedIntType
      syntax UnsignedBitfieldFieldType ::= SimpleUnsignedIntType | SimpleBoolType
-     syntax SimpleIntegerType ::= SimpleSignedType | SimpleUnsignedType
-                                | SimpleBitfieldType
+     syntax SimpleIntegerType ::= SimpleBitfieldType
                                 | BitfieldFieldType
-                                | SimpleCharType
 
      syntax SimpleBasicType ::= SimpleNoType | SimpleVoidType
                               | SimpleFloatType | SimpleIntegerType
@@ -200,76 +205,71 @@ module C-TYPING-SYNTAX
      syntax Variadic ::= "variadic"
      syntax DType ::= Variadic
 
-     syntax Type ::= BasicType | PointerType | AggregateOrUnionType
-                   | StructOrUnionType | ArrayOrFunctionType
-     syntax UType ::= PointerUType
-                    | StructOrUnionUType | ArrayOrFunctionUType
-                    | IntegerUType
-                    | FloatUType
+     syntax UType ::= "structOrUnionUType"
+                   | "arrayOrFunctionUType"
+                   | "aggregateOrUnionUType"
+                   | "pointerOrArrayUType"
+                   | "integerUType"
+                   | "signedIntegerUType"
+                   | "unsignedIntegerUType"
+                   | "charUType"
+                   | "arithmeticUType"
+     syntax Type ::= "structOrUnionType"
+                   | "arrayOrFunctionType"
+                   | "aggregateOrUnionType"
+                   | "pointerOrArrayType"
+                   | "integerType"
+                   | "signedIntegerType"
+                   | "unsignedIntegerType"
+                   | "charType"
+                   | "arithmeticType"
 
-     syntax AggregateOrUnionType ::= AggregateType | UnionType
-     syntax AggregateType ::= ArrayType | StructType
-     syntax StructOrUnionType ::= StructType | UnionType
-     syntax ArrayOrFunctionType ::= ArrayType | FunctionType
-     syntax BasicType ::= ArithmeticType | VoidType | NoType
-     syntax ArithmeticType ::= IntegerType | FloatType
-     syntax IntegerType ::= UnsignedIntegerType | SignedIntegerType | CharType
-                          | BitfieldType | EnumType
-     syntax SignedIntegerType ::= SCharType | SignedBitfieldType
-     syntax UnsignedIntegerType ::= UCharType | BoolType | UnsignedBitfieldType
-     syntax CharType ::= UCharType | SCharType
-     syntax BitfieldType ::= UnsignedBitfieldType | SignedBitfieldType
-                           | t(Quals, Set, SimpleBitfieldType)
-     syntax ArrayType ::= FixedLengthArrayType | IncompleteArrayType
-                        | VariableLengthArrayType
-                        | t(Quals, Set, SimpleArrayType)
-     syntax PointerOrArrayType ::= PointerType | ArrayType
+     rule structOrUnionUType => ut(?_, structType(?_) #Or unionType(?_)) [macro]
+     rule arrayOrFunctionUType => ut(?_, arrayUType(?_, ?_) #Or incompleteArrayUType(?_) #Or flexibleArrayUType(?_) #Or unspecifiedArrayUType(?_) #Or variableLengthArrayUType(?_, ?_) #Or functionType(?_, ?_)) [macro]
+     rule aggregateOrUnionUType => ut(?_, arrayUType(?_, ?_) #Or incompleteArrayUType(?_) #Or flexibleArrayUType(?_) #Or unspecifiedArrayUType(?_) #Or variableLengthArrayUType(?_, ?_) #Or structType(?_) #Or unionType(?_)) [macro]
+     rule pointerOrArrayUType => ut(?_, arrayUType(?_, ?_) #Or incompleteArrayUType(?_) #Or flexibleArrayUType(?_) #Or unspecifiedArrayUType(?_) #Or variableLengthArrayUType(?_, ?_) #Or pointerType(?_)) [macro]
+     rule integerUType => unsignedIntegerUType #Or signedIntegerUType #Or ut(?_, enumType(?_)) [macro]
+     rule signedIntegerUType => ut(?_, short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType #Or bitfieldType(short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType, ?_)) [macro]
+     rule unsignedIntegerUType => ut(?_, bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType #Or bitfieldType(bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType, ?_)) [macro]
+     rule charUType => ut(?_, signedCharType #Or unsignedCharType) [macro]
+     rule arithmeticUType => integerUType #Or ut(?_, float #Or double #Or long-double) [macro]
 
-     syntax StructOrUnionUType ::= StructUType | UnionUType
-     syntax ArrayOrFunctionUType ::= FunctionUType
-                                   | FixedLengthArrayUType | IncompleteArrayUType
-                                   | VariableLengthArrayUType
-     syntax CharUType ::= SCharUType | UCharUType
-     syntax IntegerUType ::= UnsignedIntegerUType | SignedIntegerUType | BitfieldUType | CharUType
-     syntax SignedIntegerUType ::= SCharUType | SignedBitfieldUType
-     syntax UnsignedIntegerUType ::= UCharUType | BoolUType | UnsignedBitfieldUType
-     syntax BitfieldUType ::= SignedBitfieldUType | UnsignedBitfieldUType
-                            | ut(Set, SimpleBitfieldType)
+     rule structOrUnionType => t(?_, ?_, structType(?_) #Or unionType(?_)) [macro]
+     rule arrayOrFunctionType => t(?_, ?_, arrayType(?_, ?_) #Or incompleteArrayType(?_) #Or flexibleArrayType(?_) #Or unspecifiedArrayType(?_) #Or variableLengthArrayType(?_, ?_) #Or functionType(?_, ?_)) [macro]
+     rule aggregateOrUnionType => t(?_, ?_, arrayType(?_, ?_) #Or incompleteArrayType(?_) #Or flexibleArrayType(?_) #Or unspecifiedArrayType(?_) #Or variableLengthArrayType(?_, ?_) #Or structType(?_) #Or unionType(?_)) [macro]
+     rule pointerOrArrayType => t(?_, ?_, arrayType(?_, ?_) #Or incompleteArrayType(?_) #Or flexibleArrayType(?_) #Or unspecifiedArrayType(?_) #Or variableLengthArrayType(?_, ?_) #Or pointerType(?_)) [macro]
+     rule integerType => unsignedIntegerType #Or signedIntegerType #Or t(?_, ?_, enumType(?_)) [macro]
+     rule signedIntegerType => t(?_, ?_, short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType #Or bitfieldType(short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType, ?_)) [macro]
+     rule unsignedIntegerType => t(?_, ?_, bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType #Or bitfieldType(bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType, ?_)) [macro]
+     rule charType => t(?_, ?_, signedCharType #Or unsignedCharType) [macro]
+     rule arithmeticType => integerType #Or t(?_, ?_, float #Or double #Or long-double) [macro]
 
-     syntax UnsignedIntegerType ::= t(Quals, Set, SimpleUnsignedType)
-     syntax SignedIntegerType ::= t(Quals, Set, SimpleSignedType)
-     syntax FloatType ::= t(Quals, Set, SimpleFloatType)
-     syntax UCharType ::= t(Quals, Set, SimpleUnsignedCharType)
-     syntax SCharType ::= t(Quals, Set, SimpleSignedCharType)
-     syntax PointerType ::= t(Quals, Set, SimplePointerType)
-     syntax BoolType ::= t(Quals, Set, SimpleBoolType)
-     syntax FixedLengthArrayType ::= t(Quals, Set, SimpleFixedArrayType)
-     syntax VariableLengthArrayType ::= t(Quals, Set, SimpleVariableArrayType)
-     syntax VoidType ::= t(Quals, Set, SimpleVoidType)
-     syntax NoType ::= t(Quals, Set, SimpleNoType)
-     syntax EnumType ::= t(Quals, Set, SimpleEnumType)
-     syntax StructType ::= t(Quals, Set, SimpleStructType)
-     syntax UnionType ::= t(Quals, Set, SimpleUnionType)
-     syntax IncompleteArrayType ::= t(Quals, Set, SimpleIncompleteArrayType)
-     syntax SignedBitfieldType ::= t(Quals, Set, SimpleSignedBitfieldType)
-     syntax UnsignedBitfieldType ::= t(Quals, Set, SimpleUnsignedBitfieldType)
-     syntax FunctionType ::= t(Quals, Set, SimpleFunctionType)
-
-     syntax UnsignedIntegerUType ::= ut(Set, SimpleUnsignedType)
-     syntax SignedIntegerUType ::= ut(Set, SimpleSignedType)
-     syntax FloatUType ::= ut(Set, SimpleFloatType)
-     syntax UCharUType ::= ut(Set, SimpleUnsignedCharType)
-     syntax SCharUType ::= ut(Set, SimpleSignedCharType)
-     syntax PointerUType ::= ut(Set, SimplePointerType)
-     syntax BoolUType ::= ut(Set, SimpleBoolType)
-     syntax FixedLengthArrayUType ::= ut(Set, SimpleFixedArrayUType)
-     syntax VariableLengthArrayUType ::= ut(Set, SimpleVariableArrayUType)
-     syntax StructUType ::= ut(Set, SimpleStructType)
-     syntax UnionUType ::= ut(Set, SimpleUnionType)
-     syntax IncompleteArrayUType ::= ut(Set, SimpleIncompleteArrayUType)
-     syntax SignedBitfieldUType ::= ut(Set, SimpleSignedBitfieldType)
-     syntax UnsignedBitfieldUType ::= ut(Set, SimpleUnsignedBitfieldType)
-     syntax FunctionUType ::= ut(Set, SimpleFunctionType)
+     syntax Bool ::= isVoidType(Type) [function]
+                   | isVariableLengthArrayType(Type) [function]
+                   | isUnionType(Type) [function]
+                   | isStructOrUnionType(Type) [function]
+                   | isAggregateOrUnionType(Type) [function]
+                   | isPointerType(Type) [function]
+                   | isPointerUType(UType) [function]
+                   | isNoType(EffectiveType) [function]
+                   | isIntegerUType(UType) [function]
+                   | isIntegerType(Type) [function]
+                   | isFunctionType(Type) [function]
+                   | isFloatUType(UType) [function]
+                   | isFloatType(Type) [function]
+                   | isCharUType(UType) [function]
+                   | isCharType(Type) [function]
+                   | isBoolUType(UType) [function]
+                   | isBoolType(Type) [function]
+                   | isBitfieldType(Type) [function]
+                   | isBasicType(Type) [function]
+                   | isArrayOrFunctionType(Type) [function]
+                   | isArrayOrFunctionUType(UType) [function]
+                   | isArrayType(Type) [function]
+                   | isIncompleteArrayType(Type) [function]
+                   | isArithmeticType(Type) [function]
+                   | isSignedIntegerUType(UType) [function]
+                   | isUCharType(Type) [function]
 
      syntax List ::= getParams(Type) [function]
      syntax Type ::= setParams(Type, List) [function]
@@ -282,8 +282,8 @@ module C-TYPING-SYNTAX
      syntax Int ::= max(UType) [function]
      syntax Float ::= fmax(UType) [function]
      syntax Float ::= fmin(UType) [function]
-     syntax Bool ::= intInRange(Int, IntegerUType) [function]
-     syntax Bool ::= floatInRange(Float, FloatUType) [function]
+     syntax Bool ::= intInRange(Int, UType) [function]
+     syntax Bool ::= floatInRange(Float, UType) [function]
 
      syntax Modifier ::= Packed()
 
@@ -341,8 +341,8 @@ module C-TYPING-SYNTAX
      syntax Type ::= innerType(UType) [function]
 
      // Offset of element in bits.
-     syntax ArrayType ::= setElementType(Int, Type, ArrayType) [function]
-     syntax Type ::= getElementType(Int, ArrayType) [function]
+     syntax Type ::= setElementType(Int, Type, Type) [function]
+     syntax Type ::= getElementType(Int, Type) [function]
 
      syntax Bool ::= fromConstantExpr(UType) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
