@@ -116,9 +116,6 @@ dist/profiles/$(PROFILE)/%-kompiled/timestamp: dist/profiles/$(PROFILE) $$(notdi
 	@cp -p -RL semantics/.build/$(PROFILE)/$(NAME)-kompiled dist/profiles/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp semantics/.build/$(PROFILE)/$(NAME)-kompiled dist/profiles/$(shell basename $(d));)
-	ls -lah dist/profiles/$(PROFILE)
-	ls -lah dist/profiles/$(PROFILE)/$(NAME)-kompiled
-	ls -lah dist/profiles/$(PROFILE)/$(NAME)-kompiled/$(NAME)-kompiled
 
 $(LIBSTDCXX_SO): $(call timestamp_of,c11-cpp14-linking) $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) dist/profiles/$(PROFILE)
 	@echo "$(PROFILE): Translating the C++ standard library..."
