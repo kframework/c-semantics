@@ -34,6 +34,7 @@ FILES_TO_DIST = \
 PROFILE_FILES = include src compiler-src native pp cpp-pp cc cxx
 PROFILE_FILE_DEPS = $(foreach f, $(PROFILE_FILES), $(PROFILE_DIR)/$(f))
 SUBPROFILE_FILE_DEPS = $(foreach d, $(SUBPROFILE_DIRS), $(foreach f, $(PROFILE_FILES), $(d)/$(f)))
+CC=$(PROFILE_DIR)/cc
 
 PERL_MODULES = \
 	scripts/RV_Kcc/Opts.pm \
@@ -63,12 +64,12 @@ $(K_BIN)/kompile:
 
 check-vars: deps
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
-	@if ! gcc -v > /dev/null 2>&1; then if ! clang -v > /dev/null 2>&1; then echo "ERROR: You don't seem to have gcc or clang installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi fi
+	@if ! $(CC) -v > /dev/null 2>&1; then if ! clang -v > /dev/null 2>&1; then echo "ERROR: You don't seem to have gcc or clang installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi fi
 	@perl scripts/checkForModules.pl
 
 dist/writelong: scripts/writelong.c
 	@mkdir -p dist
-	@gcc $(CFLAGS) scripts/writelong.c -o dist/writelong
+	@$(CC) $(CFLAGS) scripts/writelong.c -o dist/writelong
 
 dist/kcc: scripts/getopt.pl $(PERL_MODULES) dist/writelong $(FILES_TO_DIST)
 	mkdir -p dist/RV_Kcc
@@ -135,7 +136,7 @@ $(PROFILE)-native: dist/profiles/$(PROFILE)/native/main.o dist/profiles/$(PROFIL
 
 dist/profiles/$(PROFILE)/native/main.o: native-server/main.c native-server/server.h
 	mkdir -p $(dir $@)
-	gcc $(CFLAGS) -c $< -o $@  -g
+	$(CC) $(CFLAGS) -c $< -o $@  -g
 dist/profiles/$(PROFILE)/native/%.h: native-server/%.h
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
@@ -144,7 +145,7 @@ dist/profiles/$(PROFILE)/native/server.c: native-server/server.c
 	cp -RLp $< $@
 dist/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c $(wildcard native-server/*.h)
 	mkdir -p $(dir $@)
-	gcc $(CFLAGS) -c $< -o $@ -I native-server
+	$(CC) $(CFLAGS) -c $< -o $@ -I native-server
 
 stdlibs: $(LIBC_SO) $(LIBSTDCXX_SO) $(call timestamp_of,c11-cpp14)
 

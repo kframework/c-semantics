@@ -143,6 +143,7 @@ module C-TYPING-COMMON
      rule numBytes(float) => cfg:sizeofFloat
      rule numBytes(double) => cfg:sizeofDouble
      rule numBytes(long-double) => cfg:sizeofLongDouble
+     rule numBytes(oversized-float) => cfg:sizeofOversizedFloat
 
      rule numBytes(_:SimpleUnsignedCharType) => numBytes(signed-char)
      rule numBytes(unsigned-short-int) => numBytes(short-int)
@@ -156,11 +157,13 @@ module C-TYPING-COMMON
      rule typePrecision(ut(_, float)) => cfg:precisionofFloat
      rule typePrecision(ut(_, double)) => cfg:precisionofDouble
      rule typePrecision(ut(_, long-double)) => cfg:precisionofLongDouble
+     rule typePrecision(ut(_, oversized-float)) => cfg:precisionofOversizedFloat
      rule maxFloatPrecision => 237
 
      rule typeExponent(ut(_, float)) => cfg:exponentofFloat
      rule typeExponent(ut(_, double)) => cfg:exponentofDouble
      rule typeExponent(ut(_, long-double)) => cfg:exponentofLongDouble
+     rule typeExponent(ut(_, oversized-float)) => cfg:exponentofOversizedFloat
      rule maxFloatExponent => 19
 
      rule roundCFloat(ut(... st: _:SimpleFloatType) #as T::UType, F:Float) => roundFloat(F, typePrecision(T), typeExponent(T))
@@ -284,6 +287,7 @@ module C-TYPING-COMMON
      rule showTypeSpecifier(float) => "float"
      rule showTypeSpecifier(double) => "double"
      rule showTypeSpecifier(long-double) => "long double"
+     rule showTypeSpecifier(oversized-float) => "__kcc_oversized_float"
      rule showTypeSpecifier(enumType(tag(X::CId, _, _))) => "enum " +String showCId(X)
      rule showTypeSpecifier(void) => "void"
      rule showTypeSpecifier(structType(tag(X::CId, _, _))) => "struct " +String showCId(X)

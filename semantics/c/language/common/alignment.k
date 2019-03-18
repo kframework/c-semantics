@@ -40,6 +40,7 @@ module C-ALIGNMENT
      rule byteAlignofType'(t(_, _, float)) => cfg:alignofFloat
      rule byteAlignofType'(t(_, _, double)) => cfg:alignofDouble
      rule byteAlignofType'(t(_, _, long-double)) => cfg:alignofLongDouble
+     rule byteAlignofType'(t(_, _, oversized-float)) => cfg:alignofOversizedFloat
      rule byteAlignofType'(t(_, _, no-type)) => cfg:alignofMalloc
 
      rule byteAlignofType'(t(_, _, _:SimpleUnsignedCharType => signed-char))

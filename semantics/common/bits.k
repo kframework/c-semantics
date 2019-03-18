@@ -179,5 +179,9 @@ module BITS
           requires precisionFloat(F) ==K cfg:precisionofLongDouble
                andBool exponentBitsFloat(F) ==K cfg:exponentofLongDouble
                andBool N ==Int (cfg:sizeofLongDouble *Int cfg:bitsPerByte)
+     rule isFullFloat(F:Float, N::Int) => true
+          requires precisionFloat(F) ==K cfg:precisionofOversizedFloat
+               andBool exponentBitsFloat(F) ==K cfg:exponentofOversizedFloat
+               andBool N ==Int (cfg:sizeofOversizedFloat *Int cfg:bitsPerByte)
      rule isFullFloat(_, _) => false [owise]
 endmodule

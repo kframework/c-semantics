@@ -225,7 +225,7 @@ let trd3 (_, _, result) = result
 %token <int64 list * Cabs.cabsloc> CST_WSTRING
 
 %token EOF
-%token<Cabs.cabsloc> CHAR INT BOOL DOUBLE FLOAT VOID
+%token<Cabs.cabsloc> CHAR INT BOOL DOUBLE FLOAT OVERSIZED_FLOAT VOID
 %token<Cabs.cabsloc> ANYTYPE
 %token<Cabs.cabsloc> ENUM STRUCT TYPEDEF UNION
 %token<Cabs.cabsloc> SIGNED UNSIGNED LONG SHORT OVERSIZED_INT
@@ -950,6 +950,7 @@ type_spec:   /* ISO 6.7.2 */
 |   OVERSIZED_INT   { ToversizedInt, $1 }
 |   FLOAT           { Tfloat, $1 }
 |   DOUBLE          { Tdouble, $1 }
+|   OVERSIZED_FLOAT { ToversizedFloat, $1 }
 |   SIGNED          { Tsigned, $1 }
 |   UNSIGNED        { Tunsigned, $1 }
 |   STRUCT                 id_or_typename

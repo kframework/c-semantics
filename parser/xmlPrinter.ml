@@ -704,6 +704,7 @@ and printTypeSpec = function
 	| ToversizedInt -> kapply "OversizedInt"  nil
 	| Tfloat -> kapply "Float"  nil
 	| Tdouble -> kapply "Double"  nil
+	| ToversizedFloat -> kapply "OversizedFloat"  nil
 	| Tsigned -> kapply "Signed"  nil
 	| Tunsigned -> kapply "Unsigned"  nil
 	| Tnamed s -> wrap ((printIdentifier s) :: []) "Named"

@@ -316,6 +316,8 @@ module C-COMMON-PROMOTION
           => ut(Mods, double)
      rule argPromoteType(ut(Mods:Set, long-double))
           => ut(Mods, long-double)
+     rule argPromoteType(ut(Mods:Set, oversized-float))
+          => ut(Mods, oversized-float)
      rule argPromoteType(integerUType #as T::UType)
           => promote(T)
      rule argPromoteType(T::UType) => T [owise]

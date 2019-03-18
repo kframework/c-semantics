@@ -1939,7 +1939,11 @@ module LIBC-STDIO
      rule <k> formatter'(_) ...</k>
           <format-arg> S:SymLoc => unknown(0) </format-arg>
           <format-state> State::String </format-state>
-          requires (State ==String "%d" orBool State ==String "%x" orBool State ==String "%X" orBool State ==String "%u" orBool State ==String "%o")
+          requires notBool isPointerType(getFormatType'(State, ""))
+     rule <k> formatter'(_) ...</k>
+          <format-arg> encodedPtr(_, _, _) => unknown(0) </format-arg>
+          <format-state> State::String </format-state>
+          requires notBool isPointerType(getFormatType'(State, ""))
 
      rule <k> (.K => UNSPEC("STDIO2", "Printing an unspecified value.")) ~> formatter'(_) ...</k>
           <format-arg> unknown(_) </format-arg>
@@ -2584,12 +2588,22 @@ module LIBC-STDIO
      rule setPrecision(F::Float, _) => F
 
      syntax KItem ::= "getFormatType"
-     syntax K ::= "getFormatType'" "(" String "," String ")" [function]
      rule <k> getFormatType => getFormatType'(State, Length) ...</k>
           <format-length> Length::String </format-length>
           <format-state> State::String </format-state>
+          requires notBool isNoType(getFormatType'(State, Length))
+          [structural]
+     syntax KItem ::= invalidLength(String)
+     rule <k> getFormatType
+               => UNDEF("STDIO13", "Invalid length modifier '" +String Length +String "' for conversion specifier '" +String State +String "' in a format string.")
+               ~> invalidLength(State::String)
+          ...</k>
+          <format-length> Length::String </format-length>
+          <format-state> State::String </format-state>
+          requires isNoType(getFormatType'(State, Length))
           [structural]
 
+     syntax Type ::= "getFormatType'" "(" String "," String ")" [function]
      rule getFormatType'("%a", "") => type(double)
      rule getFormatType'("%A", "") => type(double)
      rule getFormatType'("%e", "") => type(double)
@@ -2683,11 +2697,7 @@ module LIBC-STDIO
      rule getFormatType'(D::String, "l") => type(pointerType(type(cfg:wcharut)))
           requires substrString(D, 0, 2) ==String "%["
 
-     syntax KItem ::= invalidLength(String)
-     rule getFormatType'(D::String, L::String)
-          => UNDEF("STDIO13", "Invalid length modifier '" +String L +String "' for conversion specifier '" +String D +String "' in a format string.")
-          ~> invalidLength(D::String)
-          [owise]
+     rule getFormatType'(_, _) => type(no-type) [owise]
 
      syntax Bool ::= isPointerToCharType(UType) [function]
      rule isPointerToCharType(ut(_, pointerType(t(_, _, char)))) => true
