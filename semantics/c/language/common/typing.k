@@ -120,21 +120,16 @@ module C-TYPING-SYNTAX
                   | "functionSpecifiers" [function]
 
      // Basic types
-     syntax SimpleBitfieldType ::= SimpleSignedBitfieldType | SimpleUnsignedBitfieldType
-                                 | bitfieldType(SimpleType, Int)
-     syntax SimpleSignedBitfieldType ::= bitfieldType(SimpleSignedType, Int)
-     syntax SimpleUnsignedBitfieldType ::= bitfieldType(SimpleUnsignedType, Int)
+     syntax SimpleBitfieldType ::= bitfieldType(SimpleType, Int)
 
      syntax SimpleSignedType ::= "short-int" | SimpleSignedIntType
                                | "long-int" | "long-long-int" | "oversized-int"
-                               | SimpleSignedBitfieldType
      syntax SimpleFloatType ::= "float" | "double" | "long-double" | "oversized-float"
      syntax SimpleSignedIntType ::= "int"
      syntax SimpleUnsignedType ::= SimpleBoolType | "unsigned-short-int"
                                  | SimpleUnsignedIntType | "unsigned-long-int"
                                  | "unsigned-long-long-int"
                                  | "unsigned-oversized-int"
-                                 | SimpleUnsignedBitfieldType
      syntax SimpleUnsignedIntType ::= "unsigned-int"
      syntax SimpleBoolType ::= "bool"
      syntax SimpleVoidType ::= "void"
@@ -380,7 +375,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isFlexibleType(EffectiveType) [function]
 
      // moved from BITSIZE because type compatibility depends on it quite indirectly
-     syntax Int ::= numBytes(SimpleType) [function]
+     syntax Int ::= numBytes(SimpleUType) [function]
 
      syntax Int ::= typePrecision(UType) [function]
      syntax Int ::= typeExponent(UType) [function]

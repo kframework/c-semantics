@@ -170,8 +170,8 @@ module C-TYPING-COMMON
      rule Int2CFloat(ut(... st: _:SimpleFloatType) #as T::UType, I:Int) => Int2Float(I, typePrecision(T), typeExponent(T))
      rule zeroCFloat(ut(... st: _:SimpleFloatType) #as T::UType) => Int2CFloat(T, 0)
 
-     syntax Int ::= numBits(SimpleType) [function]
-     rule numBits(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte
+     syntax Int ::= numBits(SimpleUType) [function]
+     rule numBits(T::SimpleUType) => numBytes(T) *Int cfg:bitsPerByte
 
      rule min(ut(_, bitfieldType(_:SimpleSignedType, N::Int)))
           => 0 -Int (1 <<Int absInt(N -Int 1))
