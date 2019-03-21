@@ -130,9 +130,6 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= "checkStackDepth"
 
-     syntax Bool ::= isNCLKLabel(K) [function, klabelPredicate]
-                   | isRKLabel(K) [function, klabelPredicate]
-
      // Initializers.
      syntax InitLValue ::= LValue
                          | InitLValue "[[" Int "]]" [strict(1)]
@@ -141,6 +138,8 @@ module C-DYNAMIC-SYNTAX
      syntax EncodableValue ::= Opaque
      syntax Opaque ::= opaque(K, UType)
      syntax KItem ::= fromOpaque(CValue) [function]
+
+     syntax KItem ::= "defaultCase"
 
 endmodule
 
@@ -203,26 +202,22 @@ module C-DYNAMIC
      rule isNoInit(initValue(_, _, .K)) => true
      rule isNoInit(_) => false [owise]
 
-     // don't fill holes beneath a compound assignment or postOp because that might capture stuff we don't want.
+     rule fillRHoles(V:RValue, te(L:K := E:K, T::UType)) => te(L := fillRHoles(V, E), T)
+     rule fillRHoles(V:RValue, Cast(T::Type, E:K)) => Cast(T, fillRHoles(V, E))
      rule fillRHoles(V:RValue, RHOLE) => V
-     rule fillRHoles(V:RValue, Lbl:KLabel(L:K, R:K))
-          => Lbl(fillRHoles(V, L), fillRHoles(V, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssign`) andBool #klabel(Lbl) =/=K #klabel(`postOp`)
-     rule fillRHoles(_, K:K) => K [owise]
+     rule fillRHoles(V:RValue, L:K * R:K) => fillRHoles(V, L) * R
+     rule fillRHoles(V:RValue, L:K / R:K) => fillRHoles(V, L) / R
+     rule fillRHoles(V:RValue, L:K % R:K) => fillRHoles(V, L) % R
+     rule fillRHoles(V:RValue, L:K + R:K) => fillRHoles(V, L) + R
+     rule fillRHoles(V:RValue, L:K - R:K) => fillRHoles(V, L) - R
+     rule fillRHoles(V:RValue, L:K << R:K) => fillRHoles(V, L) << R
+     rule fillRHoles(V:RValue, L:K >> R:K) => fillRHoles(V, L) >> R
+     rule fillRHoles(V:RValue, L:K & R:K) => fillRHoles(V, L) & R
+     rule fillRHoles(V:RValue, L:K ^ R:K) => fillRHoles(V, L) ^ R
+     rule fillRHoles(V:RValue, L:K | R:K) => fillRHoles(V, L) | R
 
-     rule fillLHoles(LV:K, LHOLE) => LV
-     rule fillLHoles(LV:K, Lbl:KLabel(L:K, R:K))
-          => Lbl(fillLHoles(LV, L), fillLHoles(LV, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssign`) andBool #klabel(Lbl) =/=K #klabel(`postOp`)
-     rule fillLHoles(_, K:K) => K [owise]
-
-     rule isNCLKLabel(#klabel(`nclv`)) => true
-     rule isNCLKLabel(#klabel(`ncle`)) => true
-     rule isNCLKLabel(_) => false [owise]
-
-     rule isRKLabel(#klabel(`tv`)) => true
-     rule isRKLabel(#klabel(`te`)) => true
-     rule isRKLabel(_) => false [owise]
+     rule fillLHoles(LV:K, te(LHOLE := R:K, T::UType))
+          => te(LV := R, T)
 
      rule allRValueInHeatList(.HeatList) => true
      rule allRValueInHeatList(hItem(_) hs:: _) => false

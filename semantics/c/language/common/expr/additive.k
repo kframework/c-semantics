@@ -185,7 +185,7 @@ module C-COMMON-EXPR-ADDITIVE
                fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
      rule #newFromArray(Base:SymBase, Offset:Int, K:K, .Set, Prov:Set, _, _)
           => loc(Base, Offset, SetItem(K) Prov)
-          requires getKLabel(K) =/=K #klabel(`fromArray`)
+          requires fromArray(...) :/=K K
      rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int, Len:Int),
                SetItem(K':KItem) S:Set, Prov:Set, T::UType, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(fromArray(ArrOffset +Int
@@ -193,7 +193,7 @@ module C-COMMON-EXPR-ADDITIVE
      rule #newFromArray(Base:SymBase, Offset:Int, K:K, SetItem(K':KItem)
                S:Set, Prov:Set, T::UType, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(K) Prov, T, I)
-          requires getKLabel(K) =/=K #klabel(`fromArray`)
+          requires fromArray(...) :/=K K
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
      When two pointers are subtracted, both shall point to elements of the same

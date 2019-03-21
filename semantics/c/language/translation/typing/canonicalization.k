@@ -93,7 +93,7 @@ module C-TYPING-CANONICALIZATION
           [structural]
      rule addMods(Mods::List ListItem(Q:Qualifier), T:Type)
           => addMods(Mods, addQualifier(Q, T))
-          requires getKLabel(Q) =/=K #klabel(`RestrictReserved`)
+          requires RestrictReserved(...) :/=K Q
           [structural]
      rule addMods(Mods::List ListItem(M:Modifier), T:Type)
           => addMods(Mods, addModifier(M, T))

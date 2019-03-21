@@ -33,14 +33,12 @@ module C-COMMON-EXPR-MEMBERS
           requires notBool (Atomic() inQuals getQualifiers(T))
           [structural]
      rule (.K => UNDEF("CEM1", "Attempting to access a member in an atomic struct."))
-          ~> Lbl:KLabel(_, t(Qs::Quals, _, structType(_))) . _:CId
+          ~> (nclv(_, t(Qs::Quals, _, structType(_))) #Or ncle(_, t(Qs::Quals, _, structType(_)))) . _:CId
           requires Atomic() inQuals Qs
-               andBool isNCLKLabel(#klabel(Lbl))
           [structural]
      rule (.K => UNDEF("CEM2", "Attempting to access a member in an atomic union."))
-          ~> Lbl:KLabel(_, t(Qs::Quals, _, unionType(_))) . _:CId
+          ~> (nclv(_, t(Qs::Quals, _, unionType(_))) #Or ncle(_, t(Qs::Quals, _, unionType(_)))) . _:CId
           requires Atomic() inQuals Qs
-               andBool isNCLKLabel(#klabel(Lbl))
           [structural]
 
      rule nclv(Loc::SymLoc, t(... st: _:SimpleArrayType) #as T::Type) [[ N::Int ]]

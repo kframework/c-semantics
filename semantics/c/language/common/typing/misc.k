@@ -123,12 +123,9 @@ module C-TYPING-MISC
      rule stripSpecifiers(T:Type) => stripStorageSpecifiers(stripFunctionSpecifiers(T))
 
      syntax UType ::= stripReadFrom(UType) [function]
-     rule stripReadFrom(ut(Mods::Set, T::SimpleUType))
-          => ut(filterSet(Mods, #klabel(`isNotReadFrom`)), T)
-
-     syntax Bool ::= isNotReadFrom(Modifier) [function]
-     rule isNotReadFrom(readFrom(_, _)) => false
-     rule isNotReadFrom(_) => true [owise]
+     rule stripReadFrom(ut((SetItem(K:KItem) => .Set) _, _))
+          requires readFrom(...) :=K K
+     rule stripReadFrom(T::UType) => T [owise]
 
      rule stripConstants(ut(Mods::Set, T::SimpleUType)) => ut(Mods -Set constantModifiers, T)
      rule stripConstants(t(Qs::Quals, Mods::Set, T::SimpleType)) => t(Qs, Mods -Set constantModifiers, T)
@@ -520,10 +517,6 @@ module C-TYPING-MISC
                andBool notBool isVoidType(P)
      rule toPrototype(T::Type) => T [owise]
 
-     rule isStructOrUnionKLabel(#klabel(`structType`)) => true
-     rule isStructOrUnionKLabel(#klabel(`unionType`)) => true
-     rule isStructOrUnionKLabel(_) => false [owise]
-
      rule makeStructFieldInfo(Pack::Bool, Fs::List)
           => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)
 
@@ -577,7 +570,10 @@ module C-TYPING-MISC
      rule roundBits(N::Int, A::Int)
           => N +Int ((A *Int cfg:bitsPerByte) -Int (N %Int (A *Int cfg:bitsPerByte))) [owise]
 
-     rule allComplete(L::List) => all(mapList(L, #klabel(`type`)), #klabel(`isCompleteType`))
+     rule allComplete(ListItem(V:KItem) _) => false
+          requires notBool isCompleteType(type(V))
+     rule allComplete(.List) => true
+     rule allComplete((ListItem(_) => .List) _) [owise]
 
      rule makeUnionFieldInfo(Pack::Bool, Fs::List)
           => makeUnionFieldInfo'(Pack, Fs, .Map, .Map, .List)

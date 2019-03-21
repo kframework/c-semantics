@@ -71,9 +71,9 @@ module C-STMT-SWITCH
           requires Exp =/=K #klabel(`Default`)
 
      //  if all that's left is a default, do it
-     rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN:Int, #klabel(`Default`)), M:Map)
+     rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN:Int, defaultCase), M:Map)
           => (#handleSwitch-aux(SN, V, .K, M)
-          ~> Goto(caseLabel(SN, #klabel(`Default`))))
+          ~> Goto(caseLabel(SN, defaultCase)))
           [structural]
 
      rule #handleSwitch-aux(SN:Int, _, caseLabel(SN':Int, _:K) => .K, _)

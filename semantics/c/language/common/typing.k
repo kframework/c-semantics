@@ -364,8 +364,6 @@ module C-TYPING-SYNTAX
 
      syntax KItem ::= stabilizeVLA(Type)
 
-     syntax Bool ::= isStructOrUnionKLabel(K) [function, klabelPredicate]
-
      // Turns old-style param list into the empty list so that arguments will
      // be promoted on call.
      syntax Type ::= toPrototype(Type) [function]

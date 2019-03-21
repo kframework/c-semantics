@@ -19,7 +19,7 @@ module C-CHECK-USE
      imports SETTINGS-SYNTAX
 
      rule checkUse(V:KResult) => V
-          requires getKLabel(V) =/=K #klabel(`tv`)
+          requires tv(...) :/=K V
           [structural]
      rule checkUse(tv(V::CValue, T::UType)) => tv(V, T)
           requires notBool (isSymLoc(V) andBool isPointerUType(T))

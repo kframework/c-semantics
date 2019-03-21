@@ -118,8 +118,8 @@ module C-DECL-INITIALIZER
      rule (.K => UNDEF("CDI3",
                "Invalid initializer for aggregate type."))
           ~> figureInit(_, t(_, _, incompleteArrayType(T::Type)), SingleInit(K:K))
-          requires (notBool isWCharType(T) orBool getKLabel(K) =/=K #klabel(`WStringLiteral`))
-               andBool (notBool isCharType(T) orBool getKLabel(K) =/=K #klabel(`StringLiteral`))
+          requires (notBool isWCharType(T) orBool WStringLiteral(...) :/=K K)
+               andBool (notBool isCharType(T) orBool StringLiteral(...) :/=K K)
 
      // id, type, initializer
      syntax KItem ::= "figureInit-aux" "(" CId "," Type "," K ")" [strict(3)]
@@ -431,8 +431,8 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule fillInit(SingleInit(K:K)) => initializeSingleInit(K)
-          requires getKLabel(K) =/=K #klabel(`StringLiteral`)
-               andBool getKLabel(K) =/=K #klabel(`WStringLiteral`)
+          requires StringLiteral(...) :/=K K
+               andBool WStringLiteral(...) :/=K K
           [structural]
 
      rule <k> fillInit(SingleInit(StringLiteral(_))) ...</k>

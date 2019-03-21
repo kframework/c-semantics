@@ -34,16 +34,16 @@ module C-EXPR-FUNCTION-CALL
      syntax KItem ::= maybeBind(List, List)
 
      context Call(_, (HOLE:KItem => revalParams(HOLE)))
-     rule Call(Lbl:KLabel(V:K, ut(S::Set, pointerType(t(Qs'::Quals, S'::Set, functionType(T::UType, P:List))))), rvlist(L:List))
+     rule Call((tv(_, ut(... st: pointerType(t(... st: functionType(T::UType, P::List)))))
+           #Or te(_, ut(... st: pointerType(t(... st: functionType(T, P)))))) #as V::RValue, rvlist(L:List))
           => maybeBind(P, L)
-          ~> elabCall(Lbl(V, ut(S, pointerType(t(Qs', S', functionType(T, P))))), L, T, .List)
-          requires isRKLabel(#klabel(Lbl))
-               andBool (isCompleteType(type(T)) orBool isVoidType(type(T)))
+          ~> elabCall(V, L, T, .List)
+          requires (isCompleteType(type(T)) orBool isVoidType(type(T)))
                andBool notBool isArrayType(type(T)) // Don't think this is possible.
      rule (.K => CV("EFC1", "Function call with incomplete or invalid return type."))
-          ~> Call(Lbl:KLabel(_, ut(_, pointerType(t(_, _, functionType(T::UType, _))))), rvlist(_))
-          requires isRKLabel(#klabel(Lbl))
-               andBool (notBool (isCompleteType(type(T)) orBool isVoidType(type(T)))
+          ~> Call(tv(_, ut(... st: pointerType(t(... st: functionType(T::UType, _)))))
+              #Or te(_, ut(... st: pointerType(t(... st: functionType(T::UType, _))))), rvlist(_))
+          requires (notBool (isCompleteType(type(T)) orBool isVoidType(type(T)))
                     orBool isArrayType(type(T)))
 
      // Only attempt to bind if we have a prototype.

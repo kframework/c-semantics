@@ -25,8 +25,12 @@ module C-TYPING-PREDICATES
           => isVariablyModifiedType(innerType(T))
      rule isVariablyModifiedType(t(... st: pointerType(_)) #as T::Type)
           => isVariablyModifiedType(innerType(T))
-     rule isVariablyModifiedType(t(_, _, functionType(T::UType, Params:List)))
-          => isVariablyModifiedType(type(T)) orBool some(Params, #klabel(`isVariablyModifiedType`))
+     rule isVariablyModifiedType(t(... st: functionType(_, ListItem(T::UType) _))) => true
+          requires isVariablyModifiedType(type(T))
+     rule isVariablyModifiedType(t(... st: functionType(T::UType, .List)))
+          => isVariablyModifiedType(type(T))
+     rule isVariablyModifiedType(t(... st: functionType(_, (ListItem(T::UType) => .List) _)))
+          requires notBool isVariablyModifiedType(type(T))
      rule isVariablyModifiedType(t(... st: _:SimpleVariableArrayType)) => true
      rule isVariablyModifiedType(_) => false [owise]
 
@@ -92,7 +96,10 @@ module C-TYPING-PREDICATES
                andBool fromConstantExpr(T)
      rule isNullPointerConstant(_) => false [owise]
 
-     rule hasReadFrom(ut(Mods:Set, _)) => some(Mods, #klabel(`isReadFrom`))
+     rule hasReadFrom(ut(SetItem(K:KItem) Mods:Set, _)) => true
+          requires isReadFrom(K)
+     rule hasReadFrom(ut(.Set, _)) => false
+     rule hasReadFrom(ut((SetItem(_) => .Set) _, _)) [owise]
 
      syntax Bool ::= isReadFrom(K) [function]
      rule isReadFrom(readFrom(_, _)) => true
