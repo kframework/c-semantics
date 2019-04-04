@@ -117,7 +117,7 @@ module C-DECL-LOCAL
                andBool notBool areDeclCompat(T, T')
           [structural]
 
-     syntax KResult ::= toInitValue(CId, Type, K) [function]
+     syntax K ::= toInitValue(CId, Type, K) [function]
      rule toInitValue(X:CId, T:Type, NoInit()) => initValue(X, T, .K)
      rule toInitValue(_, _, Init:K) => Init [owise]
 

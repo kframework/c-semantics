@@ -46,7 +46,7 @@ module C-DYNAMIC-SYNTAX
      syntax CompoundExpression ::= compoundExp(K)
      syntax Hold ::= HoldLValue | HoldResult | CompoundExpression
 
-     syntax KItem ::= stripHold(K) [function]
+     syntax K ::= stripHold(K) [function]
 
      syntax RValue ::= "voidVal" [klabel(voidVal)]
      syntax RValue ::= "emptyValue"
@@ -58,7 +58,7 @@ module C-DYNAMIC-SYNTAX
      syntax Typed ::= Type
 
      syntax Valued ::= LValue | RValue | Hold
-     syntax KItem ::= value(K) [function]
+     syntax K ::= value(K) [function]
 
      syntax KItem ::= "discard"
 
@@ -139,7 +139,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax EncodableValue ::= Opaque
      syntax Opaque ::= opaque(K, UType)
-     syntax KItem ::= fromOpaque(CValue) [function]
+     syntax K ::= fromOpaque(CValue) [function]
 
      syntax KItem ::= "defaultCase"
 

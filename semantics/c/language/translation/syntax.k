@@ -19,7 +19,7 @@ module C-ABSTRACT-SYNTAX
      syntax SymBase ::= "nonStatic"
 
      // the rest are syntactic
-     syntax C ::= AttributeWrapper(K, K) [function]
+     syntax K ::= AttributeWrapper(K, K) [function]
 
      syntax Statement // defined in C-ABSTRACT-SYNTAX
 
@@ -305,7 +305,7 @@ module C-ABSTRACT-SYNTAX
      */
      syntax Expression ::= OffsetOf(K, K, K) [strict(1)]
      syntax Expression ::= TypesCompat(K, K, K, K) [strict(1, 3)]
-     syntax Expression ::= ExpressionLoc(K, K) [function]
+     syntax K ::= ExpressionLoc(K, K) [function]
 
      //must be declared as function,
      //otherwise, if then else rule failed in for(;;) cases
@@ -334,7 +334,7 @@ module C-ABSTRACT-SYNTAX
      | PAREN of expression
      | VARIABLE of string
      */
-     syntax Expression ::= Constant(K) [function]
+     syntax K ::= Constant(K) [function]
      /*
      | EXPR_SIZEOF of expression
      | TYPE_SIZEOF of specifier * decl_type
