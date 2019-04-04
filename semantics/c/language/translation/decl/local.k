@@ -33,11 +33,11 @@ module C-DECL-LOCAL
           <external-defs>... X |-> Base:SymBase ...</external-defs>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <local-types> LocalTypes:Map </local-types>
+          <local-types> LocalTypes:Set </local-types>
           requires (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
                andBool areDeclCompat(T, T')
-               andBool notBool (X in_keys(LocalTypes))
+               andBool notBool (X in LocalTypes)
                andBool (notBool isAutoType(T'))
           [structural]
      // Extern, external type exists but no def.
@@ -49,12 +49,12 @@ module C-DECL-LOCAL
           <external-defs> Defs:Map </external-defs>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <local-types> LocalTypes:Map </local-types>
+          <local-types> LocalTypes:Set </local-types>
           requires (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
                andBool areDeclCompat(T, T')
                andBool notBool (X in_keys(Defs))
-               andBool notBool (X in_keys(LocalTypes))
+               andBool notBool (X in LocalTypes)
                andBool (notBool isAutoType(T'))
           [structural]
      // Extern, external type does not exist.
@@ -66,11 +66,11 @@ module C-DECL-LOCAL
           <external-types> Types:Map </external-types>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <local-types> LocalTypes:Map </local-types>
+          <local-types> LocalTypes:Set </local-types>
           requires (isFunctionType(T) orBool isExternType(T))
                andBool notBool isStaticType(T)
                andBool notBool (X in_keys(Types))
-               andBool notBool (X in_keys(LocalTypes))
+               andBool notBool (X in LocalTypes)
                andBool (notBool isAutoType(T))
           [structural]
      rule <k> declareInternalVariable(X:CId, T:Type, Init:KResult)
@@ -99,7 +99,7 @@ module C-DECL-LOCAL
           ...</k>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <local-types>... X |-> _ ...</local-types>
+          <local-types>... SetItem(X) ...</local-types>
           requires isExternType(T) andBool notBool isStaticType(T)
           [structural]
      rule (.K => CV("TDL2", "Extern declaration of " +String showCId(X)
@@ -135,10 +135,10 @@ module C-DECL-LOCAL
                LocalStatics:Map (.Map =>  kpair(X, S) |-> kpair(bnew(!I, T, static(TU)), T))
           </local-statics>
           <local-types>
-               LocalTypes:Map (.Map => X |-> T)
+               LocalTypes:Set (.Set => SetItem(X))
           </local-types>
           requires notBool ((kpair(X, S) in_keys(LocalStatics))
-               orBool (X in_keys(LocalTypes)))
+               orBool (X in LocalTypes))
           [structural]
      rule <k> (.K => CV("TDL4","Redeclaration of " +String showCId(X)
                     +String " with no linkage."))
@@ -151,10 +151,10 @@ module C-DECL-LOCAL
                LocalStatics:Map
           </local-statics>
           <local-types>
-               LocalTypes:Map
+               LocalTypes:Set
           </local-types>
           requires (kpair(X, S) in_keys(LocalStatics))
-               orBool (X in_keys(LocalTypes))
+               orBool (X in LocalTypes)
           [structural]
 
      syntax KItem ::= defineAndInit(CId, Type, K)
@@ -176,10 +176,10 @@ module C-DECL-LOCAL
           <tu-id> Tu </tu-id>
           <local-types>
                // local-types is just a flag in this case.
-               LocalTypes:Map => LocalTypes[X <- .K]
+               LocalTypes:Set => SetItem(X) LocalTypes
           </local-types>
           requires isCompleteType(T)
-               andBool notBool (X in_keys(LocalTypes))
+               andBool notBool (X in LocalTypes)
           [structural]
      rule (.K => UNDEF("TDL5",
                "Declaration of an identifier for an object with no linkage and incomplete type."))
@@ -190,8 +190,8 @@ module C-DECL-LOCAL
                     +String " with no linkage."))
                ~> defineAndInit(X:CId, _, initValue(_, T:Type, _))
           ...</k>
-          <local-types> LocalTypes:Map </local-types>
-          requires isCompleteType(T) andBool (X in_keys(LocalTypes))
+          <local-types> LocalTypes:Set </local-types>
+          requires isCompleteType(T) andBool (X in LocalTypes)
           [structural]
 
 endmodule

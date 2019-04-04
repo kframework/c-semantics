@@ -132,7 +132,7 @@ module C-ENV
 
      syntax KItem ::= "pushLocals"
      rule <k> pushLocals => .K ...</k>
-          <block-control> C::Bag <local-types> LocalTypes:Map => .Map </local-types> </block-control>
+          <block-control> C::Bag <local-types> LocalTypes:Set => .Set </local-types> </block-control>
           <block-stack>
                .List => ListItem(<block-control> C <local-types> LocalTypes </local-types> </block-control>)
           ...</block-stack>
