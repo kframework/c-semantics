@@ -15,7 +15,7 @@ module COMMON-BUILTIN
      imports K-REFLECTION
      imports C-TYPING-SYNTAX
 
-     syntax Map ::= #nativeDefinedBuiltins() [function, hook(C_SEMANTICS.nativeFunctions), impure]
+     syntax Map ::= #nativeDefinedBuiltins() [function, hook(C_SEMANTICS.nativeFunctions), withConfig]
      rule nativeDefinedBuiltins => #nativeDefinedBuiltins()
 
      // defined as a K rule for if the hook is not defined
