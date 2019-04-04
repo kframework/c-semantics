@@ -14,6 +14,7 @@ module C-TYPING-SORTS
 endmodule
 
 module C-TYPING-MACROS-SYNTAX
+     imports BASIC-K
      syntax SimpleIntegerType ::= "signedCharType" | "unsignedCharType"
      syntax SimpleSignedCharType ::= "signed-char"
      syntax SimpleUnsignedCharType ::= "unsigned-char"
@@ -28,7 +29,6 @@ endmodule
 module C-TYPING-SYNTAX
      imports C-TYPING-SORTS
 
-     imports BASIC-K
      imports MEMORY-SYNTAX
      imports STRING-SYNTAX
      imports MAP
