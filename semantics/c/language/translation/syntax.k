@@ -2,6 +2,7 @@ module C-ABSTRACT-SORTS
      imports C-DYNAMIC-SORTS
      syntax RValue ::= RHold
      syntax Nclv ::= NCLHold
+     syntax KResult ::= HoldResult
 endmodule
 
 module C-ABSTRACT-SYNTAX

@@ -13,6 +13,8 @@ module C-DYNAMIC-SORTS
      syntax TrapLValue
      syntax Agg
      syntax Typed ::= LValue | RValue | Hold | Nclv | TrapLValue
+     syntax HoldResult ::= NCLHold | RHold
+     syntax HoldLValue ::= NCLHold | LHold
 endmodule
 
 module C-REVAL-SYNTAX
@@ -42,7 +44,7 @@ module C-DYNAMIC-SYNTAX
      syntax RHold ::= te(K, UType)
      syntax NCLHold ::= ncle(K, Type)
      syntax CompoundExpression ::= compoundExp(K)
-     syntax Hold ::= LHold | RHold | NCLHold | CompoundExpression
+     syntax Hold ::= HoldLValue | HoldResult | CompoundExpression
 
      syntax KItem ::= stripHold(K) [function]
 
@@ -62,7 +64,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax Nclv ::= nclv(SymLoc, Type)
      syntax TrapLValue ::= trap(UType) [klabel(trap1)]
-     syntax LValue ::= Nclv | LHold | NCLHold | TrapLValue
+     syntax LValue ::= Nclv | HoldLValue | TrapLValue
      syntax KResult ::= RValue | Type | UType | DType | Nclv | TrapLValue
 
      syntax BlockScope ::= blockScope(functionId: CId, functionLoc: SymBase, block: Int)

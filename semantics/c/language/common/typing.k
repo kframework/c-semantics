@@ -142,8 +142,7 @@ module C-TYPING-SYNTAX
 
      syntax SimpleBasicType ::= SimpleNoType | SimpleVoidType
                               | SimpleFloatType | SimpleIntegerType
-     syntax SimpleType ::= SimpleBasicType
-     syntax SimpleUType ::= SimpleBasicType
+     syntax SimpleNonArrayType ::= SimpleBasicType
 
      // Composite types
      syntax SimpleFunctionType ::= functionType(UType, List)
@@ -169,17 +168,20 @@ module C-TYPING-SYNTAX
      syntax BlockRef ::= Int | "global"
 
      syntax SimpleType ::= SimpleArrayType
+                         | SimpleNonArrayType
                          | SimpleEnumType
                          | SimplePointerType
                          | SimpleStructType
                          | SimpleUnionType
                          | SimpleFunctionType
      syntax SimpleUType ::= SimpleArrayUType
-                          | SimpleEnumType
-                          | SimplePointerType
-                          | SimpleStructType
-                          | SimpleUnionType
-                          | SimpleFunctionType
+                          | SimpleNonArrayType
+
+     syntax SimpleNonArrayType ::= SimpleEnumType
+                                 | SimplePointerType
+                                 | SimpleStructType
+                                 | SimpleUnionType
+                                | SimpleFunctionType
 
      syntax SimpleArrayType ::= SimpleFixedArrayType | SimpleVariableArrayType | SimpleIncompleteArrayType
      syntax SimpleArrayUType ::= SimpleFixedArrayUType
@@ -193,8 +195,7 @@ module C-TYPING-SYNTAX
 
      // These aren't real types, but are values that can appear in type
      // contexts.
-     syntax SimpleType ::= SimpleTypedefType
-     syntax SimpleUType ::= SimpleTypedefType
+     syntax SimpleNonArrayType ::= SimpleTypedefType
 
      syntax SimpleTypedefType ::= typedefType(CId, Type)
      syntax Variadic ::= "variadic"
