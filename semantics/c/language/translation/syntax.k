@@ -545,7 +545,7 @@ module C-ABSTRACT-REWRITING
      /*@ This macro defines an important identity from
      \source[n1570]{\para{6.5.3.2}{3}}. As a syntactic macro, it should run
      on programs before they even start to reduce. */
-     rule &(*(K::K)) => K [anywhere]
+     rule &(*(K:KItem)) => K [anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
      A postfix expression followed by the \cinline{->} operator and an

@@ -134,7 +134,7 @@ module C-SYNTAX
      MINUS | PLUS | NOT | BNOT | MEMOF | ADDROF
      | PREINCR | PREDECR | POSINCR | POSDECR
      */
-     syntax Expression ::= "-" K
+     syntax KItem ::= "-" K
                          | "+" K
                          | "!" K
                          | "~" K

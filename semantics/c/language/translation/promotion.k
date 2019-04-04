@@ -16,23 +16,23 @@ module C-PROMOTION
           requires isIntegerType(type(V))
                andBool notBool isPromoted(utype(V))
 
-     syntax Expression ::= arithBinOp(K, K)
+     syntax KItem ::= arithBinOp(K, K)
      rule arithBinOp(L:K, R:K)
          => arithBinConversionOp(L, R)
         #Or (L << R)
         #Or (L >> R) [macro]
 
-     rule arithBinOp(L:RValue, R:RValue) #as O:Expression
+     rule arithBinOp(L:RValue, R:RValue) #as O:KItem
           => fillExpr(O, cast(promote(utype(L)), L), R)
           requires isIntegerType(type(L))
                andBool notBool isPromoted(utype(L))
 
-     rule arithBinOp(L:RValue, R:RValue) #as O:Expression
+     rule arithBinOp(L:RValue, R:RValue) #as O:KItem
           => fillExpr(O, L, cast(promote(utype(R)), R))
           requires isIntegerType(type(R))
                andBool notBool isPromoted(utype(R))
 
-     syntax Expression ::= arithBinNonEqualityOp(K, K)
+     syntax KItem ::= arithBinNonEqualityOp(K, K)
      rule arithBinNonEqualityOp(L:K, R:K)
          => ((L * R)
         #Or ((L / R)
@@ -49,23 +49,23 @@ module C-PROMOTION
         #Or ((L << R)
         #Or ((L >> R))))))))))))))) [macro]
 
-     rule arithBinNonEqualityOp(tv(V::CValue, T::UType), R:RValue) #as O:Expression
+     rule arithBinNonEqualityOp(tv(V::CValue, T::UType), R:RValue) #as O:KItem
           => fillExpr(O, tv(V, stripConstants(T)), R)
           requires fromConstantExpr(T)
                andBool notBool fromConstantExpr(R)
                andBool (notBool isIntegerUType(T) orBool isPromoted(T))
-     rule arithBinNonEqualityOp(L:RValue, tv(V::CValue, T::UType)) #as O:Expression
+     rule arithBinNonEqualityOp(L:RValue, tv(V::CValue, T::UType)) #as O:KItem
           => fillExpr(O, L, tv(V, stripConstants(T)))
           requires fromConstantExpr(T)
                andBool notBool fromConstantExpr(L)
                andBool (notBool isIntegerUType(T) orBool isPromoted(T))
 
-     rule arithBinNonEqualityOp(te(V:K, T::UType), R:RValue) #as O:Expression
+     rule arithBinNonEqualityOp(te(V:K, T::UType), R:RValue) #as O:KItem
           => fillExpr(O, te(V, stripConstants(T)), R)
           requires fromConstantExpr(T)
                andBool notBool fromConstantExpr(R)
                andBool (notBool isIntegerUType(T) orBool isPromoted(T))
-     rule arithBinNonEqualityOp(L:RValue, te(V:K, T::UType)) #as O:Expression
+     rule arithBinNonEqualityOp(L:RValue, te(V:K, T::UType)) #as O:KItem
           => fillExpr(O, L, te(V, stripConstants(T)))
           requires fromConstantExpr(T)
                andBool notBool fromConstantExpr(L)
@@ -83,7 +83,7 @@ module C-PROMOTION
      arithmetic conversions:
      }*/
 
-     syntax Expression ::= fillExpr(Expression, K, K) [function]
+     syntax KItem ::= fillExpr(KItem, K, K) [function]
      rule fillExpr(_ * _, L:K, R:K) => L * R
      rule fillExpr(_ / _, L:K, R:K) => L / R
      rule fillExpr(_ % _, L:K, R:K) => L % R
@@ -101,7 +101,7 @@ module C-PROMOTION
      rule fillExpr(_ >> _, L:K, R:K) => L >> R
      rule fillExpr(_ << _, L:K, R:K) => L << R
 
-     syntax Expression ::= arithBinConversionOp(K, K)
+     syntax KItem ::= arithBinConversionOp(K, K)
      rule arithBinConversionOp(L:K, R:K) 
          => ((L * R)
         #Or ((L / R)
@@ -118,7 +118,7 @@ module C-PROMOTION
         #Or ((L | R)
         #Or ((L ^ R))))))))))))))) [macro]
 
-     rule arithBinConversionOp(L:RValue, R:RValue) #as O:Expression
+     rule arithBinConversionOp(L:RValue, R:RValue) #as O:KItem
          => fillExpr(O, cast(usualArithmeticConversion(utype(L), utype(R)), L),
                         cast(usualArithmeticConversion(utype(L), utype(R)), R))
          requires isArithmeticType(type(L))
