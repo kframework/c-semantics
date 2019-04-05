@@ -104,6 +104,8 @@ public:
     this->InFile = InFile;
   }
 
+  virtual bool shouldVisitTemplateInstantiations() { return true; }
+
 // if we reach all the way to the top of a hierarchy, crash with an error
 // because we don't support the node
 
@@ -798,7 +800,28 @@ public:
   TRAVERSE_TEMPLATE_DECL(TypeAlias)
 
   bool TraverseTemplateInstantiations(ClassTemplateDecl *D) {
-    AddKSequenceNode(0);
+    unsigned i = 0;
+    for (auto *FD : D->specializations()) {
+      switch(FD->getTemplateSpecializationKind()) {
+        case TSK_ImplicitInstantiation:
+        case TSK_ExplicitInstantiationDeclaration:
+        case TSK_ExplicitInstantiationDefinition:
+          i++;
+        default:
+          break;
+      }
+    }
+    AddKSequenceNode(i);
+    for (auto *FD : D->specializations()) {
+      switch(FD->getTemplateSpecializationKind()) {
+        case TSK_ImplicitInstantiation:
+        case TSK_ExplicitInstantiationDeclaration:
+        case TSK_ExplicitInstantiationDefinition:
+          TRY_TO(TraverseDecl(FD));
+        default:
+          break;
+      }
+    }
     return true;
   }
 
@@ -808,7 +831,28 @@ public:
   }
 
   bool TraverseTemplateInstantiations(VarTemplateDecl *D) {
-    AddKSequenceNode(0);
+    unsigned i = 0;
+    for (auto *FD : D->specializations()) {
+      switch(FD->getTemplateSpecializationKind()) {
+        case TSK_ImplicitInstantiation:
+        case TSK_ExplicitInstantiationDeclaration:
+        case TSK_ExplicitInstantiationDefinition:
+          i++;
+        default:
+          break;
+      }
+    }
+    AddKSequenceNode(i);
+    for (auto *FD : D->specializations()) {
+      switch(FD->getTemplateSpecializationKind()) {
+        case TSK_ImplicitInstantiation:
+        case TSK_ExplicitInstantiationDeclaration:
+        case TSK_ExplicitInstantiationDefinition:
+          TRY_TO(TraverseDecl(FD));
+        default:
+          break;
+      }
+    }
     return true;
   }
 
@@ -820,16 +864,18 @@ public:
     unsigned i = 0;
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-      case TSK_ExplicitInstantiationDeclaration:
-      case TSK_ExplicitInstantiationDefinition:
-        i++;
-      default:
-        break;
+        case TSK_ImplicitInstantiation:
+        case TSK_ExplicitInstantiationDeclaration:
+        case TSK_ExplicitInstantiationDefinition:
+          i++;
+        default:
+          break;
       }
     }
     AddKSequenceNode(i);
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
+      case TSK_ImplicitInstantiation:
       case TSK_ExplicitInstantiationDeclaration:
       case TSK_ExplicitInstantiationDefinition:
         TRY_TO(TraverseDecl(FD));
@@ -1038,6 +1084,7 @@ public:
       case TSK_ExplicitInstantiationDeclaration:
         AddKApplyNode("TemplateInstantiationDeclaration", 2);
         break;
+      case TSK_ImplicitInstantiation:
       case TSK_ExplicitInstantiationDefinition:
         AddKApplyNode("TemplateInstantiationDefinition", 2);
         break;
