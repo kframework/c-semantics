@@ -749,8 +749,6 @@ module CPP-TYPING
 
      rule getTag(t(_, _, classType(C::Class))) => getTag(C)
 
-     rule getTag(_::CPPType) => .K [owise]
-
      rule getTag(_::ClassQualifier :: Class(Tag::Tag, _, _)) => Tag
 
      rule addQuals(Qs'::Quals, t(Qs::Quals, Mods::Set, T::CPPSimpleType))

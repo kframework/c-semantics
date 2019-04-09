@@ -109,7 +109,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                       | getNamespaceLinkage(Namespace) [function, klabel(getNamespaceLinkage1)]
                       | getClassLinkage(Class) [function]
 
-     syntax KItem ::= getPreviousLinkage(QualId, CPPType, Map, Map) [function]
+     syntax K ::= getPreviousLinkage(QualId, CPPType, Map, Map) [function]
 
      syntax Duration ::= getDuration(Set, Scope) [function]
 
