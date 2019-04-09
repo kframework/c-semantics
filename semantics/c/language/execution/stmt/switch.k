@@ -48,7 +48,7 @@ module C-STMT-SWITCH
      // K to be evaluated, val it should be, casehelper
      syntax KItem ::= tryCase(K, RValue, CId) [strict(1)]
      syntax CId ::= "nextCaseLabel"
-     syntax KItem ::= "#handleSwitch-aux" "(" Int "," RValue "," CId "," Map ")"
+     syntax KItem ::= "#handleSwitch-aux" "(" Int "," RValue "," K "," Map ")"
 
      rule #handleSwitch-aux(_, _, nextCaseLabel, .Map) => .K
           [structural]

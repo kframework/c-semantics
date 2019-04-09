@@ -299,9 +299,9 @@ module CPP-SYNTAX
                    | WhileStmt(Decl, Stmt)
                    | WhileStmt(Expr, Stmt)
                    | ForStmt(Expr, Stmt, Stmt) [klabel(ForStmt3)]
-                   | TryStmt(Stmt, List)
-                   | CatchOp(CPPType, Stmt)
-                   | CatchAnyOp(Stmt)
+                   | TryStmt(K, List)
+                   | CatchOp(CPPType, K)
+                   | CatchAnyOp(K)
 
      // returns the current exception object. Used to initialize
      // catch declarations.

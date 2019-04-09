@@ -91,7 +91,7 @@ module CPP-TRANSLATION-STMT-TRY
               ~> CatchStmt(_, _)
               => .K
           ...</k>
-          <elab>... .K => CatchOp(T, {pushBlock(I) ~> D ~> K}:>Stmt) </elab>
+          <elab>... .K => CatchOp(T, pushBlock(I) ~> D ~> K) </elab>
 
      syntax Decl ::= processCatchDecl(Decl) [function]
 
