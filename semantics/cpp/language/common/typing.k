@@ -456,10 +456,10 @@ module CPP-TYPING-SYNTAX
 
      syntax DefaultArgumentsResult ::= emptyDefaultArguments(CPPType) [function]
 
-     syntax Enum ::= getEnumId(CPPEnumType) [function]
+     syntax Enum ::= getEnumId(CPPType) [function]
 
      syntax Bool ::= isEnumScoped(CPPEnumType) [function]
-                   | isEnumFixed(CPPEnumType) [function]
+                   | isEnumFixed(CPPType) [function]
 
      // Intended to use only when the derived class
      // has only one such base.
@@ -1063,13 +1063,13 @@ module CPP-TYPING
 
      rule isEnumFixed(t(... st: unscopedEnum(_, _, B::Bool))) => B
 
-     rule isEnumFixed({T:CPPBitfieldType => innerType(T)}:>CPPEnumType)
+     rule isEnumFixed(T:CPPBitfieldType => innerType(T))
 
      rule getEnumId(t(_, _, scopedEnum(X::Enum, _))) => X
 
      rule getEnumId(t(_, _, unscopedEnum(X::Enum, _, _))) => X
 
-     rule getEnumId({T:CPPBitfieldType => innerType(T)}:>CPPEnumType)
+     rule getEnumId(T:CPPBitfieldType => innerType(T))
 
      syntax Int ::= #getEnumMin(K) [function]
                   | #getEnumMax(K) [function]
