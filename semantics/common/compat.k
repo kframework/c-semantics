@@ -83,6 +83,9 @@ endmodule
 
 module COMPAT-KAST [kast]
      imports COMPAT-SYNTAX
+     imports MAP
+     imports BOOL
+     imports K-EQUAL
 
      rule all(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel))
           => Lbl(K) andBool all(L, #klabel(Lbl))
