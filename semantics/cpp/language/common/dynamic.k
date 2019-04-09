@@ -825,7 +825,7 @@ module CPP-DYNAMIC-OTHER
 
      rule X:K, T:CPPType in_keys(M::Map) => (X in_keys(M)) andBool (T in_keys({M[X]}:>TypeMap))
 
-     rule X:K, Y:K in_keys(M::Map) => (X in_keys(M)) andBool (Y in_keys({M[X]}:>Map)) [owise]
+     rule X:K, Y:K in_keys(M::Map) => (X in_keys(M)) andBool (Y in_keys({M[X] orDefault .Map}:>Map)) [owise]
 
      rule ((A |-> M2:TypeMap) M1::Map) [A:K, B:CPPType <- C:K] => (A |-> (M2[B <- C])) M1
 

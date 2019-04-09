@@ -28,6 +28,7 @@ module LINKING-INIT
      imports LINKING-CPP-RESOLUTION-SYNTAX
      imports LINKING-C-BUILTIN-SYNTAX
      imports LINKING-CPP-BUILTIN-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
 
      rule <k> link
                => cBuiltinTu("builtin")
@@ -163,7 +164,7 @@ module LINKING-INIT
                   | #mergeDefs(Map, Map, Set) [function]
      rule mergeDefs(M1::Map, M2::Map) => #mergeDefs(M1, updateMap(M1, M2), intersectSet(keys(M1), keys(M2)))
      rule #mergeDefs(OldValues::Map, NewValues::Map, SetItem(Key:KItem) CommonKeys::Set)
-          => #mergeDefs(OldValues, NewValues[Key <- updateMap({{OldValues[Key]}<:KItem}:>Map, {{NewValues[Key]}<:KItem}:>Map)], CommonKeys)
+          => #mergeDefs(OldValues, NewValues[Key <- updateMap({{OldValues[Key] orDefault .Map::TypeMap}<:KItem}:>TypeMap, {{NewValues[Key] orDefault .Map::TypeMap}<:KItem}:>TypeMap)], CommonKeys)
      rule #mergeDefs(_, NewValues::Map, .Set) => NewValues
 
      rule mergeObj(B:K, .K) => B
@@ -291,6 +292,6 @@ module LINKING-INIT
      rule (<T>... <k> cleanup </k> ...</T> => .Bag)
 
      syntax Map ::= getOverridden(Map, Map) [function]
-     rule getOverridden(_, _) => .Map [owise]
+     rule getOverridden(_, _) => .Map::Map [owise]
 
 endmodule
