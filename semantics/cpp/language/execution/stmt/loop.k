@@ -13,8 +13,8 @@ module CPP-EXECUTION-STMT-LOOP
           <loop-stack> .List => ListItem(kpair(Num, K)) ...</loop-stack>
 
      rule loopMarked ~> ForStmt(Control:Expr, Post::Stmt, S::Stmt)
-          => IfStmt(Control, {S ~> Post ~> loopMarked
-               ~> ForStmt(Control, Post, S)}:>Stmt, .K)
+          => IfStmt(Control, compoundStmt(S, compoundStmt(Post, compoundStmt(loopMarked,
+              ForStmt(Control, Post, S)))), nullStmt())
 
      rule <k> WhileStmt(Control::Expr, S::Stmt) ~> K:K
               => loopMarked
@@ -25,8 +25,8 @@ module CPP-EXECUTION-STMT-LOOP
           <loop-stack> .List => ListItem(kpair(Num, K)) ...</loop-stack>
 
      rule loopMarked ~> WhileStmt(Control:Expr, S::Stmt)
-          => IfStmt(Control, {S ~> loopMarked
-               ~> WhileStmt(Control, S)}:>Stmt, .K)
+          => IfStmt(Control, compoundStmt(S, compoundStmt(loopMarked,
+               WhileStmt(Control, S))), nullStmt())
 
      rule <k> popLoop ~> _ => K </k>
           <block-history> ListItem(Num::Int) ...</block-history>

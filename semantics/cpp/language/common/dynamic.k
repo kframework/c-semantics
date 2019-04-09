@@ -510,6 +510,9 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KItem ::= odrDecl(String, QualId, CId, LanguageLinkage, CPPType)
 
+     syntax Stmt ::= compoundStmt(Stmt, Stmt)
+     syntax Stmt ::= nullStmt()
+
 endmodule // CPP-DYNAMIC-OTHER-SYNTAX
 
 module CPP-DYNAMIC-OTHER
@@ -973,6 +976,9 @@ module CPP-DYNAMIC-OTHER
 
      // is given prval fully evaluated?
      rule isEPRVal(E:PRVal) => Translation() orBool isPRV(E)
+
+     rule compoundStmt(S1::Stmt, S2::Stmt) => S1 ~> S2
+     rule nullStmt() => .K
 
 endmodule // CPP-DYNAMIC-OTHER
 
