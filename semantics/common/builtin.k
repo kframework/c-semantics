@@ -1,7 +1,7 @@
 module COMMON-BUILTIN-SYNTAX
      imports SYMLOC-SORTS
 
-     syntax Map ::= "nativeDefinedBuiltins" [function, memo]
+     syntax Map ::= "nativeDefinedBuiltins" [function, withConfig]
      syntax KItem ::= "callBuiltin"
      syntax KItem ::= handleBuiltin(SymLoc)
      syntax KItem ::= "breakpoint" [klabel(breakpoint)]
