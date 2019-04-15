@@ -307,12 +307,6 @@ module CPP-DYNAMIC-OTHER-SORTS
 
      syntax TemplateArgs ::= List{TemplateArg, ","}
 
-     syntax TemplateParams ::= List{TemplateParam, ","}
-
-     syntax TemplateParams ::= TemplateArgs
-
-     syntax TemplateParam ::= TemplateArg
-
      syntax TemplateArg
 
      syntax CPPValue
@@ -353,17 +347,17 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax CPPValue ::= "voidVal" // not technically a value, but it can be the result of an expression
 
-     syntax LVal ::= lv(v: SymLoc, tr: Trace, t: CPPTypeExpr) [klabel(lvcpp)]
+     syntax LVal ::= lv(v: SymLoc, tr: Trace, t: CPPType) [klabel(lvcpp)]
 
-     syntax XVal ::= xv(v: SymLoc, tr: Trace, t: CPPTypeExpr)
+     syntax XVal ::= xv(v: SymLoc, tr: Trace, t: CPPType)
 
-     syntax PRV ::= prv(v: CPPValue, tr: Trace, t: CPPTypeExpr)
+     syntax PRV ::= prv(v: CPPValue, tr: Trace, t: CPPType)
 
-     syntax LExpr ::= le(v: Expr, tr: Trace, t: CPPTypeExpr) [klabel(lecpp)]
+     syntax LExpr ::= le(v: Expr, tr: Trace, t: CPPType) [klabel(lecpp)]
 
-     syntax XExpr ::= xe(v: Expr, tr: Trace, t: CPPTypeExpr)
+     syntax XExpr ::= xe(v: Expr, tr: Trace, t: CPPType)
 
-     syntax PRExpr ::= pre(v: Expr, tr: Trace, t: CPPTypeExpr)
+     syntax PRExpr ::= pre(v: Expr, tr: Trace, t: CPPType)
 
      syntax ValueCategory ::= cat(Typed) [function]
 
@@ -441,11 +435,11 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      syntax ResolvedExpr ::= NotFoundNameRef
 
      syntax NameRef ::= nsRef(Namespace) | NotFoundNameRef
-                      | templateRef(QualId, CPPTypeExpr)
+                      | templateRef(QualId, CPPType)
 
      syntax Val ::= NameRef
 
-     syntax KResult ::= CPPTypeExpr | NameRef
+     syntax KResult ::= CPPType | NameRef
 
      syntax Bool ::= isLKLabel(K) [function, klabelPredicate]
 
@@ -454,16 +448,12 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      syntax TemplateArgs ::= toTemplateArgs(List) [function]
                            | toTemplateArgs(CPPTypes) [function, klabel(CPPTypesToTemplateArgs)]
 
-     syntax TemplateParams ::= toTemplateParams(List) [function]
-
      syntax List ::= toList(CPPTypes) [function]
-                   | toList(CPPTypeExprs) [function]
+                   | toList(CPPTypes) [function]
                    | toList(TemplateArgs) [function]
 
      syntax CPPTypes ::= toCPPTypes(List) [function]
                        | toCPPTypes(TemplateArgs) [function, klabel(TemplateArgsToCPPTypes)]
-
-     syntax TemplateParam ::= CPPTypeExpr
 
      syntax TemplateArg ::= CPPType
 
@@ -667,9 +657,9 @@ module CPP-DYNAMIC-OTHER
 
      rule ofSTypeStrictList(K:K typeStrict:: L::STypeStrictList) => ListItem(K) ofSTypeStrictList(L) [owise]
 
-     context HOLE:AType typeStrict:: _ [result(CPPTypeExpr)]
+     context HOLE:AType typeStrict:: _ [result(CPPType)]
 
-     context HOLE:CPPTypeExpr typeStrict:: _
+     context HOLE:CPPType typeStrict:: _
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      context K:KResult typeStrict:: HOLE:STypeStrictList
@@ -697,10 +687,6 @@ module CPP-DYNAMIC-OTHER
      rule toCPPTypes(.List) => .CPPTypes
 
      rule toCPPTypes(T::TemplateArgs) => toCPPTypes(toList(T))
-
-     rule toTemplateParams(ListItem(P::TemplateParam) L::List) => P, toTemplateParams(L)
-
-     rule toTemplateParams(.List) => .TemplateParams
 
      rule toList(T::CPPType, Ts::CPPTypes) => ListItem(T) toList(Ts)
 
@@ -940,7 +926,7 @@ module CPP-DYNAMIC-OTHER
                lv(
                     loc(obj(0, 0, builtinCppSymbol("::std::terminate()")), 0),
                     noTrace,
-                    type(functionType(type(void), .CPPTypeExprs, noMethod, CLinkage, noexcept(false)))
+                    type(functionType(type(void), .CPPTypes, noMethod, CLinkage, noexcept(false)))
                ),
                false,
                .List

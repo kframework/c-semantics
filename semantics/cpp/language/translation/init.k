@@ -20,7 +20,7 @@ module CPP-TRANSLATION-INIT
      rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType)) => Translation() andBool notBool isCPPRefType(T)
           requires isTExprKLabel(#klabel(Lbl))
 
-     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, _:KItem, T:CPPTypeExpr)) => isDependentInScope(T)
+     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, _:KItem, T:CPPType)) => isDependentInScope(T)
           requires isDepKLabel(#klabel(Lbl))
 
      rule isDepKLabel(#klabel(`prd`)) => true
@@ -49,11 +49,11 @@ module CPP-TRANSLATION-INIT
 
      rule type(prd(_, _, T::CPPType, _)) => T
 
-     rule param(ld(_, _, _, T::TemplateParam)) => T
+     rule param(ld(_, _, _, T::TemplateArg)) => T
 
-     rule param(xd(_, _, _, T::TemplateParam)) => T
+     rule param(xd(_, _, _, T::TemplateArg)) => T
 
-     rule param(prd(_, _, _, T::TemplateParam)) => T
+     rule param(prd(_, _, _, T::TemplateArg)) => T
 
      rule <k> TranslationUnit(Tu::String, Decls::List)
                => makeTu(Tu +String Uuid)

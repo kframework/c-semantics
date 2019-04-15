@@ -29,7 +29,7 @@ module CPP-TRANSLATION-DECL-TEMPLATE-SYNTAX
 
      syntax KItem ::= instantiateTemplateType(TemplateInfo, Map)
 
-     syntax TemplateSpecialization ::=templateSpecialization(CPPTypeExpr, TemplateInfo, Map)
+     syntax TemplateSpecialization ::= templateSpecialization(CPPType, TemplateInfo, Map)
 
      syntax KResult ::= TemplateSpecialization
 endmodule
@@ -51,7 +51,10 @@ module CPP-TRANSLATION-DECL-TEMPLATE
      imports CPP-TYPING-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
 
-     rule TemplateWithInstantiations(D::Decl, L::List, ExplicitInstantiations::List) => Template(D, L) ~> listToK(ExplicitInstantiations) [anywhere]
+     rule TemplateWithInstantiations(D::Decl, L::List, ExplicitInstantiations::List)
+          => Template(D, L)
+          ~> listToK(ExplicitInstantiations)
+          [anywhere]
 
      rule Template(D::Decl, L::List) => declareTemplate(getTemplateName(D), D, listToK(L))
 
@@ -69,14 +72,19 @@ module CPP-TRANSLATION-DECL-TEMPLATE
 
      rule getTemplateName(ClassDef(_, X::CId, N::NNS, _, _, _)) => Name(N, X)
 
-     rule <k> declareTemplate(Name(NoNNS(), X::CId), D::Decl, Params:K) => templateContext(N :: X, Params, D) ...</k>
+     rule <k> declareTemplate(Name(NoNNS(), X::CId), D::Decl, Params:K)
+               => templateContext(N :: X, Params, D)
+          ...</k>
           <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
 
      syntax KItem ::= restoreTemplateContext(TemplateInfo, Int)
 
-     rule <k> templateContext(Q::QualId, Params:K, D::Decl) => scope(templateParameterScope, Params ~> setScope(S) ~> elaborate(D) ~> finishTemplate) ~> restoreTemplateContext(OldInfo, OldDepth) ...</k>
+     rule <k> templateContext(Q::QualId, Params:K, D::Decl)
+               => scope(templateParameterScope,
+                    Params ~> setScope(S) ~> elaborate(D) ~> finishTemplate) ~> restoreTemplateContext(OldInfo, OldDepth)
+          ...</k>
           <curr-template-context> OldInfo::TemplateInfo => templateInfo(Q, .List, .Map, .Map, NoType(), .K) </curr-template-context>
           <curr-template-depth> OldDepth::Int => OldDepth +Int 1 </curr-template-depth>
           <curr-tr-scope> S::Scope </curr-tr-scope>
@@ -95,9 +103,13 @@ module CPP-TRANSLATION-DECL-TEMPLATE
           <curr-template-context> _ => OldInfo </curr-template-context>
 
      // template parameters
-     rule TypeTemplateParam(_, false, TemplateParameterType(#NoName), NoType()) => addTemplateParam(#NoName, TypeParam, .K)
+     rule TypeTemplateParam(_, false, TemplateParameterType(#NoName), NoType())
+          => addTemplateParam(#NoName, TypeParam, .K)
 
-     rule <k> TypeTemplateParam(_, false, TemplateParameterType(Identifier(S::String)), NoType()) => addTemplateParam(Identifier(S), TypeParam, .K) ~> TypedefDecl(Identifier(S), t(noQuals, .Set, dependentType(S, size(L)))) ...</k>
+     rule <k> TypeTemplateParam(_, false, TemplateParameterType(Identifier(S::String)), NoType())
+               => addTemplateParam(Identifier(S), TypeParam, .K)
+               ~> TypedefDecl(Identifier(S), t(noQuals, .Set, dependentType(S, size(L))))
+          ...</k>
           <curr-template-context> templateInfo(... decls: L::List) </curr-template-context>
 
      syntax KItem ::= addTemplateParam(CId, ParamType, K)
@@ -168,37 +180,49 @@ module CPP-TRANSLATION-DECL-TEMPLATE
 
      // template instantiation
 
-     rule TemplateInstantiationDefinition(TemplateSpecializationType(X::CId), NormalizedDecl(NoNNS(), X::CId, _, A::AType, _, _))
-          => instantiateTemplate(deduceTemplateFromDecl(nameLookup(X, NoTag(), defaultMask), A)) ~> finishExplicitInstantiation
+     // rule TemplateInstantiationDefinition(
+     //           TemplateSpecializationType(X::CId),
+     //           NormalizedDecl(NoNNS(), X::CId, _, A::AType, _, _))
+     //      => instantiateTemplate(deduceTemplateFromDecl(nameLookup(X, NoTag(), defaultMask), A))
+     //      ~> finishExplicitInstantiation
+     rule TemplateInstantiationDefinition(TemplateSpecializationType(_), NormalizedDecl(...) #as D::Declarator)
+          => D
 
      syntax KItem ::= "finishExplicitInstantiation"
 
      rule _:LVal ~> finishExplicitInstantiation => .K
 
-     rule <k> instantiateTemplateType(templateInfo(Q::QualId, Decls::List, Types::Map, Defaults::Map, T::CPPTypeExpr, Body:K), Args::Map) => templateSpecialization(T, templateInfo(Q, Decls, Types, Defaults, T, Body), Args) ~> setTemplateArgs(Q, T, Old) ...</k>
+     rule <k> instantiateTemplateType(templateInfo(Q::QualId, Decls::List, Types::Map, Defaults::Map, T::CPPType, Body:K), Args::Map)
+               => templateSpecialization(T, templateInfo(Q, Decls, Types, Defaults, T, Body), Args) ~> setTemplateArgs(Q, T, Old)
+          ...</k>
           <template-arguments> Old::Map => updateMap(Old, Args) </template-arguments>
 
-     context templateSpecialization(HOLE:CPPTypeExpr, _, _)
+     context templateSpecialization(HOLE:CPPType, _, _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      rule <k> templateSpecialization(T:CPPType, _, _) ~> (setTemplateArgs(_, _, Old::Map) => .K) ...</k>
           <template-arguments> _ => Old </template-arguments>
 
-     rule instantiateTemplate(templateSpecialization(T:CPPFunctionType, I::TemplateInfo, Args::Map)) => instantiateObjectTemplate(templateSpecialization(T, I, Args))
+     rule instantiateTemplate(templateSpecialization(T:CPPFunctionType, I::TemplateInfo, Args::Map))
+          => instantiateObjectTemplate(templateSpecialization(T, I, Args))
 
-     rule <k> instantiateObjectTemplate(templateSpecialization(T::CPPType, templateInfo(Q::QualId, Decls::List, _, _, _, Body:K), Args:Map)) => scope(templateParameterScope, declareTemplateArgs(Decls, Args, 0) ~> setScope(S) ~> Body) ~> setTemplateArgs(Q, T, Old) ...</k>
+     rule <k> instantiateObjectTemplate(templateSpecialization(T::CPPType, templateInfo(Q::QualId, Decls::List, _, _, _, Body:K), Args:Map))
+               => scope(templateParameterScope, declareTemplateArgs(Decls, Args, 0) ~> setScope(S) ~> Body)
+               ~> setTemplateArgs(Q, T, Old)
+          ...</k>
           <template-arguments> Old::Map => updateMap(Old, Args) </template-arguments>
           <curr-tr-scope> S::Scope </curr-tr-scope>
 
      syntax KItem ::= declareTemplateArgs(List, Map, Int)
 
-     rule (.K => TypedefDecl(Identifier(S), T)) ~> declareTemplateArgs((ListItem(Identifier(S::String)) => .List) _, _ dependentType(S, I) |-> T:CPPType, I::Int => I +Int 1)
+     rule (.K => TypedefDecl(Identifier(S), T))
+          ~> declareTemplateArgs((ListItem(Identifier(S::String)) => .List) _, _ dependentType(S, I) |-> T:CPPType, I::Int => I +Int 1)
 
      rule declareTemplateArgs(.List, _, _) => .K
 
      rule TemplateDefinitionStmt(K:K) => K
 
-     syntax KItem ::= setTemplateArgs(QualId, CPPTypeExpr, Map)
+     syntax KItem ::= setTemplateArgs(QualId, CPPType, Map)
 
      rule <k> setTemplateArgs(N::Namespace :: X::CId, T::CPPType, Old::Map) => lv(lnew(getBase(Entry)), noTrace, T) ...</k>
           <template-arguments> _ => Old </template-arguments>
@@ -208,36 +232,36 @@ module CPP-TRANSLATION-DECL-TEMPLATE
           <nenv>... X |-> (_::TypeMap T |-> Entry::EnvEntry) ...</nenv>
 
      // template parameter substitution
-     context t(_, _, arrayType(HOLE:CPPTypeExpr, _))
+     context t(_, _, arrayType(HOLE:CPPType, _))
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context t(_, _, pointerType(HOLE:CPPTypeExpr))
+     context t(_, _, pointerType(HOLE:CPPType))
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context t(_, _, lvRefType(HOLE:CPPTypeExpr))
+     context t(_, _, lvRefType(HOLE:CPPType))
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context t(_, _, rvRefType(HOLE:CPPTypeExpr))
+     context t(_, _, rvRefType(HOLE:CPPType))
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context t(_, _, functionType(... returnType: HOLE:CPPTypeExpr))
+     context t(_, _, functionType(... returnType: HOLE:CPPType))
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context t(_, _, functionType(... paramTypes: HOLE:CPPTypeExprs))
+     context t(_, _, functionType(... paramTypes: HOLE:CPPTypes))
              requires notBool areDependentInScope(HOLE) [result(CPPTypes)]
 
-     context t(_, _, classType(_ :: Class(_, _, HOLE:TemplateParams)))
+     context t(_, _, classType(_ :: Class(_, _, HOLE:TemplateArgs)))
              requires notBool areDependentInScope(HOLE) [result(TemplateArgs)]
 
-     context HOLE:CPPTypeExpr, _::CPPTypeExprs
+     context HOLE:CPPType, _::CPPTypes
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context HOLE:CPPTypeExpr, _::TemplateParams
+     context HOLE:CPPType, _::TemplateArgs
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      rule <k> t(Q::Quals, Mods::Set, dependentType(S::String, I::Int)) => t(Q +Quals Q', Mods Mods', T) ...</k>
-          <template-arguments>... dependentType(S, I) |-> t(Q'::Quals, Mods'::Set, T::CPPSimpleTypeExpr) ...</template-arguments>
+          <template-arguments>... dependentType(S, I) |-> t(Q'::Quals, Mods'::Set, T::CPPSimpleType) ...</template-arguments>
 
      rule <k> t(Q::Quals, Mods::Set, auto) => t(Q +Quals Q', Mods Mods', T) ...</k>
-          <template-arguments>... auto |-> t(Q'::Quals, Mods'::Set, T::CPPSimpleTypeExpr) ...</template-arguments>
+          <template-arguments>... auto |-> t(Q'::Quals, Mods'::Set, T::CPPSimpleType) ...</template-arguments>
 endmodule

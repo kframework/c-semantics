@@ -17,15 +17,7 @@ module CPP-TYPING-SORTS
 
      syntax EffectiveType ::= CPPType
 
-     syntax CPPTypeExpr ::= CPPType
-
-     syntax CPPDTypeExpr ::= CPPTypeExpr | CPPDType
-
-     syntax CPPTypeExprs ::= List{CPPDTypeExpr, ","}
-
      syntax CPPTypes ::= List{CPPDType, ","}
-
-     syntax CPPTypeExprs ::= CPPTypes
 
      syntax ExceptionSet
 
@@ -49,10 +41,10 @@ endmodule
 module CPP-DEPENDENT-SYNTAX
      imports CPP-TYPING-SORTS
      imports CPP-DYNAMIC-SORTS
-     syntax Bool ::= isDependentInScope(CPPTypeExpr) [function]
-                   | areDependentInScope(TemplateParams) [function]
-                   | areDependentInScope(CPPTypeExprs) [function]
-                   | isAuto(CPPDTypeExpr) [function]
+     syntax Bool ::= isDependentInScope(CPPType) [function]
+                   | areDependentInScope(TemplateArgs) [function]
+                   | areDependentInScope(CPPTypes) [function]
+                   | isAuto(CPPDType) [function]
 
      syntax StrictList ::= typeStrict(StrictList)
 endmodule
@@ -71,8 +63,6 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPType ::= t(q: Quals, m: Set, st: CPPSimpleType) [klabel(tcpp)]
 
-     syntax CPPTypeExpr ::= innerType(CPPTypeExpr) [function, klabel(cppInnerType)]
-
      syntax CPPType ::= innerType(CPPType) [function, klabel(cppInnerType)]
 
      syntax CPPType ::= innerType(CPPSimpleType) [function, klabel(innerTypeOfSimpleType)]
@@ -88,8 +78,6 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPClassType ::= stripType(CPPClassType) [function]
 
-     syntax CPPTypeExpr ::= stripType(CPPTypeExpr) [function]
-
      syntax CPPSimpleIntegerType ::= CPPSimpleSignedType
                                    | CPPSimpleUnsignedType
                                    | CPPSimpleCharType
@@ -104,6 +92,8 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleType ::= CPPSimpleFundamentalType
                             | CPPSimpleCompoundType
                             | CPPSimpleBitfieldType
+                            | CPPSimpleDependentType
+                            | CPPSimpleAutoType
 
      syntax CPPSimpleSignedType ::= bitfieldType(CPPSimpleSignedType, Int) [klabel(bitfieldTypeCpp)]
 
@@ -160,31 +150,8 @@ module CPP-TYPING-SYNTAX
                             | CPPSimpleLVRefType
                             | CPPSimpleRVRefType
 
-     syntax CPPSimpleTypeExpr ::= CPPSimpleType
-                                | CPPSimpleDependentType
-                                | CPPSimpleAutoType
-                                | CPPSimpleArrayTypeExpr
-                                | CPPSimplePointerTypeExpr
-                                | CPPSimpleFunctionTypeExpr
-                                | CPPSimpleClassTypeExpr
-                                | CPPSimpleLVRefTypeExpr
-                                | CPPSimpleRVRefTypeExpr
-
-     syntax CPPSimpleArrayTypeExpr ::= arrayType(CPPTypeExpr, Int) [klabel(cppArrayType)]
-
-     syntax CPPSimpleArrayTypeExpr ::= incompleteArrayType(CPPTypeExpr) [klabel(cppIncompleteArrayType)]
-
-     syntax CPPSimplePointerTypeExpr ::= pointerType(CPPTypeExpr) [klabel(cppPointerType)]
-
-     syntax CPPSimpleLVRefTypeExpr ::= lvRefType(CPPTypeExpr)
-
-     syntax CPPSimpleRVRefTypeExpr ::= rvRefType(CPPTypeExpr)
-
-     syntax CPPSimpleFunctionTypeExpr ::= functionType(returnType: CPPTypeExpr, paramTypes: CPPTypeExprs, methodInfo: MethodInfo, linkage: LanguageLinkage, exceptions: ExceptionSet) [klabel(cppFunctionType)]
-
-     syntax CPPSimpleClassTypeExpr ::= classType(ClassTemplate)
-
      syntax CPPSimpleArrayType ::= CPPSimpleFixedArrayType | CPPSimpleIncompleteArrayType
+                                 | dynamicArrayType(CPPType, Expr)
 
      syntax CPPSimpleFixedArrayType ::= arrayType(CPPType, Int) [klabel(cppArrayType)]
 
@@ -209,8 +176,6 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPSimpleAutoType ::= "auto"
                                 | "decltype(auto)"
-
-     syntax CPPSimpleArrayTypeExpr ::= dynamicArrayType(CPPType, Expr)
 
      syntax CPPSimpleScopedEnumType ::= scopedEnum(id: Enum, underlyingType: CPPIntegerType)
 
@@ -277,21 +242,6 @@ module CPP-TYPING-SYNTAX
                       | CPPBitfieldType
 
 
-     syntax CPPFunctionTypeExpr ::= CPPFunctionType | t(q: Quals, m: Set, st: CPPSimpleFunctionTypeExpr) [klabel(tcpp)]
-
-     syntax CPPClassTypeExpr ::= CPPClassType | t(q: Quals, m: Set, st: CPPSimpleClassTypeExpr) [klabel(tcpp)]
-
-     syntax CPPArrayTypeExpr ::= CPPArrayType | t(q: Quals, m: Set, st: CPPSimpleArrayTypeExpr) [klabel(tcpp)]
-
-     syntax CPPRefTypeExpr ::= CPPRefType | t(q: Quals, m: Set, st: CPPSimpleLVRefTypeExpr) [klabel(tcpp)]
-                             | t(q: Quals, m: Set, st: CPPSimpleRVRefTypeExpr) [klabel(tcpp)]
-
-     syntax CPPTypeExpr ::= t(q: Quals, m: Set, st: CPPSimpleTypeExpr) [klabel(tcpp)]
-                          | CPPFunctionTypeExpr
-                          | CPPClassTypeExpr
-                          | CPPArrayTypeExpr
-                          | CPPRefTypeExpr
-
      syntax CPPVariadic ::= "variadic"
 
      syntax InitListType ::= initListType(List)
@@ -304,57 +254,55 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPType ::= addQuals(Quals, CPPType) [function]
 
-     syntax Bool ::= isAdjustedType(CPPFunctionTypeExpr) [function]
+     syntax Bool ::= isAdjustedType(CPPFunctionType) [function]
 
-     syntax CPPFunctionTypeExpr ::= adjustFunctionType(CPPFunctionTypeExpr) [function]
+     syntax CPPFunctionType ::= adjustFunctionType(CPPFunctionType) [function]
 
      syntax CPPFunctionType ::= setMethod(CPPFunctionType) [function]
 
-     syntax Bool ::= isFunctionMember(CPPFunctionTypeExpr) [function]
-                   | hasImplicitParameter(CPPFunctionTypeExpr) [function]
+     syntax Bool ::= isFunctionMember(CPPFunctionType) [function]
+                   | hasImplicitParameter(CPPFunctionType) [function]
 
-     syntax List ::= getParams(CPPFunctionTypeExpr) [function, klabel(cppgetParams)]
-                   | getRealParams(CPPFunctionTypeExpr) [function]
+     syntax List ::= getParams(CPPFunctionType) [function, klabel(cppgetParams)]
+                   | getRealParams(CPPFunctionType) [function]
 
-     syntax RefQualifier ::= getRefQualifier(CPPFunctionTypeExpr) [function]
+     syntax RefQualifier ::= getRefQualifier(CPPFunctionType) [function]
 
      syntax CPPFunctionType ::= setRefQualifier(CPPFunctionType, RefQualifier) [function]
 
-     syntax Quals ::= getCVSQuals(CPPFunctionTypeExpr) [function]
+     syntax Quals ::= getCVSQuals(CPPFunctionType) [function]
 
      syntax CPPFunctionType ::= setCVSQuals(CPPFunctionType, Quals) [function]
 
-     syntax Bool ::= isMethodStatic(CPPFunctionTypeExpr) [function]
+     syntax Bool ::= isMethodStatic(CPPFunctionType) [function]
 
      syntax CPPFunctionType ::= setMethodStatic(CPPFunctionType) [function]
 
-     syntax Bool ::= isMethodVirtual(CPPFunctionTypeExpr) [function]
+     syntax Bool ::= isMethodVirtual(CPPFunctionType) [function]
 
      syntax CPPFunctionType ::= setMethodVirtual(CPPFunctionType) [function]
 
-     syntax Bool ::= isMethodPure(CPPFunctionTypeExpr) [function]
+     syntax Bool ::= isMethodPure(CPPFunctionType) [function]
 
      syntax CPPFunctionType ::= setMethodPure(CPPFunctionType) [function]
 
-     syntax Bool ::= isMethodExplicit(CPPFunctionTypeExpr) [function]
+     syntax Bool ::= isMethodExplicit(CPPFunctionType) [function]
 
      syntax CPPFunctionType ::= setMethodExplicit(CPPFunctionType) [function]
 
-     syntax Bool ::= isMethodUserProvided(CPPFunctionTypeExpr) [function]
+     syntax Bool ::= isMethodUserProvided(CPPFunctionType) [function]
 
      syntax CPPFunctionType ::= setMethodUserProvided(CPPFunctionType, Bool) [function]
 
-     syntax Bool ::= isMethodConstructor(CPPFunctionTypeExpr) [function]
+     syntax Bool ::= isMethodConstructor(CPPFunctionType) [function]
 
      syntax CPPFunctionType ::= setMethodConstructor(CPPFunctionType, Bool) [function]
 
-     syntax Class ::= getMethodClass(CPPFunctionTypeExpr) [function]
+     syntax Class ::= getMethodClass(CPPFunctionType) [function]
 
      syntax CPPFunctionType ::= setMethodClass(CPPFunctionType, Class) [function]
 
-     syntax Bool ::= isVariadicFunction(CPPFunctionTypeExpr) [function]
-
-     syntax CPPTypeExpr ::= getReturnType(CPPFunctionTypeExpr) [function, klabel(cppgetReturnType)]
+     syntax Bool ::= isVariadicFunction(CPPFunctionType) [function]
 
      syntax CPPType ::= getReturnType(CPPFunctionType) [function, klabel(cppgetReturnType)]
 
@@ -365,7 +313,7 @@ module CPP-TYPING-SYNTAX
                       | volatile(CPPSimpleType) [function, klabel(volatileCpp)]
                       | volatile(CPPType) [function, klabel(volatileCpp2)]
 
-     syntax CPPType ::= type(CPPSimpleTypeExpr) [function, klabel(cppType)]
+     syntax CPPType ::= type(CPPSimpleType) [function, klabel(cppType)]
 
      // this significantly reduces the number of casts we have to do when converting between Class and CPPClassType
      syntax CPPClassType ::= type(CPPSimpleClassType) [function, klabel(cppType)]
@@ -377,7 +325,7 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPType ::= type(Typed) [function, klabel(cppTypeVal)]
 
-     syntax CPPType ::= utype(CPPTypeExpr) [function, klabel(cppUTypeType)]
+     syntax CPPType ::= utype(CPPType) [function, klabel(cppUTypeType)]
 
      syntax Bool ::= isObjectType(K) [function]
                    | isCompleteType(CPPType) [function, klabel(isCompleteTypeCPP)]
@@ -406,7 +354,7 @@ module CPP-TYPING-SYNTAX
 
      syntax Bool ::= inRange(CPPValue, CPPType) [function, klabel(inRangeCpp)]
 
-     syntax Tag ::= getTag(CPPTypeExpr) [function, klabel(getTagCpp)]
+     syntax Tag ::= getTag(CPPType) [function, klabel(getTagCpp)]
 
      syntax Tag ::= getTag(Class) [function, klabel(getClassTag)]
 
@@ -414,7 +362,7 @@ module CPP-TYPING-SYNTAX
                          | methodInfo(refQual: RefQualifier, cvQuals: Quals, static: Bool, virtual:Bool, pure: Bool, explicit: Bool, class: K, userProvided: Bool, constructor: Bool)
                          | defaultMethodInfo() [function]
 
-     syntax CPPDType ::= implicitObjectParameter(CPPTypeExpr)
+     syntax CPPDType ::= implicitObjectParameter(CPPType)
 
      syntax CPPType ::= implicitObjectParameterType(CPPFunctionType) [function]
 
@@ -439,8 +387,8 @@ module CPP-TYPING-SYNTAX
 
      syntax EnumInfo ::= CppenumCell | IncompleteInfo
 
-     syntax Bool ::= CPPTypeExpr "==Type" CPPTypeExpr [function]
-                   | CPPTypeExpr "=/=Type" CPPTypeExpr [function]
+     syntax Bool ::= CPPType "==Type" CPPType [function]
+                   | CPPType "=/=Type" CPPType [function]
 
      syntax Bool ::= overrides(CPPType, CPPType) [function]
 
@@ -490,11 +438,11 @@ module CPP-TYPING
 
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, _, _, C::Class, _, false)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
 
-     rule getRealParams(T::CPPFunctionTypeExpr) => #getRealParams(getParams(T))
+     rule getRealParams(T::CPPFunctionType) => #getRealParams(getParams(T))
 
      rule getReturnType(t(_, _, functionType(... returnType: T::CPPType))) => T
 
-     rule isVariadicFunction(T::CPPFunctionTypeExpr) => size(getParams(T)) =/=Int size(getRealParams(T))
+     rule isVariadicFunction(T::CPPFunctionType) => size(getParams(T)) =/=Int size(getRealParams(T))
 
      rule implicitObjectParameterType(T::CPPFunctionType)
           => {#fun((implicitObjectParameter(T2::CPPType) => T2))(getParams(T)[0])}:>CPPType
@@ -530,7 +478,7 @@ module CPP-TYPING
      rule hasImplicitParameter(_) => false [owise]
 
      // TODO(traiansf): Handle conversion functions and functions introduced by using declarations
-     syntax CPPTypeExpr ::= getImpliedParamType(RefQualifier, Quals, static: Bool, Class) [function]
+     syntax CPPType ::= getImpliedParamType(RefQualifier, Quals, static: Bool, Class) [function]
 
      // 13.3.1:4
      rule getImpliedParamType(... static: true) => type(no-type)
@@ -726,6 +674,8 @@ module CPP-TYPING
      rule innerType(arrayType(T::CPPType, _)) => T
 
      rule innerType(incompleteArrayType(T::CPPType)) => T
+
+     rule innerType(dynamicArrayType(T::CPPType, _)) => T
 
      rule innerType(lvRefType(T::CPPType)) => T
 

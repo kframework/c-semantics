@@ -30,11 +30,11 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax Val ::= TExpr
 
-     syntax LDep ::= ld(Expr, Trace, CPPTypeExpr, TemplateParam)
+     syntax LDep ::= ld(Expr, Trace, CPPType, TemplateArg)
 
-     syntax XDep ::= xd(Expr, Trace, CPPTypeExpr, TemplateParam)
+     syntax XDep ::= xd(Expr, Trace, CPPType, TemplateArg)
 
-     syntax PRDep ::= prd(Expr, Trace, CPPTypeExpr, TemplateParam)
+     syntax PRDep ::= prd(Expr, Trace, CPPType, TemplateArg)
 
      syntax GLDep ::= LDep | XDep
 
@@ -56,7 +56,7 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax Bool ::= isDepKLabel(K) [function, klabelPredicate]
 
-     syntax TemplateParam ::= param(Dep) [function]
+     syntax TemplateArg ::= param(Dep) [function]
 
      syntax SymBase ::= "nonStatic"
 
@@ -76,10 +76,10 @@ module CPP-ABSTRACT-SYNTAX
                    | DeclLoc(CabsLoc, Decl)
                    | FriendDecl(Decl)
 
-     context TypedefDecl(_, HOLE:CPPTypeExpr)
+     context TypedefDecl(_, HOLE:CPPType)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context TypeAliasDecl(_, HOLE:CPPTypeExpr)
+     context TypeAliasDecl(_, HOLE:CPPType)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      syntax CtorInit ::= ConstructorBase(AType, Bool, Bool, Init)
@@ -102,7 +102,7 @@ module CPP-ABSTRACT-SYNTAX
      syntax Decl ::= Template(Decl, List)
                    | TemplateWithInstantiations(Decl, List, List)
 
-     syntax TemplateParameter ::= TypeTemplateParam(Bool, Bool, AType, AType)
+     syntax TemplateArgeter ::= TypeTemplateParam(Bool, Bool, AType, AType)
                                 | ValueTemplateParam(Bool, NNS, CId, AType, AExpr)
                                 | TemplateTemplateParam(Bool, CId, AType, List)
 
@@ -112,7 +112,7 @@ module CPP-ABSTRACT-SYNTAX
                                | PackArg(List)
 
 
-     context TypeArg(HOLE:CPPTypeExpr)
+     context TypeArg(HOLE:CPPType)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      syntax Decl ::= TemplateSpecialization(AType, Decl)
@@ -142,7 +142,7 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax KResult ::= ATypeResult
 
-     syntax AType ::= CPPTypeExpr
+     syntax AType ::= CPPType
                     | ATypeResult
                     | ElaboratedTypeSpecifier(Tag, CId, NNS)
                     | ElaboratedTypeSpecifier(Tag, CId, NNS, List)
@@ -169,30 +169,30 @@ module CPP-ABSTRACT-SYNTAX
                     | AutoType(Bool)
                     | Name
 
-     context FunctionPrototype(HOLE:CPPTypeExpr, _, _, _)
+     context FunctionPrototype(HOLE:CPPType, _, _, _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      context FunctionPrototype(_, HOLE:StrictList => typeStrict(HOLE), _, _)
 
-     context PointerType(HOLE:CPPTypeExpr)
+     context PointerType(HOLE:CPPType)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context MemberPointerType(HOLE:CPPTypeExpr, _)
+     context MemberPointerType(HOLE:CPPType, _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context MemberPointerType(_, HOLE:CPPTypeExpr)
+     context MemberPointerType(_, HOLE:CPPType)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context ArrayType(HOLE:CPPTypeExpr, _::Int)
+     context ArrayType(HOLE:CPPType, _::Int)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context ArrayType(HOLE:CPPTypeExpr, _::AExpr)
+     context ArrayType(HOLE:CPPType, _::AExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context LValRefType(HOLE:CPPTypeExpr)
+     context LValRefType(HOLE:CPPType)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context RValRefType(HOLE:CPPTypeExpr)
+     context RValRefType(HOLE:CPPType)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      // extensions
@@ -209,13 +209,13 @@ module CPP-ABSTRACT-SYNTAX
                             | ULongLong() | SChar() | Short() | Int() | Long()
                             | LongLong() | Float() | Double() | LongDouble()
                             | OversizedInt() | OversizedUInt()
-                            | Dependent()
+                            | Dependent() | NullPtr()
 
      syntax AType ::= RefQualifier(RefQualifier, AType) [strict(2)]
 
      syntax AType ::= Qualifier(Qualifier, AType) [strict(2)]
 
-     context Qualifier(_, HOLE:CPPTypeExpr)
+     context Qualifier(_, HOLE:CPPType)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      syntax AStmt ::= Stmt
@@ -302,10 +302,10 @@ module CPP-ABSTRACT-SYNTAX
                    | BoolLiteral(Bool)
                    | Throw(AExpr)
 
-     context IntegerLiteral(_, HOLE:CPPTypeExpr)
+     context IntegerLiteral(_, HOLE:CPPType)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     context FloatingLiteral(_, HOLE:CPPTypeExpr)
+     context FloatingLiteral(_, HOLE:CPPType)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      syntax CaptureDefault ::= NoCaptureDefault() | CopyCapture() | RefCapture()
@@ -391,13 +391,13 @@ module CPP-TRANSLATION-ABSTRACT-REWRITING
 
      rule ExprLoc(_, DefaultArg()) => .K [anywhere]
 
-     rule ld(E::Expr, _, _, T:CPPTypeExpr) => E
+     rule ld(E::Expr, _, _, T:CPPType) => E
           requires notBool isDependentInScope(T)
 
-     rule xd(E::Expr, _, _, T:CPPTypeExpr) => E
+     rule xd(E::Expr, _, _, T:CPPType) => E
           requires notBool isDependentInScope(T)
 
-     rule prd(E::Expr, _, _, T:CPPTypeExpr) => E
+     rule prd(E::Expr, _, _, T:CPPType) => E
           requires notBool isDependentInScope(T)
 
      context IfTStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]

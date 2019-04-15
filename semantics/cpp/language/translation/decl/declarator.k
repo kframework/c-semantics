@@ -9,7 +9,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports CPP-TYPING-SORTS
 
      syntax Decl ::= DeclaratorAndSpecifiers(Declarator, Set)
-                    | declareObject(NNSVal, NNSVal, CId, CId, CPPTypeExpr, Init, DeclarationType, Linkage, Duration, Set)
+                    | declareObject(NNSVal, NNSVal, CId, CId, CPPType, Init, DeclarationType, Linkage, Duration, Set)
                     | defineObject(NNSVal, CId, CId, CPPType, Init, DeclarationType, Set)
                     | initializeObject(NNSVal, CId, CPPType, init: K, DeclarationType) [strict(4)]
 
@@ -21,7 +21,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
 
      syntax KItem ::= declState(SymBase, DeclState)
 
-     syntax KItem ::= processFunDef(SymBase, QualId, CPPTypeExpr, List, Stmt)
+     syntax KItem ::= processFunDef(SymBase, QualId, CPPType, List, Stmt)
 
      syntax KItem ::= "calculateGotoMap"
 
@@ -83,9 +83,9 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl((NoNNS() => C), _, _, _, _, _), _) ...</k>
           <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
 
-     context DeclaratorAndSpecifiers(NormalizedDecl(_, _, _, HOLE:AType, _, _), _) [result(CPPTypeExpr)]
+     context DeclaratorAndSpecifiers(NormalizedDecl(_, _, _, HOLE:AType, _, _), _) [result(CPPType)]
 
-     context DeclaratorAndSpecifiers(NormalizedDecl(_, _, _, HOLE:CPPTypeExpr, _, _), _)
+     context DeclaratorAndSpecifiers(NormalizedDecl(_, _, _, HOLE:CPPType, _, _), _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl(N:NNSVal, X::CId, Mangled::CId, t(Q::Quals, _, _) #as T::CPPType, Body::Init, Type::DeclarationType), S::Set)
@@ -220,7 +220,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule getGoodCName(T::CPPType, X::CId, Mangled::CId, _, LangLinkage::LanguageLinkage, Opts::Set, ExternalLinkage)
           => getCName(T, X, Mangled, LangLinkage, Opts)
 
-     context declareObject(_, _, _, _, HOLE:CPPTypeExpr, _, _, _, _, _)
+     context declareObject(_, _, _, _, HOLE:CPPType, _, _, _, _, _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      rule <k> declareObject(N1::NNSVal, N2::NNSVal, X::CId, Mangled::CId, T:CPPType,
@@ -387,7 +387,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           requires getClassNamespace(C) ==K N andBool notBool isLocalQualifier(CQ)
 
      rule <k> (.K => deduceAuto(T, Init))
-              ~> declareObject(_, _, _, _, T::CPPTypeExpr, Init::Init, _, _, _, _) ...</k>
+              ~> declareObject(_, _, _, _, T::CPPType, Init::Init, _, _, _, _) ...</k>
           <template-deduction> _ => .Map </template-deduction>
           requires isDependentInScope(T) andBool isAuto(T)
 
@@ -658,7 +658,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <curr-tu> _ => TU </curr-tu>
 
 
-     rule <k> processFunDef(Base::SymBase, QX::QualId, t(... st: functionType(... methodInfo: MI::MethodInfo)) #as T::CPPFunctionTypeExpr, Params::List, Body::Stmt)
+     rule <k> processFunDef(Base::SymBase, QX::QualId, t(... st: functionType(... methodInfo: MI::MethodInfo)) #as T::CPPFunctionType, Params::List, Body::Stmt)
               => preserveThreadLocal(scope(blockScope(QX, Base, 0),
                    prepareExecutionEnvironment ~> pushBlock(!I:Int) ~> elaborateTemplateBody(dummyBind(Params) ~> #if hasThis(MI) #then setTrThis(QX, MI) #else .K #fi ~> getFunDefBody(I, QX, T, Body))
                    ~> calculateGotoMap))
@@ -667,9 +667,9 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <curr-template-context> I::TemplateInfo </curr-template-context>
           requires I =/=K noTemplate orBool isCPPFunctionType(T)
 
-     syntax Stmt ::= getFunDefBody(TemplateInfo, QualId, CPPFunctionTypeExpr, Stmt) [function]
+     syntax Stmt ::= getFunDefBody(TemplateInfo, QualId, CPPFunctionType, Stmt) [function]
 
-     rule getFunDefBody(noTemplate, QX::QualId, T::CPPFunctionTypeExpr, Body::Stmt)
+     rule getFunDefBody(noTemplate, QX::QualId, T::CPPFunctionType, Body::Stmt)
           => TLabelStmt(funLabel(getId(QX)), #if isDestructorId(getId(QX)) #then ListItem(Destructor()) #else .List #fi ListItem(Body) ListItem(TReturnOp(getDefaultReturnOp(QX, getReturnType(T)))))
 
      rule getFunDefBody(_, _, _, Body::Stmt) => Body [owise]
@@ -685,9 +685,9 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule <k> setTrThis(C:Class :: _, methodInfo(... cvQuals: Q::Quals)) => .K ...</k>
           <tr-this> _ => pre(This(), hasTrace(This()), type(pointerType(t(Q::Quals, .Set, classType(C))))) </tr-this>
 
-     syntax Expr ::= getDefaultReturnOp(QualId, CPPTypeExpr) [function]
+     syntax Expr ::= getDefaultReturnOp(QualId, CPPType) [function]
 
-     rule getDefaultReturnOp(GlobalNamespace() :: Identifier("main"), T::CPPTypeExpr)
+     rule getDefaultReturnOp(GlobalNamespace() :: Identifier("main"), T::CPPType)
           => le(temp(!I:Int, type(int)), noTrace, T) :=init prv(0, noTrace, type(int))
 
      rule getDefaultReturnOp(_, _) => prv(voidVal, noTrace, type(void)) [owise]

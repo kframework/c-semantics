@@ -32,8 +32,6 @@ module CPP-CLASS-BASIC-SYNTAX
      // remote sorts
      syntax TemplateArgs
 
-     syntax TemplateParams
-
      syntax BlockScope
 
      syntax LocalQualifier ::= localQual(BlockScope)
@@ -56,7 +54,7 @@ module CPP-CLASS-BASIC-SYNTAX
 
      syntax ClassTemplate ::= Namespace "::" ClassTemplateSpecifier
 
-     syntax ClassTemplateSpecifier ::= Class(Tag, CId, TemplateParams) [klabel(classSpecifier)]
+     syntax ClassTemplateSpecifier ::= Class(Tag, CId, TemplateArgs) [klabel(classSpecifier)]
 
      //not technically a class template, but this type exists primarily to support CPPClassTypeExpr, so it's needed
      syntax ClassTemplateSpecifier ::= ClassSpecifier
