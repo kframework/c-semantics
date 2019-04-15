@@ -13,6 +13,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <iostream>
+
 using namespace clang;
 using namespace clang::tooling;
 namespace cl = llvm::cl;
@@ -129,7 +131,7 @@ public:
   }
 
   bool TraverseTypeLoc(TypeLoc TL) {
-    return TraverseType(TL.getType());
+    return TraverseType(TL.getType().getCanonicalType());
   }
 
   bool TraverseStmt(Stmt *S) {
@@ -564,51 +566,47 @@ public:
 
     mangledIdentifier(D);
 
-    if (TypeSourceInfo *TSI = D->getTypeSourceInfo()) {
-      if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D)) {
-        if (Method->isInstance()) {
-          switch(Method->getRefQualifier()) {
-            case RQ_LValue:
-            AddKApplyNode("RefQualifier",2);
-            AddKApplyNode("RefLValue", 0);
-            break;
-            case RQ_RValue:
-            AddKApplyNode("RefQualifier",2);
-            AddKApplyNode("RefRValue", 0);
-            break;
-            case RQ_None: // do nothing
-            break;
-          }
-          AddKApplyNode("MethodPrototype", 4);
-          VisitBool(Method->isUserProvided());
-          VisitBool(dyn_cast<CXXConstructorDecl>(D)); // converts to true if this is a constructor
-          TRY_TO(TraverseType(Method->getThisType(*Context)));
-          if (Method->isVirtual()) {
-            AddKApplyNode("Virtual", 1);
-          }
-          if (Method->isPure()) {
-            AddKApplyNode("Pure", 1);
-          }
-
-          if (CXXConversionDecl *Conv = dyn_cast<CXXConversionDecl>(D)) {
-            if (Conv->isExplicitSpecified()) {
-              AddKApplyNode("Explicit", 1);
-            }
-          }
-
-          if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
-            if (Ctor->isExplicitSpecified()) {
-              AddKApplyNode("Explicit", 1);
-            }
-          }
-        } else {
-          AddKApplyNode("StaticMethodPrototype", 1);
+    if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D)) {
+      if (Method->isInstance()) {
+        switch(Method->getRefQualifier()) {
+          case RQ_LValue:
+          AddKApplyNode("RefQualifier",2);
+          AddKApplyNode("RefLValue", 0);
+          break;
+          case RQ_RValue:
+          AddKApplyNode("RefQualifier",2);
+          AddKApplyNode("RefRValue", 0);
+          break;
+          case RQ_None: // do nothing
+          break;
         }
+        AddKApplyNode("MethodPrototype", 4);
+        VisitBool(Method->isUserProvided());
+        VisitBool(dyn_cast<CXXConstructorDecl>(D)); // converts to true if this is a constructor
+        TRY_TO(TraverseType(Method->getThisType(*Context)));
+        if (Method->isVirtual()) {
+          AddKApplyNode("Virtual", 1);
+        }
+        if (Method->isPure()) {
+          AddKApplyNode("Pure", 1);
+        }
+
+        if (CXXConversionDecl *Conv = dyn_cast<CXXConversionDecl>(D)) {
+          if (Conv->isExplicitSpecified()) {
+            AddKApplyNode("Explicit", 1);
+          }
+        }
+
+        if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
+          if (Ctor->isExplicitSpecified()) {
+            AddKApplyNode("Explicit", 1);
+          }
+        }
+      } else {
+        AddKApplyNode("StaticMethodPrototype", 1);
       }
-      TRY_TO(TraverseTypeLoc(TSI->getTypeLoc()));
-    } else {
-      doThrow("something implicit in functions??");
     }
+    TRY_TO(TraverseType(D->getType()));
 
     AddKSequenceNode(D->parameters().size());
     for (unsigned i = 0; i < D->parameters().size(); i++) {
@@ -677,7 +675,7 @@ public:
 
     mangledIdentifier(D);
 
-    TRY_TO(TraverseTypeLoc(D->getTypeSourceInfo()->getTypeLoc()));
+    TRY_TO(TraverseType(D->getType()));
     if (D->getInit()) {
       TRY_TO(TraverseStmt(D->getInit()));
     } else {
@@ -702,7 +700,7 @@ public:
     }
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
-    TRY_TO(TraverseTypeLoc(D->getTypeSourceInfo()->getTypeLoc()));
+    TRY_TO(TraverseType(D->getType()));
     if (D->isBitField()) {
       TRY_TO(TraverseStmt(D->getBitWidth()));
     } else if (D->hasInClassInitializer()) {
@@ -896,7 +894,7 @@ public:
       AddKApplyNode("NoType", 0);
     }
     if(D->hasDefaultArgument() && !D->defaultArgumentWasInherited()) {
-      TRY_TO(TraverseTypeLoc(D->getDefaultArgumentInfo()->getTypeLoc()));
+      TRY_TO(TraverseType(D->getDefaultArgumentInfo()->getType()));
     } else {
       AddKApplyNode("NoType", 0);
     }
@@ -1032,7 +1030,7 @@ public:
         VisitBool(I.isVirtual());
         VisitBool(I.isPackExpansion());
         VisitAccessSpecifier(I.getAccessSpecifierAsWritten());
-        TRY_TO(TraverseTypeLoc(I.getTypeSourceInfo()->getTypeLoc()));
+        TRY_TO(TraverseType(I.getType()));
       }
       AddDeclContextNode(D);
       TraverseDeclContextNode(D);
@@ -1091,7 +1089,7 @@ public:
       default:
         doThrow("unimplemented: implicit template instantiation");
     }
-    if (TypeSourceInfo *TSI = D->getTypeAsWritten()) {
+    if (TypeSourceInfo* TSI = D->getTypeAsWritten()) {
       TRY_TO(TraverseTypeLoc(TSI->getTypeLoc()));
     }
     TRY_TO(TraverseCXXRecordHelper(D));
@@ -1269,7 +1267,14 @@ public:
       case BuiltinType::Dependent:
         AddKApplyNode("Dependent", 0);
         break;
+      case BuiltinType::NullPtr:
+        AddKApplyNode("NullPtr", 0);
+        break;
       default:
+        clang::LangOptions LangOpts;
+        LangOpts.CPlusPlus = true;
+        clang::PrintingPolicy Policy(LangOpts);
+        std::cout << "THING: " << T->getNameAsCString(Policy) << std::endl;
         doThrow("unimplemented: basic type");
     }
     return false;
@@ -1428,8 +1433,12 @@ public:
   }
 
   bool TraverseAutoType(AutoType *T) {
-    AddKApplyNode("AutoType", 1);
-    VisitBool(T->isDecltypeAuto());
+     if (T->isDeduced()) {
+    TRY_TO(TraverseType(T->getDeducedType()));
+     } else {
+       AddKApplyNode("AutoType", 1);
+       VisitBool(T->isDecltypeAuto());
+     }
     return true;
   }
 
@@ -1993,7 +2002,7 @@ public:
 
   bool TraverseCXXScalarValueInitExpr(CXXScalarValueInitExpr *E) {
     AddKApplyNode("FunctionalCast", 2);
-    return TraverseCXXConstructHelper(E->getTypeSourceInfo()->getType(), 0, 0);
+    return TraverseCXXConstructHelper(E->getType(), 0, 0);
   }
 
   bool TraverseCXXConstructExpr(CXXConstructExpr *E) {
@@ -2004,7 +2013,7 @@ public:
 
   bool TraverseCXXTemporaryObjectExpr(CXXTemporaryObjectExpr *E) {
     AddKApplyNode("TemporaryObjectExpr", 2);
-    return TraverseCXXConstructHelper(E->getTypeSourceInfo()->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
+    return TraverseCXXConstructHelper(E->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
 
   bool VisitUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E) {
@@ -2146,8 +2155,8 @@ public:
       }
     }
 
-    TypeLoc TL = E->getCallOperator()->getTypeSourceInfo()->getTypeLoc();
-    TRY_TO(TraverseTypeLoc(TL));
+    QualType T = E->getCallOperator()->getType();
+    TRY_TO(TraverseType(T));
     TRY_TO(TraverseStmt(E->getBody()));
 
     return true;
