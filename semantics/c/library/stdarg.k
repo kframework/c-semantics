@@ -104,7 +104,7 @@ module LIBC-STDARG
           [structural]
      rule <k> checkDead(tv(V::CValue, _)) => .K ...</k>
           <va-lists> VaLists:Map </va-lists>
-          requires notBool ({fromOpaque(V)}:>Int in_keys(VaLists))
+          requires notBool isOpaque(V) orBool notBool ({fromOpaque(V)}:>Int in_keys(VaLists))
           [structural]
      // Avoid triggering errors if it's a trap.
      rule checkDead(V:KResult) => .K
@@ -137,7 +137,7 @@ module LIBC-STDARG
                ~> builtin("__kcc_va_inc", tv(V::CValue, _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
-          requires notBool ({fromOpaque(V)}:>Int in_keys(VaLists))
+          requires notBool isOpaque(V) orBool notBool ({fromOpaque(V)}:>Int in_keys(VaLists))
           [structural]
      rule <k> (.K => UNDEF("STDARG6",
                     "'va_arg' called with no arguments remaining."))
@@ -159,7 +159,7 @@ module LIBC-STDARG
                ~> builtin("__kcc_va_copy", _, tv(V::CValue, _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
-          requires notBool ({fromOpaque(V)}:>Int in_keys(VaLists))
+          requires notBool isOpaque(V) orBool notBool ({fromOpaque(V)}:>Int in_keys(VaLists))
           [structural]
 
      rule [va-end]:
@@ -184,7 +184,7 @@ module LIBC-STDARG
                     ...</function-control> </stack-function-control>
                ...</call-stack-frame>)
           ...</call-stack>
-          requires notBool ({fromOpaque(V)}:>Int in VaLists)
+          requires notBool isOpaque(V) orBool notBool ({fromOpaque(V)}:>Int in VaLists)
           [structural]
 
      syntax KItem ::= "checkVarArgs"
