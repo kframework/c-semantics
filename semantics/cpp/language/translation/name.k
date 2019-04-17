@@ -364,11 +364,11 @@ module CPP-TRANSLATION-NAME
 
      // 3.4.1:8
      rule lookupNameInFullClass(X::CId, C::Class, IsBody::Bool, BlockScope::Bool, Tag::Tag, Mask::Set)
-       => guardedFind(X, BlockScope,                        lookupNameInBlock(X, Tag, Mask))                            // 3.4.1:8.1
-          orIfNotFound                                      lookupMember(X, C, IsBody, Tag, Mask)                             // 3.4.1:8.2
-          orIfNotFound guardedFind(X, isInnerClass(C),      lookupOuterMember(X, getOuterClass(C), IsBody, Tag, Mask))          // 3.4.1:8.3
-          orIfNotFound guardedFind(X, isLocalInnerClass(C), lookupLocalBeforeClass(X, C, Tag, Mask))                    // 3.4.1:8.4
-          orIfNotFound                                      nameLookupInFullNamespace(X, getClassNamespace(C), Tag, Mask, .Set)   // 3.4.1:8.5
+       => guardedFind(X, BlockScope,                        lookupNameInBlock(X, Tag, Mask))                            // @ref n4296 3.4.1:8.1
+          orIfNotFound                                      lookupMember(X, C, IsBody, Tag, Mask)                             // @ref n4296 3.4.1:8.2
+          orIfNotFound guardedFind(X, isInnerClass(C),      lookupOuterMember(X, getOuterClass(C), IsBody, Tag, Mask))          // @ref n4296 3.4.1:8.3
+          orIfNotFound guardedFind(X, isLocalInnerClass(C), lookupLocalBeforeClass(X, C, Tag, Mask))                    // @ref n4296 3.4.1:8.4
+          orIfNotFound                                      nameLookupInFullNamespace(X, getClassNamespace(C), Tag, Mask, .Set)   // @ref n4296 3.4.1:8.5
 
      rule (.K => argDependentNameLookup(X, Args)) ~> CallExpr(Name(NoNNS(), X::CId), Args::StrictList, krlist(.List))
 
@@ -599,23 +599,23 @@ module CPP-TRANSLATION-NAME
                    | #getAssociatedClasses(CPPTypeExpr, ClassInfo) [function]
                    | getTemplateArgTypes(TemplateParams) [function]
 
-     // 3.4.2:2.1
+     // @ref n4296 3.4.2:2.1
      rule getAssociatedNamespaces((ListItem(T:CPPFundamentalType) => .List) _, _)
 
      rule getAssociatedNamespaces((ListItem(t(_, _, no-type)) => .List) _, _)
 
-     // 3.4.2:2.2
+     // @ref n4296 3.4.2:2.2
      rule getAssociatedNamespaces(ListItem(t(... st: classType(_ :: Class(_, _, Args::TemplateParams))) #as T::CPPClassType) L::List, B::NamespacesCell)
           => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(T), #klabel(`getInnermostNamespace1`))), B)
 
-     // 3.4.2:2.3
+     // @ref n4296 3.4.2:2.3
      rule getAssociatedNamespaces(ListItem(t(_, _, scopedEnum(N::Namespace :: _, _))) L::List, B::NamespacesCell)
           => getAssociatedNamespaces(L, B) #getAssociatedNamespaces(SetItem(N), B)
 
      rule getAssociatedNamespaces(ListItem(t(_, _, unscopedEnum(N::Namespace :: _, _, _))) L::List, B::NamespacesCell)
           => getAssociatedNamespaces(L, B) #getAssociatedNamespaces(SetItem(N), B)
 
-     // 3.4.2:2.4
+     // @ref n4296 3.4.2:2.4
      rule getAssociatedNamespaces(ListItem(T::CPPType => innerType(T)) _, _)
           requires isCPPPointerType(T) orBool isCPPArrayType(T)
 

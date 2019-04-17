@@ -121,11 +121,11 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule getPreviousLinkage(_, _, _, _) => .K [owise]
 
-     // 3.5:3.1
+     // @ref n4296 3.5:3.1
      rule getLinkage(S::Set, _, _:NamespaceScope, Q::Quals, _, _) => InternalLinkage
           requires Static() in S
 
-     // 3.5:3.2
+     // @ref n4296 3.5:3.2
      rule getLinkage(S::Set, _, _:NamespaceScope, Q::Quals, L::Linkage, _) => InternalLinkage
           requires notBool Volatile() inQuals Q andBool Const() inQuals Q andBool notBool Extern() in S andBool notBool L ==K ExternalLinkage
 
@@ -133,35 +133,35 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule getLinkage(_, DeclNamespace:Namespace, _:NamespaceScope, _, _, Type::DeclarationType) => getNamespaceLinkage(DeclNamespace, Type) [owise]
 
-     // 9.4.2:5 with revision http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1603
+     // @ref n4296 9.4.2:5 with revision http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1603
      rule getLinkage(S::Set, C:Class, _, _, _, Type::DeclarationType) => getClassLinkage(C)
           requires Static() in S
             orBool isFunctionDeclarationType(Type)
 
      rule getLinkage(_, C:Class, _, _, L:Linkage, _) => L
 
-     // 3.5:4
+     // @ref n4296 3.5:4
      rule getClassLinkage(Parent:Namespace :: _) => getNamespaceLinkage(Parent)
 
-     // 3.5:5 with revision http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1603
+     // @ref n4296 3.5:5 with revision http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1603
      rule getClassLinkage(Parent:Class :: _) => getClassLinkage(Parent)
 
      rule getClassLinkage(_:LocalQualifier :: _) => NoLinkage
 
-     // 3.5:4
+     // @ref n4296 3.5:4
      rule getNamespaceLinkage(N:UnnamedNamespace) => InternalLinkage
 
      rule getNamespaceLinkage(GlobalNamespace()) => ExternalLinkage
 
      rule getNamespaceLinkage(Parent::Namespace :: _) => getNamespaceLinkage(Parent) [owise]
 
-     // 3.5:4.1
+     // @ref n4296 3.5:4.1
      rule getNamespaceLinkage(N::Namespace, Var(_)) => getNamespaceLinkage(N)
 
-     // 3.5:4.2
+     // @ref n4296 3.5:4.2
      rule getNamespaceLinkage(N::Namespace, Function(_)) => getNamespaceLinkage(N)
 
-     // 3.5:6
+     // @ref n4296 3.5:6
      rule getLinkage(S::Set, _, _:BlockScope, _, L::Linkage, Type::DeclarationType) => #if L ==K .K #then ExternalLinkage #else L #fi
           requires isFunctionDeclarationType(Type) orBool (isVarDeclarationType(Type) andBool Extern() in S)
 
@@ -416,7 +416,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule completeDeclaration(T::CPPType, (ExprLoc(_, I::Init) => I))
 
-     // 8.5.4:3.2 (char x[] = {"foo"})
+     // @ref n4296 8.5.4:3.2 (char x[] = {"foo"})
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, T:CPPSimpleCharType))), BraceInit(ListItem(StringLiteral(Narrow::CharKind, S::String)))) => t(Q, Mods, arrayType(t(Q', Mods', T), lengthString(S) +Int 1))
           requires Narrow ==K Ascii() orBool Narrow ==K UTF8()
 
@@ -426,7 +426,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, char32_t))), BraceInit(ListItem(StringLiteral(UTF32(), S::String)))) => t(Q, Mods, arrayType(t(Q', Mods', char32_t), lengthString(S) +Int 1))
 
-     // 8.5:17.3 (char x[] = "foo")
+     // @ref n4296 8.5:17.3 (char x[] = "foo")
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, T:CPPSimpleCharType))), StringLiteral(Narrow::CharKind, S::String)) => t(Q, Mods, arrayType(t(Q', Mods', T), lengthString(S) +Int 1))
           requires Narrow ==K Ascii() orBool Narrow ==K UTF8()
 

@@ -57,7 +57,7 @@ module CPP-TRANSLATION-STMT-TRY
 
      rule Throw.eval(V:Val, E::Expr) => pre(ThrowOp(V), hasTrace(E), type(void))
 
-     // n4778 13.1/5
+     // @ref n4778 13.1/5
      // <quote>
      // When the thrown object is a class object, [...].
      // The destructor is potentially invoked.

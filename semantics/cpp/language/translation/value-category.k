@@ -135,10 +135,10 @@ module CPP-TRANSLATION-VALUE-CATEGORY
 
      rule catof(StaticCast(T:CPPType, _) => unnamedCat(T))
 
-     // 5.2.3:2
+     // @ref n4296 5.2.3:2
      rule catof(FunctionalCast(_, .List) => prvalue)
 
-     // 5.2.3:1
+     // @ref n4296 5.2.3:1
      rule catof(FunctionalCast(T::AType, ListItem(A::Expr)) => ParenthesizedCast(T, A))
 
      rule catof(FunctionalCast(_, ListItem(_) ListItem(_) _::List) => prvalue)

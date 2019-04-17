@@ -155,10 +155,10 @@ module CPP-TRANSLATION-TYPING-EXPR
 
      context typeof(FunctionalCast(HOLE:AType, _))
 
-     // 5.2.3:2
+     // @ref n4296 5.2.3:2
      rule typeof(FunctionalCast(T:CPPType, .List) => T)
 
-     // 5.2.3:1
+     // @ref n4296 5.2.3:1
      rule typeof(FunctionalCast(T::CPPType, ListItem(A::Expr)) => ParenthesizedCast(T, A))
 
      rule typeof(FunctionalCast(T:CPPType, ListItem(_) ListItem(_) _::List) => T)

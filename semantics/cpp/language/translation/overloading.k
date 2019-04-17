@@ -89,29 +89,29 @@ module CPP-TRANSLATION-OVERLOADING
 
      syntax List ::= getArgs(List, QualId, Expr, K) [function]
 
-     // 13.3.1.1.1:2
+     // @ref n4296 13.3.1.1.1:2
      rule getArgs(Args::List, C:Class :: _, Obj::Expr . no-template _, _)
           => ListItem(Obj) Args
 
-     // 13.3.1.1.1:3 case (1)
+     // @ref n4296 13.3.1.1.1:3 case (1)
      rule getArgs(Args::List, N:Namespace :: _, _, _) => Args
 
-     // 13.3.1.1.1:3 case (2) when this is in scope
+     // @ref n4296 13.3.1.1.1:3 case (2) when this is in scope
      rule getArgs(Args::List, C:Class :: _, _:Name, Obj:PRVal)
           => ListItem(* Obj) Args
           requires isBaseClassOf(type(classType(C)), {innerType(type(Obj))}:>CPPClassType)
 
-     // 13.3.1.1.1:3 case (2) when this is not in scope
+     // @ref n4296 13.3.1.1.1:3 case (2) when this is not in scope
      rule getArgs(Args::List, C:Class :: _, _:Name, Obj::PRVal)
           => ListItem(contrivedObject(type(classType(C)))) Args
           requires Obj ==K .K orBool notBool isBaseClassOf(type(classType(C)), {innerType(type(Obj))}:>CPPClassType)
 
-     // 13.3.1.2:6
+     // @ref n4296 13.3.1.2:6
      rule getArgs(Args::List, _, UnaryOperator(...), _) => Args
 
      rule getArgs(Args::List, _, BinaryOperator(...), _) => Args
 
-     // 13.3.1.3:1
+     // @ref n4296 13.3.1.3:1
      rule getArgs(Args::List, _, constructor, _) => Args
 
      // strict version
@@ -193,7 +193,7 @@ module CPP-TRANSLATION-OVERLOADING
                                  | listInitSequence(CPPType, ConversionSequence)
                                  | "bottomConversionSequence"
 
-     // 13.3.3.1.4:1 (identity conversion)
+     // @ref n4296 13.3.3.1.4:1 (identity conversion)
      rule conversionSequence(P:CPPRefType, A:CPPType, C::ValueCategory, B::Bool, _, _)
           => standardConversionSequence(identity, identity, identity, B, P)
           requires bindsDirectlyToExp(P, A, C, B)
@@ -217,7 +217,7 @@ module CPP-TRANSLATION-OVERLOADING
                andBool notBool bindsDirectlyToConversion(P, A, C)
                andBool notBool isValidReferenceType(P)
 
-     // 13.3.1:5.1-5.2
+     // @ref n4296 13.3.1:5.1-5.2
      rule conversionSequence(P:CPPRefType, A:CPPType, C::ValueCategory, B::Bool, true, _)
           => cannot-convert
           requires notBool bindsDirectlyToExp(P, A, C, B)
@@ -540,7 +540,7 @@ module CPP-TRANSLATION-OVERLOADING
 
      syntax Bool ::= isBetterFunctionThan(CPPFunctionType, K, CPPFunctionType, K, List, List, OverloadType) [function]
 
-     // TODO(dwightguth): 13.3.3:1.4,1.5,1.7
+     // TODO(dwightguth): n4296 13.3.3:1.4,1.5,1.7
      rule isBetterFunctionThan(F1::CPPFunctionType, K1:K, F2::CPPFunctionType, K2:K, Types::List, Cats::List, NotConversionOverload()) =>
           notBool hasWorseConversionSequenceThan(F1, F2, Types, Cats)
                andBool (hasBetterConversionSequenceThan(F1, F2, Types, Cats)
@@ -773,7 +773,7 @@ module CPP-TRANSLATION-OVERLOADING
           => true
           requires rank(S1) >Int rank(S2) orBool (rank(S1) ==Int rank(S2) andBool C1 >Conv C2)
 
-     // 13.3.3.2:3.1.3 mentions binding an rvalue reference to an rvalue.
+     // @ref n4296 13.3.3.2:3.1.3 mentions binding an rvalue reference to an rvalue.
      // The only case when an rvalue reference can be bound (which we know
      // it can be if we've reached this point) but not bound to an rvalue
      // is if it is bound to an lvalue. But an rvalue reference can be
@@ -787,7 +787,7 @@ module CPP-TRANSLATION-OVERLOADING
           => true
           requires notBool isCPPFunctionType(innerType(S1))
 
-     // 13.3.3.2:3.1.4 also mentions the value category the reference is bound
+     // @ref n4296 13.3.3.2:3.1.4 also mentions the value category the reference is bound
      // to, but like rvalue references, lvalue references can be bound to a
      // function if and only if the function is an lvalue. So again, we check
      // only the inner type of the reference.
