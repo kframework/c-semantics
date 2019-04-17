@@ -25,12 +25,13 @@ module C-TYPING-PREDICATES
           => isVariablyModifiedType(innerType(T))
      rule isVariablyModifiedType(t(... st: pointerType(_)) #as T::Type)
           => isVariablyModifiedType(innerType(T))
-     rule isVariablyModifiedType(t(... st: functionType(_, ListItem(T::UType) _))) => true
+     rule isVariablyModifiedType(t(... st: functionType(_, ListItem(T:UType) _))) => true
           requires isVariablyModifiedType(type(T))
      rule isVariablyModifiedType(t(... st: functionType(T::UType, .List)))
           => isVariablyModifiedType(type(T))
-     rule isVariablyModifiedType(t(... st: functionType(_, (ListItem(T::UType) => .List) _)))
+     rule isVariablyModifiedType(t(... st: functionType(_, (ListItem(T:UType) => .List) _)))
           requires notBool isVariablyModifiedType(type(T))
+     rule isVariablyModifiedType(t(... st: functionType(_, (ListItem(variadic) => .List) _)))
      rule isVariablyModifiedType(t(... st: _:SimpleVariableArrayType)) => true
      rule isVariablyModifiedType(_) => false [owise]
 
