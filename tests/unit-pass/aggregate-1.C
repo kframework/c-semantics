@@ -1,4 +1,4 @@
-//  8.5.1:2
+// @ref n4296  8.5.1:2
 struct A {
   int x;
   struct B {

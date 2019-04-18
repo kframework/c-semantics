@@ -99,7 +99,7 @@ void addEntriesFromIstream(Entries & entries, std::string path, std::istream & i
 
 void addEntriesFromRegularFile(Entries & entries, fs::path filepath) {
 	// Ignore files not matching '*.k'
-	if (filepath.extension() != ".k")
+	if (filepath.extension() != ".k" && filepath.extension() != ".C")
 		return;
 
 	std::ifstream is(filepath);
