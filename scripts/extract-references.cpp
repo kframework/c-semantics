@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <fstream>
 #include <optional>
 #include <regex>
@@ -5,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
+
+namespace fs = std::filesystem;
 
 struct FileContext {
 	std::string fileName;
@@ -79,9 +82,8 @@ void print(std::optional<DocumentRef> ref) {
 }
 
 
-Entries entriesFromIstream(std::string filename, std::istream & is) {
-	Entries entries;
-	FileContext fc {filename, 1};
+void addEntriesFromIstream(Entries & entries, std::string path, std::istream & is) {
+	FileContext fc {path, 1};
 	std::string line;
 	while(std::getline(is, line)) {
 		//std::cout << lineNumber << ": " << line << '\n';
@@ -93,36 +95,48 @@ Entries entriesFromIstream(std::string filename, std::istream & is) {
 
 		fc.lineNumber++;
 	}
-
-	return entries;
 };
 
-Entries entriesFromFile(std::string filename) {
-	std::ifstream is(filename);
+void addEntriesFromRegularFile(Entries & entries, fs::path filepath) {
+	// Ignore files not matching '*.k'
+	if (filepath.extension() != ".k")
+		return;
+
+	std::ifstream is(filepath);
 	if (!is.is_open())
-		throw std::runtime_error(std::string("Cannot read file: ") + filename);
-	return entriesFromIstream(filename, is);
+		throw std::runtime_error(std::string("Cannot read file: ") + filepath.string());
+	addEntriesFromIstream(entries, filepath.string(), is);
 }
 
-void test() {
-	//print(refFromLine("@ref n4296 12.3:4.5-6.7"));
+void addEntriesFromDirectory(Entries & entries, fs::path dirpath) {
+	for(auto& current: fs::recursive_directory_iterator(dirpath)) {
+		addEntriesFromRegularFile(entries, current);
+	}
 
-	std::stringstream ss{R"(
-		@ref n4296 12.3:4.5-6.7
-	//	skip this n4296 12.3:4.5-6.7
-	//	process this @ref n4296 13.3:4.5-6.7 additional comment
-	)"};
-	//std::cout << entriesFromIstream("testInput", ss);
+}
 
+
+void addEntriesFromPath(Entries & entries, fs::path p) {
+	if (fs::is_regular_file(p))
+		return addEntriesFromRegularFile(entries, p);
+
+	if (fs::is_directory(p))
+		return addEntriesFromDirectory(entries, p);
+}
+
+Entries entriesFromPath(fs::path path) {
+	Entries entries;
+	addEntriesFromPath(entries, path);
+	return entries;
 }
 
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
-		std::cerr << "Usage: " << argv[0] << " <filename>\n";
+		std::cerr << "Usage: " << argv[0] << " <path>\n";
 		return 1;
 	}
 	try {
-		std::cout << entriesFromFile(argv[1]);
+		std::cout << entriesFromPath(argv[1]);
 	} catch (std::exception const &e) {
 		std::cerr << "Error: " << e.what() << '\n';
 	}
