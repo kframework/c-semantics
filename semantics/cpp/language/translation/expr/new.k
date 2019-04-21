@@ -107,8 +107,8 @@ module CPP-TRANSLATION-EXPR-NEW
 
      // TODO(jan.tusil) test this with multidimensional arrays
      //
-     // N4296 5.3.4/19
-     // N4778 7.6.2.4/21
+     // @ref n4296 5.3.4/19
+     // @ref n4778 7.6.2.4/21
      // <quote>
      // If the new-expression creates an array of objects of class type,
      // the destructor is potentially invoked.
