@@ -392,8 +392,8 @@ sub sharedObject {
       my ($oval) = (@_);
 
       my $trampolines = tempFile('trampolines');
-      if (arg('-fnative-binary')) {
-            my @trampolineFiles = trampolineFiles();
+      my @trampolineFiles = trampolineFiles();
+      if (@trampolineFiles) {
             shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
       }
 
