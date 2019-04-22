@@ -60,6 +60,7 @@ module CPP-TRANSLATION-INIT
                ~> makeNs(GlobalNamespace())
                ~> implicitDecls
                ~> listToK(Decls)
+               ~> generateOdrUsedFunctions()
                ~> removeUnusedIdentifiers(Tu +String Uuid)
           ...</k>
           <uuid> Uuid::String </uuid>
