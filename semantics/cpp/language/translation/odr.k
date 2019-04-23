@@ -15,6 +15,9 @@ endmodule
 
 module CPP-TRANSLATION-ODR
      imports CPP-TRANSLATION-ODR-SYNTAX
+     imports K-EQUAL
+     imports SET
+     imports MAP
      imports C-CONFIGURATION
      imports COMPAT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX

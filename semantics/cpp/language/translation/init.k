@@ -6,6 +6,7 @@ module CPP-TRANSLATION-INIT
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-IMPLICIT-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-TRANSLATION-ODR-SYNTAX
 
      imports C-CONFIGURATION
 
