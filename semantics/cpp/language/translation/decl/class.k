@@ -81,6 +81,7 @@ module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
      imports CPP-CLASS-BASIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX // envEntry, SymBase
      imports C-CONFIGURATION
+     imports CPP-TYPE-MAP-SYNTAX
 
      // @ref N4296 3.2/3
      // @ref N4778 6.2/8
@@ -275,7 +276,7 @@ module CPP-TRANSLATION-DECL-CLASS
                    FunctionDefinition(NoNNS(), ConstructorId(X), #NoName,
                         MethodPrototype(false, true, type(pointerType(type(classType(C)))),
                              FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false)),
-                        .List, Defaulted())))
+                        .List, OnlyIfOdrUsed(Defaulted()))))
               ~> implicitDeclarations() ...</k>
           <curr-tr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -284,11 +285,12 @@ module CPP-TRANSLATION-DECL-CLASS
           <cenv> Env::Map </cenv>
           requires notBool ConstructorId(X) in_keys(Env)
 
+     // TODO odr-use destructors of members and base classes
      rule <k> (.K => AccessSpec(Public()) ~> Specifier(Inline(),
                    FunctionDefinition(NoNNS(), DestructorId(X), #NoName,
                         MethodPrototype(false, false, type(pointerType(type(classType(C)))),
                              FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false)),
-                        .List, Defaulted())))
+                        .List, OnlyIfOdrUsed(Defaulted()))))
               ~> implicitDeclarations() ...</k>
           <curr-tr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -303,7 +305,7 @@ module CPP-TRANSLATION-DECL-CLASS
                    FunctionDefinition(NoNNS(), DestructorId(X), #NoName,
                         MethodPrototype(false, false, type(pointerType(type(classType(C)))),
                              Virtual(FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false))),
-                        .List, Defaulted())))
+                        .List, OnlyIfOdrUsed(Defaulted()))))
               ~> implicitDeclarations() ...</k>
           <curr-tr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
