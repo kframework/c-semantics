@@ -79,12 +79,19 @@ zeroinit-class-padding.C.cmp:
 	@echo -n "Compiling $^... "
 	@$(KXX) -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
+template-link1.C.kcc: template-link1.C template-link2.C
+	@echo -n "Compiling $^... "
+	@$(KXX) -d -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+
 %.c.kcc: %.c
 	@echo -n "Compiling $<... "
 	@$(KCC) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.kcc: %.C
 	@echo -n "Compiling $<... "
 	@$(KXX) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+new23.C.kcc: new23.C
+	@echo -n "Compiling $<... "
+	@$(KXX) -d -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.c.gcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^ (reference)... "
