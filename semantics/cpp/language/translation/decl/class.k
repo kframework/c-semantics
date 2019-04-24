@@ -290,7 +290,7 @@ module CPP-TRANSLATION-DECL-CLASS
                    FunctionDefinition(NoNNS(), DestructorId(X), #NoName,
                         MethodPrototype(false, false, type(pointerType(type(classType(C)))),
                              FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false)),
-                        .List, OnlyIfOdrUsed(Defaulted()))))
+                        .List, Defaulted())))
               ~> implicitDeclarations() ...</k>
           <curr-tr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -305,7 +305,7 @@ module CPP-TRANSLATION-DECL-CLASS
                    FunctionDefinition(NoNNS(), DestructorId(X), #NoName,
                         MethodPrototype(false, false, type(pointerType(type(classType(C)))),
                              Virtual(FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false))),
-                        .List, OnlyIfOdrUsed(Defaulted()))))
+                        .List, Defaulted())))
               ~> implicitDeclarations() ...</k>
           <curr-tr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
