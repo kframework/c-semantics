@@ -237,6 +237,7 @@ module CPP-TRANSLATION-DECL-CLASS
               ~> setScope(classScope(C, true))
               ~> listToK(Members)
               ~> implicitDeclarations()
+              ~> implicitDeclarationOfCopyConstructor(C)
               ~> deferredActions(OldClass)
               ~> setScope(OldScope)
           ...</k>
@@ -315,6 +316,150 @@ module CPP-TRANSLATION-DECL-CLASS
           <base-classes> Bases::List </base-classes>
           requires notBool DestructorId(X) in_keys(Env)
                andBool some(Bases, #klabel(`hasVirtualDestructor`))
+
+    syntax Declarator ::= "var" "(" String ")" "ofType" "(" CPPType ")" [function]
+     rule var(S::String) ofType(T::CPPType) => VarDecl(NoNNS(), Identifier(S), #NoName, T, NoInit(), false)
+
+
+syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
+                   | Deleted(SpecialMemberFunction, Class) [klabel(DeletedSMF)]
+                   | "Defaulted" "(" SpecialMemberFunction "," Class ")" "unless" "(" Bool ")" [function]
+
+     rule Defaulted(SMF::SpecialMemberFunction, C::Class) unless(true) => OnlyIfOdrUsed(Deleted(SMF, C))
+     rule Defaulted(SMF::SpecialMemberFunction, C::Class) unless(false) => OnlyIfOdrUsed(Defaulted(SMF, C))
+
+     syntax SpecialMemberFunction ::= DefaultConstructor()
+                                    | CopyConstructor()
+                                    | MoveConstructor()
+                                    | CopyAssignOp()
+                                    | MoveAssignOp()
+     //                             | Destructor() [klabel(DestructorSMF)]
+
+     // Just a hack to support 'Defaulted(Destructor(), C)'
+     syntax SpecialMemberFunction ::= Stmt
+
+     // Just some syntactic sugar
+     syntax CPPType ::= CPPType "const" [function, klabel(eastConstCPPType)]
+                      | CPPSimpleType "const" [function, klabel(eastConstCPPSimpleType)]
+                      | CPPType "volatile" [function, klabel(eastVolatileCPPType)]
+                      | CPPSimpleType "volatile" [function, klabel(eastVolatileCPPSimpleType)]
+                      | CPPType "*" [function, klabel(eastPtrToCPPType)]
+                      | CPPSimpleType "*" [function, klabel(eastPtrToCPPSimpleType)]
+                      | CPPType "&" [function, klabel(eastLvRefToCPPType)]
+                      | CPPSimpleType "&" [function, klabel(eastLvRefToCPPSimpleType)]
+                      | CPPType "&&" [function, klabel(eastRvRefToCPPType)]
+                      | CPPSimpleType "&&" [function, klabel(eastRvRefToCPPSimpleType)]
+
+
+     rule T::CPPType const => const(T)
+     rule T::CPPSimpleType const => const(T)
+     rule T::CPPType volatile => volatile(T)
+     rule T::CPPSimpleType volatile => volatile(T)
+     rule T::CPPType * => type(pointerType(T))
+     rule T::CPPSimpleType * => type(pointerType(type(T)))
+     rule T::CPPType & => type(lvRefType(T))
+     rule T::CPPSimpleType & => type(lvRefType(type(T)))
+     rule T::CPPType && => type(rvRefType(T))
+     rule T::CPPSimpleType && => type(rvRefType(type(T)))
+
+     syntax Block ::= EmptyBlock() [function]
+     rule EmptyBlock() => BlockStmt(!N:Int, .List)
+
+     syntax KItem ::= implicitDeclarationOfCopyConstructor(Class)
+
+     // n4296 12.8:7
+     rule implicitDeclarationOfCopyConstructor(C::Class) =>
+          #if hasUserProvidedCopyConstructor(C) #then
+               .K
+          #else
+               AccessSpec(Public()) ~>
+               Specifier(
+                    Inline(),
+                    FunctionDefinition(
+                         NoNNS(), ConstructorId(idOf(C)), #NoName,
+                         MethodPrototype(
+                              false, true, classType(C) *,
+                              FunctionPrototype(type(void), list(ListItem(classType(C) const &)), NoExceptionSpec(), false)
+                         ),
+                         ListItem(
+                              var("other") ofType (classType(C) const &)
+                         ),
+                         Defaulted(CopyConstructor(), C) unless (hasUserProvidedMoveConstructor(C) orBool hasUserProvidedMoveAssignOp(C))
+                    )
+               )
+          #fi
+
+     rule Defaulted(CopyConstructor(), C::Class) => Constructor(copyConstructorInitializers(directBaseClassesOf(C), nonStaticDataMembersOf(C)), EmptyBlock())
+
+     // Construct the initializer list
+     syntax List ::= copyConstructorInitializers(bases: List, dataMembers: List) [function]
+                   | copyConstructorInitializers2(bases: List, dataMembers: List, initializers: List) [function]
+
+     rule copyConstructorInitializers(B::List, M::List) => copyConstructorInitializers2(B, M, .List)
+     // base classes
+     // N4296 12.8:15.3
+     rule copyConstructorInitializers2(
+          (ListItem(C::Class) => .List) _,
+          _,
+          (.List => ListItem(ConstructorBase(type(classType(C)), false, false, Name(NoNNS(), Identifier("other"))))) _)
+
+     // members
+     rule copyConstructorInitializers2(
+          .List,
+          (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _,
+          (.List => ListItem(ConstructorMember(X, copyOrMoveInitializeMember(Name(NoNNS(), Identifier("other")) . no-template Name(NoNNS(), X), T)))) _)
+
+     // done
+     rule copyConstructorInitializers2(.List, .List, I::List) => I
+
+     syntax Init ::= copyOrMoveInitializeMember(Expr, CPPType) [function]
+
+     // N4296 12.8:15.1
+     rule copyOrMoveInitializeMember(E::Expr, T:CPPArrayType) => BraceInit(copyOrMoveInitializeArrayMember(E, T))
+
+     syntax List ::= copyOrMoveInitializeArrayMember(Expr, CPPArrayType) [function]
+
+     rule copyOrMoveInitializeArrayMember(_, t(... st: arrayType(_, 0))) => .List
+
+     rule copyOrMoveInitializeArrayMember(E::Expr, t(Q::Quals, M::Set, arrayType(T::CPPType, N::Int)))
+          => ListItem(copyOrMoveInitializeMember(E[prv(N -Int 1, noTrace, type(size_t))], T))
+             copyOrMoveInitializeArrayMember(E, t(Q, M, arrayType(T, N -Int 1)))
+          requires N >Int 0
+
+     // N4296 12.8:15.2
+     rule copyOrMoveInitializeMember(E::Expr, T:CPPRVRefType) => StaticCast(T, E)
+
+     // N4296 12.8:15.3
+     rule copyOrMoveInitializeMember(E::Expr, T::CPPType) => E [owise]
+
+     syntax List ::= directBaseClassesOf(Class) [function]
+                   | #directBaseClassesOf(K)    [function]
+                   | nonStaticDataMembersOf(Class) [function]
+                   | #nonStaticDataMembersOf(K) [function]
+
+     rule directBaseClassesOf(C::Class) => #directBaseClassesOf(getClassInfo(C))
+     rule #directBaseClassesOf(<class>... <base-classes> L::List </base-classes> ...</class>) => L
+     rule nonStaticDataMembersOf(C::Class) => #nonStaticDataMembersOf(getClassInfo(C))
+     rule #nonStaticDataMembersOf(<class>... <non-static-data-members> L::List </non-static-data-members> ...</class>) => L
+
+     // @ref n4296 12.8:2
+     // TODO: check non-template.
+     // TODO function parameter packs are not allowed
+     rule isCopyConstructor(
+               t(... st: functionType(... paramTypes: (t(... st: lvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPFunctionType,
+               envEntry(... defaultArgs: DA::DefaultArgumentsResult)
+          ) => acceptsNArgs(1, T, getDefaultArgsVals(DA))
+     rule isCopyConstructor(_, _) => false [owise]
+
+     // @ref n4296 12.8:3 same as copy constructor, but rvalue reference
+     rule isMoveConstructor(
+               t(... st: functionType(... paramTypes: (t(... st: rvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPFunctionType,
+               envEntry(... defaultArgs: DA::DefaultArgumentsResult)
+          ) => acceptsNArgs(1, T, getDefaultArgsVals(DA))
+     rule isMoveConstructor(_, _) => false [owise]
+
+     syntax Bool ::= isExplicitlyDeclaredCopyConstructor(CPPFunctionType, K) [function]
+     rule isExplicitlyDeclaredCopyConstructor(T::CPPFunctionType, K::K) => isUserProvidedConstructor(T, K) andBool isCopyConstructor(T, K)
 
      syntax Stmt ::= "TwriteVTables"
 
