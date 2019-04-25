@@ -23,10 +23,6 @@ module CPP-TRANSLATION-DECL-TEMPLATE-SYNTAX
      syntax Decl ::= declareTemplatedType(CPPType)
                    | declareTemplatedObject(Namespace, CId, CPPType, Init, DeclarationType, Linkage, Duration, Set)
 
-     syntax Expr ::= instantiateObjectTemplate(K) [strict]
-
-     syntax KItem ::= instantiateTemplate(K) [strict]
-
      syntax KItem ::= instantiateTemplateType(TemplateInfo, Map)
 
      syntax TemplateSpecialization ::= templateSpecialization(CPPType, TemplateInfo, Map)
@@ -46,7 +42,6 @@ module CPP-TRANSLATION-DECL-TEMPLATE
      imports CPP-TRANSLATION-ENV-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
-     imports CPP-TRANSLATION-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
@@ -82,8 +77,8 @@ module CPP-TRANSLATION-DECL-TEMPLATE
      syntax KItem ::= restoreTemplateContext(TemplateInfo, Int)
 
      rule <k> templateContext(Q::QualId, Params:K, D::Decl)
-               => scope(templateParameterScope,
-                    Params ~> setScope(S) ~> elaborate(D) ~> finishTemplate) ~> restoreTemplateContext(OldInfo, OldDepth)
+               => scope(templateParameterScope, Params ~> setScope(S) ~> elaborate(D) ~> finishTemplate)
+               ~> restoreTemplateContext(OldInfo, OldDepth)
           ...</k>
           <curr-template-context> OldInfo::TemplateInfo => templateInfo(Q, .List, .Map, .Map, NoType(), .K) </curr-template-context>
           <curr-template-depth> OldDepth::Int => OldDepth +Int 1 </curr-template-depth>
@@ -179,46 +174,15 @@ module CPP-TRANSLATION-DECL-TEMPLATE
      rule TypeArg(t(_, _, _) #as T::CPPType) => T
 
      // template instantiation
-
-     // rule TemplateInstantiationDefinition(
-     //           TemplateSpecializationType(X::CId),
-     //           NormalizedDecl(NoNNS(), X::CId, _, A::AType, _, _))
-     //      => instantiateTemplate(deduceTemplateFromDecl(nameLookup(X, NoTag(), defaultMask), A))
-     //      ~> finishExplicitInstantiation
-     rule TemplateInstantiationDefinition(TemplateSpecializationType(_), NormalizedDecl(...) #as D::Declarator)
-          => D
-
-     syntax KItem ::= "finishExplicitInstantiation"
-
-     rule _:LVal ~> finishExplicitInstantiation => .K
+     rule TemplateInstantiationDefinition(_, D::Declarator) => D
 
      rule <k> instantiateTemplateType(templateInfo(Q::QualId, Decls::List, Types::Map, Defaults::Map, T::CPPType, Body:K), Args::Map)
                => templateSpecialization(T, templateInfo(Q, Decls, Types, Defaults, T, Body), Args) ~> setTemplateArgs(Q, T, Old)
           ...</k>
           <template-arguments> Old::Map => updateMap(Old, Args) </template-arguments>
 
-     context templateSpecialization(HOLE:CPPType, _, _)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
      rule <k> templateSpecialization(T:CPPType, _, _) ~> (setTemplateArgs(_, _, Old::Map) => .K) ...</k>
           <template-arguments> _ => Old </template-arguments>
-
-     rule instantiateTemplate(templateSpecialization(T:CPPFunctionType, I::TemplateInfo, Args::Map))
-          => instantiateObjectTemplate(templateSpecialization(T, I, Args))
-
-     rule <k> instantiateObjectTemplate(templateSpecialization(T::CPPType, templateInfo(Q::QualId, Decls::List, _, _, _, Body:K), Args:Map))
-               => scope(templateParameterScope, declareTemplateArgs(Decls, Args, 0) ~> setScope(S) ~> Body)
-               ~> setTemplateArgs(Q, T, Old)
-          ...</k>
-          <template-arguments> Old::Map => updateMap(Old, Args) </template-arguments>
-          <curr-tr-scope> S::Scope </curr-tr-scope>
-
-     syntax KItem ::= declareTemplateArgs(List, Map, Int)
-
-     rule (.K => TypedefDecl(Identifier(S), T))
-          ~> declareTemplateArgs((ListItem(Identifier(S::String)) => .List) _, _ dependentType(S, I) |-> T:CPPType, I::Int => I +Int 1)
-
-     rule declareTemplateArgs(.List, _, _) => .K
 
      rule TemplateDefinitionStmt(K:K) => K
 
@@ -231,37 +195,4 @@ module CPP-TRANSLATION-DECL-TEMPLATE
           <ns-id> N </ns-id>
           <nenv>... X |-> (_::TypeMap T |-> Entry::EnvEntry) ...</nenv>
 
-     // template parameter substitution
-     context t(_, _, arrayType(HOLE:CPPType, _))
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context t(_, _, pointerType(HOLE:CPPType))
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context t(_, _, lvRefType(HOLE:CPPType))
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context t(_, _, rvRefType(HOLE:CPPType))
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context t(_, _, functionType(... returnType: HOLE:CPPType))
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context t(_, _, functionType(... paramTypes: HOLE:CPPTypes))
-             requires notBool areDependentInScope(HOLE) [result(CPPTypes)]
-
-     context t(_, _, classType(_ :: Class(_, _, HOLE:TemplateArgs)))
-             requires notBool areDependentInScope(HOLE) [result(TemplateArgs)]
-
-     context HOLE:CPPType, _::CPPTypes
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context HOLE:CPPType, _::TemplateArgs
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     rule <k> t(Q::Quals, Mods::Set, dependentType(S::String, I::Int)) => t(Q +Quals Q', Mods Mods', T) ...</k>
-          <template-arguments>... dependentType(S, I) |-> t(Q'::Quals, Mods'::Set, T::CPPSimpleType) ...</template-arguments>
-
-     rule <k> t(Q::Quals, Mods::Set, auto) => t(Q +Quals Q', Mods Mods', T) ...</k>
-          <template-arguments>... auto |-> t(Q'::Quals, Mods'::Set, T::CPPSimpleType) ...</template-arguments>
 endmodule

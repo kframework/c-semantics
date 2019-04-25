@@ -39,24 +39,17 @@ module CPP-TYPING-SORTS
 endmodule
 
 module CPP-DEPENDENT-SYNTAX
-     imports CPP-TYPING-SORTS
-     imports CPP-DYNAMIC-SORTS
-     syntax Bool ::= isDependentInScope(CPPType) [function]
-                   | areDependentInScope(TemplateArgs) [function]
-                   | areDependentInScope(CPPTypes) [function]
-                   | isAuto(CPPDType) [function]
-
      syntax StrictList ::= typeStrict(StrictList)
 endmodule
 
 module CPP-TYPING-SYNTAX
-     imports CPP-DEPENDENT-SYNTAX
      imports BASIC-K
      imports SET
      imports STRING-SYNTAX
      imports COMMON-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-SORTS
+     imports CPP-TYPING-SORTS
      imports SYMLOC-SORTS
 
      syntax AType ::= CPPType
@@ -766,8 +759,6 @@ module CPP-TYPING
      rule stripType(t(Q::Quals, _, memberPointerType(C::CPPClassType, T::CPPType))) => t(Q, .Set, memberPointerType(stripType(C), stripType(T)))
 
      rule stripType(t(Q::Quals, _, functionType(Ret::CPPType, Params::CPPTypes, MI::MethodInfo, L::LanguageLinkage, _))) => t(Q, .Set, functionType(stripType(Ret), toCPPTypes(stripTypes(toTemplateArgs(Params))), stripMI(MI), L, noexcept(false)))
-
-     rule stripType(t(Q::Quals, _, dependentType(_, I::Int))) => t(Q, .Set, dependentType("", I))
 
      syntax MethodInfo ::= stripMI(MethodInfo) [function]
 

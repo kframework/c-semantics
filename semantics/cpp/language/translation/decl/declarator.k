@@ -47,16 +47,18 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      imports CPP-TRANSLATION-ENV-SYNTAX
      imports CPP-TRANSLATION-ODR-SYNTAX
      imports CPP-TRANSLATION-PROCESS-LABEL-SYNTAX
-     imports CPP-TRANSLATION-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
      imports CPP-TRANSLATION-CONSTANT-SYNTAX
 
-     rule FunctionDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPFunctionType, Params::List) => NormalizedDecl(N, X, Mangled, T, NoInit(), Function(Params)) [anywhere]
+     rule FunctionDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPFunctionType, Params::List)
+          => NormalizedDecl(N, X, Mangled, T, NoInit(), Function(Params)) [anywhere]
 
-     rule VarDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Init::Expr, IsDirect:Bool) => NormalizedDecl(N, X, Mangled, T, Init, Var(#if IsDirect #then DirectInit() #else CopyInit() #fi)) [anywhere]
+     rule VarDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Init::Expr, IsDirect:Bool)
+          => NormalizedDecl(N, X, Mangled, T, Init, Var(#if IsDirect #then DirectInit() #else CopyInit() #fi)) [anywhere]
 
-     rule FunctionDefinition(N::NNSVal, X::CId, Mangled::CId, T::CPPFunctionType, Params::List, Body::Stmt) => NormalizedDecl(N, X, Mangled, T, Body, Function(Params)) [anywhere]
+     rule FunctionDefinition(N::NNSVal, X::CId, Mangled::CId, T::CPPFunctionType, Params::List, Body::Stmt)
+          => NormalizedDecl(N, X, Mangled, T, Body, Function(Params)) [anywhere]
 
      rule DeclStmt(L::List) => listToK(L)
 
@@ -68,7 +70,8 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule Specifier(Spec::Specifier, DeclaratorAndSpecifiers(D::Declarator, S::Set)) => DeclaratorAndSpecifiers(D, S SetItem(Spec)) [anywhere]
 
-     rule NormalizedDecl(N::NNSVal, X::CId, Mangled::CId, T::AType, Init::Init, Type::DeclarationType) => DeclaratorAndSpecifiers(NormalizedDecl(N, X, Mangled, T, Init, Type), .Set)
+     rule NormalizedDecl(N::NNSVal, X::CId, Mangled::CId, T::AType, Init::Init, Type::DeclarationType)
+          => DeclaratorAndSpecifiers(NormalizedDecl(N, X, Mangled, T, Init, Type), .Set)
 
      context DeclaratorAndSpecifiers(NormalizedDecl(... nns: HOLE:NNS), _)
              requires HOLE =/=K NoNNS()
@@ -84,9 +87,6 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
 
      context DeclaratorAndSpecifiers(NormalizedDecl(_, _, _, HOLE:AType, _, _), _) [result(CPPType)]
-
-     context DeclaratorAndSpecifiers(NormalizedDecl(_, _, _, HOLE:CPPType, _, _), _)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl(N:NNSVal, X::CId, Mangled::CId, t(Q::Quals, _, _) #as T::CPPType, Body::Init, Type::DeclarationType), S::Set)
                => declareObject(N, getInnermostNamespace(N, Scope), X, Mangled, T, Body, Type, getLinkage(S, N, Scope, Q, getPreviousLinkage(getInnermostNamespace(N, Scope) :: X, T, Exts, Ints), Type), getDuration(S, Scope), S)
@@ -220,9 +220,6 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule getGoodCName(T::CPPType, X::CId, Mangled::CId, _, LangLinkage::LanguageLinkage, Opts::Set, ExternalLinkage)
           => getCName(T, X, Mangled, LangLinkage, Opts)
 
-     context declareObject(_, _, _, _, HOLE:CPPType, _, _, _, _, _)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
      rule <k> declareObject(N1::NNSVal, N2::NNSVal, X::CId, Mangled::CId, T:CPPType,
                               Init::Init, DT::DeclarationType, Lnk::Linkage, D::Duration, S::Set)
               => declareObjectWithLinkage(N1, N2, X, T, Init, DT, D, S,
@@ -231,6 +228,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
           <options> Opts::Set </options>
           <uuid> Uuid::String </uuid>
+          <curr-template-context> noTemplate </curr-template-context>
           requires Lnk =/=K NoLinkage andBool completeDeclaration(T, Init) ==K T
 
      syntax Decl ::= declareObjectWithLinkage(NNSVal, NNSVal, CId, CPPType, Init, DeclarationType, Duration, Set, cname: CId, Linkage)
@@ -385,15 +383,6 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           ...</k>
           <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
           requires getClassNamespace(C) ==K N andBool notBool isLocalQualifier(CQ)
-
-     rule <k> (.K => deduceAuto(T, Init))
-              ~> declareObject(_, _, _, _, T::CPPType, Init::Init, _, _, _, _) ...</k>
-          <template-deduction> _ => .Map </template-deduction>
-          requires isDependentInScope(T) andBool isAuto(T)
-
-     rule <k> (finishAutoDeduction => .K) ~> declareObject(_, _, _, _, _, _, _, _, _, _) ~> (.K => stripAuto) ...</k>
-          <template-deduction>... auto |-> T::CPPType ...</template-deduction> //don't substitute any other variables that may have arisen during template deduction
-          <template-arguments>... .Map => auto |-> T ...</template-arguments>
 
      syntax KItem ::= "stripAuto"
 

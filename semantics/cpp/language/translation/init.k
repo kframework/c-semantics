@@ -20,41 +20,6 @@ module CPP-TRANSLATION-INIT
      rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType)) => Translation() andBool notBool isCPPRefType(T)
           requires isTExprKLabel(#klabel(Lbl))
 
-     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, _:KItem, T:CPPType)) => isDependentInScope(T)
-          requires isDepKLabel(#klabel(Lbl))
-
-     rule isDepKLabel(#klabel(`prd`)) => true
-
-     rule isDepKLabel(#klabel(`xd`)) => true
-
-     rule isDepKLabel(#klabel(`ld`)) => true
-
-     rule isDepKLabel(_) => false [owise]
-
-     rule stripHold(ld(E::Expr, _, _, _)) => E
-
-     rule stripHold(xd(E::Expr, _, _, _)) => E
-
-     rule stripHold(prd(E::Expr, _, _, _)) => E
-
-     rule trace(ld(_, Tr::Trace, _, _)) => Tr
-
-     rule trace(xd(_, Tr::Trace, _, _)) => Tr
-
-     rule trace(prd(_, Tr::Trace, _, _)) => Tr
-
-     rule type(ld(_, _, T::CPPType, _)) => T
-
-     rule type(xd(_, _, T::CPPType, _)) => T
-
-     rule type(prd(_, _, T::CPPType, _)) => T
-
-     rule param(ld(_, _, _, T::TemplateArg)) => T
-
-     rule param(xd(_, _, _, T::TemplateArg)) => T
-
-     rule param(prd(_, _, _, T::TemplateArg)) => T
-
      rule <k> TranslationUnit(Tu::String, Decls::List)
                => makeTu(Tu +String Uuid)
                ~> makeNs(GlobalNamespace())
@@ -127,15 +92,6 @@ module CPP-TRANSLATION-INIT
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
 
      rule <k> #ExprLoc(L::CabsLoc, V:LExpr) => le(ExprLoc(L, stripHold(V)), trace(V), type(V)) ...</k>
-          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
-
-     rule <k> #ExprLoc(L::CabsLoc, V:PRDep) => prd(ExprLoc(L, stripHold(V)), trace(V), type(V), param(V)) ...</k>
-          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
-
-     rule <k> #ExprLoc(L::CabsLoc, V:XDep) => xd(ExprLoc(L, stripHold(V)), trace(V), type(V), param(V)) ...</k>
-          <curr-tr-program-loc> _ => L </curr-tr-program-loc>
-
-     rule <k> #ExprLoc(L::CabsLoc, V:LDep) => ld(ExprLoc(L, stripHold(V)), trace(V), type(V), param(V)) ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
 
      rule (<T>...

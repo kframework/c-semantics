@@ -73,6 +73,7 @@ module LINKING-C-RESOLUTION
 
      syntax Bool ::= isMangledName(CId) [function]
      rule isMangledName(Identifier(X::String)) => substrString(X, 0, 2) ==String "_Z"
+          requires lengthString(X) >Int 2
      rule isMangledName(_) => false [owise]
 
      // Remember which TU has the definition of main.

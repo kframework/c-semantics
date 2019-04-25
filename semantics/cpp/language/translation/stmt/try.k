@@ -35,9 +35,6 @@ module CPP-TRANSLATION-STMT-TRY
 
      context Throw.prepare(_, HOLE:TypeExpr => typeof(HOLE)) [result(CPPType)]
 
-     context Throw.prepare(_, HOLE:CPPType)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
      rule Throw.prepare(_, T:CPPArrayType => type(pointerType(innerType(T))))
 
      rule Throw.prepare(_, T:CPPFunctionType => type(pointerType(T)))
@@ -45,10 +42,6 @@ module CPP-TRANSLATION-STMT-TRY
      rule Throw.prepare(E::Expr, T:CPPType)
           => Throw.potentiallyInvokeDestructor(T)
           ~> Throw.eval(figureInit(le(temp(!I:Int, utype(T)), noTrace, utype(T)), utype(T), E, CopyInit()), E)
-
-     rule Throw.prepare(E::Expr, T:CPPType)
-          => prd(Throw.prepare(E, T), hasTrace(Throw(E)), type(void), T)
-          requires isDependentInScope(T)
 
      rule Throw.prepare(NoExpression(), NoExpression())
           => pre(ThrowOp(exceptionObject(type(no-type))), hasTrace(Throw(NoExpression())), type(void))

@@ -16,10 +16,6 @@ module CPP-CLASS-BASIC-SORTS
 
      syntax ClassSpecifier
 
-     syntax ClassTemplate
-
-     syntax ClassTemplateSpecifier
-
 endmodule // CPP-CLASS-BASIC-SORTS
 
 module CPP-CLASS-BASIC-SYNTAX
@@ -51,14 +47,6 @@ module CPP-CLASS-BASIC-SYNTAX
                              | LocalInnerClass "::" ClassSpecifier
 
      syntax ClassSpecifier ::= Class(Tag, CId, TemplateArgs) [klabel(classSpecifier)]
-
-     syntax ClassTemplate ::= Namespace "::" ClassTemplateSpecifier
-
-     syntax ClassTemplateSpecifier ::= Class(Tag, CId, TemplateArgs) [klabel(classSpecifier)]
-
-     //not technically a class template, but this type exists primarily to support CPPClassTypeExpr, so it's needed
-     syntax ClassTemplateSpecifier ::= ClassSpecifier
-
 
      syntax CId ::= "Class.id" "(" Class ")" [function, klabel(Class.Class.idClass)]
 

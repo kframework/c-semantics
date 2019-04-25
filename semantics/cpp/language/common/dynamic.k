@@ -215,10 +215,9 @@ module CPP-QUALID-SORTS
      // Remote sorts
      syntax Namespace
      syntax Class
-     syntax ClassTemplate
      syntax Enum
 
-     syntax NNSVal ::= Namespace | Class | ClassTemplate | Enum
+     syntax NNSVal ::= Namespace | Class | Enum
      syntax NNS ::= NNSVal | NNSSpecifier
      syntax NNSSpecifier
      syntax QualId
@@ -319,6 +318,7 @@ endmodule // CPP-REVAL-SORTS
 
 module CPP-DYNAMIC-OTHER-SYNTAX
      imports COMMON-SYNTAX
+     imports CPP-CLASS-BASIC-SORTS
      imports CPP-DYNAMIC-OTHER-SORTS
      imports BITS-SORTS
      imports CPP-SYMLOC-SORTS
@@ -449,7 +449,6 @@ module CPP-DYNAMIC-OTHER-SYNTAX
                            | toTemplateArgs(CPPTypes) [function, klabel(CPPTypesToTemplateArgs)]
 
      syntax List ::= toList(CPPTypes) [function]
-                   | toList(CPPTypes) [function]
                    | toList(TemplateArgs) [function]
 
      syntax CPPTypes ::= toCPPTypes(List) [function]
@@ -658,9 +657,6 @@ module CPP-DYNAMIC-OTHER
      rule ofSTypeStrictList(K:K typeStrict:: L::STypeStrictList) => ListItem(K) ofSTypeStrictList(L) [owise]
 
      context HOLE:AType typeStrict:: _ [result(CPPType)]
-
-     context HOLE:CPPType typeStrict:: _
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      context K:KResult typeStrict:: HOLE:STypeStrictList
 

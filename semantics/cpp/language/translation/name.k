@@ -523,24 +523,11 @@ module CPP-TRANSLATION-NAME
 
      rule isDependentName(_, ListItem(PackExpansionExpr(_)) _, _) => true
 
-     // rule (.K => isTypeDependent(Arg, Type)) ~> isDependentName(_, (ListItem(Arg::Expr) => .List) _, (ListItem(Type::CPPType => .List) _)
-
      rule true ~> isDependentName(_, _, _) => true
 
      rule (false => .K) ~> isDependentName(_, _, _)
 
      rule isDependentName(_, .List, .List) => false
-
-     syntax KItem ::= isTypeDependent(Expr, CPPType)
-
-     rule isTypeDependent(StringLiteral(_, _), _) => false
-
-     rule (.K => nameLookup(X, NoTag(), defaultMask)) ~> isTypeDependent(Name(NoNNS(), X::CId), _)
-
-     rule cSet(... candidates: (T::CPPType |-> _ => .Map) _) ~> isTypeDependent(Name(NoNNS(), _), _)
-          requires notBool isDependentInScope(T)
-
-     rule cSet(... candidates: .Map) ~> isTypeDependent(Name(NoNNS(), _), _) => false
 
      rule <k> false ~> argDependentNameLookup(X::CId, Args::StrictList, Types::StrictList, cSet(Y::TypeMap, QX::QualId)) => cSet(Y, QX) ...</k>
            <tr-env> Env::Map </tr-env>

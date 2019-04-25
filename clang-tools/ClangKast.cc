@@ -13,8 +13,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <iostream>
-
 using namespace clang;
 using namespace clang::tooling;
 namespace cl = llvm::cl;
@@ -106,7 +104,7 @@ public:
     this->InFile = InFile;
   }
 
-  virtual bool shouldVisitTemplateInstantiations() { return true; }
+  bool shouldVisitTemplateInstantiations() { return true; }
 
 // if we reach all the way to the top of a hierarchy, crash with an error
 // because we don't support the node
@@ -131,7 +129,7 @@ public:
   }
 
   bool TraverseTypeLoc(TypeLoc TL) {
-    return TraverseType(TL.getType().getCanonicalType());
+    return TraverseType(TL.getType());
   }
 
   bool TraverseStmt(Stmt *S) {
@@ -566,47 +564,51 @@ public:
 
     mangledIdentifier(D);
 
-    if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D)) {
-      if (Method->isInstance()) {
-        switch(Method->getRefQualifier()) {
-          case RQ_LValue:
-          AddKApplyNode("RefQualifier",2);
-          AddKApplyNode("RefLValue", 0);
-          break;
-          case RQ_RValue:
-          AddKApplyNode("RefQualifier",2);
-          AddKApplyNode("RefRValue", 0);
-          break;
-          case RQ_None: // do nothing
-          break;
-        }
-        AddKApplyNode("MethodPrototype", 4);
-        VisitBool(Method->isUserProvided());
-        VisitBool(dyn_cast<CXXConstructorDecl>(D)); // converts to true if this is a constructor
-        TRY_TO(TraverseType(Method->getThisType(*Context)));
-        if (Method->isVirtual()) {
-          AddKApplyNode("Virtual", 1);
-        }
-        if (Method->isPure()) {
-          AddKApplyNode("Pure", 1);
-        }
-
-        if (CXXConversionDecl *Conv = dyn_cast<CXXConversionDecl>(D)) {
-          if (Conv->isExplicitSpecified()) {
-            AddKApplyNode("Explicit", 1);
+    if (TypeSourceInfo *TSI = D->getTypeSourceInfo()) {
+      if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D)) {
+        if (Method->isInstance()) {
+          switch(Method->getRefQualifier()) {
+            case RQ_LValue:
+            AddKApplyNode("RefQualifier",2);
+            AddKApplyNode("RefLValue", 0);
+            break;
+            case RQ_RValue:
+            AddKApplyNode("RefQualifier",2);
+            AddKApplyNode("RefRValue", 0);
+            break;
+            case RQ_None: // do nothing
+            break;
           }
-        }
-
-        if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
-          if (Ctor->isExplicitSpecified()) {
-            AddKApplyNode("Explicit", 1);
+          AddKApplyNode("MethodPrototype", 4);
+          VisitBool(Method->isUserProvided());
+          VisitBool(dyn_cast<CXXConstructorDecl>(D)); // converts to true if this is a constructor
+          TRY_TO(TraverseType(Method->getThisType(*Context)));
+          if (Method->isVirtual()) {
+            AddKApplyNode("Virtual", 1);
           }
+          if (Method->isPure()) {
+            AddKApplyNode("Pure", 1);
+          }
+
+          if (CXXConversionDecl *Conv = dyn_cast<CXXConversionDecl>(D)) {
+            if (Conv->isExplicitSpecified()) {
+              AddKApplyNode("Explicit", 1);
+            }
+          }
+
+          if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
+            if (Ctor->isExplicitSpecified()) {
+              AddKApplyNode("Explicit", 1);
+            }
+          }
+        } else {
+          AddKApplyNode("StaticMethodPrototype", 1);
         }
-      } else {
-        AddKApplyNode("StaticMethodPrototype", 1);
       }
+      TRY_TO(TraverseType(D->getType()));
+    } else {
+      doThrow("something implicit in functions??");
     }
-    TRY_TO(TraverseType(D->getType()));
 
     AddKSequenceNode(D->parameters().size());
     for (unsigned i = 0; i < D->parameters().size(); i++) {
@@ -801,23 +803,23 @@ public:
     unsigned i = 0;
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-        case TSK_ImplicitInstantiation:
-        case TSK_ExplicitInstantiationDeclaration:
-        case TSK_ExplicitInstantiationDefinition:
-          i++;
-        default:
-          break;
+      case TSK_ImplicitInstantiation:
+      case TSK_ExplicitInstantiationDeclaration:
+      case TSK_ExplicitInstantiationDefinition:
+        i++;
+      default:
+        break;
       }
     }
     AddKSequenceNode(i);
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-        case TSK_ImplicitInstantiation:
-        case TSK_ExplicitInstantiationDeclaration:
-        case TSK_ExplicitInstantiationDefinition:
-          TRY_TO(TraverseDecl(FD));
-        default:
-          break;
+      case TSK_ImplicitInstantiation:
+      case TSK_ExplicitInstantiationDeclaration:
+      case TSK_ExplicitInstantiationDefinition:
+        TRY_TO(TraverseDecl(FD));
+      default:
+        break;
       }
     }
     return true;
@@ -832,23 +834,23 @@ public:
     unsigned i = 0;
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-        case TSK_ImplicitInstantiation:
-        case TSK_ExplicitInstantiationDeclaration:
-        case TSK_ExplicitInstantiationDefinition:
-          i++;
-        default:
-          break;
+      case TSK_ImplicitInstantiation:
+      case TSK_ExplicitInstantiationDeclaration:
+      case TSK_ExplicitInstantiationDefinition:
+        i++;
+      default:
+        break;
       }
     }
     AddKSequenceNode(i);
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-        case TSK_ImplicitInstantiation:
-        case TSK_ExplicitInstantiationDeclaration:
-        case TSK_ExplicitInstantiationDefinition:
-          TRY_TO(TraverseDecl(FD));
-        default:
-          break;
+      case TSK_ImplicitInstantiation:
+      case TSK_ExplicitInstantiationDeclaration:
+      case TSK_ExplicitInstantiationDefinition:
+        TRY_TO(TraverseDecl(FD));
+      default:
+        break;
       }
     }
     return true;
@@ -862,12 +864,12 @@ public:
     unsigned i = 0;
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-        case TSK_ImplicitInstantiation:
-        case TSK_ExplicitInstantiationDeclaration:
-        case TSK_ExplicitInstantiationDefinition:
-          i++;
-        default:
-          break;
+      case TSK_ImplicitInstantiation:
+      case TSK_ExplicitInstantiationDeclaration:
+      case TSK_ExplicitInstantiationDefinition:
+        i++;
+      default:
+        break;
       }
     }
     AddKSequenceNode(i);
@@ -1089,8 +1091,10 @@ public:
       default:
         doThrow("unimplemented: implicit template instantiation");
     }
-    if (TypeSourceInfo* TSI = D->getTypeAsWritten()) {
-      TRY_TO(TraverseTypeLoc(TSI->getTypeLoc()));
+    if (D->getTypeForDecl()) {
+      TRY_TO(TraverseType(QualType(D->getTypeForDecl(), 0)));
+    } else {
+      AddKApplyNode("NoType", 0);
     }
     TRY_TO(TraverseCXXRecordHelper(D));
     return true;
@@ -1271,10 +1275,6 @@ public:
         AddKApplyNode("NullPtr", 0);
         break;
       default:
-        clang::LangOptions LangOpts;
-        LangOpts.CPlusPlus = true;
-        clang::PrintingPolicy Policy(LangOpts);
-        std::cout << "THING: " << T->getNameAsCString(Policy) << std::endl;
         doThrow("unimplemented: basic type");
     }
     return false;
@@ -1433,12 +1433,12 @@ public:
   }
 
   bool TraverseAutoType(AutoType *T) {
-     if (T->isDeduced()) {
-    TRY_TO(TraverseType(T->getDeducedType()));
-     } else {
-       AddKApplyNode("AutoType", 1);
-       VisitBool(T->isDecltypeAuto());
-     }
+    if (T->isDeduced()) {
+      TRY_TO(TraverseType(T->getDeducedType()));
+    } else {
+      AddKApplyNode("AutoType", 1);
+      VisitBool(T->isDecltypeAuto());
+    }
     return true;
   }
 

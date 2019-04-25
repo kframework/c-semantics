@@ -47,7 +47,6 @@ module CPP-TRANSLATION-OVERLOADING
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-ODR-SYNTAX
-     imports CPP-TRANSLATION-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
@@ -829,15 +828,6 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule #resolveOverload(... cands: cSet(... candidates: (T:CPPFunctionType => adjustFunctionType(T)) |-> _:TemplateInfo))
           requires notBool isAdjustedType(T)
-
-     rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> #resolveOverload(... cands: cSet(... candidates: (T:CPPFunctionType |-> templateInfo(... id: Q::QualId) => .Map) _), args: list(Args::List)) ...</k>
-          <template-deduction> _ => .Map </template-deduction>
-          requires isAdjustedType(T)
-
-     rule (templateSpecialization(T:CPPType, I::TemplateInfo, Args::Map) => .K) ~> #resolveOverload(... cands: cSet(... candidates: (.Map => T |-> templateSpecialization(T, I, Args)) _))
-
-     // rule (.K => instantiateObjectTemplate(Spec))
-     //      ~> bestViable(T::CPPFunctionType, Spec:TemplateSpecialization)
 
      // TODO(traiansf): properly resolve default arguments for templates
      rule (lv(loc(Base::SymBase, 0), _, _) => .K)

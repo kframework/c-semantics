@@ -137,10 +137,6 @@ module CPP-TRANSLATION-TYPING-CANONICALIZATION
 
      rule TemplateParameterType(X::CId) => Name(NoNNS(), X)
 
-     // rule AutoType(false) => t(noQuals, .Set, auto)
-
-     // rule AutoType(true) => t(noQuals, .Set, decltype(auto))
-
      rule (.K => typeof(E)) ~> Decltype(E::Expr)
 
      rule (.K => catof(E)) ~> typeof(T:CPPType) ~> Decltype(E::Expr)
