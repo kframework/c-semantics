@@ -178,12 +178,12 @@ module C-DECL-INITIALIZER
 
      rule <curr-subobject>
                (ListItem(down) => ListItem(ncle(K[[0]], T)))
-               ListItem(ncle(K:K, t(_, _, arrayType(T::Type, _))))
+               ListItem(ncle(K::InitLValue, t(_, _, arrayType(T::Type, _))))
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
                (ListItem(down) => ListItem(ncle(K[[0]], T)))
-               ListItem(ncle(K:K, t(_, _, incompleteArrayType(T::Type))))
+               ListItem(ncle(K::InitLValue, t(_, _, incompleteArrayType(T::Type))))
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
@@ -233,7 +233,7 @@ module C-DECL-INITIALIZER
                     | followingField(K, CId, List, Type) [function]
                     | firstField(K, List, Type) [function]
 
-     rule thisField(K:K, F::CId, ListItem(F) _::List, T::Type)
+     rule thisField(K::InitLValue, F::CId, ListItem(F) _::List, T::Type)
           => ncle(K .init F, findFieldType(F, T))
      rule thisField(_, F::CId, (ListItem(F'::CId) => .List) _, _)
           requires F =/=K F'
@@ -246,7 +246,7 @@ module C-DECL-INITIALIZER
      rule followingField(_, _, _, _) => noMoreFields [owise]
 
      rule firstField(K:K, (ListItem(_:NoName) => .List) _, _)
-     rule firstField(K:K, ListItem(F::CId) _, T::Type)
+     rule firstField(K::InitLValue, ListItem(F::CId) _, T::Type)
           => ncle(K .init F, findFieldType(F, T))
           requires notBool isNoName(F)
      rule firstField(_, _, _) => noMoreFields [owise]

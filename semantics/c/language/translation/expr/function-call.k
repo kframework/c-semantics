@@ -64,7 +64,7 @@ module C-EXPR-FUNCTION-CALL
           requires L =/=K .List
 
      syntax Nclv ::= "fauxParam"
-     rule elaborateDone((Initializer(fauxParam := V:K) => .K) ~> _)
+     rule elaborateDone((Initializer(fauxParam := V:KItem) => .K) ~> _)
           ~> elabCall(_, _, _, _:List (.List => ListItem(V)))
      rule (elaborateDone(.K) => .K) ~> elabCall(_, _, _, _)
 

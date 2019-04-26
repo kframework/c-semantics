@@ -251,7 +251,7 @@ module COMPAT
      rule toSSList(.List) => .SSList
      rule ofSSList(krlist(L1::List) seqstrict:: L2::SSList) => L1 ofSSList(L2)
      rule ofSSList(.SSList) => .List
-     rule ofSSList(K:K seqstrict:: L::SSList) => ListItem(K) ofSSList(L) [owise]
+     rule ofSSList(K:KItem seqstrict:: L::SSList) => ListItem(K) ofSSList(L) [owise]
 
      syntax KItem ::= "strict()"
      rule list(HOLE:List) => toSList(HOLE) ~> strict() [heat]
@@ -265,7 +265,7 @@ module COMPAT
      rule toSList(.List) => .SList
      rule ofSList(krlist(L1::List) strict:: L2::SList) => L1 ofSList(L2)
      rule ofSList(.SList) => .List
-     rule ofSList(K:K strict:: L::SList) => ListItem(K) ofSList(L) [owise]
+     rule ofSList(K:KItem strict:: L::SList) => ListItem(K) ofSList(L) [owise]
 
      syntax List ::= reverseAppendList(List, List) [function]
      rule reverseAppendList(.List, L::List) => L
@@ -285,7 +285,7 @@ module COMPAT
           requires N <Int N'
 
      rule times(0, _) => .List
-     rule times(N:Int, K:K) => ListItem(K) times(N -Int 1, K)
+     rule times(N:Int, K:KItem) => ListItem(K) times(N -Int 1, K)
           requires N >Int 0
 
      rule listToSet(ListItem(K:KItem) Tail::List) => SetItem(K) listToSet(Tail)
@@ -293,11 +293,11 @@ module COMPAT
 
      rule ceilDiv(X:Int, Y:Int) => (X +Int Y -Int 1) /Int Y
 
-     rule ((A |-> S::Set) M::Map) [A:K += B:K] => (A |-> (S SetItem(B))) M
-     rule M::Map [A:K += B:K] => M A |-> SetItem(B) [owise]
+     rule ((A |-> S::Set) M::Map) [A:KItem += B:KItem] => (A |-> (S SetItem(B))) M
+     rule M::Map [A:KItem += B:KItem] => M A |-> SetItem(B) [owise]
 
-     rule ((A |-> M2::Map) M1::Map) [A:K <+ B::Map] => (A |-> (M2 B)) M1
-     rule M::Map [A:K <+ B::Map] => M A |-> B [owise]
+     rule ((A |-> M2::Map) M1::Map) [A:KItem <+ B::Map] => (A |-> (M2 B)) M1
+     rule M::Map [A:KItem <+ B::Map] => M A |-> B [owise]
 
      rule fst(kpair(K:K, _)) => K
      rule snd(kpair(_, K:K)) => K

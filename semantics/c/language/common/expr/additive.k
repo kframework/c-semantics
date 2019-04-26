@@ -183,14 +183,14 @@ module C-COMMON-EXPR-ADDITIVE
                .Set, Prov:Set, T::UType, I:Int)
           => loc(Base, Offset, SetItem(
                fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
-     rule #newFromArray(Base:SymBase, Offset:Int, K:K, .Set, Prov:Set, _, _)
+     rule #newFromArray(Base:SymBase, Offset:Int, K:KItem, .Set, Prov:Set, _, _)
           => loc(Base, Offset, SetItem(K) Prov)
           requires fromArray(...) :/=K K
      rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int, Len:Int),
                SetItem(K':KItem) S:Set, Prov:Set, T::UType, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(fromArray(ArrOffset +Int
                I *Int byteSizeofType(innerType(T)), Len)) Prov, T, I)
-     rule #newFromArray(Base:SymBase, Offset:Int, K:K, SetItem(K':KItem)
+     rule #newFromArray(Base:SymBase, Offset:Int, K:KItem, SetItem(K':KItem)
                S:Set, Prov:Set, T::UType, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(K) Prov, T, I)
           requires fromArray(...) :/=K K
