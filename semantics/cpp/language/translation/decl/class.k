@@ -22,6 +22,7 @@ module CPP-TRANSLATION-DECL-CLASS-SYNTAX
                    | isNonTrivialDefaultConstructor(CPPFunctionType, K) [function]
                    | isDefaultConstructor(CPPFunctionType, K) [function]
                    | isCopyConstructor(CPPFunctionType, K) [function]
+                   | isConstCopyConstructor(CPPFunctionType, K) [function]
                    | isMoveConstructor(CPPFunctionType, K) [function]
                    | isUserProvidedConstructor(CPPFunctionType, K) [function]
                    | isUserProvidedDefaultConstructor(CPPFunctionType, K) [function]
@@ -53,6 +54,7 @@ module CPP-TRANSLATION-DECL-CLASS-SYNTAX
                    | hasDestructor(CPPClassType) [function]
                    | hasDestructor(Class) [function, klabel(hasDestructor2)]
                    | hasCopyConstructor(Class) [function]
+                   | hasConstCopyConstructor(Class) [function]
                    | hasVirtualDestructor(Class) [function]
                    | hasUserProvidedMoveAssignOp(Class) [function]
                    | hasUserProvidedMoveConstructor(Class) [function]
@@ -366,9 +368,15 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule EmptyBlock() => BlockStmt(!N:Int, .List)
 
      syntax KItem ::= implicitDeclarationOfCopyConstructor(Class)
+                    | implicitDeclarationOfCopyConstructor2(Class, Bool) [strict(2)]
 
-     // n4296 12.8:7
-     rule implicitDeclarationOfCopyConstructor(C::Class) =>
+     // @ref n4800 12.8:8
+     rule implicitDeclarationOfCopyConstructor(C::Class)
+          => implicitDeclarationOfCopyConstructor2(C, eachPTSHasConstCopyConstructor(C))
+
+     // @ref n4296 12.8:7
+     rule implicitDeclarationOfCopyConstructor2(C::Class, ConstCopyConstructor:Bool)
+          =>
           #if hasUserProvidedCopyConstructor(C) #then
                .K
           #else
@@ -379,15 +387,34 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
                          NoNNS(), ConstructorId(idOf(C)), #NoName,
                          MethodPrototype(
                               false, true, classType(C) *,
-                              FunctionPrototype(type(void), list(ListItem(classType(C) const &)), NoExceptionSpec(), false)
+                              FunctionPrototype(
+                                   type(void),
+                                   list(ListItem(
+                                        #if ConstCopyConstructor #then
+                                             classType(C) const &
+                                        #else
+                                             classType(C) &
+                                        #fi
+                                   )),
+                                   NoExceptionSpec(),
+                                   false
+                              )
                          ),
                          ListItem(
-                              var("other") ofType (classType(C) const &)
+                              var("other") ofType (
+                                   #if ConstCopyConstructor #then
+                                        classType(C) const &
+                                   #else
+                                        classType(C) &
+                                   #fi
+                              )
                          ),
                          Defaulted(CopyConstructor(), C) unless (hasUserProvidedMoveConstructor(C) orBool hasUserProvidedMoveAssignOp(C))
                     )
                )
           #fi
+
+     syntax KItem ::= eachPotentiallyConstructedSubobjectConstCopyable()
 
      rule Defaulted(CopyConstructor(), C::Class) => Constructor(copyConstructorInitializers(directBaseClassesOf(C), nonStaticDataMembersOf(C)), EmptyBlock())
 
@@ -411,6 +438,27 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      // done
      rule copyConstructorInitializers2(.List, .List, I::List) => I
+
+     syntax Bool ::= eachPTSHasConstCopyConstructor(Class) [function]
+                   | #eachPTSHasConstCopyConstructor(List, List) [function]
+
+     rule eachPTSHasConstCopyConstructor(C::Class)
+          => #eachPTSHasConstCopyConstructor(directBaseClassesOf(C), nonStaticDataMembersOf(C))
+
+     rule #eachPTSHasConstCopyConstructor(ListItem(C::Class) L::List, NSDM::List)
+          => hasConstCopyConstructor(C)
+          andBool #eachPTSHasConstCopyConstructor(L, NSDM)
+
+     rule #eachPTSHasConstCopyConstructor(.List,
+               (ListItem(Class.DataMember(_, T::CPPType)) => .List) _)
+          requires notBool isCPPClassType(T)
+
+     rule #eachPTSHasConstCopyConstructor(.List,
+               ListItem(Class.DataMember(_, t(... st: classType(C::Class)))) L::List)
+          => hasConstCopyConstructor(C)
+          andBool #eachPTSHasConstCopyConstructor(.List, L)
+
+     rule #eachPTSHasConstCopyConstructor(.List, .List) => true
 
      syntax Init ::= copyOrMoveInitializeMember(Expr, CPPType) [function]
 
@@ -450,6 +498,13 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
                envEntry(... defaultArgs: DA::DefaultArgumentsResult)
           ) => acceptsNArgs(1, T, getDefaultArgsVals(DA))
      rule isCopyConstructor(_, _) => false [owise]
+
+     rule isConstCopyConstructor(T::CPPFunctionType, K::K)
+          => isCopyConstructor(T, K) andBool  isConstType(innerType(firstParamOf(T)))
+
+     syntax CPPType ::= firstParamOf(CPPFunctionType) [function]
+
+     rule firstParamOf(t(... st: functionType(... paramTypes: (T::CPPType, _)))) => T
 
      // @ref n4296 12.8:3 same as copy constructor, but rvalue reference
      rule isMoveConstructor(
@@ -706,6 +761,9 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule hasCopyConstructor(C::Class)
           => hasConstructorThat(C, #klabel(`isCopyConstructor`))
+
+     rule hasConstCopyConstructor(C::Class)
+          => hasConstructorThat(C, #klabel(`isConstCopyConstructor`))
 
      rule hasUserProvidedCopyConstructor(C::Class)
           => hasConstructorThat(C, #klabel(`isUserProvidedCopyConstructor`))
