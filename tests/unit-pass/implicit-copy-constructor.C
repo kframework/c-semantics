@@ -32,7 +32,6 @@ void test1() {
 	//assert(c.y == 3);
 }
 
-#if 0
 // non-const version of copy constructors
 struct B2 {
 	int x;
@@ -55,18 +54,18 @@ S2 foo2() {
 }
 #endif
 void test2() {
-	//S2 a;
-	//a.x = 3;
-	//a.y = 7;
-	//S2 b = a;
-	//assert(b.x == 4);
-	//assert(b.y == 7);
-	//foo1();
+	S2 a;
+	a.x = 3;
+	a.y = 7;
+	S2 b = a;
+	assert(b.x == 4);
+	assert(b.y == 7);
+	foo1();
 	// S1 c = foo1(); // does not work yet
 	//assert(c.y == 3);
 }
-#endif
+
 int main() {
 	test1();
-	//test2();
+	test2();
 }
