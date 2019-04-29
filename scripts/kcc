@@ -390,6 +390,8 @@ sub sharedObject {
       my @trampolineFiles = trampolineFiles();
       if (@trampolineFiles) {
             shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
+      } else {
+            shell('touch', $trampolines)->run();
       }
 
       debug("Creating shared object.\n");
