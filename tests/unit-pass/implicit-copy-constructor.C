@@ -45,14 +45,13 @@ struct S2 : B2{
 	int y;
 };
 
-#if 0
 S2 foo2() {
 	S2 s;
 	s.x = 1;
 	s.y = 3;
 	return s;
 }
-#endif
+
 void test2() {
 	S2 a;
 	a.x = 3;
@@ -60,7 +59,7 @@ void test2() {
 	S2 b = a;
 	assert(b.x == 4);
 	assert(b.y == 7);
-	//foo1();
+	foo2();
 	// S1 c = foo1(); // does not work yet
 	//assert(c.y == 3);
 }
