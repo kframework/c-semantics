@@ -8,6 +8,7 @@ export KDEP = $(K_BIN)/kdep
 export PROFILE_DIR = $(shell pwd)/profiles/x86-gcc-limited-libc
 export PROFILE = $(shell basename $(PROFILE_DIR))
 export SUBPROFILE_DIRS =
+export OCAMLRUNPARAM = b
 KCCFLAGS = -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 CFLAGS = -std=gnu11 -Wall -Wextra -Werror -pedantic
 
