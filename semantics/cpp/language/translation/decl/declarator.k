@@ -51,6 +51,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
      imports CPP-TRANSLATION-CONSTANT-SYNTAX
+     imports CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
 
      rule FunctionDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPFunctionType, Params::List) => NormalizedDecl(N, X, Mangled, T, NoInit(), Function(Params)) [anywhere]
 
@@ -121,11 +122,11 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule getPreviousLinkage(_, _, _, _) => .K [owise]
 
-     // 3.5:3.1
+     // @ref n4296 3.5:3.1
      rule getLinkage(S::Set, _, _:NamespaceScope, Q::Quals, _, _) => InternalLinkage
           requires Static() in S
 
-     // 3.5:3.2
+     // @ref n4296 3.5:3.2
      rule getLinkage(S::Set, _, _:NamespaceScope, Q::Quals, L::Linkage, _) => InternalLinkage
           requires notBool Volatile() inQuals Q andBool Const() inQuals Q andBool notBool Extern() in S andBool notBool L ==K ExternalLinkage
 
@@ -133,35 +134,35 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule getLinkage(_, DeclNamespace:Namespace, _:NamespaceScope, _, _, Type::DeclarationType) => getNamespaceLinkage(DeclNamespace, Type) [owise]
 
-     // 9.4.2:5 with revision http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1603
+     // @ref n4296 9.4.2:5 with revision http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1603
      rule getLinkage(S::Set, C:Class, _, _, _, Type::DeclarationType) => getClassLinkage(C)
           requires Static() in S
             orBool isFunctionDeclarationType(Type)
 
      rule getLinkage(_, C:Class, _, _, L:Linkage, _) => L
 
-     // 3.5:4
+     // @ref n4296 3.5:4
      rule getClassLinkage(Parent:Namespace :: _) => getNamespaceLinkage(Parent)
 
-     // 3.5:5 with revision http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1603
+     // @ref n4296 3.5:5 with revision http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1603
      rule getClassLinkage(Parent:Class :: _) => getClassLinkage(Parent)
 
      rule getClassLinkage(_:LocalQualifier :: _) => NoLinkage
 
-     // 3.5:4
+     // @ref n4296 3.5:4
      rule getNamespaceLinkage(N:UnnamedNamespace) => InternalLinkage
 
      rule getNamespaceLinkage(GlobalNamespace()) => ExternalLinkage
 
      rule getNamespaceLinkage(Parent::Namespace :: _) => getNamespaceLinkage(Parent) [owise]
 
-     // 3.5:4.1
+     // @ref n4296 3.5:4.1
      rule getNamespaceLinkage(N::Namespace, Var(_)) => getNamespaceLinkage(N)
 
-     // 3.5:4.2
+     // @ref n4296 3.5:4.2
      rule getNamespaceLinkage(N::Namespace, Function(_)) => getNamespaceLinkage(N)
 
-     // 3.5:6
+     // @ref n4296 3.5:6
      rule getLinkage(S::Set, _, _:BlockScope, _, L::Linkage, Type::DeclarationType) => #if L ==K .K #then ExternalLinkage #else L #fi
           requires isFunctionDeclarationType(Type) orBool (isVarDeclarationType(Type) andBool Extern() in S)
 
@@ -223,10 +224,18 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      context declareObject(_, _, _, _, HOLE:CPPTypeExpr, _, _, _, _, _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
+     syntax KItem ::= "Declare.potentiallyInvokeDestructor" "(" CPPType ")"
+
+     rule Declare.potentiallyInvokeDestructor(T::CPPType)
+          => #if isCPPClassType(T) #then
+               Class.potentiallyInvokeDestructor(classFromType(T)) 
+             #else .K #fi
+
      rule <k> declareObject(N1::NNSVal, N2::NNSVal, X::CId, Mangled::CId, T:CPPType,
                               Init::Init, DT::DeclarationType, Lnk::Linkage, D::Duration, S::Set)
               => declareObjectWithLinkage(N1, N2, X, T, Init, DT, D, S,
                               getGoodCName(T, X, Mangled, Uuid, LangLinkage, Opts, Lnk), Lnk)
+              ~> Declare.potentiallyInvokeDestructor(T)
           ...</k>
           <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
           <options> Opts::Set </options>
@@ -266,7 +275,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                    ~> addToEnv(N :: X, T, Base, false)
                    ~> markAsConstexpr(Base, S)
                    ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
-                   ~> defineObject(N, X, CName, T, Init, Type, S)
+                   ~> lazyDefineObject(N, X, CName, T, Init, Type, S, Base)
 
           // ExternalLinkage, StaticStorage, redeclare incomplete array
           rule <k> declareObjectWithLinkage(N::Namespace, LN::Namespace, X::CId, T:CPPArrayType, Init::Init, Type::DeclarationType, StaticStorage, S::Set, _, ExternalLinkage) ...</k>
@@ -302,7 +311,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                    ~> newExternalType(CName, T)
                    ~> newExternalDecl(CName)
                    ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
-                   ~> defineObject(N, X, CName, T, Init, Type, S)
+                   ~> lazyDefineObject(N, X, CName, T, Init, Type, S, Base)
                ...</k>
                <curr-tr-scope> Scope::Scope </curr-tr-scope>
                <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
@@ -313,6 +322,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           rule <k> declareObject(NoNamespace(), _, X::CId, _, T::CPPType, Init::Init, Var(Type::InitType), NoLinkage, AutoStorage, S::Set) ~> Next:KItem
                    => addToEnv(NoNamespace() :: X, T, nonStatic, false)
                    ~> prepareDeclareNonStaticObject(X, T, Init, Type, S)
+                   ~> Declare.potentiallyInvokeDestructor(T)
                    ~> Next
                ...</k>
                <curr-tr-scope> _:BlockScope </curr-tr-scope>
@@ -330,7 +340,10 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
           // NoLinkage, StaticStorage, not previously declared
           rule <k> declareObject(NoNamespace(), _, X::CId, _, T::CPPType, Init::Init, Type::DeclarationType, NoLinkage, StaticStorage, Set::Set)
-                   => defineLocalStaticObject(X, bnew(!I:Int, T, Set, static(Tu)), T, Init, Type, Set) ...</k>
+                   => defineLocalStaticObject(X, bnew(!I:Int, T, Set, static(Tu)), T, Init, Type, Set)
+                   ~> Declare.potentiallyInvokeDestructor(T)
+               ...</k>
+                   
           <curr-tr-scope> S::Scope </curr-tr-scope>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -364,7 +377,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
               ~> newExternalDecl(CName)
               ~> newExternalState(C :: X, T, bnew(!I:Int, T, S, link(Tu)))
               ~> markAsConstexpr(bnew(!I, T, S, link(Tu)), S)
-              ~> defineObject(C, X, CName, T, Init, Type, S)
+              ~> lazyDefineObject(C, X, CName, T, Init, Type, S, bnew(!I:Int, T, S, link(Tu)))
           ...</k>
 
           // pure functions need to have a dummy functionObject in order for virtual call semantics to know their QualId if they have no definition
@@ -416,7 +429,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule completeDeclaration(T::CPPType, (ExprLoc(_, I::Init) => I))
 
-     // 8.5.4:3.2 (char x[] = {"foo"})
+     // @ref n4296 8.5.4:3.2 (char x[] = {"foo"})
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, T:CPPSimpleCharType))), BraceInit(ListItem(StringLiteral(Narrow::CharKind, S::String)))) => t(Q, Mods, arrayType(t(Q', Mods', T), lengthString(S) +Int 1))
           requires Narrow ==K Ascii() orBool Narrow ==K UTF8()
 
@@ -426,7 +439,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, char32_t))), BraceInit(ListItem(StringLiteral(UTF32(), S::String)))) => t(Q, Mods, arrayType(t(Q', Mods', char32_t), lengthString(S) +Int 1))
 
-     // 8.5:17.3 (char x[] = "foo")
+     // @ref n4296 8.5:17.3 (char x[] = "foo")
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, T:CPPSimpleCharType))), StringLiteral(Narrow::CharKind, S::String)) => t(Q, Mods, arrayType(t(Q', Mods', T), lengthString(S) +Int 1))
           requires Narrow ==K Ascii() orBool Narrow ==K UTF8()
 
@@ -472,6 +485,25 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                            )
           requires isAggregateType(T)
                andBool notBool isBraceInit(Init)
+
+     syntax Decl ::= lazyDefineObject(NNSVal, CId, CId, CPPType, Init, DeclarationType, Set, SymBase)
+
+     rule lazyDefineObject(N::NNSVal, X::CId, CName::CId, T::CPPType, Init::Init, Type::DeclarationType, S::Set, Base::SymBase)
+          => defineObject(N, X, CName, T, Init, Type, S)
+          requires notBool isInitOnlyIfOdrUsed(Init)
+
+     rule <k> lazyDefineObject(
+               N::NNSVal, X::CId, CName::CId,
+               T::CPPType, OnlyIfOdrUsed(Init::Init),
+               Type::DeclarationType, S::Set, Base::SymBase
+              )
+              => Odr.doWhenUsed(
+                    Base,
+                    scope(namespaceScope(GlobalNamespace()), clearScope() ~> defineObject(N, X, CName, T, Init, Type, S))
+                 )
+          ...</k>
+          <curr-tr-scope> Sc::Scope </curr-tr-scope>
+
 
      rule defineObject(_, _, _, _, NoInit(), Function(_), _) => .K
 

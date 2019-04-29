@@ -71,6 +71,11 @@ dist/writelong: scripts/writelong.c
 	@mkdir -p dist
 	@$(CC) $(CFLAGS) scripts/writelong.c -o dist/writelong
 
+dist/extract-references: scripts/extract-references.cpp
+	@mkdir -p dist
+	@echo Building $@
+	@$(CXX) -std=c++17 $< -lstdc++fs -o $@
+
 dist/kcc: scripts/getopt.pl $(PERL_MODULES) dist/writelong $(FILES_TO_DIST)
 	mkdir -p dist/RV_Kcc
 	cp -RLp $(FILES_TO_DIST) dist

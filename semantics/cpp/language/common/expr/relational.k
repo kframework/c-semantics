@@ -24,7 +24,7 @@ module CPP-EXPR-RELATIONAL
           => makeTruth(sameAddress(Loc1, Loc2), combine(Tr1, Tr2, #klabel(`_==__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool T1 ==Type T2
 
-     // C++ 5.10 (3.1) (3.2)
+     // @ref n4296 5.10:3.1-3.2
      rule prv(NullMemberFunctionPointer, Tr1::Trace, T1:CPPMemberFunctionPointerType) == prv(P:MemberFunctionPtr, Tr2::Trace, T2:CPPMemberFunctionPointerType)
           => makeTruth(P ==K NullMemberFunctionPointer, combine(Tr1, Tr2, #klabel(`_==__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool  T1 ==Type T2
@@ -53,7 +53,7 @@ module CPP-EXPR-RELATIONAL
           => makeTruth(notBool sameAddress(Loc1, Loc2), combine(Tr1, Tr2, #klabel(`_!=__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool T1 ==Type T2
 
-     // C++ 5.10 (3.1) (3.2)
+     // @ref n4296 5.10:3.1-3.2
      rule prv(NullMemberFunctionPointer, Tr1::Trace, T1:CPPMemberFunctionPointerType) != prv(P:MemberFunctionPtr, Tr2::Trace, T2:CPPMemberFunctionPointerType)
           => makeTruth(P =/=K NullMemberFunctionPointer, combine(Tr1, Tr2, #klabel(`_!=__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool T1 ==Type T2

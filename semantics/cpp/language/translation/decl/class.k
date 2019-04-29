@@ -22,6 +22,7 @@ module CPP-TRANSLATION-DECL-CLASS-SYNTAX
                    | isNonTrivialDefaultConstructor(CPPFunctionType, K) [function]
                    | isDefaultConstructor(CPPFunctionType, K) [function]
                    | isCopyConstructor(CPPFunctionType, K) [function]
+                   | isConstCopyConstructor(CPPFunctionType, K) [function]
                    | isMoveConstructor(CPPFunctionType, K) [function]
                    | isUserProvidedConstructor(CPPFunctionType, K) [function]
                    | isUserProvidedDefaultConstructor(CPPFunctionType, K) [function]
@@ -53,6 +54,7 @@ module CPP-TRANSLATION-DECL-CLASS-SYNTAX
                    | hasDestructor(CPPClassType) [function]
                    | hasDestructor(Class) [function, klabel(hasDestructor2)]
                    | hasCopyConstructor(Class) [function]
+                   | hasConstCopyConstructor(Class) [function]
                    | hasVirtualDestructor(Class) [function]
                    | hasUserProvidedMoveAssignOp(Class) [function]
                    | hasUserProvidedMoveConstructor(Class) [function]
@@ -81,9 +83,10 @@ module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
      imports CPP-CLASS-BASIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX // envEntry, SymBase
      imports C-CONFIGURATION
+     imports CPP-TYPE-MAP-SYNTAX
 
-     // N4296 3.2/3
-     // N4778 6.2/8
+     // @ref N4296 3.2/3
+     // @ref N4778 6.2/8
      // <quote>
      // [...] A destructor for a class is odr-used if it is potentially invoked.
      // </quote>
@@ -93,8 +96,8 @@ module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
           <class-id> C </class-id>
           <cenv>... DestructorId(X) |-> (_::CPPFunctionType |-> envEntry(... base: Base::SymBase)) ...</cenv>
 
-     // N4296 12.4/11
-     // N4778 10.3.6/12
+     // @ref N4296 12.4/11
+     // @ref N4778 10.3.6/12
      // <quote>
      // A destructor is potentially invoked if it is invoked or as specified in [...]
      // </quote>
@@ -236,6 +239,7 @@ module CPP-TRANSLATION-DECL-CLASS
               ~> setScope(classScope(C, true))
               ~> listToK(Members)
               ~> implicitDeclarations()
+              ~> implicitDeclarationOfCopyConstructor(C)
               ~> deferredActions(OldClass)
               ~> setScope(OldScope)
           ...</k>
@@ -275,7 +279,7 @@ module CPP-TRANSLATION-DECL-CLASS
                    FunctionDefinition(NoNNS(), ConstructorId(X), #NoName,
                         MethodPrototype(false, true, type(pointerType(type(classType(C)))),
                              FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false)),
-                        .List, Defaulted())))
+                        .List, OnlyIfOdrUsed(Defaulted()))))
               ~> implicitDeclarations() ...</k>
           <curr-tr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -284,6 +288,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <cenv> Env::Map </cenv>
           requires notBool ConstructorId(X) in_keys(Env)
 
+     // TODO odr-use destructors of members and base classes
      rule <k> (.K => AccessSpec(Public()) ~> Specifier(Inline(),
                    FunctionDefinition(NoNNS(), DestructorId(X), #NoName,
                         MethodPrototype(false, false, type(pointerType(type(classType(C)))),
@@ -313,6 +318,203 @@ module CPP-TRANSLATION-DECL-CLASS
           <base-classes> Bases::List </base-classes>
           requires notBool DestructorId(X) in_keys(Env)
                andBool some(Bases, #klabel(`hasVirtualDestructor`))
+
+    syntax Declarator ::= "var" "(" String ")" "ofType" "(" CPPType ")" [function]
+     rule var(S::String) ofType(T::CPPType) => VarDecl(NoNNS(), Identifier(S), #NoName, T, NoInit(), false)
+
+
+syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
+                   | Deleted(SpecialMemberFunction, Class) [klabel(DeletedSMF)]
+                   | "Defaulted" "(" SpecialMemberFunction "," Class ")" "unless" "(" Bool ")" [function]
+
+     rule Defaulted(SMF::SpecialMemberFunction, C::Class) unless(true) => OnlyIfOdrUsed(Deleted(SMF, C))
+     rule Defaulted(SMF::SpecialMemberFunction, C::Class) unless(false) => OnlyIfOdrUsed(Defaulted(SMF, C))
+
+     syntax SpecialMemberFunction ::= DefaultConstructor()
+                                    | CopyConstructor()
+                                    | MoveConstructor()
+                                    | CopyAssignOp()
+                                    | MoveAssignOp()
+     //                             | Destructor() [klabel(DestructorSMF)]
+
+     // Just a hack to support 'Defaulted(Destructor(), C)'
+     syntax SpecialMemberFunction ::= Stmt
+
+     // Just some syntactic sugar
+     syntax CPPType ::= CPPType "const" [function, klabel(eastConstCPPType)]
+                      | CPPSimpleType "const" [function, klabel(eastConstCPPSimpleType)]
+                      | CPPType "volatile" [function, klabel(eastVolatileCPPType)]
+                      | CPPSimpleType "volatile" [function, klabel(eastVolatileCPPSimpleType)]
+                      | CPPType "*" [function, klabel(eastPtrToCPPType)]
+                      | CPPSimpleType "*" [function, klabel(eastPtrToCPPSimpleType)]
+                      | CPPType "&" [function, klabel(eastLvRefToCPPType)]
+                      | CPPSimpleType "&" [function, klabel(eastLvRefToCPPSimpleType)]
+                      | CPPType "&&" [function, klabel(eastRvRefToCPPType)]
+                      | CPPSimpleType "&&" [function, klabel(eastRvRefToCPPSimpleType)]
+
+
+     rule T::CPPType const => const(T)
+     rule T::CPPSimpleType const => const(T)
+     rule T::CPPType volatile => volatile(T)
+     rule T::CPPSimpleType volatile => volatile(T)
+     rule T::CPPType * => type(pointerType(T))
+     rule T::CPPSimpleType * => type(pointerType(type(T)))
+     rule T::CPPType & => type(lvRefType(T))
+     rule T::CPPSimpleType & => type(lvRefType(type(T)))
+     rule T::CPPType && => type(rvRefType(T))
+     rule T::CPPSimpleType && => type(rvRefType(type(T)))
+
+     syntax Block ::= EmptyBlock() [function]
+     rule EmptyBlock() => BlockStmt(!N:Int, .List)
+
+     syntax KItem ::= implicitDeclarationOfCopyConstructor(Class)
+                    | implicitDeclarationOfCopyConstructor2(Class, Bool) [strict(2)]
+
+     // @ref n4800 12.8:8
+     rule implicitDeclarationOfCopyConstructor(C::Class)
+          => implicitDeclarationOfCopyConstructor2(C, eachPTSHasConstCopyConstructor(C))
+
+     // @ref n4296 12.8:7
+     rule implicitDeclarationOfCopyConstructor2(C::Class, ConstCopyConstructor:Bool)
+          =>
+          #if hasUserProvidedCopyConstructor(C) #then
+               .K
+          #else
+               AccessSpec(Public()) ~>
+               Specifier(
+                    Inline(),
+                    FunctionDefinition(
+                         NoNNS(), ConstructorId(idOf(C)), #NoName,
+                         MethodPrototype(
+                              false, true, classType(C) *,
+                              FunctionPrototype(
+                                   type(void),
+                                   list(ListItem(
+                                        #if ConstCopyConstructor #then
+                                             classType(C) const &
+                                        #else
+                                             classType(C) &
+                                        #fi
+                                   )),
+                                   NoExceptionSpec(),
+                                   false
+                              )
+                         ),
+                         ListItem(
+                              var("other") ofType (
+                                   #if ConstCopyConstructor #then
+                                        classType(C) const &
+                                   #else
+                                        classType(C) &
+                                   #fi
+                              )
+                         ),
+                         Defaulted(CopyConstructor(), C) unless (hasUserProvidedMoveConstructor(C) orBool hasUserProvidedMoveAssignOp(C))
+                    )
+               )
+          #fi
+
+     syntax KItem ::= eachPotentiallyConstructedSubobjectConstCopyable()
+
+     rule Defaulted(CopyConstructor(), C::Class) => Constructor(copyConstructorInitializers(directBaseClassesOf(C), nonStaticDataMembersOf(C)), EmptyBlock())
+
+     // Construct the initializer list
+     syntax List ::= copyConstructorInitializers(bases: List, dataMembers: List) [function]
+                   | copyConstructorInitializers2(bases: List, dataMembers: List, initializers: List) [function]
+
+     rule copyConstructorInitializers(B::List, M::List) => copyConstructorInitializers2(B, M, .List)
+     // base classes
+     // N4296 12.8:15.3
+     rule copyConstructorInitializers2(
+          (ListItem(C::Class) => .List) _,
+          _,
+          (.List => ListItem(ConstructorBase(type(classType(C)), false, false, Name(NoNNS(), Identifier("other"))))) _)
+
+     // members
+     rule copyConstructorInitializers2(
+          .List,
+          (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _,
+          (.List => ListItem(ConstructorMember(X, copyOrMoveInitializeMember(Name(NoNNS(), Identifier("other")) . no-template Name(NoNNS(), X), T)))) _)
+
+     // done
+     rule copyConstructorInitializers2(.List, .List, I::List) => I
+
+     syntax Bool ::= eachPTSHasConstCopyConstructor(Class) [function]
+                   | #eachPTSHasConstCopyConstructor(List, List) [function]
+
+     rule eachPTSHasConstCopyConstructor(C::Class)
+          => #eachPTSHasConstCopyConstructor(directBaseClassesOf(C), nonStaticDataMembersOf(C))
+
+     rule #eachPTSHasConstCopyConstructor(ListItem(C::Class) L::List, NSDM::List)
+          => hasConstCopyConstructor(C)
+          andBool #eachPTSHasConstCopyConstructor(L, NSDM)
+
+     rule #eachPTSHasConstCopyConstructor(.List,
+               (ListItem(Class.DataMember(_, T::CPPType)) => .List) _)
+          requires notBool isCPPClassType(T)
+
+     rule #eachPTSHasConstCopyConstructor(.List,
+               ListItem(Class.DataMember(_, t(... st: classType(C::Class)))) L::List)
+          => hasConstCopyConstructor(C)
+          andBool #eachPTSHasConstCopyConstructor(.List, L)
+
+     rule #eachPTSHasConstCopyConstructor(.List, .List) => true
+
+     syntax Init ::= copyOrMoveInitializeMember(Expr, CPPType) [function]
+
+     // N4296 12.8:15.1
+     rule copyOrMoveInitializeMember(E::Expr, T:CPPArrayType) => BraceInit(copyOrMoveInitializeArrayMember(E, T))
+
+     syntax List ::= copyOrMoveInitializeArrayMember(Expr, CPPArrayType) [function]
+
+     rule copyOrMoveInitializeArrayMember(_, t(... st: arrayType(_, 0))) => .List
+
+     rule copyOrMoveInitializeArrayMember(E::Expr, t(Q::Quals, M::Set, arrayType(T::CPPType, N::Int)))
+          => ListItem(copyOrMoveInitializeMember(E[prv(N -Int 1, noTrace, type(size_t))], T))
+             copyOrMoveInitializeArrayMember(E, t(Q, M, arrayType(T, N -Int 1)))
+          requires N >Int 0
+
+     // N4296 12.8:15.2
+     rule copyOrMoveInitializeMember(E::Expr, T:CPPRVRefType) => StaticCast(T, E)
+
+     // N4296 12.8:15.3
+     rule copyOrMoveInitializeMember(E::Expr, T::CPPType) => E [owise]
+
+     syntax List ::= directBaseClassesOf(Class) [function]
+                   | #directBaseClassesOf(K)    [function]
+                   | nonStaticDataMembersOf(Class) [function]
+                   | #nonStaticDataMembersOf(K) [function]
+
+     rule directBaseClassesOf(C::Class) => #directBaseClassesOf(getClassInfo(C))
+     rule #directBaseClassesOf(<class>... <base-classes> L::List </base-classes> ...</class>) => L
+     rule nonStaticDataMembersOf(C::Class) => #nonStaticDataMembersOf(getClassInfo(C))
+     rule #nonStaticDataMembersOf(<class>... <non-static-data-members> L::List </non-static-data-members> ...</class>) => L
+
+     // @ref n4296 12.8:2
+     // TODO: check non-template.
+     // TODO function parameter packs are not allowed
+     rule isCopyConstructor(
+               t(... st: functionType(... paramTypes: (t(... st: lvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPFunctionType,
+               envEntry(... defaultArgs: DA::DefaultArgumentsResult)
+          ) => acceptsNArgs(1, T, getDefaultArgsVals(DA))
+     rule isCopyConstructor(_, _) => false [owise]
+
+     rule isConstCopyConstructor(T::CPPFunctionType, K::K)
+          => isCopyConstructor(T, K) andBool  isConstType(innerType(firstParamOf(T)))
+
+     syntax CPPType ::= firstParamOf(CPPFunctionType) [function]
+
+     rule firstParamOf(t(... st: functionType(... paramTypes: (T::CPPType, _)))) => T
+
+     // @ref n4296 12.8:3 same as copy constructor, but rvalue reference
+     rule isMoveConstructor(
+               t(... st: functionType(... paramTypes: (t(... st: rvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPFunctionType,
+               envEntry(... defaultArgs: DA::DefaultArgumentsResult)
+          ) => acceptsNArgs(1, T, getDefaultArgsVals(DA))
+     rule isMoveConstructor(_, _) => false [owise]
+
+     syntax Bool ::= isExplicitlyDeclaredCopyConstructor(CPPFunctionType, K) [function]
+     rule isExplicitlyDeclaredCopyConstructor(T::CPPFunctionType, K::K) => isUserProvidedConstructor(T, K) andBool isCopyConstructor(T, K)
 
      syntax Stmt ::= "TwriteVTables"
 
@@ -348,7 +550,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           requires isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
 
-     // 12.1:4.6-4.7
+     // @ref n4296 12.1:4.6-4.7
      rule <k> (.K => checkCtorAndDtor(MemInit[X] orDefault .K, X, T, true, I, getMostDerivedArrayElement(T))) ~> figureConstruct(.List, MemInit::Map, .List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
@@ -409,24 +611,24 @@ module CPP-TRANSLATION-DECL-CLASS
 
      syntax Bool  ::= isDeletedDefaultConstructor(CId, CPPType, Class, CPPFunctionType, Set, Init) [function]
 
-     // 12.1:4.1
+     // @ref n4296 12.1:4.1
      rule isDeletedDefaultConstructor(X::CId, T::CPPType, C::Class, FuncT::CPPFunctionType, VM::Set, _) => true
           requires X in VM andBool isUnionLikeClass(C) andBool #fun(InnerT::CPPType => isCPPClassType(InnerT)
                andBool hasConstructorThat({InnerT}:>CPPClassType, #klabel(`isNonTrivialDefaultConstructor`)))(getMostDerivedArrayElement(T))
                andBool notBool isUserProvidedConstructor(FuncT, .K)
 
-     // 12.1:4.2
+     // @ref n4296 12.1:4.2
      rule isDeletedDefaultConstructor(_, T:CPPRefType, C::Class, FuncT::CPPFunctionType, _, NoInit()) => true
           requires notBool isUserProvidedConstructor(FuncT, .K)
 
-     // 12.1:4.3
+     // @ref n4296 12.1:4.3
      rule isDeletedDefaultConstructor(X::CId, T::CPPType, _, FuncT::CPPFunctionType, VM::Set, NoInit()) => true
           requires notBool X in VM andBool #fun(InnerT::CPPType => isCPPClassType(InnerT) andBool isConstType(InnerT) andBool notBool hasConstructorThat({InnerT}:>CPPClassType, #klabel(`isUserProvidedDefaultConstructor`)))(getMostDerivedArrayElement(T))
                andBool notBool isUserProvidedConstructor(FuncT, .K)
 
      rule isDeletedDefaultConstructor(_::CId, _, _, _, _, _) => false [owise]
 
-     // 12.1:4.4 (4.5 is implicit when constructing the anonymous union)
+     // @ref n4296 12.1:4.4 (4.5 is implicit when constructing the anonymous union)
      rule <k> figureConstruct(.List, _, .List, .List, _, _, false) => Deleted() ...</k>
           <curr-tr-scope> blockScope((_::ClassQualifier :: Class(Union(), _, _)) #as C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
@@ -435,7 +637,7 @@ module CPP-TRANSLATION-DECL-CLASS
 
      syntax KItem ::= figureConstructItem(memInit: K, CId, CPPType, isMember: Bool)
 
-     // 12.6.2:7
+     // @ref n4296 12.6.2:7
      rule <k> (figureConstructItem(I::Init, X::CId, T::CPPType, IsMember:Bool) => .K) ~> figureConstruct(.List, _, _, _, _,
                    (Res:K => Res ~> TExpressionStmt(figureConstructorInit(Name(C, X), T, I, notBool IsMember))),
                    B:Bool => B orBool (IsMember andBool X in VM andBool notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
@@ -446,7 +648,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           requires I =/=K .K
 
-     // 12.6.2:8.1
+     // @ref n4296 12.6.2:8.1
      // TODO(dwightguth): ctor-initializers and base classes
      // TODO(traiansf): unions
      rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, .Map, _, _, _,
@@ -460,7 +662,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           requires I =/=K NoInit()
 
-     // 12.6.2:8.2
+     // @ref n4296 12.6.2:8.2
      // TODO(traiansf): anonymous unions
      rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _, _,
                    B:Bool => B orBool (notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
@@ -472,7 +674,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           requires I ==K NoInit() andBool X in VM
 
-     // 12.6.2:8.3
+     // @ref n4296 12.6.2:8.3
      rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _,
                    (Res:K => Res ~> TExpressionStmt(defaultConstructorInit(Name(C, X), T, false))), _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
@@ -501,14 +703,14 @@ module CPP-TRANSLATION-DECL-CLASS
                    | #hasMethodThat(CId, ClassInfo, K) [function]
                    | #isDeleted(SymBase, K) [function]
 
-     // 12.1:4.8
+     // @ref n4296 12.1:4.8
      rule isTrivialDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool notBool isUserProvidedConstructor(T, K) andBool notBool hasVirtualMembers(type(classType(getMethodClass(T)))) andBool #isTrivialDefaultConstructor(getClassInfo(getMethodClass(T)))
 
-     // 12.1:4.10
+     // @ref n4296 12.1:4.10
      rule #isTrivialDefaultConstructor(<class>... <base-classes> ListItem(C::Class) => .List ...</base-classes> ...</class>)
           requires hasConstructorThat(type(classType(C)), #klabel(`isTrivialDefaultConstructor`))
 
-     // 12.1:4.9,4.11
+     // @ref n4296 12.1:4.9,4.11
      rule #isTrivialDefaultConstructor(<class>... <non-static-data-members> ListItem(Class.DataMember(X::CId, T::CPPType)) => .List ...</non-static-data-members> <initializers>... X |-> (T |-> NoInit()) ...</initializers> ...</class>)
           requires #if isCPPClassType(getMostDerivedArrayElement(T)) #then hasConstructorThat({getMostDerivedArrayElement(T)}:>CPPClassType, #klabel(`isTrivialDefaultConstructor`)) #else true #fi
 
@@ -559,6 +761,9 @@ module CPP-TRANSLATION-DECL-CLASS
 
      rule hasCopyConstructor(C::Class)
           => hasConstructorThat(C, #klabel(`isCopyConstructor`))
+
+     rule hasConstCopyConstructor(C::Class)
+          => hasConstructorThat(C, #klabel(`isConstCopyConstructor`))
 
      rule hasUserProvidedCopyConstructor(C::Class)
           => hasConstructorThat(C, #klabel(`isUserProvidedCopyConstructor`))
@@ -621,7 +826,7 @@ module CPP-TRANSLATION-DECL-CLASS
 
      syntax Stmt ::= figureDestruct(bases: List, dataMembers: List, result: K)
 
-     // 12.4:5
+     // @ref n4296 12.4:5
      rule <k> figureDestruct(.List, ListItem(Class.DataMember(X::CId, T::CPPType)) _, _) => Deleted() ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
@@ -631,7 +836,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           requires isDeletedDefaultDestructor(X, T, C, FuncT, VM)
 
-     // 12.4:5.2
+     // @ref n4296 12.4:5.2
      rule <k> (.K => checkDtor(X, T, getMostDerivedArrayElement(T), VM, FuncT)) ~> figureDestruct(.List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
@@ -661,7 +866,7 @@ module CPP-TRANSLATION-DECL-CLASS
 
      syntax Bool ::= isDeletedDefaultDestructor(CId, CPPType, Class, CPPFunctionType, Set) [function]
 
-     // 12.4:5.1
+     // @ref n4296 12.4:5.1
      rule isDeletedDefaultDestructor(X::CId, T::CPPType, C::Class, FuncT::CPPFunctionType, VM::Set) => true
           requires X in VM andBool isUnionLikeClass(C) andBool #fun(InnerT::CPPType => isCPPClassType(InnerT)
                andBool hasDestructorThat({InnerT}:>CPPClassType, #klabel(`isNonTrivialDestructor`)))(getMostDerivedArrayElement(T))
@@ -702,7 +907,7 @@ module CPP-TRANSLATION-DECL-CLASS
 
      syntax Bool ::= #isTrivialDestructor(ClassInfo) [function]
 
-     // 12.4:5.4
+     // @ref n4296 12.4:5.4
      rule isTrivialDestructor(T::CPPFunctionType, K:K) => notBool isUserProvidedDestructor(T, K) andBool notBool isMethodVirtual(T) andBool #isTrivialDestructor(getClassInfo(getMethodClass(T)))
 
      rule #isTrivialDestructor(<class>... <base-classes> ListItem(C::Class) => .List ...</base-classes> ...</class>)

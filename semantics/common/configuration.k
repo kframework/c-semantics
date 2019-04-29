@@ -136,6 +136,8 @@ module COMMON-CONFIGURATION
                     </cppenum>
                </cpp-enums>
 
+               <when-odr-used> .Map </when-odr-used>
+
           </tu>
      </translation-units>
    </global>

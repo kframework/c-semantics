@@ -44,7 +44,7 @@ use constant QUOTE_STRING => IS_CYGWIN? backslash("\"String\"") : "\"String\"";
 exit main();
 
 sub validateOptions {
-      !srcFiles() && !objFiles()
+      !srcFiles() && !objFiles() && !nativeObjFiles()
             && error("no input files found.\n");
       (arg('-c') || arg('-E') || arg('-M') || arg('-MM')) && arg('-o') && (scalar srcFiles() > 2)
             && error("cannot specify -o with -c or -E with multiple files.\n");
@@ -393,7 +393,9 @@ sub sharedObject {
 
       my $trampolines = tempFile('trampolines');
       my @trampolineFiles = trampolineFiles();
-      shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
+      if (@trampolineFiles) {
+            shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
+      }
 
       debug("Creating shared object.\n");
       my $accum = tempFile('accum');
