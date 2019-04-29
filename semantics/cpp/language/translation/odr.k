@@ -52,6 +52,7 @@ module CPP-TRANSLATION-ODR
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <when-odr-used> OU::Map </when-odr-used>
+          requires intersectSet(keys(OU), Uses) =/=K .Set
 
      syntax KItem ::= generateOdrUsedFunction(SymBase)
 
