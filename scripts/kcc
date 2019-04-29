@@ -58,6 +58,7 @@ sub main {
             $_ =~ tr/ \t\n/\0\0\0/;
       }
 
+      $ENV{OCAMLRUNPARAM} = "s=32M,b,l=8M";
       getopts() or error("Failed to parse the command line.\n");
       validateOptions();
 
@@ -70,12 +71,6 @@ sub main {
       }
       # Set heap and stack size of krun
       $ENV{K_OPTS} = "-Xmx$heapSize";
-      if (arg('-d')) {
-            $ENV{OCAMLRUNPARAM} = "s=32M,b,l=8M";
-            $File::Temp::KEEP_ALL = 1;
-      } else {
-            $ENV{OCAMLRUNPARAM} = "s=32M,l=8M";
-      }
 
       if (arg('-E') || arg('-M') || arg('-MM')) {
             my $oval = arg('-o') || '-';
