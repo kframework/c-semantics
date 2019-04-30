@@ -36,7 +36,10 @@ our @EXPORT_OK = qw(
 
 my $debugging = 0;
 
-sub enableDebugging { $debugging = 1; }
+sub enableDebugging {
+      $File::Temp::KEEP_ALL = 1;
+      $debugging = 1;
+}
 
 sub debug {
       if ($debugging) {
