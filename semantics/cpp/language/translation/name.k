@@ -248,13 +248,13 @@ module CPP-TRANSLATION-NAME
            andBool (notBool X in_keys(Types) orBool notBool type in Mask)
            andBool (notBool X in_keys(UE) orBool notBool variable in Mask)
 
-     rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set, C:K) => #if C ==K .K #then V #else classSet(V, {C}:>Class :: X, SetItem(C)) #fi ... </k>
+     rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set, C:K) => #if C ==K .K #then V #else classSet(V, {C}:>Class :: X, SetItem({C}:>Class)) #fi ... </k>
           <curr-tr-scope> enumScope(E) </curr-tr-scope>
           <enum-id> E </enum-id>
           <enumerators>... X |-> V::PRVal </enumerators>
           requires variable in Mask
 
-     rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set, C:K) => #if C ==K .K #then prv(V, Tr, ET) #else classSet(prv(V, Tr, ET), {C}:>Class :: X, SetItem(C)) #fi ... </k>
+     rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set, C:K) => #if C ==K .K #then prv(V, Tr, ET) #else classSet(prv(V, Tr, ET), {C}:>Class :: X, SetItem({C}:>Class)) #fi ... </k>
           <curr-tr-scope> Sc::Scope </curr-tr-scope>
           <enum-id> E </enum-id>
           <enum-type> ET::CPPType </enum-type>

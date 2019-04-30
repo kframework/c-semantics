@@ -176,53 +176,62 @@ module C-DECL-INITIALIZER
 
      syntax SubObjectControl ::= "next" | "down" | "block"
 
-     rule <curr-subobject>
+     rule <k> subobjectKCell ... </k>
+          <curr-subobject>
                (ListItem(down) => ListItem(ncle(K[[0]], T)))
                ListItem(ncle(K::InitLValue, t(_, _, arrayType(T::Type, _))))
           ...</curr-subobject>
           [structural]
-     rule <curr-subobject>
+     rule <k> subobjectKCell ... </k>
+          <curr-subobject>
                (ListItem(down) => ListItem(ncle(K[[0]], T)))
                ListItem(ncle(K::InitLValue, t(_, _, incompleteArrayType(T::Type))))
           ...</curr-subobject>
           [structural]
-     rule <curr-subobject>
+     rule <k> subobjectKCell ... </k>
+          <curr-subobject>
                (ListItem(down) => ListItem(firstField(K, findFieldNames(T), T)))
                ListItem(ncle(K:K, structOrUnionType #as T::Type))
           ...</curr-subobject>
           [structural]
 
-     rule <curr-subobject>
+     rule <k> subobjectKCell ... </k>
+          <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue [[N::Int]], T::Type))
                     => ListItem(ncle(K[[N +Int 1]], T)))
                ListItem(ncle(K, t(_, _, arrayType(_, Len::Int))))
           ...</curr-subobject>
           requires Len >Int N +Int 1
           [structural]
-     rule <curr-subobject>
+     rule <k> subobjectKCell ... </k>
+          <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue [[N::Int]], _)) => ListItem(noMoreIndices))
                ListItem(ncle(K, t(_, _, arrayType(_, Len::Int))))
           ...</curr-subobject>
           requires notBool Len >Int N +Int 1
           [structural]
-     rule <curr-subobject>
+     rule <k> subobjectKCell ... </k>
+          <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue [[N::Int]], T::Type))
                     => ListItem(ncle(K[[N +Int 1]], T)))
                ListItem(ncle(K, t(_, _, incompleteArrayType(_))))
           ...</curr-subobject>
           [structural]
-     rule <curr-subobject>
+     rule <k> subobjectKCell ... </k>
+          <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue .init F::CId, _))
                     => ListItem(followingField(K, F, findFieldNames(T), T)))
                ListItem(ncle(K, t(... st: structType(_)) #as T::Type))
           ...</curr-subobject>
           [structural]
-     rule <curr-subobject>
+     rule <k> subobjectKCell ... </k>
+          <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue .init _, _)) => ListItem(noMoreFields))
                ListItem(ncle(K, t(... st: unionType(_))))
           ...</curr-subobject>
           [structural]
-     rule <curr-subobject>
+     rule <k> subobjectKCell ... </k>
+          <curr-subobject>
                (ListItem(noMoreFields) => ListItem(next))
                ListItem(ncle(_ .init _::CId, _))
           ...</curr-subobject>
@@ -409,7 +418,11 @@ module C-DECL-INITIALIZER
 
      syntax KItem ::= findStruct(Type)
 
-     rule <curr-subobject>
+     syntax KItem ::= "subobjectKCell"
+     rule subobjectKCell => fillInit(?_) #Or fillInit-aux(?_) #Or t(?_, ?_, ?_) [macro]
+
+     rule <k> subobjectKCell ... </k>
+          <curr-subobject>
                ListItem(findStruct(T::Type)) (ListItem(ncle(_, T'::Type)) => .List)
           ...</curr-subobject>
           requires T =/=Type T'

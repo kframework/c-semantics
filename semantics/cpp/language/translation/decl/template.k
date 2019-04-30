@@ -95,17 +95,19 @@ module CPP-TRANSLATION-DECL-TEMPLATE
           <curr-template-context> _ => OldInfo </curr-template-context>
 
      // template parameters
-     rule TypeTemplateParam(_, false, TemplateParameterType(#NoName), NoType()) => addTemplateParam(#NoName, TypeParam, .K)
+     rule TypeTemplateParam(_, false, TemplateParameterType(#NoName), NoType()) => addTemplateParam(#NoName, TypeParam, NoDefault())
 
-     rule <k> TypeTemplateParam(_, false, TemplateParameterType(Identifier(S::String)), NoType()) => addTemplateParam(Identifier(S), TypeParam, .K) ~> TypedefDecl(Identifier(S), t(noQuals, .Set, dependentType(S, size(L)))) ...</k>
+     rule <k> TypeTemplateParam(_, false, TemplateParameterType(Identifier(S::String)), NoType()) => addTemplateParam(Identifier(S), TypeParam, NoDefault()) ~> TypedefDecl(Identifier(S), t(noQuals, .Set, dependentType(S, size(L)))) ...</k>
           <curr-template-context> templateInfo(... decls: L::List) </curr-template-context>
 
-     syntax KItem ::= addTemplateParam(CId, ParamType, K)
+     syntax KItem ::= addTemplateParam(CId, ParamType, KItem)
 
-     rule <k> addTemplateParam(#NoName, T::ParamType, Def:K) => .K ...</k>
+     syntax KItem ::= NoDefault()
+
+     rule <k> addTemplateParam(#NoName, T::ParamType, Def:KItem) => .K ...</k>
           <curr-template-context> templateInfo(_, (L::List => L ListItem(#NoName(size(L)))), _::Map (.Map => #NoName(size(L)) |-> T), _::Map (.Map => #NoName(size(L)) |-> Def), _, _) </curr-template-context>
 
-     rule <k> addTemplateParam(Identifier(S::String), T::ParamType, Def:K) => .K ...</k>
+     rule <k> addTemplateParam(Identifier(S::String), T::ParamType, Def:KItem) => .K ...</k>
           <curr-template-context> templateInfo(_, (L::List => L ListItem(Identifier(S))), _::Map (.Map => Identifier(S) |-> T), _::Map (.Map => Identifier(S) |-> Def), _, _) </curr-template-context>
 
      // template declarations

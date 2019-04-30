@@ -295,10 +295,10 @@ module CPP-SYNTAX
                    | BreakStmt()
                    | ReturnOp(Expr)
                    | IfStmt(Decl, Stmt, Stmt)
-                   | IfStmt(Expr, Stmt, Stmt)
+                   | IfStmt(Expr, K, K)
                    | WhileStmt(Decl, Stmt)
-                   | WhileStmt(Expr, Stmt)
-                   | ForStmt(Expr, Stmt, Stmt) [klabel(ForStmt3)]
+                   | WhileStmt(Expr, K)
+                   | ForStmt(Expr, K, K) [klabel(ForStmt3)]
                    | TryStmt(K, List)
                    | CatchOp(CPPType, K)
                    | CatchAnyOp(K)

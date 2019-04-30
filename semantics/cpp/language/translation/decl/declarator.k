@@ -191,7 +191,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax Map ::= addOdrDecl(Map, CId, K) [function]
 
-     rule addOdrDecl(ET::Map, Identifier(_) #as X::CId, V::K) => ET[X <- V]
+     rule addOdrDecl(ET::Map, Identifier(_) #as X::CId, V::KItem) => ET[X <- V]
 
      rule addOdrDecl(ET::Map, _, _) => ET [owise]
 
@@ -632,7 +632,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax KItem ::= initFunction(SymBase, K)
 
-     rule <k> initFunction(Base::SymBase, Val:K) => .K ...</k>
+     rule <k> initFunction(Base::SymBase, Val:KItem) => .K ...</k>
           <functions> F::Map => F[Base <- Val] </functions>
 
      syntax KItem ::= preserveThreadLocal(K)

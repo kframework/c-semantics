@@ -101,13 +101,13 @@ module COMPAT-KAST [kast]
           => .Set
 
      syntax Set ::= #filterSet(K, Set, K) [function]
-     rule #filterSet(K:K, .Set, #klabel(Pred:KLabel))
+     rule #filterSet(K:KItem, .Set, #klabel(Pred:KLabel))
           => SetItem(K)
           requires Pred(K) ==K true
      rule #filterSet(K:K, .Set, #klabel(Pred:KLabel))
           => .Set
           requires Pred(K) =/=K true
-     rule #filterSet(K:K, SetItem(K':KItem) S:Set, #klabel(Pred:KLabel))
+     rule #filterSet(K:KItem, SetItem(K':KItem) S:Set, #klabel(Pred:KLabel))
           => SetItem(K) #filterSet(K', S, #klabel(Pred))
           requires Pred(K) ==K true
      rule #filterSet(K:K, SetItem(K':KItem) S:Set, #klabel(Pred:KLabel))
@@ -120,13 +120,13 @@ module COMPAT-KAST [kast]
           => .List
 
      syntax List ::= #filterList(K, List, K) [function]
-     rule #filterList(K:K, .List, #klabel(Pred:KLabel))
+     rule #filterList(K:KItem, .List, #klabel(Pred:KLabel))
           => ListItem(K)
           requires Pred(K) ==K true
      rule #filterList(K:K, .List, #klabel(Pred:KLabel))
           => .List
           requires Pred(K) =/=K true
-     rule #filterList(K:K, ListItem(K':KItem) L:List, #klabel(Pred:KLabel))
+     rule #filterList(K:KItem, ListItem(K':KItem) L:List, #klabel(Pred:KLabel))
           => ListItem(K) #filterList(K', L, #klabel(Pred))
           requires Pred(K) ==K true
      rule #filterList(K:K, ListItem(K':KItem) L:List, #klabel(Pred:KLabel))
