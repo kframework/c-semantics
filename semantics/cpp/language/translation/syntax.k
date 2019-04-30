@@ -92,6 +92,9 @@ module CPP-ABSTRACT-SYNTAX
                          | FieldDecl(NNS, CId, AType, Init) [strict(3)]
                          | BitFieldDecl(NNS, CId, AType, Expr) [strict(3)]
 
+     syntax InitOnlyIfOdrUsed ::= OnlyIfOdrUsed(Init)
+     syntax Stmt ::= InitOnlyIfOdrUsed
+
      syntax StorageClassSpecifier ::= Mutable()
 
      syntax FunctionSpecifier ::= Explicit()
