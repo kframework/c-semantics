@@ -894,6 +894,10 @@ module CPP-DYNAMIC-OTHER
 
      rule showCPPType(pointerType(T::CPPType)) => showCPPType("", pointerType(T))
 
+     rule showCPPType(lvRefType(T::CPPType)) => showCPPType("", lvRefType(T))
+
+     rule showCPPType(rvRefType(T::CPPType)) => showCPPType("", rvRefType(T))
+
      rule showCPPType(classType(N:Namespace :: Class(_, X::CId, .TemplateArgs)))
           => showNamespace(N) +String showCId(X)
 
@@ -904,6 +908,12 @@ module CPP-DYNAMIC-OTHER
 
      rule showCPPType(DDL::String, pointerType(T::CPPType))
           => showCPPType(parens(T, "*" +String DDL), simpleType(T))
+
+     rule showCPPType(DDL::String, lvRefType(T::CPPType))
+          => showCPPType(parens(T, "&" +String DDL), simpleType(T))
+
+     rule showCPPType(DDL::String, rvRefType(T::CPPType))
+          => showCPPType(parens(T, "&&" +String DDL), simpleType(T))
 
      rule showCPPType(DDL::String, T::CPPSimpleType)
           => showCPPType(T) +String " " +String DDL [owise]
