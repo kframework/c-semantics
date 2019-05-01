@@ -6,7 +6,6 @@ module CPP-TRANSLATION-INIT
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-IMPLICIT-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports CPP-TRANSLATION-ODR-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -61,7 +60,6 @@ module CPP-TRANSLATION-INIT
                ~> makeNs(GlobalNamespace())
                ~> implicitDecls
                ~> listToK(Decls)
-               ~> generateOdrUsedFunctions()
                ~> removeUnusedIdentifiers(Tu +String Uuid)
           ...</k>
           <uuid> Uuid::String </uuid>

@@ -1,13 +1,7 @@
-// If a class has multiple base class,
-// they are located at different offsets.
-// @tags: multiple-inheritance offset
-
 extern "C" void abort();
 #define assert(x) if(!(x)) abort();
 
 struct Base1 {
-	Base1(){}
-	~Base1(){}
 	int x;
 
 	int const & getx() const {
@@ -16,8 +10,6 @@ struct Base1 {
 };
 
 struct Base2 {
-	Base2(){}
-	~Base2(){}
 	int y;
 
 	int const & gety() const {
@@ -27,8 +19,7 @@ struct Base2 {
 
 
 struct Derived : Base1, Base2 {
-	Derived(){}
-	~Derived(){}
+
 };
 
 int main() {
