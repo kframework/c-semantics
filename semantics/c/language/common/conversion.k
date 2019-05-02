@@ -282,6 +282,7 @@ module C-CONVERSION
           requires notBool isBoolUType(T')
                andBool (byteSizeofType(T) <=Int byteSizeofType(T')
                     orBool (V ==K NullPointer))
+               andBool notBool isAbsolute(V)
      rule (.K => UNDEF("CCV7",
                "Conversion from pointer to integer of a value possibly unrepresentable in the integer type."))
           ~> cast(integerUType #as T'::UType, tv(V::CValue, ut(... st: pointerType(_)) #as T::UType))
@@ -289,6 +290,9 @@ module C-CONVERSION
                andBool notBool isBoolUType(T')
                andBool byteSizeofType(T) >Int byteSizeofType(T')
           [structural]
+
+     syntax Bool ::= isAbsolute(CValue) [function]
+     rule isAbsolute(_) => false [owise]
 
      rule (.K => CV("CCV9",
           "Conversion from pointer to floating point type or from floating point type to pointer."))
