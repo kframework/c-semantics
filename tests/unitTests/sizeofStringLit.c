@@ -1,1 +1,0 @@
-int main(void){	"hello";	return sizeof("hello");}
