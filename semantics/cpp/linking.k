@@ -10,7 +10,6 @@ require "language/translation/operators.k"
 require "language/translation/overloading.k"
 require "language/translation/process-label.k"
 require "language/translation/syntax.k"
-require "language/translation/template-deduction.k"
 require "language/translation/value-category.k"
 require "language/translation/decl/alias.k"
 require "language/translation/decl/class.k"
@@ -21,7 +20,6 @@ require "language/translation/decl/typedef.k"
 require "language/translation/expr/conditional.k"
 require "language/translation/expr/literal.k"
 require "language/translation/expr/new.k"
-require "language/translation/typing/dependent.k"
 require "language/translation/typing/expr.k"
 
 module CPP-LINKING
@@ -37,6 +35,5 @@ module CPP-LINKING
      imports CPP-TRANSLATION-DECL-TEMPLATE
      imports CPP-TRANSLATION-DECL-TYPEDEF
      imports CPP-TRANSLATION-EXPR-LITERAL
-     imports CPP-TRANSLATION-TYPING-DEPENDENT
      imports CPP-TRANSLATION-TYPING-EXPR
 endmodule
