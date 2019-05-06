@@ -5,7 +5,7 @@ module C-ERROR-SYNTAX
      imports INT-SYNTAX
      imports ERROR-SYNTAX
 
-     // Error code, desc., C11 citation.
+     // Error code, desc., citation.
      syntax KItem ::= UNDEF(String, String) [function, klabel(CUndef)]
      syntax KItem ::= UNDEF(String, String, List)
      syntax KItem ::= UNSPEC(String, String)

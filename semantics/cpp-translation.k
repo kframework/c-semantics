@@ -20,15 +20,15 @@ require "c-settings.k"
 require "cpp-settings.k"
 require "cpp-extensions-translation.k"
 
-module CPP14-TRANSLATION-SYNTAX
+module CPP-TRANSLATION-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
 endmodule
 
-module CPP14-TRANSLATION
-     imports CPP14-TRANSLATION-SYNTAX
+module CPP-TRANSLATION
+     imports CPP-TRANSLATION-SYNTAX
      imports CPP-COMMON
      imports CPP-SIMPLE-EXECUTION
-     imports CPP-TRANSLATION
+     imports CPP-LANGUAGE-TRANSLATION
 
      imports C-CHECK-RESTRICT
      imports C-CONFIGURATION

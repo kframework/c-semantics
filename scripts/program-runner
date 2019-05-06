@@ -29,9 +29,9 @@ $ENV{K_OPTS} = "-Xms64m -Xmx$HEAP_SIZE -Xss32m -XX:+TieredCompilation";
 
 my $SCRIPTS_DIR = "EXTERN_SCRIPTS_DIR";
 
-my $EXEC_DEF = catfile($SCRIPTS_DIR, "c11-cpp14-kompiled");
-my $EXEC_ND_DEF = catfile($SCRIPTS_DIR, "c11-nd-kompiled");
-my $EXEC_ND_THREAD_DEF = catfile($SCRIPTS_DIR, "c11-nd-thread-kompiled");
+my $EXEC_DEF = catfile($SCRIPTS_DIR, "c-cpp-kompiled");
+my $EXEC_ND_DEF = catfile($SCRIPTS_DIR, "c-nd-kompiled");
+my $EXEC_ND_THREAD_DEF = catfile($SCRIPTS_DIR, "c-nd-thread-kompiled");
 
 use constant IS_CYGWIN    => $^O eq "cygwin" || $^O eq "msys";
 use constant KRUN         => do {
