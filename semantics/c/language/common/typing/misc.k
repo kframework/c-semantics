@@ -276,14 +276,24 @@ module C-TYPING-MISC
           => setFieldType(F', A, T)
      rule setActiveVariant(_, T::Type) => T [owise]
 
-     rule mergeVariants(t(_, SetItem(activeVariant(F::CId)) _, unionType(_)) #as T::Type,
-               t(_, SetItem(activeVariant(F)) _, unionType(_)) #as T'::Type)
-          => setFieldType(F, {mergeVariants(getFieldType(F, T), getFieldType(F, T'))}:>Type, T')
-     rule mergeVariants(t(_, SetItem(elementTypes(ETs::Map)) _, _:SimpleArrayType), t(_, SetItem(elementTypes(ETs'::Map)) _, _:SimpleArrayType) #as T'::Type)
-          => setElementTypes(mergeElementVariants(ETs, ETs'), T')
+     rule mergeVariants(t(_, SetItem(activeVariant(F::CId)) _, unionType(_)) #as T::Type, T'::Type)
+          => mergeUnionVariants(F, T, T')
+     rule mergeVariants(t(_, SetItem(elementTypes(ETs::Map)) _, _:SimpleArrayType), T'::Type)
+          => mergeArrayVariants(ETs, T')
      rule mergeVariants(t(... st: structType(...)) #as T::Type, t(... st: structType(...)) #as T'::Type)
           => mergeStructVariants(T, T', getFieldNames(T'))
      rule mergeVariants(_, T'::EffectiveType) => T' [owise]
+
+     syntax EffectiveType ::= mergeUnionVariants(CId, Type, Type) [function]
+     rule mergeUnionVariants(F::CId, T::Type,
+               t(_, SetItem(activeVariant(F)) _, unionType(_)) #as T'::Type)
+          => setFieldType(F, {mergeVariants(getFieldType(F, T), getFieldType(F, T'))}:>Type, T')
+     rule mergeUnionVariants(_, _, T'::Type) => T' [owise]
+
+     syntax EffectiveType ::= mergeArrayVariants(Map, Type) [function]
+     rule mergeArrayVariants(ETs::Map, t(_, SetItem(elementTypes(ETs'::Map)) _, _:SimpleArrayType) #as T'::Type)
+          => setElementTypes(mergeElementVariants(ETs, ETs'), T')
+     rule mergeArrayVariants(_, T'::Type) => T' [owise]
 
      syntax Map ::= mergeElementVariants(Map, Map) [function]
      rule mergeElementVariants((N:Int |-> T::Type) ETs::Map, ETs'::Map)

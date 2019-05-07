@@ -296,8 +296,9 @@ module C-TYPING-COMMON
      rule showTypeSpecifier(no-type) => "<none>"
 
      syntax String ::= showQualifiers(Set) [function]
-     rule showQualifiers(SetItem(Q1::Qualifier) SetItem(Q2::Qualifier) S::Set)
-          => showQualifier(Q1) +String " " +String showQualifiers(SetItem(Q2) S)
+     rule showQualifiers(SetItem(Q::Qualifier) S::Set)
+          => showQualifier(Q) +String " " +String showQualifiers(S)
+          requires S =/=K .Set
      rule showQualifiers(SetItem(Q::Qualifier)) => showQualifier(Q)
      rule showQualifiers(.Set) => ""
 
