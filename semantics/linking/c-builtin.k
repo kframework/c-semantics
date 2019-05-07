@@ -1,15 +1,20 @@
 module LINKING-C-BUILTIN-SYNTAX
      imports MAP
      imports STRING
+     imports C-TYPING-SORTS
 
      syntax KItem ::= addCBuiltins(tu: String, Map)
      syntax KItem ::= addNativeSymbols(tu: String, Map)
+
+     syntax Bool ::= extendsTu(Type) [function]
+     syntax CId ::= getExtendsTu(Type) [function]
 endmodule
 
 module LINKING-C-BUILTIN
      imports LINKING-C-BUILTIN-SYNTAX
      imports C-CONFIGURATION
      imports C-ALIGNMENT-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
      imports COMPAT-SYNTAX
@@ -85,5 +90,10 @@ module LINKING-C-BUILTIN
 
      syntax String ::= idToSymbol(CId) [function]
      rule idToSymbol(Identifier(S::String)) => S
+
+     rule getExtendsTu(t(_, SetItem(SpecExtendsTuOf(X::CId)) _, _)) => X
+
+     rule extendsTu(t(_, SetItem(SpecExtendsTuOf(_)) _, _)) => true
+     rule extendsTu(_) => false [owise]
 
 endmodule

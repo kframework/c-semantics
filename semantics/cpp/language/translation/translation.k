@@ -14,7 +14,6 @@ require "overloading.k"
 require "process-label.k"
 require "promotion.k"
 require "syntax.k"
-require "template-deduction.k"
 require "value-category.k"
 
 require "decl/alias.k"
@@ -59,10 +58,9 @@ require "stmt/return.k"
 require "stmt/try.k"
 
 require "typing/canonicalization.k"
-require "typing/dependent.k"
 require "typing/expr.k"
 
-module CPP-TRANSLATION
+module CPP-LANGUAGE-TRANSLATION
 
      imports CPP-LINKING-INTERFACE
 
@@ -81,7 +79,6 @@ module CPP-TRANSLATION
      imports CPP-TRANSLATION-PROCESS-LABEL
      imports CPP-TRANSLATION-PROMOTION
      imports CPP-TRANSLATION-ABSTRACT-REWRITING
-     imports CPP-TRANSLATION-TEMPLATE-DEDUCTION
      imports CPP-TRANSLATION-VALUE-CATEGORY
 
      imports CPP-TRANSLATION-DECL-ALIAS
@@ -126,7 +123,6 @@ module CPP-TRANSLATION
      imports CPP-TRANSLATION-STMT-TRY
 
      imports CPP-TRANSLATION-TYPING-CANONICALIZATION
-     imports CPP-TRANSLATION-TYPING-DEPENDENT
      imports CPP-TRANSLATION-TYPING-EXPR
 
 endmodule

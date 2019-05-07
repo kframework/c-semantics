@@ -219,21 +219,21 @@ module CPP-EXECUTION-STMT-TRY
 
      rule canPopBlock(_, _) => true [owise]
 
-     // 15.3:3.1
+     // @ref n4296 15.3:3.1
      rule handlerMatches(T::CPPType, E::CPPType) => true
           requires utype(T) ==Type utype(E)
 
      rule handlerMatches(t(... st: lvRefType(T::CPPType)), E::CPPType) => true
           requires utype(T) ==Type utype(E)
 
-     // 15.3:3.2
+     // @ref n4296 15.3:3.2
      rule handlerMatches(T:CPPClassType, E:CPPClassType) => true
           requires isBaseClassOf(T, E)
 
      rule handlerMatches(t(... st: lvRefType(T:CPPClassType)), E:CPPClassType) => true
           requires isBaseClassOf(T, E)
 
-     // 15.3:3.3.1
+     // @ref n4296 15.3:3.3.1
      rule handlerMatches(t(... st: pointerType(t(QT::Quals, _, _) #as T:CPPClassType)), t(... st: pointerType(t(QE::Quals, _, _) #as E:CPPClassType)))
           => true
           requires isBaseClassOf(T, E) andBool QE <=Quals QT
@@ -250,7 +250,7 @@ module CPP-EXECUTION-STMT-TRY
           => true
           requires QE <=Quals QT
 
-     // 15.3:3.3.2
+     // @ref n4296 15.3:3.3.2
      rule handlerMatches(T:CPPPointerType, E:CPPPointerType)
           => true
           requires isSimilar(T, E) andBool cvQualificationSignature(E) <=QualSig cvQualificationSignature(T)
@@ -259,7 +259,7 @@ module CPP-EXECUTION-STMT-TRY
           => true
           requires isSimilar(T, E) andBool cvQualificationSignature(E) <=QualSig cvQualificationSignature(T)
 
-     // 15.3:3.4
+     // @ref n4296 15.3:3.4
      rule handlerMatches(T:CPPPointerType, E:CPPNullPtrTType) => true
 
      rule handlerMatches(T:CPPMemberPointerType, E:CPPNullPtrTType) => true

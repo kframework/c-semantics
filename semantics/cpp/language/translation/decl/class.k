@@ -82,8 +82,8 @@ module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
      imports CPP-SYMLOC-SYNTAX // envEntry, SymBase
      imports C-CONFIGURATION
 
-     // N4296 3.2/3
-     // N4778 6.2/8
+     // @ref N4296 3.2/3
+     // @ref N4778 6.2/8
      // <quote>
      // [...] A destructor for a class is odr-used if it is potentially invoked.
      // </quote>
@@ -93,8 +93,8 @@ module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
           <class-id> C </class-id>
           <cenv>... DestructorId(X) |-> (_::CPPFunctionType |-> envEntry(... base: Base::SymBase)) ...</cenv>
 
-     // N4296 12.4/11
-     // N4778 10.3.6/12
+     // @ref N4296 12.4/11
+     // @ref N4778 10.3.6/12
      // <quote>
      // A destructor is potentially invoked if it is invoked or as specified in [...]
      // </quote>
@@ -134,11 +134,7 @@ module CPP-TRANSLATION-DECL-CLASS
      rule TypeDecl(ElaboratedTypeSpecifier(T:ClassKey, X::CId, NoNNS()) => declareClassName(T, X, true))
 
      context TypeDecl(HOLE:AType)
-             requires notBool isClassNameElabSpecifier(HOLE) [result(CPPTypeExpr)]
-
-     context TypeDecl(HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE)
-                  andBool notBool isClassNameElabSpecifier(HOLE) [result(CPPType)]
+             requires notBool isClassNameElabSpecifier(HOLE) [result(CPPType)]
 
      syntax Bool ::= isClassNameElabSpecifier(K) [function]
 
@@ -350,7 +346,7 @@ module CPP-TRANSLATION-DECL-CLASS
 
      syntax KItem ::= "dotInit"
 
-     // 12.1:4.6-4.7
+     // @ref n4296 12.1:4.6-4.7
      rule <k> (.K => checkCtorAndDtor(MemInit[X] orDefault dotInit, X, T, true, I, getMostDerivedArrayElement(T))) ~> figureConstruct(.List, MemInit::Map, .List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
@@ -411,24 +407,24 @@ module CPP-TRANSLATION-DECL-CLASS
 
      syntax Bool  ::= isDeletedDefaultConstructor(CId, CPPType, Class, CPPFunctionType, Set, Init) [function]
 
-     // 12.1:4.1
+     // @ref n4296 12.1:4.1
      rule isDeletedDefaultConstructor(X::CId, T::CPPType, C::Class, FuncT::CPPFunctionType, VM::Set, _) => true
           requires X in VM andBool isUnionLikeClass(C) andBool #fun(InnerT::CPPType => isCPPClassType(InnerT)
                andBool hasConstructorThat({InnerT}:>CPPClassType, #klabel(`isNonTrivialDefaultConstructor`)))(getMostDerivedArrayElement(T))
                andBool notBool isUserProvidedConstructor(FuncT, .K)
 
-     // 12.1:4.2
+     // @ref n4296 12.1:4.2
      rule isDeletedDefaultConstructor(_, T:CPPRefType, C::Class, FuncT::CPPFunctionType, _, NoInit()) => true
           requires notBool isUserProvidedConstructor(FuncT, .K)
 
-     // 12.1:4.3
+     // @ref n4296 12.1:4.3
      rule isDeletedDefaultConstructor(X::CId, T::CPPType, _, FuncT::CPPFunctionType, VM::Set, NoInit()) => true
           requires notBool X in VM andBool #fun(InnerT::CPPType => isCPPClassType(InnerT) andBool isConstType(InnerT) andBool notBool hasConstructorThat({InnerT}:>CPPClassType, #klabel(`isUserProvidedDefaultConstructor`)))(getMostDerivedArrayElement(T))
                andBool notBool isUserProvidedConstructor(FuncT, .K)
 
      rule isDeletedDefaultConstructor(_::CId, _, _, _, _, _) => false [owise]
 
-     // 12.1:4.4 (4.5 is implicit when constructing the anonymous union)
+     // @ref n4296 12.1:4.4 (4.5 is implicit when constructing the anonymous union)
      rule <k> figureConstruct(.List, _, .List, .List, _, _, false) => Deleted() ...</k>
           <curr-tr-scope> blockScope((_::ClassQualifier :: Class(Union(), _, _)) #as C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
@@ -437,7 +433,7 @@ module CPP-TRANSLATION-DECL-CLASS
 
      syntax KItem ::= figureConstructItem(memInit: K, CId, CPPType, isMember: Bool)
 
-     // 12.6.2:7
+     // @ref n4296 12.6.2:7
      rule <k> (figureConstructItem(I::Init, X::CId, T::CPPType, IsMember:Bool) => .K) ~> figureConstruct(.List, _, _, _, _,
                    (Res:K => Res ~> TExpressionStmt(figureConstructorInit(Name(C, X), T, I, notBool IsMember))),
                    B:Bool => B orBool (IsMember andBool X in VM andBool notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
@@ -448,7 +444,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           requires I =/=K dotInit
 
-     // 12.6.2:8.1
+     // @ref n4296 12.6.2:8.1
      // TODO(dwightguth): ctor-initializers and base classes
      // TODO(traiansf): unions
      rule <k> (figureConstructItem(dotInit, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, .Map, _, _, _,
@@ -462,7 +458,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           requires I =/=K NoInit()
 
-     // 12.6.2:8.2
+     // @ref n4296 12.6.2:8.2
      // TODO(traiansf): anonymous unions
      rule <k> (figureConstructItem(dotInit, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _, _,
                    B:Bool => B orBool (notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
@@ -474,7 +470,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           requires I ==K NoInit() andBool X in VM
 
-     // 12.6.2:8.3
+     // @ref n4296 12.6.2:8.3
      rule <k> (figureConstructItem(dotInit, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _,
                    (Res:K => Res ~> TExpressionStmt(defaultConstructorInit(Name(C, X), T, false))), _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
@@ -503,14 +499,14 @@ module CPP-TRANSLATION-DECL-CLASS
                    | #hasMethodThat(CId, ClassInfo, K) [function]
                    | #isDeleted(SymBase, K) [function]
 
-     // 12.1:4.8
+     // @ref n4296 12.1:4.8
      rule isTrivialDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool notBool isUserProvidedConstructor(T, K) andBool notBool hasVirtualMembers(type(classType(getMethodClass(T)))) andBool #isTrivialDefaultConstructor(getClassInfo(getMethodClass(T)))
 
-     // 12.1:4.10
+     // @ref n4296 12.1:4.10
      rule #isTrivialDefaultConstructor(<class>... <base-classes> ListItem(C::Class) => .List ...</base-classes> ...</class>)
           requires hasConstructorThat(type(classType(C)), #klabel(`isTrivialDefaultConstructor`))
 
-     // 12.1:4.9,4.11
+     // @ref n4296 12.1:4.9,4.11
      rule #isTrivialDefaultConstructor(<class>... <non-static-data-members> ListItem(Class.DataMember(X::CId, T::CPPType)) => .List ...</non-static-data-members> <initializers>... X |-> (T |-> NoInit()) ...</initializers> ...</class>)
           requires #if isCPPClassType(getMostDerivedArrayElement(T)) #then hasConstructorThat({getMostDerivedArrayElement(T)}:>CPPClassType, #klabel(`isTrivialDefaultConstructor`)) #else true #fi
 
@@ -623,7 +619,7 @@ module CPP-TRANSLATION-DECL-CLASS
 
      syntax Stmt ::= figureDestruct(bases: List, dataMembers: List, result: K)
 
-     // 12.4:5
+     // @ref n4296 12.4:5
      rule <k> figureDestruct(.List, ListItem(Class.DataMember(X::CId, T::CPPType)) _, _) => Deleted() ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
@@ -633,7 +629,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           requires isDeletedDefaultDestructor(X, T, C, FuncT, VM)
 
-     // 12.4:5.2
+     // @ref n4296 12.4:5.2
      rule <k> (.K => checkDtor(X, T, getMostDerivedArrayElement(T), VM, FuncT)) ~> figureDestruct(.List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
@@ -663,7 +659,7 @@ module CPP-TRANSLATION-DECL-CLASS
 
      syntax Bool ::= isDeletedDefaultDestructor(CId, CPPType, Class, CPPFunctionType, Set) [function]
 
-     // 12.4:5.1
+     // @ref n4296 12.4:5.1
      rule isDeletedDefaultDestructor(X::CId, T::CPPType, C::Class, FuncT::CPPFunctionType, VM::Set) => true
           requires X in VM andBool isUnionLikeClass(C) andBool #fun(InnerT::CPPType => isCPPClassType(InnerT)
                andBool hasDestructorThat({InnerT}:>CPPClassType, #klabel(`isNonTrivialDestructor`)))(getMostDerivedArrayElement(T))
@@ -704,7 +700,7 @@ module CPP-TRANSLATION-DECL-CLASS
 
      syntax Bool ::= #isTrivialDestructor(ClassInfo) [function]
 
-     // 12.4:5.4
+     // @ref n4296 12.4:5.4
      rule isTrivialDestructor(T::CPPFunctionType, K:K) => notBool isUserProvidedDestructor(T, K) andBool notBool isMethodVirtual(T) andBool #isTrivialDestructor(getClassInfo(getMethodClass(T)))
 
      rule #isTrivialDestructor(<class>... <base-classes> ListItem(C::Class) => .List ...</base-classes> ...</class>)

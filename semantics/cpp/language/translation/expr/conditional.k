@@ -59,7 +59,7 @@ module CPP-TRANSLATION-EXPR-CONDITIONAL
 
      context typeAndCatOfConditional(_, _, _, _, _, (HOLE:CatExpr => catof(HOLE))) [result(ValueCategory)]
 
-     // 5.16:2.1
+     // @ref n4296 5.16:2.1
      rule typeAndCatOfConditional(Throw(_), _, _, E::Expr, T:CPPType, V:ValueCategory)
           => typeAndCat(T, V)
           requires getKLabel(E) =/=K #klabel(`Throw`)
@@ -68,11 +68,11 @@ module CPP-TRANSLATION-EXPR-CONDITIONAL
           => typeAndCat(T, V)
           requires getKLabel(E) =/=K #klabel(`Throw`)
 
-     // 5.16:2.2
+     // @ref n4296 5.16:2.2
      rule typeAndCatOfConditional(_, T:CPPVoidType, _, _, _:CPPVoidType, _)
           => typeAndCat(T, prvalue)
 
-     // TODO(dwightguth): 5.16:3
+     // TODO(dwightguth): n4296 5.16:3
      rule typeAndCatOfConditional(E1::Expr, T1:CPPType, V1:ValueCategory, E2::Expr, T2:CPPType, V2:ValueCategory)
           => typeAndCatOfConditional3(E1, T1, V1, E2, T2, V2)
           requires notBool (T1 =/=Type T2 andBool
@@ -91,7 +91,7 @@ module CPP-TRANSLATION-EXPR-CONDITIONAL
           => typeAndCat(T2, V)
           requires T1 ==Type T2 andBool (isCPPBitfieldType(T2) orBool notBool isCPPBitfieldType(T1))
 
-     // TODO(dwightguth): 5.16:5
+     // TODO(dwightguth): n4296 5.16:5
      rule typeAndCatOfConditional3(E1::Expr, T1:CPPType, _, E2::Expr, T2:CPPType, _)
           => typeAndCatOfConditional5(E1, T1, E2, T2)
           requires notBool (T1 =/=Type T2 andBool (isCPPClassType(T1) orBool isCPPClassType(T2))) [owise]

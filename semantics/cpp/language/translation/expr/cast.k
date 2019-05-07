@@ -27,13 +27,13 @@ module CPP-TRANSLATION-EXPR-CAST
                andBool isSimilar(type(pointerType(innerType(T2))),
                                  type(pointerType(type(V))))
 
-     //5.2.3:1
+     // @ref n4296 5.2.3:1
      rule FunctionalCast(T:CPPType, ListItem(E::Expr)) => ParenthesizedCast(T, E)
 
      rule FunctionalCast(T:CPPType, ListItem(E1::Expr) ListItem(E2::Expr) L::List)
           => makePRVal(figureInit(le(temp(!I:Int, T), noTrace, T), T, ExpressionList(ListItem(E1) ListItem(E2) L), DirectInit()))
 
-     //5.2.3:2
+     // @ref n4296 5.2.3:2
      rule FunctionalCast(T:CPPType, .List)
           => makePRVal(valueInit(le(temp(!I:Int, T), noTrace, T), T))
           requires notBool isCPPArrayType(T)

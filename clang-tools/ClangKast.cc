@@ -104,6 +104,8 @@ public:
     this->InFile = InFile;
   }
 
+  bool shouldVisitTemplateInstantiations() { return true; }
+
 // if we reach all the way to the top of a hierarchy, crash with an error
 // because we don't support the node
 
@@ -603,7 +605,7 @@ public:
           AddKApplyNode("StaticMethodPrototype", 1);
         }
       }
-      TRY_TO(TraverseTypeLoc(TSI->getTypeLoc()));
+      TRY_TO(TraverseType(D->getType()));
     } else {
       doThrow("something implicit in functions??");
     }
@@ -675,7 +677,7 @@ public:
 
     mangledIdentifier(D);
 
-    TRY_TO(TraverseTypeLoc(D->getTypeSourceInfo()->getTypeLoc()));
+    TRY_TO(TraverseType(D->getType()));
     if (D->getInit()) {
       TRY_TO(TraverseStmt(D->getInit()));
     } else {
@@ -700,7 +702,7 @@ public:
     }
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
-    TRY_TO(TraverseTypeLoc(D->getTypeSourceInfo()->getTypeLoc()));
+    TRY_TO(TraverseType(D->getType()));
     if (D->isBitField()) {
       TRY_TO(TraverseStmt(D->getBitWidth()));
     } else if (D->hasInClassInitializer()) {
@@ -798,7 +800,28 @@ public:
   TRAVERSE_TEMPLATE_DECL(TypeAlias)
 
   bool TraverseTemplateInstantiations(ClassTemplateDecl *D) {
-    AddKSequenceNode(0);
+    unsigned i = 0;
+    for (auto *FD : D->specializations()) {
+      switch(FD->getTemplateSpecializationKind()) {
+      case TSK_ImplicitInstantiation:
+      case TSK_ExplicitInstantiationDeclaration:
+      case TSK_ExplicitInstantiationDefinition:
+        i++;
+      default:
+        break;
+      }
+    }
+    AddKSequenceNode(i);
+    for (auto *FD : D->specializations()) {
+      switch(FD->getTemplateSpecializationKind()) {
+      case TSK_ImplicitInstantiation:
+      case TSK_ExplicitInstantiationDeclaration:
+      case TSK_ExplicitInstantiationDefinition:
+        TRY_TO(TraverseDecl(FD));
+      default:
+        break;
+      }
+    }
     return true;
   }
 
@@ -808,7 +831,28 @@ public:
   }
 
   bool TraverseTemplateInstantiations(VarTemplateDecl *D) {
-    AddKSequenceNode(0);
+    unsigned i = 0;
+    for (auto *FD : D->specializations()) {
+      switch(FD->getTemplateSpecializationKind()) {
+      case TSK_ImplicitInstantiation:
+      case TSK_ExplicitInstantiationDeclaration:
+      case TSK_ExplicitInstantiationDefinition:
+        i++;
+      default:
+        break;
+      }
+    }
+    AddKSequenceNode(i);
+    for (auto *FD : D->specializations()) {
+      switch(FD->getTemplateSpecializationKind()) {
+      case TSK_ImplicitInstantiation:
+      case TSK_ExplicitInstantiationDeclaration:
+      case TSK_ExplicitInstantiationDefinition:
+        TRY_TO(TraverseDecl(FD));
+      default:
+        break;
+      }
+    }
     return true;
   }
 
@@ -820,6 +864,7 @@ public:
     unsigned i = 0;
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
+      case TSK_ImplicitInstantiation:
       case TSK_ExplicitInstantiationDeclaration:
       case TSK_ExplicitInstantiationDefinition:
         i++;
@@ -830,6 +875,7 @@ public:
     AddKSequenceNode(i);
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
+      case TSK_ImplicitInstantiation:
       case TSK_ExplicitInstantiationDeclaration:
       case TSK_ExplicitInstantiationDefinition:
         TRY_TO(TraverseDecl(FD));
@@ -850,7 +896,7 @@ public:
       AddKApplyNode("NoType", 0);
     }
     if(D->hasDefaultArgument() && !D->defaultArgumentWasInherited()) {
-      TRY_TO(TraverseTypeLoc(D->getDefaultArgumentInfo()->getTypeLoc()));
+      TRY_TO(TraverseType(D->getDefaultArgumentInfo()->getType()));
     } else {
       AddKApplyNode("NoType", 0);
     }
@@ -986,7 +1032,7 @@ public:
         VisitBool(I.isVirtual());
         VisitBool(I.isPackExpansion());
         VisitAccessSpecifier(I.getAccessSpecifierAsWritten());
-        TRY_TO(TraverseTypeLoc(I.getTypeSourceInfo()->getTypeLoc()));
+        TRY_TO(TraverseType(I.getType()));
       }
       AddDeclContextNode(D);
       TraverseDeclContextNode(D);
@@ -1038,14 +1084,17 @@ public:
       case TSK_ExplicitInstantiationDeclaration:
         AddKApplyNode("TemplateInstantiationDeclaration", 2);
         break;
+      case TSK_ImplicitInstantiation:
       case TSK_ExplicitInstantiationDefinition:
         AddKApplyNode("TemplateInstantiationDefinition", 2);
         break;
       default:
         doThrow("unimplemented: implicit template instantiation");
     }
-    if (TypeSourceInfo *TSI = D->getTypeAsWritten()) {
-      TRY_TO(TraverseTypeLoc(TSI->getTypeLoc()));
+    if (D->getTypeForDecl()) {
+      TRY_TO(TraverseType(QualType(D->getTypeForDecl(), 0)));
+    } else {
+      AddKApplyNode("NoType", 0);
     }
     TRY_TO(TraverseCXXRecordHelper(D));
     return true;
@@ -1222,6 +1271,9 @@ public:
       case BuiltinType::Dependent:
         AddKApplyNode("Dependent", 0);
         break;
+      case BuiltinType::NullPtr:
+        AddKApplyNode("NullPtr", 0);
+        break;
       default:
         doThrow("unimplemented: basic type");
     }
@@ -1381,8 +1433,12 @@ public:
   }
 
   bool TraverseAutoType(AutoType *T) {
-    AddKApplyNode("AutoType", 1);
-    VisitBool(T->isDecltypeAuto());
+    if (T->isDeduced()) {
+      TRY_TO(TraverseType(T->getDeducedType()));
+    } else {
+      AddKApplyNode("AutoType", 1);
+      VisitBool(T->isDecltypeAuto());
+    }
     return true;
   }
 
@@ -1946,7 +2002,7 @@ public:
 
   bool TraverseCXXScalarValueInitExpr(CXXScalarValueInitExpr *E) {
     AddKApplyNode("FunctionalCast", 2);
-    return TraverseCXXConstructHelper(E->getTypeSourceInfo()->getType(), 0, 0);
+    return TraverseCXXConstructHelper(E->getType(), 0, 0);
   }
 
   bool TraverseCXXConstructExpr(CXXConstructExpr *E) {
@@ -1957,7 +2013,7 @@ public:
 
   bool TraverseCXXTemporaryObjectExpr(CXXTemporaryObjectExpr *E) {
     AddKApplyNode("TemporaryObjectExpr", 2);
-    return TraverseCXXConstructHelper(E->getTypeSourceInfo()->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
+    return TraverseCXXConstructHelper(E->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
 
   bool VisitUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E) {
@@ -2099,8 +2155,8 @@ public:
       }
     }
 
-    TypeLoc TL = E->getCallOperator()->getTypeSourceInfo()->getTypeLoc();
-    TRY_TO(TraverseTypeLoc(TL));
+    QualType T = E->getCallOperator()->getType();
+    TRY_TO(TraverseType(T));
     TRY_TO(TraverseStmt(E->getBody()));
 
     return true;

@@ -33,22 +33,15 @@ module CPP-TRANSLATION-STMT-TRY
 
      syntax Expr ::= "Throw.prepare" "(" AExpr "," K ")"
 
-     context Throw.prepare(_, HOLE:TypeExpr => typeof(HOLE)) [result(CPPTypeExpr)]
+     context Throw.prepare(_, HOLE:TypeExpr => typeof(HOLE)) [result(CPPType)]
 
-     context Throw.prepare(_, HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+     rule Throw.prepare(_, T:CPPArrayType => type(pointerType(innerType(T))))
 
-     rule Throw.prepare(_, T:CPPArrayTypeExpr => type(pointerType(innerType(T))))
-
-     rule Throw.prepare(_, T:CPPFunctionTypeExpr => type(pointerType(T)))
+     rule Throw.prepare(_, T:CPPFunctionType => type(pointerType(T)))
 
      rule Throw.prepare(E::Expr, T:CPPType)
           => Throw.potentiallyInvokeDestructor(T)
           ~> Throw.eval(figureInit(le(temp(!I:Int, utype(T)), noTrace, utype(T)), utype(T), E, CopyInit()), E)
-
-     rule Throw.prepare(E::Expr, T:CPPTypeExpr)
-          => prd(Throw.prepare(E, T), hasTrace(Throw(E)), type(void), T)
-          requires isDependentInScope(T)
 
      rule Throw.prepare(NoExpression(), NoExpression())
           => pre(ThrowOp(exceptionObject(type(no-type))), hasTrace(Throw(NoExpression())), type(void))
@@ -57,7 +50,7 @@ module CPP-TRANSLATION-STMT-TRY
 
      rule Throw.eval(V:Val, E::Expr) => pre(ThrowOp(V), hasTrace(E), type(void))
 
-     // n4778 13.1/5
+     // @ref n4778 13.1/5
      // <quote>
      // When the thrown object is a class object, [...].
      // The destructor is potentially invoked.

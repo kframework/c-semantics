@@ -311,12 +311,12 @@ module CPP-TRANSLATION-DECL-ENUM
           <enum-complete> _ => true </enum-complete>
 
 
-     // 7.2/3: ... An opaque-enum-declaration is either a redeclaration of an enumeration in the current scope...
+     // @ref n4296 7.2/3: ... An opaque-enum-declaration is either a redeclaration of an enumeration in the current scope...
      rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPIntegerType) => . ...</k>
           <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
           <enum-id> N::Namespace :: Enum(X) </enum-id>
 
-     // 7.2/3 ... or a declaration of a new enumeration.
+     // @ref n4296 7.2/3 ... or a declaration of a new enumeration.
      rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPIntegerType)
      => enumContext(X, declareEnumName(createEnumName(X, Sc), UT, Scoped, true), .List, true, UT, true) ...</k>
           <curr-tr-scope> Sc::Scope </curr-tr-scope>

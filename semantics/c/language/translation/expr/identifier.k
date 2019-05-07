@@ -48,7 +48,7 @@ module C-EXPR-IDENTIFIER
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           [structural]
 
-     // according to C11 sec. 6.5.1, enumeration constants are constants and therefore
+     // According to C18 sec. 6.6:6, enumeration constants are constants and therefore
      // not lvalues, which designate an object. Therefore we convert directly to a tv
      // so that expressions like &x will not work.
      rule <k> X:CId => tv(Value, ut(SetItem(IntegerConstant), int)) ...</k>

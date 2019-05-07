@@ -171,11 +171,13 @@ module C-MEMORY-READING
           requires NumBits >Int 0
      rule extractBitsFromList-aux(_, 0, 0, Done::List) => dataList(Done)
 
-     syntax RValue ::= interpret(UType, BitValue) [function]
+     syntax KItem ::= interpret(UType, BitValue)
      rule interpret(integerUType #as T::UType, I:Int)
           => #if max(T) >=Int I #then tv(I, T) #else interpret(T, I -Int (1 <<Int absInt(bitSizeofType(T)))) #fi
      rule interpret(integerUType #as T::UType, encodedPtr(NullPointer, _, _)) => tv(unknown(0), T)
-     rule interpret(ut(... st: pointerType(_)) #as T::UType, I:Int) => tv(cfg:intToPointer(I, T), T)
+     rule <k> interpret(T::UType, I:Int) => interpretPointer(T, I, Mem) ...</k>
+          <mem> Mem::Map </mem>
+          requires isPointerUType(T)
      rule interpret(ut(... st: _:SimpleFloatType) #as T::UType, 0) => tv(zeroCFloat(T), T)
      rule interpret(ut(... st: _:SimpleFloatType) #as T::UType, encodedPtr(NullPointer, _, _)) => tv(unknown(zeroCFloat(T)), T)
      rule interpret(ut(... st: _:SimpleFloatType) #as T::UType, I:Int) => tv(cfg:floatFromBits(I, T), T)
@@ -190,5 +192,10 @@ module C-MEMORY-READING
      rule interpret(T::UType, encodedValue(unknown(V::EffectiveValue), 0, To::Int)) => tv(unknown(V), T)
           requires To ==Int bitSizeofType(type(T))
      rule interpret(T::UType, V::BitValue) => tv(V, T) [owise]
+
+     syntax RValue ::= interpretPointer(UType, Int, Map) [function]
+     rule interpretPointer(T::UType, I::Int, _) => tv(cfg:intToPointer(I, T), T)
+          requires isPointerUType(T)
+          [owise]
 
 endmodule

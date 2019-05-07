@@ -44,7 +44,7 @@ use constant QUOTE_STRING => IS_CYGWIN? backslash("\"String\"") : "\"String\"";
 exit main();
 
 sub validateOptions {
-      !srcFiles() && !objFiles()
+      !srcFiles() && !objFiles() && !nativeObjFiles()
             && error("no input files found.\n");
       (arg('-c') || arg('-E') || arg('-M') || arg('-MM')) && arg('-o') && (scalar srcFiles() > 2)
             && error("cannot specify -o with -c or -E with multiple files.\n");
@@ -58,6 +58,7 @@ sub main {
             $_ =~ tr/ \t\n/\0\0\0/;
       }
 
+      $ENV{OCAMLRUNPARAM} = "s=32M,b,l=8M";
       getopts() or error("Failed to parse the command line.\n");
       validateOptions();
 
@@ -70,12 +71,6 @@ sub main {
       }
       # Set heap and stack size of krun
       $ENV{K_OPTS} = "-Xmx$heapSize";
-      if (arg('-d')) {
-            $ENV{OCAMLRUNPARAM} = "s=32M,b,l=8M";
-            $File::Temp::KEEP_ALL = 1;
-      } else {
-            $ENV{OCAMLRUNPARAM} = "s=32M,l=8M";
-      }
 
       if (arg('-E') || arg('-M') || arg('-MM')) {
             my $oval = arg('-o') || '-';
@@ -117,7 +112,7 @@ sub main {
       my $programConfFile = tempFile('conf');
       linkAll($programConfFile);
 
-      my $useCompile = -e profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled', 'execution_partial.o');
+      my $useCompile = -e profileDir('c-cpp-kompiled', 'c-cpp-kompiled', 'execution_partial.o');
 
       my $oval = arg('-o') || 'a.out';
 
@@ -165,7 +160,7 @@ sub main {
                   or error("Call to chmod $oval failed.\n");
       } else {
             debug("Building a natively-compiled executable.\n");
-            my $sem = profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled');
+            my $sem = profileDir('c-cpp-kompiled', 'c-cpp-kompiled');
             my $d = tempDir('native');
             my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
 
@@ -393,7 +388,11 @@ sub sharedObject {
 
       my $trampolines = tempFile('trampolines');
       my @trampolineFiles = trampolineFiles();
-      shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
+      if (@trampolineFiles) {
+            shell("cat @trampolineFiles | sort | uniq")->stdout($trampolines)->run();
+      } else {
+            shell('touch', $trampolines)->run();
+      }
 
       debug("Creating shared object.\n");
       my $accum = tempFile('accum');
@@ -450,7 +449,7 @@ sub getLinkingCommand {
 
       my @objs = objFiles();
 
-      my @krun = getKRunCommand($output, $symbols, 'c11-cpp14-linking-kompiled');
+      my @krun = getKRunCommand($output, $symbols, 'c-cpp-linking-kompiled');
 
       my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
       my $json = "#token($rvErrorJson, $string)";
@@ -507,11 +506,11 @@ sub getLinkingCommand {
 sub getTranslationCommand {
       my ($output, $src, $lang, $uuid, $trampolines) = (@_);
 
-      my $cTransDef = profileDir("c11-translation-kompiled");
-      my $cppTransDef = profileDir("cpp14-translation-kompiled");
+      my $cTransDef = profileDir("c-translation-kompiled");
+      my $cppTransDef = profileDir("cpp-translation-kompiled");
 
       my @krun = getKRunCommand($output, 'dummy',
-            $lang eq 'c++'? 'cpp14-translation-kompiled' : 'c11-translation-kompiled');
+            $lang eq 'c++'? 'cpp-translation-kompiled' : 'c-translation-kompiled');
 
       if (arg('-ftranslation-depth=')) {
             push(@krun, '--depth');
@@ -644,7 +643,7 @@ sub makeSet {
 }
 
 sub useInterpreter {
-      -e profileDir('cpp14-translation-kompiled', 'cpp14-translation-kompiled', 'interpreter');
+      -e profileDir('cpp-translation-kompiled', 'cpp-translation-kompiled', 'interpreter');
 }
 
 sub getRVErrorJson {

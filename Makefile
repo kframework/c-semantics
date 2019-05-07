@@ -48,7 +48,7 @@ define timestamp_of
     dist/profiles/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
-.PHONY: default check-vars semantics clean stdlibs deps c11-cpp14-semantics test-build pass fail fail-compile parser/cparser clang-tools/clang-kast $(PROFILE)-native
+.PHONY: default check-vars semantics clean stdlibs deps c-cpp-semantics test-build pass fail fail-compile parser/cparser clang-tools/clang-kast $(PROFILE)-native
 
 default: test-build
 
@@ -70,6 +70,11 @@ check-vars: deps
 dist/writelong: scripts/writelong.c
 	@mkdir -p dist
 	@$(CC) $(CFLAGS) scripts/writelong.c -o dist/writelong
+
+dist/extract-references: scripts/extract-references.cpp
+	@mkdir -p dist
+	@echo Building $@
+	@$(CXX) -std=c++17 $< -lstdc++fs -o $@
 
 dist/kcc: scripts/getopt.pl $(PERL_MODULES) dist/writelong $(FILES_TO_DIST)
 	mkdir -p dist/RV_Kcc
@@ -108,8 +113,8 @@ dist/profiles/$(PROFILE): dist/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) 
 .SECONDEXPANSION:
 $(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
 # the % sign matches to '$(NAME)-kompiled/$(NAME)',
-# e.g. to 'c11-cpp14-kompiled/c11-cpp14'
-#dist/profiles/$(PROFILE)/c11-cpp14-kompiled/c11-cpp14-kompiled/timestamp
+# e.g. to 'c-cpp-kompiled/c-cpp'
+#dist/profiles/$(PROFILE)/c-cpp-kompiled/c-cpp-kompiled/timestamp
 dist/profiles/$(PROFILE)/%-kompiled/timestamp: dist/profiles/$(PROFILE) $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
 	@echo "Distributing $(NAME)"
@@ -117,7 +122,7 @@ dist/profiles/$(PROFILE)/%-kompiled/timestamp: dist/profiles/$(PROFILE) $$(notdi
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp semantics/.build/$(PROFILE)/$(NAME)-kompiled dist/profiles/$(shell basename $(d));)
 
-$(LIBSTDCXX_SO): $(call timestamp_of,c11-cpp14-linking) $(call timestamp_of,cpp14-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) dist/profiles/$(PROFILE)
+$(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) $(call timestamp_of,cpp-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) dist/profiles/$(PROFILE)
 	@echo "$(PROFILE): Translating the C++ standard library..."
 	@cd $(PROFILE_DIR)/compiler-src && $(shell pwd)/dist/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$@ *.C $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
@@ -125,7 +130,7 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c11-cpp14-linking) $(call timestamp_of,cpp1
 		$(shell pwd)/dist/kcc --use-profile $(shell basename $(d)) -shared -o $(shell pwd)/dist/profiles/$(shell basename $(d))/lib/libstdc++.so *.C $(KCCFLAGS) -I .;)
 	@echo "$(PROFILE): Done translating the C++ standard library."
 
-$(LIBC_SO): $(call timestamp_of,c11-cpp14-linking) $(call timestamp_of,c11-translation) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) dist/profiles/$(PROFILE)
+$(LIBC_SO): $(call timestamp_of,c-cpp-linking) $(call timestamp_of,c-translation) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) dist/profiles/$(PROFILE)
 	@echo "$(PROFILE): Translating the C standard library..."
 	@cd $(PROFILE_DIR)/src && $(shell pwd)/dist/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$@ *.c $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
@@ -147,7 +152,7 @@ dist/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c $(wildcard native
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@ -I native-server
 
-stdlibs: $(LIBC_SO) $(LIBSTDCXX_SO) $(call timestamp_of,c11-cpp14)
+stdlibs: $(LIBC_SO) $(LIBSTDCXX_SO) $(call timestamp_of,c-cpp)
 
 test-build: stdlibs
 	@echo "Testing kcc..."
@@ -179,15 +184,15 @@ scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 # compatability targets
 # TODO: remove when not used in rv-match build
 .PHONY: c-translation-semantics
-c-translation-semantics: c11-translation-semantics
+c-translation-semantics: c-translation-semantics
 .PHONY: cpp-translation-semantics
-cpp-translation-semantics: cpp14-translation-semantics
+cpp-translation-semantics: cpp-translation-semantics
 .PHONY: linking-semantics
-linking-semantics: c11-cpp14-linking-semantics
+linking-semantics: c-cpp-linking-semantics
 .PHONY: execution-semantics
-execution-semantics: c11-cpp14-semantics
+execution-semantics: c-cpp-semantics
 
-XYZ_SEMANTICS := $(addsuffix -semantics,c11-translation cpp14-translation c11-cpp14-linking c11-cpp14)
+XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
 .PHONY: $(XYZ_SEMANTICS)
 $(XYZ_SEMANTICS): check-vars
 	@$(MAKE) -C semantics $@

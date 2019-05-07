@@ -6,7 +6,7 @@ module CPP-TRANSLATION-STMT-EXPR
 
      rule <k> TExpressionStmt(V:Val)  => .K ...</k>
           <elab>... .K => ExpressionStmt(V) </elab>
-          requires (isTExpr(V) orBool isDep(V)) andBool notBool isConvertableDiscardedExpr(V)
+          requires isTExpr(V) andBool notBool isConvertableDiscardedExpr(V)
 
      rule TExpressionStmt(V::GLVal => prDiscardedExpr(V))
           requires isConvertableDiscardedExpr(V)

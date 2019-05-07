@@ -48,6 +48,12 @@ module LINKING-C-RESOLUTION
           <external-defs>... X |-> _ ...</external-defs>
           <external-types>... X |-> _ ...</external-types>
           [structural]
+     rule <k> resolveCReference(X:CId) => .K ...</k>
+          <external-defs> Defs:Map </external-defs>
+          <external-types> Types:Map </external-types>
+          requires (notBool (X in_keys(Defs)) orBool notBool (X in_keys(Types)))
+               andBool isMangledName(X)
+          [structural]
      rule <k> (.K => setTranslationLoc(L) ~> EXT-UNDEF("TDR2",
                     "No definition for symbol with external linkage: "
                      +String showCId(X) +String "."))
@@ -58,13 +64,17 @@ module LINKING-C-RESOLUTION
           <external-decls-loc>...
                X |-> L::CabsLoc
           ...</external-decls-loc>
-          requires notBool (X in_keys(Defs))
-               orBool notBool (X in_keys(Types))
+          requires (notBool (X in_keys(Defs)) orBool notBool (X in_keys(Types)))
+               andBool notBool isMangledName(X)
           [structural]
-
      // Now everything left in <external-uses> should be an unresolved
      // reference.
      rule resolveCReferences(.Map) => .K
+
+     syntax Bool ::= isMangledName(CId) [function]
+     rule isMangledName(Identifier(X::String)) => substrString(X, 0, 2) ==String "_Z"
+          requires lengthString(X) >Int 2
+     rule isMangledName(_) => false [owise]
 
      // Remember which TU has the definition of main.
      rule <k> resolveMain => .K ...</k>

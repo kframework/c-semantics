@@ -29,6 +29,7 @@ module LINKING-INIT
      imports LINKING-C-BUILTIN-SYNTAX
      imports LINKING-CPP-BUILTIN-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
+     imports SYMLOC-SYNTAX
 
      rule <k> link
                => cBuiltinTu("builtin")
@@ -152,7 +153,6 @@ module LINKING-INIT
           ~> checkExtDefs(.K, Ids, Types, Ids', Types', Locs)
           [owise]
 
-     syntax K ::= mergeObj(K, K) [function]
      syntax Map ::= mergeDecls(Map, Map) [function]
                   | #mergeDecls(Map, Map, Set) [function]
      rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M1:Map, updateMap(M1, M2), intersectSet(keys(M1), keys(M2)))
@@ -167,9 +167,14 @@ module LINKING-INIT
           => #mergeDefs(OldValues, NewValues[Key <- updateMap({{OldValues[Key] orDefault .Map::TypeMap}<:KItem}:>TypeMap, {{NewValues[Key] orDefault .Map::TypeMap}<:KItem}:>TypeMap)], CommonKeys)
      rule #mergeDefs(_, NewValues::Map, .Set) => NewValues
 
-     rule mergeObj(B:K, .K) => B
-     rule mergeObj(.K, B:K) => B
-     rule mergeObj(
+     // Allows definitions to be overridden in the Match extensions.
+     syntax K ::= mergeObj(K, K) [function]
+     rule mergeObj(Obj1:K, Obj2:K) => mergeObj'(Obj1, Obj2) [owise]
+
+     syntax K ::= "mergeObj'" "(" K "," K ")" [function]
+     rule mergeObj'(B:K, .K) => B
+     rule mergeObj'(.K, B:K) => B
+     rule mergeObj'(
           (<global>
                <mem> M1:Map </mem>
                <references> R1:Map </references>
@@ -224,7 +229,7 @@ module LINKING-INIT
                <unnamed-locs> Locs2:Map </unnamed-locs>
                <main-tu> Main2:Set </main-tu>
                <dynamic-init> Init2:K </dynamic-init>
-               <constexpr-symbase> CS2::Set</constexpr-symbase>
+               <constexpr-symbase> CS2::Set </constexpr-symbase>
 
                <translation-units> TUs2::Bag </translation-units>
           </global>))
@@ -232,11 +237,7 @@ module LINKING-INIT
           <global>
                <mem> updateMap(M1, M2) </mem>
                <references> updateMap(R1, R2) </references>
-               <functions> updateMap(
-                    // Override attribute: override function definitions.
-                    updateMap(F1, composeMaps(composeMaps(invertMap(getOverridden(ExtDefs1, ExtTypes2)), ExtDefs2), F2)),
-                    updateMap(F2, composeMaps(composeMaps(invertMap(getOverridden(ExtDefs2, ExtTypes1)), ExtDefs1), F1)))
-               </functions>
+               <functions> updateMap(F1, F2) </functions>
                <goto-map> updateMap(GM1, GM2) </goto-map>
 
                <external-types> updateMap(ExtTypes1, ExtTypes2) </external-types>
@@ -262,7 +263,7 @@ module LINKING-INIT
                <unnamed-locs> updateMap(Locs1, Locs2) </unnamed-locs>
                <main-tu> Main1 Main2 </main-tu>
                <dynamic-init> Init1 ~> Init2:K </dynamic-init>
-               <constexpr-symbase> CS1 CS2</constexpr-symbase>
+               <constexpr-symbase> CS1 CS2 </constexpr-symbase>
 
                <translation-units> TUs1 TUs2 </translation-units>
           </global>

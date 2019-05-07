@@ -1,4 +1,4 @@
-//  8.5.1:7
+// @ref n4296 8.5.1:7
 struct S { int a; const char* b; int c; int d = b[a]; };
 S ss = { 1, "asdf" };
 
