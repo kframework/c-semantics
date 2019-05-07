@@ -60,7 +60,7 @@ require "stmt/try.k"
 require "typing/canonicalization.k"
 require "typing/expr.k"
 
-module CPP-TRANSLATION
+module CPP-LANGUAGE-TRANSLATION
 
      imports CPP-LINKING-INTERFACE
 

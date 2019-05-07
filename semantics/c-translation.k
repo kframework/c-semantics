@@ -11,16 +11,16 @@ require "common/common.k"
 require "c-settings.k"
 require "c-extensions-translation.k"
 
-module C11-TRANSLATION-SYNTAX
+module C-TRANSLATION-SYNTAX
      imports C-ABSTRACT-SYNTAX
 endmodule
 
-module C11-TRANSLATION
-     imports C11-TRANSLATION-SYNTAX
+module C-TRANSLATION
+     imports C-TRANSLATION-SYNTAX
 
      imports C-COMMON
      imports C-CONFIGURATION
-     imports C-TRANSLATION
+     imports C-LANGUAGE-TRANSLATION
      imports LIBC-TYPES
 
      imports COMMON

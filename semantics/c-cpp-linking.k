@@ -19,10 +19,10 @@ require "c-settings.k"
 require "cpp-settings.k"
 require "extensions-linking.k"
 
-module C11-CPP14-LINKING-SYNTAX
+module C-CPP-LINKING-SYNTAX
 endmodule
 
-module C11-CPP14-LINKING
+module C-CPP-LINKING
      imports CPP-LINKING
 
      imports C-CONFIGURATION
