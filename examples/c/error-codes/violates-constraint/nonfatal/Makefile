@@ -14,11 +14,11 @@ comparison: ${TEST_COMPARISON}
 
 %.kcc: %.c
 	@echo -n "Compiling $<... "
-	@kcc -d -frecover-all-errors -fno-native-compilation -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@kcc -frecover-all-errors -fno-native-compilation -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@kcc -d -frecover-all-errors -fno-native-compilation -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@kcc -frecover-all-errors -fno-native-compilation -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.out: %-good.kcc
 	@echo -n "Running $<... "
