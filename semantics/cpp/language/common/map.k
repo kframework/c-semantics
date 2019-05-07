@@ -11,7 +11,7 @@ module CPP-TYPE-MAP-SYNTAX
 
      syntax TypeMap ::= ".Map" [function, hook(MAP.unit), klabel(.TypeMap), prefer]
 
-     syntax TypeMap ::= CPPTypeExpr "|->" KItem [function, klabel(_|->TypeMap_), prefer]
+     syntax TypeMap ::= CPPType "|->" KItem [function, klabel(_|->TypeMap_), prefer]
 
      syntax priorities _|->TypeMap_ > _TypeMap_ .TypeMap
 
@@ -19,17 +19,17 @@ module CPP-TYPE-MAP-SYNTAX
 
      syntax non-assoc _|->TypeMap_
 
-     syntax KItem ::= TypeMap "[" CPPTypeExpr "]" [function]
+     syntax KItem ::= TypeMap "[" CPPType "]" [function]
 
-     syntax KItem ::= TypeMap "[" CPPTypeExpr "]" "orDefault" KItem [function]
+     syntax KItem ::= TypeMap "[" CPPType "]" "orDefault" KItem [function]
 
-     syntax TypeMap ::= TypeMap "[" CPPTypeExpr "<-" KItem "]" [function]
+     syntax TypeMap ::= TypeMap "[" CPPType "<-" KItem "]" [function]
 
-     syntax TypeMap ::= TypeMap "[" CPPTypeExpr "<-" "undef" "]" [function]
+     syntax TypeMap ::= TypeMap "[" CPPType "<-" "undef" "]" [function]
 
      syntax Map ::= Map "[" KItem "<+" TypeMap "]" [function]
 
-     syntax Bool ::= CPPTypeExpr "in_keys" "(" TypeMap ")" [function]
+     syntax Bool ::= CPPType "in_keys" "(" TypeMap ")" [function]
                    | some(TypeMap, K) [function, klabel(someTypeMap)]
 
      syntax List ::= "keys_list" "(" TypeMap ")" [function]

@@ -134,11 +134,7 @@ module CPP-TRANSLATION-DECL-CLASS
      rule TypeDecl(ElaboratedTypeSpecifier(T:ClassKey, X::CId, NoNNS()) => declareClassName(T, X, true))
 
      context TypeDecl(HOLE:AType)
-             requires notBool isClassNameElabSpecifier(HOLE) [result(CPPTypeExpr)]
-
-     context TypeDecl(HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE)
-                  andBool notBool isClassNameElabSpecifier(HOLE) [result(CPPType)]
+             requires notBool isClassNameElabSpecifier(HOLE) [result(CPPType)]
 
      syntax Bool ::= isClassNameElabSpecifier(K) [function]
 

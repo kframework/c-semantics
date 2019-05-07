@@ -30,34 +30,6 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax Val ::= TExpr
 
-     syntax LDep ::= ld(Expr, Trace, CPPTypeExpr, TemplateParam)
-
-     syntax XDep ::= xd(Expr, Trace, CPPTypeExpr, TemplateParam)
-
-     syntax PRDep ::= prd(Expr, Trace, CPPTypeExpr, TemplateParam)
-
-     syntax GLDep ::= LDep | XDep
-
-     syntax RDep ::= XDep | PRDep
-
-     syntax Dep ::= GLDep | RDep
-
-     syntax LVal ::= LDep
-
-     syntax XVal ::= XDep
-
-     syntax PRVal ::= PRDep
-
-     syntax GLVal ::= GLDep
-
-     syntax RVal ::= RDep
-
-     syntax Val ::= Dep
-
-     syntax Bool ::= isDepKLabel(K) [function, klabelPredicate]
-
-     syntax TemplateParam ::= param(Dep) [function]
-
      syntax SymBase ::= "nonStatic"
 
      syntax TypeId ::= TypeId(AType)
@@ -75,12 +47,6 @@ module CPP-ABSTRACT-SYNTAX
                    | Declarator
                    | DeclLoc(CabsLoc, Decl)
                    | FriendDecl(Decl)
-
-     context TypedefDecl(_, HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context TypeAliasDecl(_, HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      syntax CtorInit ::= ConstructorBase(AType, Bool, Bool, Init)
                       | ConstructorMember(CId, Init)
@@ -111,10 +77,6 @@ module CPP-ABSTRACT-SYNTAX
                                | ExprArg(Expr)
                                | PackArg(List)
 
-
-     context TypeArg(HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
      syntax Decl ::= TemplateSpecialization(AType, Decl)
                    | TemplateInstantiationDeclaration(AType, Decl)
                    | TemplateInstantiationDefinition(AType, Decl)
@@ -142,7 +104,7 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax KResult ::= ATypeResult
 
-     syntax AType ::= CPPTypeExpr
+     syntax AType ::= CPPType
                     | ATypeResult
                     | ElaboratedTypeSpecifier(Tag, CId, NNS)
                     | ElaboratedTypeSpecifier(Tag, CId, NNS, List)
@@ -169,31 +131,7 @@ module CPP-ABSTRACT-SYNTAX
                     | AutoType(Bool)
                     | Name
 
-     context FunctionPrototype(HOLE:CPPTypeExpr, _, _, _)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
      context FunctionPrototype(_, HOLE:StrictList => typeStrict(HOLE), _, _)
-
-     context PointerType(HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context MemberPointerType(HOLE:CPPTypeExpr, _)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context MemberPointerType(_, HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context ArrayType(HOLE:CPPTypeExpr, _::Int)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context ArrayType(HOLE:CPPTypeExpr, _::AExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context LValRefType(HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context RValRefType(HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      // extensions
      syntax AType ::= GnuEnumUnderlyingType2(AType, AType)
@@ -209,14 +147,11 @@ module CPP-ABSTRACT-SYNTAX
                             | ULongLong() | SChar() | Short() | Int() | Long()
                             | LongLong() | Float() | Double() | LongDouble()
                             | OversizedInt() | OversizedUInt()
-                            | Dependent()
+                            | Dependent() | NullPtr()
 
      syntax AType ::= RefQualifier(RefQualifier, AType) [strict(2)]
 
      syntax AType ::= Qualifier(Qualifier, AType) [strict(2)]
-
-     context Qualifier(_, HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      syntax AStmt ::= Stmt
 
@@ -302,12 +237,6 @@ module CPP-ABSTRACT-SYNTAX
                    | BoolLiteral(Bool)
                    | Throw(AExpr)
 
-     context IntegerLiteral(_, HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
-     context FloatingLiteral(_, HOLE:CPPTypeExpr)
-             requires notBool isDependentInScope(HOLE) [result(CPPType)]
-
      syntax CaptureDefault ::= NoCaptureDefault() | CopyCapture() | RefCapture()
 
      syntax Capture ::= LambdaCapture(CaptureKind, Bool)
@@ -390,15 +319,6 @@ module CPP-TRANSLATION-ABSTRACT-REWRITING
      rule DestructorTypeId(Name(NoNNS(), X::CId)) => DestructorId(X) [anywhere]
 
      rule ExprLoc(_, DefaultArg()) => .K [anywhere]
-
-     rule ld(E::Expr, _, _, T:CPPTypeExpr) => E
-          requires notBool isDependentInScope(T)
-
-     rule xd(E::Expr, _, _, T:CPPTypeExpr) => E
-          requires notBool isDependentInScope(T)
-
-     rule prd(E::Expr, _, _, T:CPPTypeExpr) => E
-          requires notBool isDependentInScope(T)
 
      context IfTStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
 

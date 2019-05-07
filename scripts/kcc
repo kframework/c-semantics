@@ -112,7 +112,7 @@ sub main {
       my $programConfFile = tempFile('conf');
       linkAll($programConfFile);
 
-      my $useCompile = -e profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled', 'execution_partial.o');
+      my $useCompile = -e profileDir('c-cpp-kompiled', 'c-cpp-kompiled', 'execution_partial.o');
 
       my $oval = arg('-o') || 'a.out';
 
@@ -160,7 +160,7 @@ sub main {
                   or error("Call to chmod $oval failed.\n");
       } else {
             debug("Building a natively-compiled executable.\n");
-            my $sem = profileDir('c11-cpp14-kompiled', 'c11-cpp14-kompiled');
+            my $sem = profileDir('c-cpp-kompiled', 'c-cpp-kompiled');
             my $d = tempDir('native');
             my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
 
@@ -449,7 +449,7 @@ sub getLinkingCommand {
 
       my @objs = objFiles();
 
-      my @krun = getKRunCommand($output, $symbols, 'c11-cpp14-linking-kompiled');
+      my @krun = getKRunCommand($output, $symbols, 'c-cpp-linking-kompiled');
 
       my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
       my $json = "#token($rvErrorJson, $string)";
@@ -506,11 +506,11 @@ sub getLinkingCommand {
 sub getTranslationCommand {
       my ($output, $src, $lang, $uuid, $trampolines) = (@_);
 
-      my $cTransDef = profileDir("c11-translation-kompiled");
-      my $cppTransDef = profileDir("cpp14-translation-kompiled");
+      my $cTransDef = profileDir("c-translation-kompiled");
+      my $cppTransDef = profileDir("cpp-translation-kompiled");
 
       my @krun = getKRunCommand($output, 'dummy',
-            $lang eq 'c++'? 'cpp14-translation-kompiled' : 'c11-translation-kompiled');
+            $lang eq 'c++'? 'cpp-translation-kompiled' : 'c-translation-kompiled');
 
       if (arg('-ftranslation-depth=')) {
             push(@krun, '--depth');
@@ -643,7 +643,7 @@ sub makeSet {
 }
 
 sub useInterpreter {
-      -e profileDir('cpp14-translation-kompiled', 'cpp14-translation-kompiled', 'interpreter');
+      -e profileDir('cpp-translation-kompiled', 'cpp-translation-kompiled', 'interpreter');
 }
 
 sub getRVErrorJson {

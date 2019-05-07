@@ -15,8 +15,8 @@ See:
 
 ## Structure of the C semantics
 
-This is a formal semantics of C as described in the ISO/IEC 9899:2011 standard
-("C11"). Some highlights:
+This is a formal semantics of C as described in the ISO/IEC 9899:2018 standard
+("C18"). Some highlights:
 
 - [language/translation][]: semantics specific to the translation phase.
 
@@ -28,9 +28,9 @@ This is a formal semantics of C as described in the ISO/IEC 9899:2011 standard
 - [library][]: the definition of various functions from the C standard library
   described in the standard.
 
-- [c11.k][]: the main syntax/semantics language modules for the execution phase.
+- [c.k][]: the main syntax/semantics language modules for the execution phase.
 
-- [c11-translation.k][]: the main syntax/semantics language modules for the
+- [c-translation.k][]: the main syntax/semantics language modules for the
   translation phase.
 
 - [language/common/syntax.k][]: the main C language syntax module. 
@@ -89,7 +89,7 @@ Various stylistic conventions:
 [language/execution]: language/execution
 [language/common]: language/common
 [library]: library
-[c11.k]: c11.k
-[c11-translation.k]: c11-translation.k
+[c.k]: c.k
+[c-translation.k]: c-translation.k
 [language/common/syntax.k]: language/common/syntax.k
 [language/execution/expr/function-call.k]: language/execution/expr/function-call.k

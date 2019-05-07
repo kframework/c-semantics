@@ -6,11 +6,11 @@ module CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
      imports CPP-SORTS
      imports CPP-TYPING-SORTS
 
-     syntax Expr ::= figureInit(base: Expr, destT: CPPTypeExpr, init: Init, type: InitType)
-                   | figureConstructorInit(base: Expr, destT: CPPTypeExpr, init: Init, constructorType: Bool)
+     syntax Expr ::= figureInit(base: Expr, destT: CPPType, init: Init, type: InitType)
+                   | figureConstructorInit(base: Expr, destT: CPPType, init: Init, constructorType: Bool)
 
      syntax Expr ::= valueInit(base: Expr, CPPType)
-                   | defaultConstructorInit(base: Expr, CPPTypeExpr, constructorType: Bool)
+                   | defaultConstructorInit(base: Expr, CPPType, constructorType: Bool)
                    | zeroInit(base: Expr, type: CPPType)
 
      syntax KResult ::= functionDef(SymBase, Stmt)
@@ -43,13 +43,13 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      imports CPP-EXPR-MEMBERS-SYNTAX
      imports C-SETTINGS
 
-     rule figureInit(Base::Expr, DestT::CPPTypeExpr, Init::Init, Type::InitType) => #figureInit(Base, DestT, Type, Init, Init, Init, NoConstructorInit)
+     rule figureInit(Base::Expr, DestT::CPPType, Init::Init, Type::InitType) => #figureInit(Base, DestT, Type, Init, Init, Init, NoConstructorInit)
 
-     rule figureConstructorInit(Base::Expr, DestT::CPPTypeExpr, Init::Init, Type::Bool) => #figureInit(Base, DestT, DirectInit(), Init, Init, Init, ConstructorInit(Type))
+     rule figureConstructorInit(Base::Expr, DestT::CPPType, Init::Init, Type::Bool) => #figureInit(Base, DestT, DirectInit(), Init, Init, Init, ConstructorInit(Type))
 
-     syntax Expr ::= #figureInit(base: Expr, destT: CPPTypeExpr, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType)
+     syntax Expr ::= #figureInit(base: Expr, destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType)
                    | constructorInit(LVal, InitType, Class, List, ConstructorType)
-                   | defaultInit(base: Expr, CPPTypeExpr, ConstructorType)
+                   | defaultInit(base: Expr, CPPType, ConstructorType)
                    | #valueInit(base: Expr, CPPType, ConstructorType)
                    | #zeroInit(base: Expr, CPPType, ConstructorType)
 
@@ -57,7 +57,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule zeroInit(E::Expr, T::CPPType) => #zeroInit(E, T, NoConstructorInit)
 
-     rule defaultConstructorInit(Base::Expr, T::CPPTypeExpr, IsBaseClass::Bool) => defaultInit(Base, T, ConstructorInit(IsBaseClass))
+     rule defaultConstructorInit(Base::Expr, T::CPPType, IsBaseClass::Bool) => defaultInit(Base, T, ConstructorInit(IsBaseClass))
 
      syntax ConstructorType ::= "NoConstructorInit" | ConstructorInit(Bool)
 

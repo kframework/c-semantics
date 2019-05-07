@@ -435,7 +435,7 @@ module C-DECL-GLOBAL
      // Now we just need to handle allocation, initialization, and updating the
      // declState, when necessary. The last argument can be thought of as the
      // "true" storage class specifier of the decl, counting functions as
-     // extern. In C11, because extern-qualified declarations can have
+     // extern. In C18, because extern-qualified declarations can have
      // initializers, the difference between a global extern-qualified
      // declaration and a global naked declaration is very slight: they only
      // differ in the case of declarations without initializers. A naked
