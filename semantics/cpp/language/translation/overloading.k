@@ -47,7 +47,6 @@ module CPP-TRANSLATION-OVERLOADING
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-ODR-SYNTAX
-     imports CPP-TRANSLATION-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
@@ -458,7 +457,8 @@ module CPP-TRANSLATION-OVERLOADING
           requires isCPPFunctionType(innerType(T))
 
      // only one viable candidate
-     rule bestViable(T::CPPFunctionType, envEntry(... base: Base::SymBase, defaultArgs: defArgs(... vals: DArgs::StrictListResult))) ~> #resolveOverload(cSet(... id: X::QualId), list(Args::List), _, _, E::Expr, _)
+     rule bestViable(T::CPPFunctionType, envEntry(... base: Base::SymBase, defaultArgs: defArgs(... vals: DArgs::StrictListResult)))
+          ~> #resolveOverload(cSet(... id: X::QualId), list(Args::List), _, _, E::Expr, _)
           => #if isMethodPure(T) andBool isVirtualCall(hasTrace(E), T) #then .K #else Odr.newUse(Base) #fi
           ~> updateExternalUses(Base)
           ~> checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), DArgs))
@@ -534,7 +534,8 @@ module CPP-TRANSLATION-OVERLOADING
           )
           requires isBetterFunctionThan(T1, K1, T2, K2, Types, Cats, O)
 
-     rule checkIsBest(T::CPPFunctionType, K:K, _, _, _, .List) => bestViable(T, K)
+     rule checkIsBest(T::CPPFunctionType, K:K, _, _, _, .List)
+          => bestViable(T, K)
 
      rule checkIsBest(...) => noBestViable [owise]
 
@@ -819,19 +820,12 @@ module CPP-TRANSLATION-OVERLOADING
      // normally this is ill formed, but it can be well formed in some cases such as operator overloading of certain operators
      rule noBestViable ~> #resolveOverload(... cands: cSet(... id: X::QualId)) => notFound(getId(X))
 
-     rule #resolveOverload(... cands: cSet(... candidates: (T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo))
+     rule #resolveOverload(... cands: cSet(... candidates: (T:CPPFunctionType => adjustFunctionType(T)) |-> _:TemplateInfo))
           requires notBool isAdjustedType(T)
 
-     rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> #resolveOverload(... cands: cSet(... candidates: (T:CPPFunctionTypeExpr |-> templateInfo(... id: Q::QualId) => .Map) _), args: list(Args::List)) ...</k>
-          <template-deduction> _ => .Map </template-deduction>
-          requires isAdjustedType(T)
-
-     rule (templateSpecialization(T:CPPType, I::TemplateInfo, Args::Map) => .K) ~> #resolveOverload(... cands: cSet(... candidates: (.Map => T |-> templateSpecialization(T, I, Args)) _))
-
-     rule (.K => instantiateObjectTemplate(Spec)) ~> bestViable(T::CPPFunctionType, Spec:TemplateSpecialization)
-
      // TODO(traiansf): properly resolve default arguments for templates
-     rule (lv(loc(Base::SymBase, 0), _, _) => .K) ~> bestViable(T::CPPFunctionType, (_ => envEntry(Base, false, emptyDefaultArguments(T))))
+     rule (lv(loc(Base::SymBase, 0), _, _) => .K)
+          ~> bestViable(T::CPPFunctionType, (_ => envEntry(Base, false, emptyDefaultArguments(T))))
 
      rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase), id: X::QualId), E::Expr, _)
           => Odr.newUse(Base)

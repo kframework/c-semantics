@@ -28,8 +28,8 @@ module C-SYMLOC
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule bnew(I::Int, T::Type, D::Duration) => obj(I, getAlignas(T), D)
-     rule bnew(I::Int, T::Type, D::LinkDuration) => obj(I, getAlignas(T), D)
+     rule bnew(I::Int, T::Type, D::Duration) => obj(I, getAlignas(T), D) [owise]
+     rule bnew(I::Int, T::Type, D::LinkDuration) => obj(I, getAlignas(T), D) [owise]
 
      rule linc(T::Type, D::Duration) => bnew(!I:Int, T, D)
 

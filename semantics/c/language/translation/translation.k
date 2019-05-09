@@ -58,7 +58,7 @@ require "typing/canonicalization.k"
 require "typing/interpretation.k"
 require "typing/expr.k"
 
-module C-TRANSLATION
+module C-LANGUAGE-TRANSLATION
      imports C-ABSTRACT-REWRITING
      imports C-DYNAMIC-SYNTAX
 

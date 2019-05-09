@@ -13,7 +13,7 @@ module CPP-TRANSLATION-TYPING-EXPR-SYNTAX
 
      syntax TypeExpr ::= typeof(TypeExpr)
 
-     syntax TypeExpr ::= Expr | CPPDTypeExpr | Typed
+     syntax TypeExpr ::= Expr | CPPDType | Typed
 
 endmodule
 
