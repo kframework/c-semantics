@@ -11,7 +11,7 @@ use File::Copy qw(move);
 use File::Path qw(rmtree);
 use File::Spec::Functions qw(rel2abs catfile);
 use MIME::Base64 qw(encode_base64);
-use String::Escape qw(quote backslash);
+use String::Escape qw(quote qqbackslash printable qprintable);
 use UUID::Tiny qw(:std);
 
 use RV_Kcc::Files qw(profileDir nativeCC nativeCXX distDir tempFile tempDir error IS_CYGWIN);
@@ -38,8 +38,8 @@ use constant KRUN         => do {
       $path . $ext;
 };
 use constant PRINTF       => IS_CYGWIN? 'printf %%s' : 'printf %s';
-use constant QUOTE_INT    => IS_CYGWIN? backslash("\"Int\"") : "\"Int\"";
-use constant QUOTE_STRING => IS_CYGWIN? backslash("\"String\"") : "\"String\"";
+use constant QUOTE_INT    => IS_CYGWIN? printable("\"Int\"") : "\"Int\"";
+use constant QUOTE_STRING => IS_CYGWIN? printable("\"String\"") : "\"String\"";
 
 exit main();
 
@@ -147,10 +147,10 @@ sub main {
                   print $programRunner "sub nativeObjFile {\n return undef;\n}\n";
             }
 
-            my $encodedJsonAsPerlString = quote(backslash(getRVErrorJson()));
+            my $encodedJsonAsPerlString = qqbackslash(getRVErrorJson());
             print $programRunner "sub getJson {\n return $encodedJsonAsPerlString;\n}\n";
 
-            my $encodedOptsAsPerlString = quote(backslash(makeOptions(0)));
+            my $encodedOptsAsPerlString = qqbackslash(makeOptions(0));
             print $programRunner "sub getOptions {\n return $encodedOptsAsPerlString;\n}\n";
 
             close($programRunner);
@@ -310,9 +310,9 @@ sub makeOptions {
                   $heapSize = 1024 * 1024 * 1024;
             }
             my $heapSizeInt = $heapSize;
-            $heapSize = quote(backslash($heapSize));
+            $heapSize = qprintable($heapSize);
             if (IS_CYGWIN) {
-                  $heapSize = backslash($heapSize);
+                  $heapSize = printable($heapSize);
             }
             my $stackSize;
             if (arg('-fstack-size=')) {
@@ -327,9 +327,9 @@ sub makeOptions {
                         $stackSize = $stackSize * 1024; # result was in kb
                   }
             }
-            $stackSize = quote(backslash($stackSize));
+            $stackSize = qprintable($stackSize);
             if (IS_CYGWIN) {
-                  $stackSize = backslash($stackSize);
+                  $stackSize = printable($stackSize);
             }
             my $int = QUOTE_INT;
             push(@options, "`Lint`(.KList)");
@@ -338,7 +338,7 @@ sub makeOptions {
       }
 
       if (arg('-e')) {
-            my $entry = quote(backslash(quote(arg('-e'))));
+            my $entry = qprintable(quote(arg('-e')));
             my $string = QUOTE_STRING;
             push(@options, "`EntryPoint`(#token($entry, $string))");
       }
@@ -353,8 +353,8 @@ sub makeOptions {
 
       for (breakpoints()) {
             my ($file, $line) = @{$_};
-            $file = quote(backslash(quote(rel2abs($file))));
-            $line = quote(backslash($line));
+            $file = qprintable(quote(rel2abs($file)));
+            $line = qprintable($line);
             my ($string, $int) = (QUOTE_STRING, QUOTE_INT);
             push(@options, "`Breakpoint`(#token($file, $string), #token($line, $int))");
       }
@@ -458,7 +458,7 @@ sub getLinkingCommand {
       @krun = addArg("JSON", $json, 'text', @krun);
 
       my $uuid = create_uuid_as_string();
-      my $encodedUuid = quote(backslash(quote($uuid)));
+      my $encodedUuid = qprintable(quote($uuid));
       my $uuidOpt = "#token($encodedUuid, $string)";
       @krun = addArg("UUID", $uuidOpt, 'text', @krun);
 
@@ -523,7 +523,7 @@ sub getTranslationCommand {
       @krun = addArg("OPTIONS", makeOptions(0), 'text', @krun);
       @krun = addArg("JSON", $json, 'text', @krun);
 
-      my $encodedUuid = quote(backslash(quote($uuid)));
+      my $encodedUuid = qprintable(quote($uuid));
       my $uuidOpt = "#token($encodedUuid, $string)";
       @krun = addArg("UUID", $uuidOpt, 'text', @krun);
 
@@ -657,7 +657,7 @@ sub getRVErrorJson {
                         error("Format not supported for the issue report file '$file'.\nThe format for the issue report (JSON/CSV) is inferred from the file extension.\n");
                   }
                   $format = uc substr($ext,1);
-                  $output = quote(backslash(abs_path($file)));
+                  $output = qprintable(printable(abs_path($file)));
                   $output = ", \"output\": $output";
             } else {
                   $format = "Console";
@@ -667,14 +667,14 @@ sub getRVErrorJson {
             my $allSuppress = join(',', suppressions());
             my $rvError = shell('command -v rv-error || true')->stdout()->run();
             chop($rvError);
-            $rvError = quote(backslash($rvError));
+            $rvError = qprintable($rvError);
 
             my $messageLength = 80;
             if (arg('-fmessage-length=')) {
                   $messageLength = arg('-fmessage-length=');
             }
 
-            quote(backslash(quote(backslash
+            qprintable(qprintable
                   ( "{\"suppressions\": [$allSuppress]"
                   . ",\"message_length\": $messageLength"
                   . ",\"format\": \"$format\""
@@ -682,7 +682,7 @@ sub getRVErrorJson {
                   . ",\"fatal_errors\": " . (arg('-Wfatal-errors')? 'true' : 'false')
                   . ",\"rv_error\": $rvError"
                   . "$output}"
-                  ))));
+                  ));
       };
       return $json;
 }
