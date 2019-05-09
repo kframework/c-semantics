@@ -9,7 +9,7 @@ OS_EXCLUDES = \
 	./stdio-ferror.c ./stdio-fgets.c ./stdio-fseek.c ./stdio-scanf-flush.c ./stdio-ungetc.c \
 	./stdio-sscanf.c ./stdio-fileno.c \
 	./inst-check.c ./pthreads-starve.c ./fopen-enoent.c \
-	./oldstyle-main.c ./struct-ini-1.c ./j016.c ./include-time.C \
+	./oldstyle-main.c ./struct-ini-1.c ./j016.c ./include-time.C
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
 OS_TESTS = $(filter-out $(OS_EXCLUDES), $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${OS_TUS}))))
 CPP_TESTS = $(filter-out %.c, ${TESTS})
