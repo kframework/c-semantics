@@ -710,12 +710,6 @@ module CPP-TRANSLATION-OVERLOADING
           => true
           requires form(C1) >Int form(C2)
 
-     rule C1::ConversionSequence
-          >CS
-          C2::ConversionSequence
-          => true
-          requires form(C2) >Int form(C1)
-
      rule listInitSequence(T1::CPPType, _)
           >CS
           listInitSequence(T2::CPPType, _)
