@@ -18,10 +18,3 @@ module CPP-SETTINGS
      rule cfg:alignofNullPtrT => 4
 
 endmodule
-
-module CPP-COMPILER-SETTINGS
-     imports CPP-SETTINGS-SYNTAX
-     imports CPP-TYPING-SYNTAX
-
-     rule cfg:maxNewSize => max(type(size_t))
-endmodule
