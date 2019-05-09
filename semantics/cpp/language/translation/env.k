@@ -10,6 +10,7 @@ module CPP-TRANSLATION-ENV-SYNTAX
      syntax KItem ::= addToEnv(QualId, CPPType, SymBase, Bool)
                     | scope(Scope, K)
                     | setScope(Scope)
+                    | clearScope()
                     | noEval(K)
                     | "skipToScopeEnd"
 
@@ -162,7 +163,17 @@ module CPP-TRANSLATION-ENV
             defArgs(krlist(.List), krlist(.List), krlist(.List)),
             DA::DefaultArgumentsResult) => DA
 
-
+     rule <k> clearScope() => .K ...</k>
+          (<tr-block-control> _::Bag </tr-block-control>
+           => <tr-block-control>
+                <tr-env> .Map </tr-env>
+                <tr-types> .Map </tr-types>
+                <enums> .Map </enums>
+                <using-namespaces> .Set </using-namespaces>
+                <tr-block-history> .List </tr-block-history>
+                <tr-this> .K </tr-this>
+              </tr-block-control> )
+ 
      rule <k> scope(Scope::Scope, K:K)
               => pushLocals ~> K ~> popLocals ~> setScope(OldScope)
           ...</k>
