@@ -37,14 +37,17 @@ module CPP-CLASS-BASIC-SYNTAX
      // code involving ClassQualifier and NNSVal.
      syntax ClassQualifier ::= Namespace | Class | LocalQualifier
 
-     syntax Class ::= ClassQualifier "::" ClassSpecifier
+     syntax Class ::= ClassQualifier "::" ClassSpecifier [klabel(Class)]
 
-     syntax LocalClass ::= LocalQualifier "::" ClassSpecifier
+     syntax LocalClass ::= LocalQualifier "::" ClassSpecifier [klabel(Class)]
 
-     syntax InnerClass ::= Class "::" ClassSpecifier
+     syntax Class ::= LocalClass
+     syntax Class ::= InnerClass
+
+     syntax InnerClass ::= Class "::" ClassSpecifier [klabel(Class)]
 
      syntax LocalInnerClass ::= LocalClass
-                             | LocalInnerClass "::" ClassSpecifier
+                             | LocalInnerClass "::" ClassSpecifier [klabel(Class)]
 
      syntax ClassSpecifier ::= Class(Tag, CId, TemplateArgs) [klabel(classSpecifier)]
 
