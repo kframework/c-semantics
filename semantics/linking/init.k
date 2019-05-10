@@ -269,18 +269,14 @@ module LINKING-INIT
           </global>
 
      // TODO(chathhorn): remove redundancy
-     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tu> Tu::String </curr-tu> ...</generatedTop>)
-          => Tu
+     rule [[ nameOfCurrentTranslationUnit() => Tu ]]
+          <curr-tu> Tu::String </curr-tu>
 
-     rule currentTranslationScope() => #currentTranslationScope(#configuration)
-     syntax Scope ::= #currentTranslationScope(K) [function]
-     rule #currentTranslationScope(<generatedTop>... <curr-scope> S::Scope </curr-scope> ...</generatedTop>)
-          => S
+     rule [[ currentTranslationScope() => S ]]
+          <curr-scope> S::Scope </curr-scope>
 
-     rule currentTranslationLoc() => #currentTranslationLoc(#configuration)
-     syntax CabsLoc ::= #currentTranslationLoc(K) [function]
-     rule #currentTranslationLoc(<generatedTop>... <curr-program-loc> Loc::CabsLoc </curr-program-loc> ...</generatedTop>)
-          => Loc
+     rule [[ currentTranslationLoc() => Loc ]]
+          <curr-program-loc> Loc::CabsLoc </curr-program-loc>
 
      rule <k> setTranslationLoc(Loc::CabsLoc) => .K ... </k>
           <curr-tr-program-loc> _ => Loc </curr-tr-program-loc>

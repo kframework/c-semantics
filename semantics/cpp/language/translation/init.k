@@ -10,13 +10,12 @@ module CPP-TRANSLATION-INIT
 
      imports C-CONFIGURATION
 
-     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tr-tu>TU::String</curr-tr-tu> ...</generatedTop>) => TU
+     rule [[ nameOfCurrentTranslationUnit() => TU ]]
+          <curr-tr-tu>TU::String</curr-tr-tu>
 
-     syntax Bool ::= #Execution(K) [function]
 
-     rule Execution() => #Execution(#configuration)
-
-     rule #Execution(<generatedTop>... <compile-time-evaluation> B::Bool </compile-time-evaluation> ...</generatedTop>) => B
+     rule [[ Execution() => B ]]
+          <compile-time-evaluation> B::Bool </compile-time-evaluation>
 
      rule isKResult(le(_, _, T::CPPType) #Or xe(_, _, T::CPPType) #Or pre(_, _, T::CPPType)) => Translation() andBool notBool isCPPRefType(T)
 

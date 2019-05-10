@@ -68,7 +68,8 @@ module C-TRANSLATION-INIT
 
      rule NothingExpression() => {emptyValue}:>Expression
 
-     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tu> Tu::String </curr-tu> ...</generatedTop>) => Tu
+     rule [[ nameOfCurrentTranslationUnit() => Tu ]]
+          <curr-tu> Tu::String </curr-tu>
 
      rule (<T>...
                <k> cleanup </k>
