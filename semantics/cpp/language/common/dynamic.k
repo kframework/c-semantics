@@ -390,6 +390,10 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax Expr ::= "callTerminate"
 
+     syntax CId ::= idOf(Class) [function, klabel(idOfClass)]
+
+     syntax CId ::= idOf(ClassSpecifier) [function, klabel(idOfClassSpecifier)]
+
      syntax Enum ::= ClassQualifier "::" EnumSpecifier
 
      syntax EnumSpecifier ::= Enum(CId) [klabel(enumSpecifier)]
@@ -955,6 +959,10 @@ module CPP-DYNAMIC-OTHER
 
      // is given prval fully evaluated?
      rule isEPRVal(E:PRVal) => Translation() orBool isPRV(E)
+
+     rule idOf(Class(_, X::CId, _)) => X
+
+     rule idOf(_ :: S::ClassSpecifier) => idOf(S)
 
 endmodule // CPP-DYNAMIC-OTHER
 
