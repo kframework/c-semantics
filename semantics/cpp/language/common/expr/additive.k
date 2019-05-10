@@ -34,10 +34,10 @@ module CPP-EXPR-ADDITIVE
                      | #newFromArray(SymLoc, K, Int) [function, klabel(#newFromArrayCpp)]
 
      rule newFromArray(Loc::SymLoc, T::CPPType, I::Int)
-          => #newFromArray(Loc, getProv(Loc, #klabel(`fromArray`)), byteSizeofType(innerType(T)) *Int I)
+          => #newFromArray(Loc, getFromArray(Loc), byteSizeofType(innerType(T)) *Int I)
 
      rule #newFromArray(Loc::SymLoc, fromArray(ArrOffset::Int, Len::Int), NewOffset::Int)
-          => addProv(fromArray(ArrOffset +Int NewOffset, Len), stripProv(Loc, #klabel(`fromArray`)))
+          => addProv(fromArray(ArrOffset +Int NewOffset, Len), stripFromArray(Loc))
 
      rule #newFromArray(Loc::SymLoc, .K, _) => Loc
 
