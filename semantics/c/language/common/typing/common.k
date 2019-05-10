@@ -117,15 +117,13 @@ module C-TYPING-COMMON
      rule toFieldInfo(Fields:FieldInfo) => Fields
      rule toFieldInfo(_) => fieldInfo(.List, 0, .Map, .Map, .Set) [owise]
 
-     rule getTagInfo(S:TagId) => #getTagInfo(S, #configuration)
-
      syntax Bool ::= hasNoName(Map) [function]
      rule hasNoName((_:NoName |-> structOrUnionType) _::Map) => true
      rule hasNoName(_) => false [owise]
 
-     syntax TagInfo ::= #getTagInfo(TagId, K) [function]
-     rule #getTagInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <tags> M::Map </tags> ...</global> ...</generatedTop>)
-          => extractTagInfo({M[Tu] orDefault .Map}:>Map[tag(X, Tu, B)])
+     rule [[ getTagInfo(tag(X::CId, Tu::String, B::BlockRef))
+          => extractTagInfo({M[Tu] orDefault .Map}:>Map[tag(X, Tu, B)]) ]]
+          <global>... <tags> M::Map </tags> ...</global>
 
      syntax TagInfo ::= extractTagInfo(K) [function]
      rule extractTagInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set)) => fieldInfo(L, I, M1, M2, S)

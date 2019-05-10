@@ -177,13 +177,10 @@ module COMPAT
      rule showCId(#NoName) => "<anonymous>"
      rule showCId(#NoName(_)) => "<anonymous>"
      rule showCId(vararg(N::Int)) => "<vararg " +String showInt(N) +String ">"
-     rule showCId(X:UnnamedCId) => #showCId(X, #configuration)
      rule showCId(_::CId) => "<unknown>" [owise]
 
-     syntax String ::= #showCId(CId, K) [function]
-     rule #showCId(X::UnnamedCId, <generatedTop>... <unnamed-locs>... X |-> CabsLoc(File::String, _, Line::Int, _, _) ...</unnamed-locs> ...</generatedTop>)
-          => "<anonymous at " +String File +String ":" +String showInt(Line) +String ">"
-     rule #showCId(_, _) => "<unknown>" [owise]
+     rule [[ showCId(X::UnnamedCId) => "<anonymous at " +String File +String ":" +String showInt(Line) +String ">" ]]
+          <unnamed-locs>... X |-> CabsLoc(File::String, _, Line::Int, _, _) ...</unnamed-locs>
 
      rule showInt(V::Int) => Int2String(V)
 

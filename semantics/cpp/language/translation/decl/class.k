@@ -787,9 +787,10 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule #hasMethodThat(...) => false [owise]
 
-     rule isDeleted(_, envEntry(... base: Base::SymBase)) => #isDeleted(Base, #configuration)
+     rule isDeleted(_, envEntry(... base: Base::SymBase)) => #isDeleted(Base)
 
-     rule #isDeleted(Base::SymBase, <generatedTop>... <functions>... Base |-> Deleted() ...</functions> ...</generatedTop>) => true
+     rule [[ #isDeleted(Base::SymBase) => true ]]
+          <functions>... Base |-> Deleted() ...</functions>
 
      rule #isDeleted(...) => false [owise]
 

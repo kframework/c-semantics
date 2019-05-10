@@ -338,7 +338,7 @@ module CPP-TYPING-SYNTAX
      syntax IncompleteInfo ::= "#incomplete"
 
      syntax EnumInfo ::= getEnumInfo(CPPType) [function]
-                       | #getEnumInfo(Enum, K) [function]
+                       | #getEnumInfo(Enum) [function]
 
      syntax EnumInfo ::= CppenumCell | IncompleteInfo
 
@@ -667,11 +667,12 @@ module CPP-TYPING
 
      rule getQuals(t(Q::Quals, _, _)) => Q
 
-     rule getEnumInfo(E::CPPType) => #getEnumInfo(getEnumId(E), #configuration)
+     rule getEnumInfo(E::CPPType) => #getEnumInfo(getEnumId(E))
 
-     rule #getEnumInfo(X::Enum, <generatedTop>... <cppenum> <enum-id> X </enum-id> B::Bag </cppenum> ...</generatedTop>) => <cppenum> <enum-id> X </enum-id> B </cppenum>
+     rule [[ #getEnumInfo(X::Enum) => <cppenum> <enum-id> X </enum-id> B </cppenum> ]]
+          <cppenum> <enum-id> X </enum-id> B::Bag </cppenum>
 
-     rule #getEnumInfo(_, _) => #incomplete [owise]
+     rule #getEnumInfo(_) => #incomplete [owise]
 
      rule isCompleteType(t(_, _, incompleteArrayType(_))) => false
 
@@ -908,30 +909,22 @@ module CPP-TYPING
 
      rule isBaseClassOf(t(_, _, classType(B::Class)), t(_, _, classType(D::Class))) => isBaseClassOf(B, D)
 
-     rule isBaseClassOf(B::Class, D::Class) => #isBaseClassOf(B, ListItem(D), #configuration)
+     rule isBaseClassOf(B::Class, D::Class) => #isBaseClassOf(B, ListItem(D))
 
-     rule isDirectBaseClassOf(B::Class, D::Class) => #isDirectBaseClassOf(B, D, #configuration)
+     syntax Bool ::= #isBaseClassOf(base: Class, derived: List) [function, withConfig]
 
-     syntax Bool ::= #isBaseClassOf(base: Class, derived: List, K) [function]
-                   | #isDirectBaseClassOf(base: Class, derived: Class, K) [function]
+     rule #isBaseClassOf(B::Class, ListItem(B) _) => true
 
-     rule #isBaseClassOf(B::Class, ListItem(B) _, _) => true
+     rule #isBaseClassOf(_, .List) => false
 
-     rule #isBaseClassOf(_, .List, _) => false
+     rule [[ #isBaseClassOf(B::Class, (ListItem(D::Class) => BC) _) ]]
+          <class-id> D </class-id>
+          <base-classes> BC::List </base-classes>
+          requires D =/=K B
 
-     rule #isBaseClassOf(B::Class, (ListItem(D::Class) => BC) _,
-            <generatedTop>...
-              <class-id> D </class-id>
-              <base-classes> BC::List </base-classes>
-            ...</generatedTop>)
-         requires D =/=K B
-
-     rule #isDirectBaseClassOf(B::Class, D::Class,
-            <generatedTop>...
-              <class-id> D </class-id>
-              <base-classes> BC::List </base-classes>
-            ...</generatedTop>)
-          => B in BC
+     rule [[ isDirectBaseClassOf(B::Class, D::Class) => B in BC ]]
+          <class-id> D </class-id>
+          <base-classes> BC::List </base-classes>
 
      rule hasVirtualMembers(C::Class) => hasVirtualMembers(type(classType(C)))
 
