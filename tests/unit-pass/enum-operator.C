@@ -1,5 +1,3 @@
-#include<stdio.h>
-
 enum A : long {
   a, b, c
 };
