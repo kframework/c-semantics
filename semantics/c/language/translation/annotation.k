@@ -1,9 +1,10 @@
 module C-ANNOTATION-SYNTAX
      imports BASIC-K
+     imports STRING-SYNTAX
      imports COMMON-SORTS
 
      syntax KItem ::= generateRuleAnnotation(CId)
-     syntax String ::= #generateRuleAnnotation(CId, K) [function, hook(C_SEMANTICS.generateRuleAnnotation), impure]
+//     syntax String ::= #generateRuleAnnotation(CId, K) [function, hook(C_SEMANTICS.generateRuleAnnotation), impure]
      syntax KItem ::= writeAnnotation(String)
 endmodule
 
@@ -16,7 +17,7 @@ module C-ANNOTATION
      rule <k> (PragmaKccRule(S:String) => .K) ~> CodeLoc(FunctionDefinition(_, _), _)  ...</k>
           <annotation> _ => S </annotation>
 
-     rule <k> generateRuleAnnotation(X:CId) => writeAnnotation(#generateRuleAnnotation(X, S)) ...</k>
+     rule <k> generateRuleAnnotation(X:CId) => .K ...</k> // writeAnnotation(#generateRuleAnnotation(X, S)) ...</k>
           <annotation> S:String => "" </annotation>
           requires S =/=K ""
 
