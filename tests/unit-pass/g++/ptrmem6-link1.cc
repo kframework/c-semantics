@@ -1,5 +1,5 @@
 // PR C++/21614
-// { dg-additional-sources "ptrmem6a.C" }
+// { dg-additional-sources "ptrmem6a.cc" }
 // { dg-do run }
 
 extern struct Z *p; 

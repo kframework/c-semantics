@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fipa-pta" } */
-/* { dg-additional-sources "pr43879-1_0.C" } */
+/* { dg-additional-sources "pr43879-1_0.cc" } */
 
 struct A {
     int *i;

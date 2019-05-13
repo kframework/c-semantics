@@ -1,5 +1,5 @@
 Integral conversion to signed integer type in which value cannot be represented:
-      > in ::main at pr35634.C:18:19
+      > in ::main at pr35634.cc:18:19
 
     Implementation defined behavior (IMPL++-CCV3):
         see C++14 section 4.7:3 http://rvdoc.org/C++14/4.7

@@ -1,10 +1,10 @@
 TUS = $(wildcard ./*.c) $(wildcard ./*.cc)
 EXCLUDES=
-TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, $(filter-out %-link3.C, ${TUS}))))
+TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.cc, $(filter-out %-link3.cc, ${TUS}))))
 GCC_COMPILED_TESTS = ${TESTS:.c=.gcc}
 KCC_COMPILED_TESTS = ${TESTS:.c=.kcc}
 TEST_RESULTS = ${TESTS:.c=.out}
-REFERENCE_TEST_RESULTS = ${TESTS:.C=.ref}
+REFERENCE_TEST_RESULTS = ${TESTS:.cc=.ref}
 TEST_COMPARISON = ${TESTS:.c=.cmp}
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
@@ -29,14 +29,14 @@ compile: ${KCC_COMPILED_TESTS}
 	@echo -n "Compiling $^... "
 	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
-%-link1.kcc: %-link1.cc %-link2.C
+%-link1.kcc: %-link1.cc %-link2.cc
 	@echo -n "Compiling $^... "
 	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.kcc: %.c
 	@echo -n "Compiling $<... "
 	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
-%.kcc: %.C
+%.kcc: %.cc
 	@echo -n "Compiling $<... "
 	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
@@ -44,14 +44,14 @@ compile: ${KCC_COMPILED_TESTS}
 	@echo -n "Compiling $^ (reference)... "
 	@$(CC) -std=c11 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
-%-link1.gcc: %-link1.cc %-link2.C
+%-link1.gcc: %-link1.cc %-link2.cc
 	@echo -n "Compiling $^ (reference)... "
 	@$(CXX) -std=c++14 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.gcc: %.c
 	@echo -n "Compiling $< (reference)... "
 	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
-%.gcc: %.C
+%.gcc: %.cc
 	@echo -n "Compiling $< (reference)... "
 	@$(CXX) -std=c++14 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 

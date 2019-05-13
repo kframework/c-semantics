@@ -1,10 +1,10 @@
-new26.C:14:1: warning: replacement function 'operator new' cannot be declared 'inline' [-Winline-new-delete]
+new26.cc:14:1: warning: replacement function 'operator new' cannot be declared 'inline' [-Winline-new-delete]
 inline void *operator new(long unsigned int)
 ^
-new26.C:19:1: warning: replacement function 'operator delete' cannot be declared 'inline' [-Winline-new-delete]
+new26.cc:19:1: warning: replacement function 'operator delete' cannot be declared 'inline' [-Winline-new-delete]
 inline void operator delete (void*) {}
 ^
-new26.C:19:13: warning: function previously declared with an explicit exception specification redeclared with an implicit exception specification [-Wimplicit-exception-spec-mismatch]
+new26.cc:19:13: warning: function previously declared with an explicit exception specification redeclared with an implicit exception specification [-Wimplicit-exception-spec-mismatch]
 inline void operator delete (void*) {}
             ^
 3 warnings generated.

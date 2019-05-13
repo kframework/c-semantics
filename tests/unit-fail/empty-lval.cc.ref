@@ -1,11 +1,11 @@
 Reading outside the bounds of an object:
-      > in ::main at empty-lval.C:4:11
+      > in ::main at empty-lval.cc:4:11
 
     Behavior underspecified by standard (DR++-EIO1):
         see C++ Defect Reports section 232 http://rvdoc.org/C++%20Defect%20Reports/232
 
 Encountered an unknown error. This may be due to encountering undefined behavior, an unsupported language feature, or a bug in this tool:
-      > in ::main at empty-lval.C:4:11
+      > in ::main at empty-lval.cc:4:11
 
     Unknown error (UNK-1)
 

@@ -1,7 +1,7 @@
 /* PR 51113 */
 /* { dg-options "-fprofile-arcs -ftest-coverage -fpic" } */
 /* { dg-do run { target native } } */
-/* { dg-additional-sources "gcovpart-12b.C" } */
+/* { dg-additional-sources "gcovpart-12b.cc" } */
 
 struct Foo {
   Foo ()

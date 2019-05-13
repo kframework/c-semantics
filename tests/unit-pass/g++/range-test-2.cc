@@ -38,7 +38,7 @@ test##IDX (TYPE x)							\
   if (TEST)								\
     check ();								\
 }
-#include "range-test-2.C"
+#include "range-test-2.cc"
 #undef T
 
 int
@@ -66,7 +66,7 @@ main ()
 	  printf ("test" #IDX " failed for noarr [%u]\n", i), ++fails;	\
       }									\
   }
-#include "range-test-2.C"
+#include "range-test-2.cc"
 #undef T
 
   if (fails)

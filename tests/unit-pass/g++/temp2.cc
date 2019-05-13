@@ -2,7 +2,7 @@
 
 // Copyright (C) 2006 Free Software Foundation, Inc.
 
-// Originally from PR 16681, found also in init/array15.C
+// Originally from PR 16681, found also in init/array15.cc
 // This variant of the testcase verifies that we do not create
 // a temporary on the stack, which is PR 27620.
 
