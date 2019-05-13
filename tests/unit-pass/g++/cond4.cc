@@ -1,4 +1,4 @@
-// Runtime version of cond3.C.  We call terminate when the A cleanup throws
+// Runtime version of cond3.cc.  We call terminate when the A cleanup throws
 // because we've already initialized the exception object.
 // { dg-do run }
 
