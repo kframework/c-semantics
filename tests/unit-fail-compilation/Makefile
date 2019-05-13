@@ -1,8 +1,8 @@
 TUS = $(wildcard ./*.c) $(wildcard ./*.cc)
 EXCLUDES=
-TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
+TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.cc, ${TUS})))
 CPP_TESTS = $(filter-out %.c, ${TESTS})
-C_TESTS = $(filter-out %.C, ${TESTS})
+C_TESTS = $(filter-out %.cc, ${TESTS})
 KCC_COMPILED_TESTS = ${TESTS:=.kcc.out}
 TEST_COMPARISON = ${TESTS:=.cmp}
 CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
@@ -31,7 +31,7 @@ cpp-comparison: ${CPP_TEST_COMPARISON}
 	@$(KCC) $(KCCFLAGS) $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
 	@sed -i "/kcc -d/d" $@
 
-%-link1.C.kcc.out: %-link1.C %-link2.C
+%-link1.cc.kcc.out: %-link1.cc %-link2.cc
 	@echo -n "Compiling $^... "
 	@$(KXX) $(KCCFLAGS) $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
 	@sed -i "/k++ -d/d" $@
@@ -41,7 +41,7 @@ cpp-comparison: ${CPP_TEST_COMPARISON}
 	@$(KCC) $(KCCFLAGS) $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
 	@sed -i "/kcc -d/d" $@
 
-%.C.kcc.out: %.C
+%.cc.kcc.out: %.cc
 	@echo -n "Compiling $<... "
 	@$(KXX) -fno-native-compilation $(KCCFLAGS) $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
 	@sed -i "/k++ -d/d" $@
