@@ -29,7 +29,7 @@ compile: ${KCC_COMPILED_TESTS}
 	@echo -n "Compiling $^... "
 	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
-%-link1.kcc: %-link1.C %-link2.C
+%-link1.kcc: %-link1.cc %-link2.C
 	@echo -n "Compiling $^... "
 	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
@@ -44,7 +44,7 @@ compile: ${KCC_COMPILED_TESTS}
 	@echo -n "Compiling $^ (reference)... "
 	@$(CC) -std=c11 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
-%-link1.gcc: %-link1.C %-link2.C
+%-link1.gcc: %-link1.cc %-link2.C
 	@echo -n "Compiling $^ (reference)... "
 	@$(CXX) -std=c++14 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 

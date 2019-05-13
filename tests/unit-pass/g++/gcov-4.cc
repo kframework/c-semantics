@@ -38,4 +38,4 @@ int func(int i, int j){
 int main() {
   return func(1, 0);
 }
-/* { dg-final { run-gcov gcov-4.C } } */
+/* { dg-final { run-gcov gcov-4.cc } } */

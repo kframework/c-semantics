@@ -25,4 +25,4 @@ int main ()
     }
 }
 
-/* { dg-final { run-gcov gcov-7.C } } */
+/* { dg-final { run-gcov gcov-7.cc } } */

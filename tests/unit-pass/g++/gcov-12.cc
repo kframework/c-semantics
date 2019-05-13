@@ -17,5 +17,5 @@ int main ()
   return 0;  /* count (1) */
 }
 
-/* { dg-final { run-gcov gcov-12.C } } */
-/* { dg-final { run-gcov gcovpart-12b.C { xfail *-*-* } } } */
+/* { dg-final { run-gcov gcov-12.cc } } */
+/* { dg-final { run-gcov gcovpart-12b.cc { xfail *-*-* } } } */

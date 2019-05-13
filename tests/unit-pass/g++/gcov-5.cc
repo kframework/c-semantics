@@ -47,4 +47,4 @@ int main() {
   return 0;
 }
 
-/* { dg-final { run-gcov gcov-5.C } } */
+/* { dg-final { run-gcov gcov-5.cc } } */

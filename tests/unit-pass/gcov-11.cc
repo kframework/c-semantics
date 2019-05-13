@@ -39,4 +39,4 @@ int main ()
   return 0;  /* count (1) */
 }
 
-/* { dg-final { run-gcov gcov-11.C } } */
+/* { dg-final { run-gcov gcov-11.cc } } */

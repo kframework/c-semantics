@@ -29,4 +29,4 @@ int main()
   foo();				/* count(1) */
 }
 
-/* { dg-final { run-gcov gcov-2.C } } */
+/* { dg-final { run-gcov gcov-2.cc } } */

@@ -14,4 +14,4 @@ main ()
   return foo();                                /* count(1) */
 }
 
-/* { dg-final { run-gcov gcov-3.C } } */
+/* { dg-final { run-gcov gcov-3.cc } } */

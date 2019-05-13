@@ -25,4 +25,4 @@ int main ()		// count(1)
   }
 }
 
-// { dg-final { run-gcov gcov-15.C } }
+// { dg-final { run-gcov gcov-15.cc } }

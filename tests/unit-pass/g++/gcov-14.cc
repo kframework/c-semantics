@@ -13,4 +13,4 @@ int main ()
   return 0;
 }
 
-/* { dg-final { run-gcov gcov-14.C } } */
+/* { dg-final { run-gcov gcov-14.cc } } */

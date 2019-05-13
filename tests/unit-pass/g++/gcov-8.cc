@@ -32,4 +32,4 @@ int main()
   foo();
 }
 
-/* { dg-final { run-gcov intermediate { -i -b gcov-8.C } } } */
+/* { dg-final { run-gcov intermediate { -i -b gcov-8.cc } } } */
