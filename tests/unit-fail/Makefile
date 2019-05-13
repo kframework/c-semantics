@@ -1,8 +1,8 @@
-TUS = $(wildcard ./*.c) $(wildcard ./*.C)
+TUS = $(wildcard ./*.c) $(wildcard ./*.cc)
 EXCLUDES=
-TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
+TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.cc, ${TUS})))
 CPP_TESTS = $(filter-out %.c, ${TESTS})
-C_TESTS = $(filter-out %.C, ${TESTS})
+C_TESTS = $(filter-out %.cc, ${TESTS})
 GCC_COMPILED_TESTS = ${TESTS:=.gcc}
 KCC_COMPILED_TESTS = ${TESTS:=.kcc}
 C_KCC_COMPILED_TESTS = ${C_TESTS:=.kcc}
@@ -45,7 +45,7 @@ c-compile: ${C_KCC_COMPILED_TESTS}
 	@echo -n "Compiling $^... "
 	@$(KCC) $(KCCFLAGS) -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
-%-link1.C.kcc: %-link1.C %-link2.C
+%-link1.cc.kcc: %-link1.cc %-link2.cc
 	@echo -n "Compiling $^... "
 	@$(KXX) $(KCCFLAGS) -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
@@ -53,7 +53,7 @@ c-compile: ${C_KCC_COMPILED_TESTS}
 	@echo -n "Compiling $<... "
 	@$(KCC) $(KCCFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
-%.C.kcc: %.C
+%.cc.kcc: %.cc
 	@echo -n "Compiling $<... "
 	@$(KXX) $(KCCFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 

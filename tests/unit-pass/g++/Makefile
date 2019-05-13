@@ -1,4 +1,4 @@
-TUS = $(wildcard ./*.c) $(wildcard ./*.C)
+TUS = $(wildcard ./*.c) $(wildcard ./*.cc)
 EXCLUDES=
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, $(filter-out %-link3.C, ${TUS}))))
 GCC_COMPILED_TESTS = ${TESTS:.c=.gcc}

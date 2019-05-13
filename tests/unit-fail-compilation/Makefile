@@ -1,4 +1,4 @@
-TUS = $(wildcard ./*.c) $(wildcard ./*.C)
+TUS = $(wildcard ./*.c) $(wildcard ./*.cc)
 EXCLUDES=
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
 CPP_TESTS = $(filter-out %.c, ${TESTS})
