@@ -232,7 +232,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                               Init::Init, DT::DeclarationType, Lnk::Linkage, D::Duration, S::Set)
               => declareObjectWithLinkage(N1, N2, X, T, Init, DT, D, S,
                               getGoodCName(T, X, Mangled, Uuid, LangLinkage, Opts, Lnk), Lnk)
-              ~> Declare.potentiallyInvokeDestructor(T)
+              ~> #if Extern() in S #then .K #else Declare.potentiallyInvokeDestructor(T) #fi
           ...</k>
           <curr-lang-linkage> LangLinkage::LanguageLinkage </curr-lang-linkage>
           <options> Opts::Set </options>
