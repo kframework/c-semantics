@@ -27,8 +27,12 @@ module CPP-EXPR-CAST
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     context ConstCast(T:CPPType, (HOLE:Expr => reval(HOLE)))
-             requires isUnnamedPRValue(T) [result(EPRVal)]
+     context <k> ConstCast(T:CPPType, (HOLE:Expr => reval(HOLE))) ...</k>
+             <compile-time-evaluation> true </compile-time-evaluation>
+             requires isUnnamedPRValue(T) [result(PRV)]
+     context <k> ConstCast(T:CPPType, (HOLE:Expr => reval(HOLE))) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation>
+             requires isUnnamedPRValue(T) [result(PRVal)]
 
      rule ConstCast(T:CPPType, V:PRVal) => convertConst(T, V)
 
@@ -144,8 +148,12 @@ module CPP-EXPR-CAST
      rule inverseConvertType(T::CPPType, V::PRVal) => cannot-convert
           requires notBool isCPPRefType(T) [owise]
 
-     context ReinterpretCast(T:CPPType, (HOLE:Expr => reval(HOLE)))
-             requires isUnnamedPRValue(T) [result(EPRVal)]
+     context <k> ReinterpretCast(T:CPPType, (HOLE:Expr => reval(HOLE))) ...</k>
+             <compile-time-evaluation> true </compile-time-evaluation>
+             requires isUnnamedPRValue(T) [result(PRV)]
+     context <k> ReinterpretCast(T:CPPType, (HOLE:Expr => reval(HOLE))) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation>
+             requires isUnnamedPRValue(T) [result(PRVal)]
 
      rule ReinterpretCast(T:CPPType, V:PRVal) => convertReinterpret(T, V)
 

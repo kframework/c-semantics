@@ -75,7 +75,10 @@ module CPP-CONVERSION
 
      syntax PRExpr ::= ErrorResult
 
-     context ConvertType(_, (HOLE:Expr => reval(HOLE))) [result(EPRVal)]
+     context <k> ConvertType(_, (HOLE:Expr => reval(HOLE))) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> ConvertType(_, (HOLE:Expr => reval(HOLE))) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
 
      rule ConvertType(T::CPPType, R:PRVal) => convertType(T, R)
 
