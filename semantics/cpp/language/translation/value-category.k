@@ -286,6 +286,8 @@ module CPP-TRANSLATION-VALUE-CATEGORY
 
      rule #catofBuiltinOperator(operator>>, _, _, _) => catof(prvalue)
 
+     rule #catofBuiltinOperator(operator,, _, C:ValueCategory, _) => catof(C)
+
      rule #catofBuiltinOperator(operator-, _) => catof(prvalue)
 
      rule #catofBuiltinOperator(operator+, _) => catof(prvalue)
@@ -372,7 +374,7 @@ module CPP-TRANSLATION-VALUE-CATEGORY
 
      rule catof(E1::Expr >>= E2::Expr) => catofBuiltinOperator(operator>>=, E1, E1, E2)
 
-     rule catof(Comma(E1::Expr, E2::Expr)) => catofBuiltinOperator(operator,, E1, E1, E2)
+     rule catof(Comma(E1::Expr, E2::Expr)) => catofBuiltinOperator(operator,, E1, E2, E2)
 
      rule catof(E1::Expr ++) => catofBuiltinOperator(operator_++, E1)
 

@@ -390,6 +390,10 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax Expr ::= "callTerminate"
 
+     syntax CId ::= idOf(Class) [function, klabel(idOfClass)]
+
+     syntax CId ::= idOf(ClassSpecifier) [function, klabel(idOfClassSpecifier)]
+
      syntax Enum ::= ClassQualifier "::" EnumSpecifier
 
      syntax EnumSpecifier ::= Enum(CId) [klabel(enumSpecifier)]
@@ -961,6 +965,10 @@ module CPP-DYNAMIC-OTHER
 
      rule compoundStmt(S1::Stmt, S2::Stmt) => S1 ~> S2
      rule nullStmt() => .K
+
+     rule idOf(Class(_, X::CId, _)) => X
+
+     rule idOf(_ :: S::ClassSpecifier) => idOf(S)
 
 endmodule // CPP-DYNAMIC-OTHER
 

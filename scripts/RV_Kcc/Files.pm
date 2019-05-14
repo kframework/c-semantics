@@ -121,7 +121,7 @@ sub getProfiles {
 }
 
 {
-      my $tempRoot = rel2abs(tempdir(".tmp-kcc-XXXXX", CLEANUP => 1));
+      my $tempRoot = tempdir(".tmp-kcc-XXXXX", CLEANUP => 1);
 
       sub tempFile {
             my ($name, $ext) = @_;
