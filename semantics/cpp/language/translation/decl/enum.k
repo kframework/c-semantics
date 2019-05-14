@@ -21,7 +21,7 @@ module CPP-TRANSLATION-DECL-ENUM
      imports INT
      imports STRING
 
-     rule <k> EnumDef(X::CId, NoNNS(), Scoped::Bool, Fixed::Bool, UT::CPPIntegerType, Enumerators::List)
+     rule <k> EnumDef(X::CId, NoNNS(), Scoped::Bool, Fixed::Bool, UT::CPPType, Enumerators::List)
           => enumContext(X, declareEnumName(createEnumName(X, Sc), UT, Scoped, Fixed), Enumerators, Fixed, UT, false) ...</k>
           <curr-tr-scope> Sc::Scope </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -35,11 +35,11 @@ module CPP-TRANSLATION-DECL-ENUM
 
      rule createEnumName(X::CId, blockScope(_, _, _) #as B::BlockScope) => localQual(B) :: Enum(X)
 
-     syntax CPPEnumType ::= declareEnumName(Enum, ut: CPPIntegerType, scoped: Bool, fixed: Bool) [function]
+     syntax CPPType ::= declareEnumName(Enum, ut: CPPType, scoped: Bool, fixed: Bool) [function]
 
-     rule declareEnumName(E::Enum, UT::CPPIntegerType, false, Fixed:Bool) => t(noQuals, .Set, unscopedEnum(E, UT, Fixed))
+     rule declareEnumName(E::Enum, UT::CPPType, false, Fixed:Bool) => t(noQuals, .Set, unscopedEnum(E, UT, Fixed))
 
-     rule declareEnumName(E::Enum, UT::CPPIntegerType, true, true)  => t(noQuals, .Set, scopedEnum(E, UT))
+     rule declareEnumName(E::Enum, UT::CPPType, true, true)  => t(noQuals, .Set, scopedEnum(E, UT))
 
      syntax NNSVal ::= getEnumQualifier(Enum) [function]
 
@@ -49,44 +49,44 @@ module CPP-TRANSLATION-DECL-ENUM
 
      rule getEnumQualifier(localQual(_) :: _) => NoNamespace()
 
-     syntax KItem ::= addEnumToEnv(CId, CPPEnumType)
+     syntax KItem ::= addEnumToEnv(CId, CPPType)
 
-     rule addEnumToEnv(X::CId, E::CPPEnumType) => #addEnumToEnv(X, getEnumQualifier(getEnumId(E)), E)
+     rule addEnumToEnv(X::CId, E::CPPType) => #addEnumToEnv(X, getEnumQualifier(getEnumId(E)), E)
 
-     syntax KItem ::= #addEnumToEnv(CId, NNSVal, CPPEnumType)
+     syntax KItem ::= #addEnumToEnv(CId, NNSVal, CPPType)
 
-     rule <k> #addEnumToEnv(X::CId, N::Namespace, E::CPPEnumType) => . ... </k>
+     rule <k> #addEnumToEnv(X::CId, N::Namespace, E::CPPType) => . ... </k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <ntypes> NT::Map => NT[X <- E] </ntypes>
 
-     rule <k> #addEnumToEnv(X::CId, C::Class, E::CPPEnumType) => . ... </k>
+     rule <k> #addEnumToEnv(X::CId, C::Class, E::CPPType) => . ... </k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <ctypes> NT::Map => NT[X <- E] </ctypes>
 
-     rule <k> #addEnumToEnv(X::CId, NoNamespace(), E::CPPEnumType) => . ... </k>
+     rule <k> #addEnumToEnv(X::CId, NoNamespace(), E::CPPType) => . ... </k>
           <tr-types> NT::Map => NT[X <- E] </tr-types>
 
 
-     syntax KItem ::= enumContext(CId, CPPEnumType, List, fixed: Bool, ut: CPPIntegerType, opaque: Bool) [strict(2)]
+     syntax KItem ::= enumContext(CId, CPPType, List, fixed: Bool, ut: CPPType, opaque: Bool) [strict(2)]
 
-     rule enumContext(X::CId, E::CPPEnumType, Enumerators:List, Fixed::Bool, UT::CPPIntegerType, Opaque:Bool)
+     rule enumContext(X::CId, E::CPPType, Enumerators:List, Fixed::Bool, UT::CPPType, Opaque:Bool)
           => newEnum(getEnumId(E), E, Fixed, Opaque)
           ~> addEnumToEnv(X, E)
           ~> #if Opaque #then .K #else inEnumScope(E, declareEnumerators(E, 0, 0, 0, int, Enumerators, Fixed, true)) #fi
 
-     syntax KItem ::= inEnumScope(CPPEnumType, K)
+     syntax KItem ::= inEnumScope(CPPType, K)
 
-     rule <k> inEnumScope(E::CPPEnumType, K:K) => K ~> setScope(OldScope) ... </k>
+     rule <k> inEnumScope(E::CPPType, K:K) => K ~> setScope(OldScope) ... </k>
           <curr-tr-scope> OldScope::Scope => enumScope(getEnumId(E))  </curr-tr-scope>
 
 
-     syntax KItem ::= newEnum(Enum, CPPEnumType, fixed: Bool, opaque: Bool)
+     syntax KItem ::= newEnum(Enum, CPPType, fixed: Bool, opaque: Bool)
 
-     rule <k> newEnum(EI::Enum, E:CPPEnumType, true, Opaque::Bool) => . ... </k>
+     rule <k> newEnum(EI::Enum, cppEnumType #as E::CPPType, true, Opaque::Bool) => . ... </k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           (.Bag => <cppenum>...
@@ -100,7 +100,7 @@ module CPP-TRANSLATION-DECL-ENUM
            ...</cppenum>)
           requires getEnumInfo(E) ==K #incomplete
 
-     rule <k> newEnum(EI::Enum, E:CPPUnscopedEnumType, false, false) => . ... </k>
+     rule <k> newEnum(EI::Enum, t(... st: _:CPPSimpleUnscopedEnumType) #as E::CPPType, false, false) => . ... </k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           (.Bag => <cppenum>...
@@ -112,38 +112,38 @@ module CPP-TRANSLATION-DECL-ENUM
            ...</cppenum>)
 
      // Redeclaration
-     rule <k> newEnum(EI::Enum, E1:CPPEnumType, true, Opaque:Bool) => . ...</k>
+     rule <k> newEnum(EI::Enum, cppEnumType #as E1::CPPType, true, Opaque:Bool) => . ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <enum-id> EI </enum-id>
-          <enum-type> E2:CPPEnumType </enum-type>
+          <enum-type> cppEnumType #as E2::CPPType </enum-type>
           <enum-opaque> OldOpaque:Bool => OldOpaque andBool Opaque </enum-opaque>
           requires E1 ==K E2
 
      rule <k> (.K => ILL("TDE5", "A scoped/unscoped enumeration shall not be later redeclared as unscoped/scoped or with a different underlying type")) ~>
-               newEnum(EI::Enum, E1:CPPEnumType, true, _) ...</k>
+               newEnum(EI::Enum, cppEnumType #as E1::CPPType, true, _) ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <enum-id> EI </enum-id>
-          <enum-type> E2:CPPEnumType </enum-type>
+          <enum-type> cppEnumType #as E2::CPPType </enum-type>
           requires E1 =/=K E2
 
-     syntax KItem ::= declareEnumerators(CPPEnumType, min: Int, max: Int, next: Int, prevType: CPPSimpleType, enums: List, fixed: Bool, first: Bool)
+     syntax KItem ::= declareEnumerators(CPPType, min: Int, max: Int, next: Int, prevType: CPPSimpleType, enums: List, fixed: Bool, first: Bool)
 
      rule (.K => C) ~> declareEnumerators(... enums: ListItem(DeclLoc(C::CabsLoc, D::Decl) => D) _)
 
      // First enumerator, fixed underlying type.
-     rule declareEnumerators(E::CPPEnumType, _, _, _, _, ListItem(Enumerator(_, NoExpression() => prv(0, noTrace, underlyingType(E)))) _::List, true, true)
+     rule declareEnumerators(E::CPPType, _, _, _, _, ListItem(Enumerator(_, NoExpression() => prv(0, noTrace, underlyingType(E)))) _::List, true, true)
 
      // First enumerator, underlying type not fixed
      rule (.K => UNSPEC("TDE2", "No initializer specified for the first enumerator, underlying type of enumerator is unspecified.")) ~> (
-          declareEnumerators(E::CPPEnumType, Min::Int, Max::Int, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(X::CId, NoExpression())) L::List, false, true)
+          declareEnumerators(E::CPPType, Min::Int, Max::Int, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(X::CId, NoExpression())) L::List, false, true)
           => recoverFromError(
           declareEnumerators(E, Min, Max, Next, PrevType, ListItem(Enumerator(X, prv(0, noTrace, type(int)))) L, false, true)
           ))
 
      // Second or more enumerator, fixed underlying type
-     rule declareEnumerators(E::CPPEnumType, _, _, Next::Int, _,
+     rule declareEnumerators(E::CPPType, _, _, Next::Int, _,
                ListItem(Enumerator(_, NoExpression() => prv(Next, noTrace, underlyingType(E)))) _::List, true, false)
 
      // Second or more enumerator, underlying type not fixed, value fits.
@@ -153,7 +153,7 @@ module CPP-TRANSLATION-DECL-ENUM
 
      // Second or more enumerator, underlype type not fixed, value does not fit to previous type but fits to some.
      rule (.K => UNSPEC("TDE3", "Value does not fit to type of preceding enumerator.")) ~> (
-          declareEnumerators(E::CPPEnumType, Min::Int, Max::Int, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(X::CId, NoExpression())) L::List, false, false)
+          declareEnumerators(E::CPPType, Min::Int, Max::Int, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(X::CId, NoExpression())) L::List, false, false)
           => recoverFromError(
           declareEnumerators(E, Min, Max, Next::Int, PrevType, ListItem(Enumerator(X, prv(Next, noTrace, type(firstSuitableType(Next, Next, allIntegralTypes))))) L, false, false)
           ))
@@ -163,7 +163,7 @@ module CPP-TRANSLATION-DECL-ENUM
           declareEnumerators(_, _, _, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(_, NoExpression())) _::List, false, false)
           requires notBool inRange(Next, type(PrevType)) andBool firstSuitableType(Next, Next, allIntegralTypes) ==K no-type
 
-     rule declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, prv(_, _, T:CPPUnscopedEnumType => underlyingType(T)))) _::List, _, _)
+     rule declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, prv(_, _, t(... st: _:CPPSimpleUnscopedEnumType) #as T::CPPType => underlyingType(T)))) _::List, _, _)
 
      context declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, HOLE:Expr => reval(HOLE))) _::List, _, _) [result(PRVal)]
 
@@ -178,15 +178,15 @@ module CPP-TRANSLATION-DECL-ENUM
      // Type of an enumerator inside the declaration is enum's underlying type
      // if it is fixed, and type of initializing expression otherwise,
      // Hence we need to store the type of underlying expression...
-     rule declareEnumerators(T::CPPEnumType, Min::Int, Max::Int, Next::Int, _, ListItem(Enumerator(X::CId, prv(V::Int, _, t(_, _, EType:CPPSimpleType)) #as Pr::PRVal)) L::List, Fixed:Bool, First:Bool)
+     rule declareEnumerators(T::CPPType, Min::Int, Max::Int, Next::Int, _, ListItem(Enumerator(X::CId, prv(V::Int, _, t(_, _, EType:CPPSimpleType)) #as Pr::PRVal)) L::List, Fixed:Bool, First:Bool)
           => declareEnumerator(getEnumId(T), X, Pr, Fixed, underlyingType(T))
           ~> declareEnumerators(T, #if First #then V #else minInt(Min, V) #fi, #if First #then V #else maxInt(Max, V) #fi, V +Int 1, EType, L, Fixed, false)
      requires notBool isCPPSimpleUnscopedEnumType(EType)
 
      // Enums with fixed underlying type are finished by now.
-     rule declareEnumerators(T::CPPEnumType, _, _, _, _, .List, true, _) => .
+     rule declareEnumerators(T::CPPType, _, _, _, _, .List, true, _) => .
 
-     rule declareEnumerators(T::CPPUnscopedEnumType, Min::Int, Max::Int, _, _, .List, false, _) => calculateEnumValues(T, Min, Max)
+     rule declareEnumerators(T::CPPType, Min::Int, Max::Int, _, _, .List, false, _) => calculateEnumValues(T, Min, Max)
 
 
      syntax KItem ::= declareEnumerator(Enum, CId, PRVal, fixed: Bool, ut: CPPType)
@@ -195,10 +195,10 @@ module CPP-TRANSLATION-DECL-ENUM
      rule declareEnumerator(E::Enum, X::CId, prv(_,_,_) #as Pr::PRVal, false, _) => addEnumerator(E, X, Pr)
 
      // Fixed enumerator.
-     rule declareEnumerator(E::Enum, X::CId, prv(V::CPPValue, Tr::Trace, _), true, UT::CPPIntegerType) => addEnumerator(E, X, prv(V, Tr, UT))
+     rule declareEnumerator(E::Enum, X::CId, prv(V::CPPValue, Tr::Trace, _), true, UT::CPPType) => addEnumerator(E, X, prv(V, Tr, UT))
      requires inRange(V, UT)
 
-     rule (.K => ILL("TDE1", "Value of enumerator '" +String showCId(X) +String "' does not fit to fixed underlying type.")) ~> declareEnumerator(_, X::CId, prv(V::CPPValue, _, _), true, UT::CPPIntegerType)
+     rule (.K => ILL("TDE1", "Value of enumerator '" +String showCId(X) +String "' does not fit to fixed underlying type.")) ~> declareEnumerator(_, X::CId, prv(V::CPPValue, _, _), true, UT::CPPType)
           requires notBool inRange(V, UT)
 
      syntax KItem ::= addEnumerator(enum: Enum, id: CId, v: PRVal)
@@ -272,7 +272,7 @@ module CPP-TRANSLATION-DECL-ENUM
      rule firstSuitableType(_, _, (ListItem(_) => .List) _) [owise]
 
 
-     syntax KItem ::= calculateEnumValues(CPPEnumType, min: Int, max: Int)
+     syntax KItem ::= calculateEnumValues(CPPType, min: Int, max: Int)
 
      syntax Int ::= calculateMaxEnumValue(emin: Int, emax: Int) [function]
 
@@ -293,16 +293,16 @@ module CPP-TRANSLATION-DECL-ENUM
 
      rule firstGreaterThanOrEqualTo(Exp::Int, Tresh::Int) => firstGreaterThanOrEqualTo(Exp +Int 1, Tresh) [owise]
 
-     rule calculateEnumValues(T::CPPEnumType, Min::Int, Max::Int) => computeEnumUt(T, calculateMinEnumValue(Min, Max), calculateMaxEnumValue(Min, Max))
+     rule calculateEnumValues(T::CPPType, Min::Int, Max::Int) => computeEnumUt(T, calculateMinEnumValue(Min, Max), calculateMaxEnumValue(Min, Max))
 
-     syntax KItem ::= computeEnumUt(CPPEnumType, min: Int, max: Int)
+     syntax KItem ::= computeEnumUt(CPPType, min: Int, max: Int)
 
      // TODO(h0nzZik): packed enums
-     rule computeEnumUt(T::CPPEnumType, Min::Int, Max::Int) => setEnumMinMaxUt(T, Min, Max, type(firstSuitableType(Min, Max, integralTypesGreaterThanInt)))
+     rule computeEnumUt(T::CPPType, Min::Int, Max::Int) => setEnumMinMaxUt(T, Min, Max, type(firstSuitableType(Min, Max, integralTypesGreaterThanInt)))
 
-     syntax KItem ::= setEnumMinMaxUt(CPPEnumType, min: Int, max: Int, ut: CPPType)
+     syntax KItem ::= setEnumMinMaxUt(CPPType, min: Int, max: Int, ut: CPPType)
 
-     rule <k> setEnumMinMaxUt(t(_, _, unscopedEnum(_ :: Enum(X::CId) #as E::Enum, _, Fixed:Bool)) #as T::CPPEnumType, Min::Int, Max::Int, UT:CPPIntegerType)
+     rule <k> setEnumMinMaxUt(t(_, _, unscopedEnum(_ :: Enum(X::CId) #as E::Enum, _, Fixed:Bool)) #as T::CPPType, Min::Int, Max::Int, cppIntegerType #as UT::CPPType)
           => addEnumToEnv(X, t(noQuals, .Set, unscopedEnum(E, UT, Fixed))) ... </k>
           <enum-id> E </enum-id>
           <enum-type> _ => t(noQuals, .Set, unscopedEnum(E, UT, Fixed)) </enum-type>
@@ -312,12 +312,12 @@ module CPP-TRANSLATION-DECL-ENUM
 
 
      // @ref n4296 7.2/3: ... An opaque-enum-declaration is either a redeclaration of an enumeration in the current scope...
-     rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPIntegerType) => . ...</k>
+     rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPType) => . ...</k>
           <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
           <enum-id> N::Namespace :: Enum(X) </enum-id>
 
      // @ref n4296 7.2/3 ... or a declaration of a new enumeration.
-     rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPIntegerType)
+     rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPType)
      => enumContext(X, declareEnumName(createEnumName(X, Sc), UT, Scoped, true), .List, true, UT, true) ...</k>
           <curr-tr-scope> Sc::Scope </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>

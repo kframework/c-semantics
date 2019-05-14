@@ -8,16 +8,16 @@ module CPP-TRANSLATION-EXPR-EVAL
      rule convertReval(E:GLExpr) => convertLVal(E)
           requires Translation() andBool notBool isCPPArrayType(type(E)) andBool notBool isCPPFunctionType(type(E))
 
-     rule convertReval(le(E::Expr, Tr::Trace, T:CPPArrayType)) => pre(E, Tr, type(pointerType(innerType(T))))
+     rule convertReval(le(E::Expr, Tr::Trace, t(... st: _:CPPSimpleArrayType) #as T::CPPType)) => pre(E, Tr, type(pointerType(innerType(T))))
           requires Translation()
 
-     rule convertReval(xe(E::Expr, Tr::Trace, T:CPPArrayType)) => pre(E, Tr, type(pointerType(innerType(T))))
+     rule convertReval(xe(E::Expr, Tr::Trace, t(... st: _:CPPSimpleArrayType) #as T::CPPType)) => pre(E, Tr, type(pointerType(innerType(T))))
           requires Translation()
 
-     rule convertReval(pre(E::Expr, Tr::Trace, T:CPPArrayType)) => pre(E, Tr, type(pointerType(innerType(T))))
+     rule convertReval(pre(E::Expr, Tr::Trace, t(... st: _:CPPSimpleArrayType) #as T::CPPType)) => pre(E, Tr, type(pointerType(innerType(T))))
           requires Translation()
 
-     rule convertReval(le(E::Expr, Tr::Trace, T:CPPFunctionType)) => pre(E, Tr, type(pointerType(T)))
+     rule convertReval(le(E::Expr, Tr::Trace, t(... st: functionType(...)) #as T::CPPType)) => pre(E, Tr, type(pointerType(T)))
           requires Translation()
 
 endmodule

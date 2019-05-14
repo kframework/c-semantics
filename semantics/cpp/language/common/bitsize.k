@@ -29,9 +29,9 @@ module CPP-BITSIZE
 
      rule byteSizeofType(classType(C::Class)) => byteSizeofClass(getClassInfo(C))
 
-     rule byteSizeofType(scopedEnum(... underlyingType: T::CPPIntegerType)) => byteSizeofType(T)
+     rule byteSizeofType(scopedEnum(... underlyingType: T::CPPType)) => byteSizeofType(T)
 
-     rule byteSizeofType(unscopedEnum(... underlyingType: T::CPPIntegerType)) => byteSizeofType(T)
+     rule byteSizeofType(unscopedEnum(... underlyingType: T::CPPType)) => byteSizeofType(T)
 
      syntax Int ::= byteSizeofClass(ClassInfo) [function]
 
@@ -44,7 +44,7 @@ module CPP-BITSIZE
 
      rule byteSizeofType(rvRefType(_)) => cfg:refsize
 
-     rule byteSizeofType(memberPointerType(_, T:CPPFunctionType)) => cfg:memberFunctionPtrSize
+     rule byteSizeofType(memberPointerType(_, t(... st: functionType(...)) #as T::CPPType)) => cfg:memberFunctionPtrSize
 
      rule byteSizeofType(memberPointerType(_, T::CPPType)) => cfg:memberDataPtrSize
           requires notBool(isCPPFunctionType(T))

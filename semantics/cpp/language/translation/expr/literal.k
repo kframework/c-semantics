@@ -43,7 +43,7 @@ module CPP-TRANSLATION-EXPR-LITERAL
 
      rule NullPointerLiteral() => prv(nullptrVal, hasTrace(NullPointerLiteral()), type(nullptr_t))
 
-     rule FloatingLiteral(F::Float, T:CPPFloatingType) => prv(roundFloat(F, precision(T), exponent(T)), hasTrace(FloatingLiteral(F, T)), T)
+     rule FloatingLiteral(F::Float, t(... st: _:CPPSimpleFloatingType) #as T::CPPType) => prv(roundFloat(F, precision(T), exponent(T)), hasTrace(FloatingLiteral(F, T)), T)
 
      syntax Expr ::= stringLiteral(String, CPPType)
 

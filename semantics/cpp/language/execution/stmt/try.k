@@ -227,14 +227,14 @@ module CPP-EXECUTION-STMT-TRY
           requires utype(T) ==Type utype(E)
 
      // @ref n4296 15.3:3.2
-     rule handlerMatches(T:CPPClassType, E:CPPClassType) => true
+     rule handlerMatches(t(... st: classType(...)) #as T::CPPType, t(... st: classType(...)) #as E::CPPType) => true
           requires isBaseClassOf(T, E)
 
-     rule handlerMatches(t(... st: lvRefType(T:CPPClassType)), E:CPPClassType) => true
+     rule handlerMatches(t(... st: lvRefType(t(... st: classType(...)) #as T::CPPType)), t(... st: classType(...)) #as E::CPPType) => true
           requires isBaseClassOf(T, E)
 
      // @ref n4296 15.3:3.3.1
-     rule handlerMatches(t(... st: pointerType(t(QT::Quals, _, _) #as T:CPPClassType)), t(... st: pointerType(t(QE::Quals, _, _) #as E:CPPClassType)))
+     rule handlerMatches(t(... st: pointerType(t(QT::Quals, _, classType(...)) #as T::CPPType)), t(... st: pointerType(t(QE::Quals, _, classType(...)) #as E::CPPType)))
           => true
           requires isBaseClassOf(T, E) andBool QE <=Quals QT
 
@@ -242,7 +242,7 @@ module CPP-EXECUTION-STMT-TRY
           => true
           requires QE <=Quals QT
 
-     rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(t(... st: pointerType(t(QT::Quals, _, _) #as T:CPPClassType)))), t(... st: pointerType(t(QE::Quals, _, _) #as E:CPPClassType)))
+     rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(t(... st: pointerType(t(QT::Quals, _, classType(...)) #as T::CPPType)))), t(... st: pointerType(t(QE::Quals, _, classType(...)) #as E::CPPType)))
           => true
           requires isBaseClassOf(T, E) andBool QE <=Quals QT
 
@@ -251,22 +251,22 @@ module CPP-EXECUTION-STMT-TRY
           requires QE <=Quals QT
 
      // @ref n4296 15.3:3.3.2
-     rule handlerMatches(T:CPPPointerType, E:CPPPointerType)
+     rule handlerMatches(t(... st: pointerType(...)) #as T::CPPType, t(... st: pointerType(...)) #as E::CPPType)
           => true
           requires isSimilar(T, E) andBool cvQualificationSignature(E) <=QualSig cvQualificationSignature(T)
 
-     rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(T:CPPPointerType)), E:CPPPointerType)
+     rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(t(... st: pointerType(...)) #as T::CPPType)), t(... st: pointerType(...)) #as E::CPPType)
           => true
           requires isSimilar(T, E) andBool cvQualificationSignature(E) <=QualSig cvQualificationSignature(T)
 
      // @ref n4296 15.3:3.4
-     rule handlerMatches(T:CPPPointerType, E:CPPNullPtrTType) => true
+     rule handlerMatches(t(... st: pointerType(...)) #as T::CPPType, t(... st: nullptr_t) #as E::CPPType) => true
 
-     rule handlerMatches(T:CPPMemberPointerType, E:CPPNullPtrTType) => true
+     rule handlerMatches(t(... st: memberPointerType(...)) #as T::CPPType, t(... st: nullptr_t) #as E::CPPType) => true
 
-     rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(T:CPPPointerType)), E:CPPNullPtrTType) => true
+     rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(t(... st: pointerType(...)) #as T::CPPType)), t(... st: nullptr_t) #as E::CPPType) => true
 
-     rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(T:CPPMemberPointerType)), E:CPPNullPtrTType) => true
+     rule handlerMatches(t(... q: quals(SetItem(Const())), st: lvRefType(t(... st: memberPointerType(...)) #as T::CPPType)), t(... st: nullptr_t) #as E::CPPType) => true
 
      rule handlerMatches(_, _) => false [owise]
 

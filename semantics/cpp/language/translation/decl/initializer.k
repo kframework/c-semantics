@@ -77,10 +77,10 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
 
      // @ref n4296 8.5:6.1
-     rule #zeroInit(Base:LVal, T:CPPScalarType, _) => le(Base, trace(Base), T) :=init interpret(prv(0, noTrace, T))
+     rule #zeroInit(Base:LVal, cppScalarType #as T::CPPType, _) => le(Base, trace(Base), T) :=init interpret(prv(0, noTrace, T))
 
      // @ref n4296 8.5:6.2
-     rule <k> #zeroInit(Base:LVal, t(_, _, classType(C::Class)) #as T:CPPClassType, _) => zeroInitClass(Base, T, Bases, NSDM, noExpr /* Base*/) ...</k>
+     rule <k> #zeroInit(Base:LVal, t(_, _, classType(C::Class)) #as T::CPPType, _) => zeroInitClass(Base, T, Bases, NSDM, noExpr /* Base*/) ...</k>
           <class-id> C </class-id>
           <base-classes> Bases::List </base-classes>
           <non-static-data-members> NSDM::List </non-static-data-members>
@@ -88,11 +88,11 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // 8.5:6.3 TODO
 
      // @ref n4296 8.5:6.4
-     rule #zeroInit(Base:LVal, T:CPPArrayType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`#zeroInit`), 0, noExpr)
+     rule #zeroInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as T::CPPType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`#zeroInit`), 0, noExpr)
 
      // 8.5:6.5 TODO
 
-     syntax KItem ::= zeroInitClass(LVal, CPPClassType, bases: List, nsdm: List, init: MaybeExpr)
+     syntax KItem ::= zeroInitClass(LVal, CPPType, bases: List, nsdm: List, init: MaybeExpr)
 
      rule zeroInitClass(Base:LVal, _, .List, .List, noExpr) => .K
 
@@ -101,9 +101,9 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule (.K => evalMany(ListItem(zeroInitBaseClass(Base, type(classType(BaseCl::Class)))), .List))
           ~> zeroInitClass(Base:LVal, _, (ListItem(BaseCl::Class) => .List) _, _, _)
 
-     syntax KItem ::= zeroInitBaseClass(base: LVal, baseType: CPPClassType)
+     syntax KItem ::= zeroInitBaseClass(base: LVal, baseType: CPPType)
 
-     rule zeroInitBaseClass(Base:LVal, B:CPPClassType) => zeroInit(le(getBaseClassSubobject(Base, B), noTrace, B), B)
+     rule zeroInitBaseClass(Base:LVal, t(... st: classType(...)) #as B::CPPType) => zeroInit(le(getBaseClassSubobject(Base, B), noTrace, B), B)
 
      rule <k> (.K => evalMany(ListItem(zeroInit(Base . no-template Name(C, X), T)) zeroInitClassPadding(Base, NAOffset, Offset), .List))
                ~> zeroInitClass(Base:LVal, t(_, _, classType(C::Class)), .List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _)
@@ -142,7 +142,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule defaultInit(Base:LVal, t(... st: classType(C::Class)), IsConstructor::ConstructorType) => constructorInit(Base, DirectInit(), C, .List, IsConstructor)
 
      // @ref n4296 8.5:7.2 (array of classes)
-     rule defaultInit(Base:LVal, T:CPPArrayType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`defaultInit`), 0, noExpr)
+     rule defaultInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as T::CPPType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`defaultInit`), 0, noExpr)
           requires isCPPClassType(getMostDerivedArrayElement(T))
 
      // @ref n4296 8.5:7.2-7.3 (non-class, non-array-of-classes)
@@ -151,7 +151,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                andBool notBool isCPPRefType(T)
 
      // @ref n4296 8.5:8.1 (class with no defaulted default constructor)
-     rule #valueInit(Base:LVal, T:CPPClassType, IsConstructor::ConstructorType) => defaultInit(Base, T, IsConstructor)
+     rule #valueInit(Base:LVal, t(... st: classType(...)) #as T::CPPType, IsConstructor::ConstructorType) => defaultInit(Base, T, IsConstructor)
           requires (notBool hasConstructorThat(T, #klabel(`isDefaultConstructor`)))
                orBool hasConstructorThat(T, #klabel(`isUserProvidedDefaultConstructor`))
                orBool hasConstructorThat(T, #klabel(`isDeletedDefaultConstructor2`))
@@ -161,7 +161,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule strictCompoundInit(V1:Val, V2:Val) => compoundInit(V1, V2)
 
      // @ref n4296 8.5:8.2 (class without user-provided or deleted default constructor)
-     rule #valueInit(Base:LVal, T:CPPClassType, IsConstructor::ConstructorType)
+     rule #valueInit(Base:LVal, t(... st: classType(...)) #as T::CPPType, IsConstructor::ConstructorType)
           => #if hasConstructorThat(T, #klabel(`isNonTrivialDefaultConstructor`)) #then
                strictCompoundInit(zeroInit(Base, T), defaultInit(Base, T, IsConstructor))
           #else
@@ -171,7 +171,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                andBool (notBool hasConstructorThat(T, #klabel(`isDeletedDefaultConstructor2`)))
 
      // @ref n4296 8.5:8.3 (array)
-     rule #valueInit(Base:LVal, T:CPPArrayType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`#valueInit`), 0, noExpr)
+     rule #valueInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as T::CPPType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`#valueInit`), 0, noExpr)
 
      // @ref n4296 8.5:8.4 (non-class, non-array)
      rule #valueInit(Base:LVal, T::CPPType, _) => zeroInit(Base, T)
@@ -179,7 +179,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                andBool notBool isCPPArrayType(T)
                andBool notBool isCPPRefType(T)
 
-     syntax Expr ::= initEachElement(LVal, CPPArrayType, ConstructorType, K, Int, initExp: MaybeExpr)
+     syntax Expr ::= initEachElement(LVal, CPPType, ConstructorType, K, Int, initExp: MaybeExpr)
 
      rule (.K => Lbl(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, IsConstructor))
           ~> initEachElement(Base::LVal, t(... st: arrayType(T::CPPType, N::Int)), IsConstructor::ConstructorType, #klabel(Lbl:KLabel), I::Int => I +Int 1, _)
@@ -194,11 +194,11 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           => listInit(Base, DestT, Type, L, CT)
 
      // @ref n4296 8.5:17.2 (reference destination type)
-     rule #figureInit(Base:LVal, DestT:CPPRefType, _, E:Expr, _, _, _)
+     rule #figureInit(Base:LVal, cppRefType #as DestT::CPPType, _, E:Expr, _, _, _)
           => bindReference(le(Base, trace(Base), DestT), E)
 
      // @ref n4296 8.5:17.3 (string literal)
-     rule #figureInit(Base:LVal, DestT:CPPArrayType, _, StringLiteral(Kind::CharKind, S::String), _, _, _)
+     rule #figureInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as DestT::CPPType, _, StringLiteral(Kind::CharKind, S::String), _, _, _)
           => strInit(Base, DestT, Kind, S, 0, noExpr)
           requires isCPPCharType(innerType(DestT))
                orBool isCPPWideCharType(innerType(DestT))
@@ -208,9 +208,9 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           => #valueInit(Base, DestT, IsConstructor)
 
      // @ref n4296 8.5:17.6.1 (direct init or copy init from derived class)
-     rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)) #as DestT::CPPClassType, Type::InitType, E:Expr, SrcT::CPPType, _, IsConstructor::ConstructorType)
+     rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)) #as DestT::CPPType, Type::InitType, E:Expr, SrcT::CPPType, _, IsConstructor::ConstructorType)
           => constructorInit(Base, Type, DestC, ListItem(E), IsConstructor)
-          requires Type ==K DirectInit() orBool (isCPPClassType(SrcT) andBool isBaseClassOf(DestT, {SrcT}:>CPPClassType))
+          requires Type ==K DirectInit() orBool (isCPPClassType(SrcT) andBool isBaseClassOf(DestT, SrcT))
 
      rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)), DirectInit(), ExpressionList(L::List), _, _, IsConstructor::ConstructorType)
           => constructorInit(Base, DirectInit(), DestC, L, IsConstructor)
@@ -244,7 +244,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           requires isAggregateType(T)
 
      // @ref n4296 8.5.4:3.2 (empty init list, default-constructible class)
-     rule listInit(Base::LVal, T:CPPClassType, _, .List, CT::ConstructorType)
+     rule listInit(Base::LVal, t(... st: classType(...)) #as T::CPPType, _, .List, CT::ConstructorType)
           => #valueInit(Base, T, CT)
           requires notBool isAggregateType(T)
                andBool hasConstructorThat(T, #klabel(`isDefaultConstructor`))
@@ -527,7 +527,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           <class-id> C </class-id>
           <cenv>... ConstructorId(X) |-> M::TypeMap ...</cenv>
 
-     rule stripExplicit(T::CPPFunctionType |-> K1:KItem M::TypeMap) => T |-> K1 stripExplicit(M)
+     rule stripExplicit(T::CPPType |-> K1:KItem M::TypeMap) => T |-> K1 stripExplicit(M)
           requires notBool isMethodExplicit(T)
 
      rule stripExplicit(_ |-> _ M::TypeMap) => stripExplicit(M) [owise]
@@ -540,7 +540,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule V:Val ~> constructorInit(Base::LVal, _, _, _, ConstructorInit(IsBaseClass::Bool))
           => compoundInit(compoundInit(le(beginConstruction(Base, IsBaseClass), trace(Base), type(Base)), V), le(endConstruction(Base, true), trace(Base), type(Base)))
 
-     rule (.K => figureInit(Base[I], innerType(T), CharacterLiteral(C, ordChar(firstChar(S))), CopyInit())) ~> strInit(Base:LVal, T::CPPArrayType, C::CharKind, (S::String => butFirstChar(S)), (I::Int => I +Int 1), _)
+     rule (.K => figureInit(Base[I], innerType(T), CharacterLiteral(C, ordChar(firstChar(S))), CopyInit())) ~> strInit(Base:LVal, T::CPPType, C::CharKind, (S::String => butFirstChar(S)), (I::Int => I +Int 1), _)
           requires S =/=String ""
 
      rule (.K => figureInit(Base[I], T, CharacterLiteral(C, 0), CopyInit())) ~> strInit(Base:LVal, t(_, _, arrayType(T::CPPType, N::Int)), C::CharKind, "", (I::Int => I +Int 1), _)

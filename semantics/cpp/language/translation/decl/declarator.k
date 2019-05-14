@@ -52,13 +52,13 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      imports CPP-TRANSLATION-CONSTANT-SYNTAX
      imports CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
 
-     rule FunctionDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPFunctionType, Params::List)
+     rule FunctionDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Params::List)
           => NormalizedDecl(N, X, Mangled, T, NoInit(), Function(Params)) [anywhere]
 
      rule VarDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Init::Expr, IsDirect:Bool)
           => NormalizedDecl(N, X, Mangled, T, Init, Var(#if IsDirect #then DirectInit() #else CopyInit() #fi)) [anywhere]
 
-     rule FunctionDefinition(N::NNSVal, X::CId, Mangled::CId, T::CPPFunctionType, Params::List, Body::Stmt)
+     rule FunctionDefinition(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Params::List, Body::Stmt)
           => NormalizedDecl(N, X, Mangled, T, Body, Function(Params)) [anywhere]
 
      rule DeclStmt(L::List) => listToK(L)
@@ -99,7 +99,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <internals> Ints:Map </internals>
           <curr-extern> IsExtern:Bool </curr-extern>
           requires ((notBool IsExtern) orBool Extern() in S)
-               andBool (notBool isCPPFunctionType(T) orBool isAdjustedType({T}:>CPPFunctionType))
+               andBool (notBool isCPPFunctionType(T) orBool isAdjustedType(T))
 
      rule <k> DeclaratorAndSpecifiers(_, (S::Set => SetItem(Extern()) S)) ...</k>
           <curr-extern> true </curr-extern>
@@ -200,7 +200,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule getCName(T::CPPType, X::CId, _, CLinkage, _) => X
 
-     rule getCName(T:CPPFunctionType, X::CId, Mangled::CId, LangLinkage::LanguageLinkage, Opts::Set) => Mangled
+     rule getCName(t(... st: functionType(...)) #as T::CPPType, X::CId, Mangled::CId, LangLinkage::LanguageLinkage, Opts::Set) => Mangled
           requires (LangLinkage =/=K CLinkage) andBool (X =/=K Mangled)
                andBool notBool (NoNativeFallback() in Opts)
 
@@ -208,7 +208,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax CId ::= getInternalCName(CPPType, CId, CId, String, LanguageLinkage, Set) [function]
 
-     rule getInternalCName(T:CPPFunctionType, X::CId, Identifier(S::String), Uuid::String, LangLinkage::LanguageLinkage, Opts::Set)
+     rule getInternalCName(t(... st: functionType(...)) #as T::CPPType, X::CId, Identifier(S::String), Uuid::String, LangLinkage::LanguageLinkage, Opts::Set)
           => getCName(T, X, Identifier(S +String Uuid), LangLinkage, Opts)
 
      rule getInternalCName(_, _, _, _, _, _) => #NoName [owise]
@@ -276,11 +276,11 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                    ~> lazyDefineObject(N, X, CName, T, Init, Type, S, Base)
 
           // ExternalLinkage, StaticStorage, redeclare incomplete array
-          rule <k> declareObjectWithLinkage(N::Namespace, LN::Namespace, X::CId, T:CPPArrayType, Init::Init, Type::DeclarationType, StaticStorage, S::Set, _, ExternalLinkage) ...</k>
+          rule <k> declareObjectWithLinkage(N::Namespace, LN::Namespace, X::CId, t(... st: _:CPPSimpleArrayType) #as T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set, _, ExternalLinkage) ...</k>
                <curr-tr-tu> Tu::String </curr-tr-tu>
                <tu-id> Tu </tu-id>
-               <externals>... LN :: X |-> ((T':CPPArrayType => T) |-> declState(Base::SymBase, _)) ...</externals>
-               requires notBool isCompleteType(T') andBool innerType(T) ==Type innerType(T') andBool getQuals(T) ==K getQuals(T')
+               <externals>... LN :: X |-> ((T'::CPPType => T) |-> declState(Base::SymBase, _)) ...</externals>
+               requires isCPPArrayType(T') andBool notBool isCompleteType(T') andBool innerType(T) ==Type innerType(T') andBool getQuals(T) ==K getQuals(T')
 
           // ExternalLinkage, StaticStorage, redeclare complete type
           rule <k> declareObjectWithLinkage(N:Namespace, LN::Namespace, X::CId, T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set, CName::CId, ExternalLinkage)
@@ -368,7 +368,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <tu-id> Tu </tu-id>
 
      // Declare function member inside class
-     rule <k> declareObjectWithLinkage(C:Class, C, X::CId, T:CPPFunctionType, Init::Init, Type::DeclarationType, StaticStorage, S::Set, CName::CId, ExternalLinkage)
+     rule <k> declareObjectWithLinkage(C:Class, C, X::CId, t(... st: functionType(...)) #as T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set, CName::CId, ExternalLinkage)
               => addToEnv(C :: X, T, bnew(!I, T, S, link(Tu)), false)
               ~> Odr.newDecl(CName, C :: X, T, bnew(!I, T, S, link(Tu)))
               ~> newExternalType(CName, T)
@@ -442,7 +442,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           requires (size(L) =/=Int 0 orBool getKLabel(Init) =/=K #klabel(`StringLiteral`))
                andBool (notBool isAggregateType(T) orBool isBraceInit(Init))
 
-     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(T:CPPClassType)), BraceInit((ListItem(Init::Init) _) #as L::List)) => t(Q, Mods, arrayType(T, computeAggArraySize(getClassInfo(T), L)))
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(... st: classType(...)) #as T::CPPType)), BraceInit((ListItem(Init::Init) _) #as L::List)) => t(Q, Mods, arrayType(T, computeAggArraySize(getClassInfo(T), L)))
           requires isAggregateType(T)
                andBool notBool isBraceInit(Init)
 
@@ -468,7 +468,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule #computeAggArraySize(...
                            fields: (ListItem(Class.DataMember(F:CId, _)) Fields::List => Class.getNonStaticDataMembers(getClassInfo(T))),
-                           types: (((F |-> (T::CPPClassType |-> _)) _) #as Types::Map => Class.getDataMembersInitializers(getClassInfo(T))),
+                           types: (((F |-> (T::CPPType |-> _)) _) #as Types::Map => Class.getDataMembersInitializers(getClassInfo(T))),
                            initList: ListItem(Init::Expr) _,
                            callStack: (.List => ListItem(kpair(Fields, Types))) _
                            )
@@ -640,13 +640,13 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule markAsConstexpr(_, S::Set) => .
           requires notBool Constexpr() in S
 
-     rule <k> initializeObject(N::NNSVal, X::CId, T::CPPFunctionType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
+     rule <k> initializeObject(N::NNSVal, X::CId, T::CPPType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
               => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X))))
               ~> processFunDef(Base, N :: X, T, Params, Body) ...</k>
           <curr-tr-scope> S::Scope </curr-tr-scope>
           requires notBool isClassScope(S)
 
-     rule <k> initializeObject(N::NNSVal, X::CId, T::CPPFunctionType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
+     rule <k> initializeObject(N::NNSVal, X::CId, T::CPPType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
               => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X)))) ...</k>
           <deferred-class-actions> _ |> _ |> (K:K => K ~> processFunDef(Base, N :: X, T, Params, Body)) |> .Ordering </deferred-class-actions>
           <curr-tr-scope> classScope(...) </curr-tr-scope>
@@ -679,7 +679,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <curr-tu> _ => TU </curr-tu>
 
 
-     rule <k> processFunDef(Base::SymBase, QX::QualId, t(... st: functionType(... methodInfo: MI::MethodInfo)) #as T::CPPFunctionType, Params::List, Body::Stmt)
+     rule <k> processFunDef(Base::SymBase, QX::QualId, t(... st: functionType(... methodInfo: MI::MethodInfo)) #as T::CPPType, Params::List, Body::Stmt)
               => preserveThreadLocal(scope(blockScope(QX, Base, 0),
                    prepareExecutionEnvironment ~> pushBlock(!I:Int) ~> elaborateTemplateBody(dummyBind(Params) ~> #if hasThis(MI) #then setTrThis(QX, MI) #else .K #fi ~> getFunDefBody(I, QX, T, Body))
                    ~> calculateGotoMap))
@@ -688,9 +688,9 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <curr-template-context> I::TemplateInfo </curr-template-context>
           requires I =/=K noTemplate orBool isCPPFunctionType(T)
 
-     syntax Stmt ::= getFunDefBody(TemplateInfo, QualId, CPPFunctionType, Stmt) [function]
+     syntax Stmt ::= getFunDefBody(TemplateInfo, QualId, CPPType, Stmt) [function]
 
-     rule getFunDefBody(noTemplate, QX::QualId, T::CPPFunctionType, Body::Stmt)
+     rule getFunDefBody(noTemplate, QX::QualId, T::CPPType, Body::Stmt)
           => TLabelStmt(funLabel(getId(QX)), #if isDestructorId(getId(QX)) #then ListItem(Destructor()) #else .List #fi ListItem(Body) ListItem(TReturnOp(getDefaultReturnOp(QX, getReturnType(T)))))
 
      rule getFunDefBody(_, _, _, Body::Stmt) => Body [owise]
@@ -781,7 +781,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax DefaultArguments ::= computeDefaultArgs(CPPType, DeclarationType)
 
-     rule computeDefaultArgs(T:CPPFunctionType, Function(Params::List))
+     rule computeDefaultArgs(t(... st: functionType(...)) #as T::CPPType, Function(Params::List))
           => #fun((DI::List => defArgs(list(#computeDefaultArgs(getRealParams(T), DI, hasImplicitParameter(T))), list(DI), list(DI))))(getDefArgsInitializers(Params))
 
      rule computeDefaultArgs(T::CPPType, _) => krlist(.List)
@@ -806,7 +806,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           requires notBool (isCPPRefType(T) andBool isExpr(Init))
            andBool Init =/=K NoInit()
 
-     rule #computeDefaultArgs(ListItem(T:CPPRefType) P::List, ListItem(Init::Init) A::List, false)
+     rule #computeDefaultArgs(ListItem(cppRefType #as T::CPPType) P::List, ListItem(Init::Init) A::List, false)
           => ListItem(Init) #computeDefaultArgs(P, A, false)
           requires Init =/=K NoInit()
 
@@ -825,7 +825,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule #makeFunctionDeclarationType(_, .List) => .List
 
-     rule emptyDefaultArguments(T:CPPFunctionType)
+     rule emptyDefaultArguments(t(... st: functionType(...)) #as T::CPPType)
        => #emptyDefaultArguments(#if hasImplicitParameter(T) #then size(getRealParams(T)) -Int 1 #else size(getRealParams(T)) #fi, defArgs(krlist(.List), krlist(.List), krlist(.List)))
 
      rule emptyDefaultArguments(_) => NoDefArgs() [owise]

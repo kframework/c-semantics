@@ -18,40 +18,40 @@ module CPP-TRANSLATION-DECL-CLASS-SYNTAX
      // whether any constructor in a given class meets the specified constructor
      // property.
      // Atomic constructor properties
-     syntax Bool ::= isTrivialDefaultConstructor(CPPFunctionType, K) [function]
-                   | isNonTrivialDefaultConstructor(CPPFunctionType, K) [function]
-                   | isDefaultConstructor(CPPFunctionType, K) [function]
-                   | isCopyConstructor(CPPFunctionType, K) [function]
-                   | isConstCopyConstructor(CPPFunctionType, K) [function]
-                   | isMoveConstructor(CPPFunctionType, K) [function]
-                   | isUserProvidedConstructor(CPPFunctionType, K) [function]
-                   | isUserProvidedDefaultConstructor(CPPFunctionType, K) [function]
-                   | isDeleted(CPPFunctionType, K) [function]
-                   | isDeletedDefaultConstructor(CPPFunctionType, K) [function, klabel(isDeletedDefaultConstructor2)]
-                   | isNonTrivialDestructor(CPPFunctionType, K) [function]
-                   | isTrivialDestructor(CPPFunctionType, K) [function]
-                   | isUserProvidedDestructor(CPPFunctionType, K) [function]
-                   | isVirtualDestructor(CPPFunctionType, K) [function]
+     syntax Bool ::= isTrivialDefaultConstructor(CPPType, K) [function]
+                   | isNonTrivialDefaultConstructor(CPPType, K) [function]
+                   | isDefaultConstructor(CPPType, K) [function]
+                   | isCopyConstructor(CPPType, K) [function]
+                   | isConstCopyConstructor(CPPType, K) [function]
+                   | isMoveConstructor(CPPType, K) [function]
+                   | isUserProvidedConstructor(CPPType, K) [function]
+                   | isUserProvidedDefaultConstructor(CPPType, K) [function]
+                   | isDeleted(CPPType, K) [function]
+                   | isDeletedDefaultConstructor(CPPType, K) [function, klabel(isDeletedDefaultConstructor2)]
+                   | isNonTrivialDestructor(CPPType, K) [function]
+                   | isTrivialDestructor(CPPType, K) [function]
+                   | isUserProvidedDestructor(CPPType, K) [function]
+                   | isVirtualDestructor(CPPType, K) [function]
 
      // Compound constructor properties
-     syntax Bool ::= isUserProvidedMoveConstructor(CPPFunctionType, K) [function]
-                   | isUserProvidedCopyConstructor(CPPFunctionType, K) [function]
+     syntax Bool ::= isUserProvidedMoveConstructor(CPPType, K) [function]
+                   | isUserProvidedCopyConstructor(CPPType, K) [function]
 
 
      // Atomic method properties
-     syntax Bool ::= isCopyAssignOp(CPPFunctionType, K) [function]
+     syntax Bool ::= isCopyAssignOp(CPPType, K) [function]
 
      // Compound method properties
-     syntax Bool ::= isUserProvidedMoveAssignOp(CPPFunctionType, K) [function]
+     syntax Bool ::= isUserProvidedMoveAssignOp(CPPType, K) [function]
 
      // Class queries for constructors and other methods
-     syntax Bool ::= hasConstructorThat(CPPClassType, K) [function]
-                   | hasDestructorThat(CPPClassType, K) [function]
+     syntax Bool ::= hasConstructorThat(CPPType, K) [function]
+                   | hasDestructorThat(CPPType, K) [function]
                    | hasConstructorThat(Class, K) [function, klabel(hasConstructorThat2)]
                    | hasDestructorThat(Class, K) [function, klabel(hasDestructorThat2)]
-                   | hasConstructor(CPPClassType) [function]
+                   | hasConstructor(CPPType) [function]
                    | hasConstructor(Class) [function, klabel(hasConstructor2)]
-                   | hasDestructor(CPPClassType) [function]
+                   | hasDestructor(CPPType) [function]
                    | hasDestructor(Class) [function, klabel(hasDestructor2)]
                    | hasCopyConstructor(Class) [function]
                    | hasConstCopyConstructor(Class) [function]
@@ -94,7 +94,7 @@ module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... DestructorId(X) |-> (_::CPPFunctionType |-> envEntry(... base: Base::SymBase)) ...</cenv>
+          <cenv>... DestructorId(X) |-> (_::CPPType |-> envEntry(... base: Base::SymBase)) ...</cenv>
 
      // @ref N4296 12.4/11
      // @ref N4778 10.3.6/12
@@ -538,7 +538,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      // 12.1:4
      rule <k> figureConstruct(.List, _, .List, ListItem(Class.DataMember(X::CId, T::CPPType)) _, _, _, _) => Deleted() ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
-          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
@@ -551,7 +551,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      // @ref n4296 12.1:4.6-4.7
      rule <k> (.K => checkCtorAndDtor(MemInit[X] orDefault .Init, X, T, true, I, getMostDerivedArrayElement(T))) ~> figureConstruct(.List, MemInit::Map, .List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
-          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
@@ -561,12 +561,12 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule <k> (.K => checkCtorAndDtor(MemInit[C] orDefault .Init, baseClass(C), type(classType(C)), false, NoInit(), type(classType(C)))) ~> figureConstruct(.List, MemInit::Map, (ListItem(C::Class) => .List) _, _, _, _, _) ...</k>
           <curr-tr-scope> blockScope(_, Base::SymBase, _) </curr-tr-scope>
-          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           requires notBool isMethodUserProvided(FuncT)
 
      rule <k> (.K => figureConstructItem(MemInit[C] orDefault .Init, baseClass(C), type(classType(C)), false)) ~> figureConstruct(.List, MemInit::Map, (ListItem(C::Class) => .List) _, _, _, _, _) ...</k>
           <curr-tr-scope> blockScope(_, Base::SymBase, _) </curr-tr-scope>
-          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           requires isMethodUserProvided(FuncT)
 
      syntax K ::= checkCtorAndDtor(K, CId, CPPType, Bool, Init, CPPType) [function]
@@ -607,21 +607,21 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule resolve(E:ResolvedExpr) ~> checkDtor(_) => .K
           requires notBool isNotFoundNameRef(E)
 
-     syntax Bool  ::= isDeletedDefaultConstructor(CId, CPPType, Class, CPPFunctionType, Set, Init) [function]
+     syntax Bool  ::= isDeletedDefaultConstructor(CId, CPPType, Class, CPPType, Set, Init) [function]
 
      // @ref n4296 12.1:4.1
-     rule isDeletedDefaultConstructor(X::CId, T::CPPType, C::Class, FuncT::CPPFunctionType, VM::Set, _) => true
+     rule isDeletedDefaultConstructor(X::CId, T::CPPType, C::Class, FuncT::CPPType, VM::Set, _) => true
           requires X in VM andBool isUnionLikeClass(C) andBool #fun(InnerT::CPPType => isCPPClassType(InnerT)
-               andBool hasConstructorThat({InnerT}:>CPPClassType, #klabel(`isNonTrivialDefaultConstructor`)))(getMostDerivedArrayElement(T))
+               andBool hasConstructorThat(InnerT, #klabel(`isNonTrivialDefaultConstructor`)))(getMostDerivedArrayElement(T))
                andBool notBool isUserProvidedConstructor(FuncT, .K)
 
      // @ref n4296 12.1:4.2
-     rule isDeletedDefaultConstructor(_, T:CPPRefType, C::Class, FuncT::CPPFunctionType, _, NoInit()) => true
+     rule isDeletedDefaultConstructor(_, cppRefType #as T::CPPType, C::Class, FuncT::CPPType, _, NoInit()) => true
           requires notBool isUserProvidedConstructor(FuncT, .K)
 
      // @ref n4296 12.1:4.3
-     rule isDeletedDefaultConstructor(X::CId, T::CPPType, _, FuncT::CPPFunctionType, VM::Set, NoInit()) => true
-          requires notBool X in VM andBool #fun(InnerT::CPPType => isCPPClassType(InnerT) andBool isConstType(InnerT) andBool notBool hasConstructorThat({InnerT}:>CPPClassType, #klabel(`isUserProvidedDefaultConstructor`)))(getMostDerivedArrayElement(T))
+     rule isDeletedDefaultConstructor(X::CId, T::CPPType, _, FuncT::CPPType, VM::Set, NoInit()) => true
+          requires notBool X in VM andBool #fun(InnerT::CPPType => isCPPClassType(InnerT) andBool isConstType(InnerT) andBool notBool hasConstructorThat(InnerT, #klabel(`isUserProvidedDefaultConstructor`)))(getMostDerivedArrayElement(T))
                andBool notBool isUserProvidedConstructor(FuncT, .K)
 
      rule isDeletedDefaultConstructor(_::CId, _, _, _, _, _) => false [owise]
@@ -629,7 +629,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      // @ref n4296 12.1:4.4 (4.5 is implicit when constructing the anonymous union)
      rule <k> figureConstruct(.List, _, .List, .List, _, _, false) => Deleted() ...</k>
           <curr-tr-scope> blockScope((_::ClassQualifier :: Class(Union(), _, _)) #as C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
-          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           requires notBool isUserProvidedConstructor(FuncT, .K)
 
 
@@ -699,10 +699,10 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      syntax Bool ::= #isTrivialDefaultConstructor(ClassInfo) [function]
                    | #hasMethodThat(CId, ClassInfo, K) [function]
-                   | #isDeleted(SymBase, K) [function]
+                   | #isDeleted(SymBase) [function]
 
      // @ref n4296 12.1:4.8
-     rule isTrivialDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool notBool isUserProvidedConstructor(T, K) andBool notBool hasVirtualMembers(type(classType(getMethodClass(T)))) andBool #isTrivialDefaultConstructor(getClassInfo(getMethodClass(T)))
+     rule isTrivialDefaultConstructor(T::CPPType, K:K) => isDefaultConstructor(T, K) andBool notBool isUserProvidedConstructor(T, K) andBool notBool hasVirtualMembers(type(classType(getMethodClass(T)))) andBool #isTrivialDefaultConstructor(getClassInfo(getMethodClass(T)))
 
      // @ref n4296 12.1:4.10
      rule #isTrivialDefaultConstructor(<class>... <base-classes> ListItem(C::Class) => .List ...</base-classes> ...</class>)
@@ -710,19 +710,19 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      // @ref n4296 12.1:4.9,4.11
      rule #isTrivialDefaultConstructor(<class>... <non-static-data-members> ListItem(Class.DataMember(X::CId, T::CPPType)) => .List ...</non-static-data-members> <initializers>... X |-> (T |-> NoInit()) ...</initializers> ...</class>)
-          requires #if isCPPClassType(getMostDerivedArrayElement(T)) #then hasConstructorThat({getMostDerivedArrayElement(T)}:>CPPClassType, #klabel(`isTrivialDefaultConstructor`)) #else true #fi
+          requires #if isCPPClassType(getMostDerivedArrayElement(T)) #then hasConstructorThat(getMostDerivedArrayElement(T), #klabel(`isTrivialDefaultConstructor`)) #else true #fi
 
      rule #isTrivialDefaultConstructor(<class>... <base-classes> .List </base-classes> <non-static-data-members> .List </non-static-data-members> ...</class>) => true
 
      rule #isTrivialDefaultConstructor(...) => false [owise]
 
-     rule isNonTrivialDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool notBool isTrivialDefaultConstructor(T, K)
+     rule isNonTrivialDefaultConstructor(T::CPPType, K:K) => isDefaultConstructor(T, K) andBool notBool isTrivialDefaultConstructor(T, K)
 
-     rule isDefaultConstructor(T::CPPFunctionType, envEntry(... defaultArgs: DA::DefaultArgumentsResult)) => acceptsNArgs(0, T, getDefaultArgsVals(DA))
+     rule isDefaultConstructor(T::CPPType, envEntry(... defaultArgs: DA::DefaultArgumentsResult)) => acceptsNArgs(0, T, getDefaultArgsVals(DA))
 
      // n4296 12.8:2, TODO: check non-template. TODO function parameter packs are not allowed
      rule isCopyConstructor(
-               t(... st: functionType(... paramTypes: (t(... st: lvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPFunctionType,
+               t(... st: functionType(... paramTypes: (t(... st: lvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPType,
                envEntry(... defaultArgs: DA::DefaultArgumentsResult)
           ) => acceptsNArgs(1, T, getDefaultArgsVals(DA))
 
@@ -730,23 +730,23 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      // n4296 12.8:3 same as copy constructor, but rvalue reference
      rule isMoveConstructor(
-               t(... st: functionType(... paramTypes: (t(... st: rvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPFunctionType,
+               t(... st: functionType(... paramTypes: (t(... st: rvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPType,
                envEntry(... defaultArgs: DA::DefaultArgumentsResult)
           ) => acceptsNArgs(1, T, getDefaultArgsVals(DA))
 
      rule isMoveConstructor(_, _) => false [owise]
 
-     rule isUserProvidedConstructor(T::CPPFunctionType, _) => isMethodUserProvided(T)
+     rule isUserProvidedConstructor(T::CPPType, _) => isMethodUserProvided(T)
 
-     rule isUserProvidedDestructor(T::CPPFunctionType, _) => isMethodUserProvided(T)
+     rule isUserProvidedDestructor(T::CPPType, _) => isMethodUserProvided(T)
 
-     rule isVirtualDestructor(T::CPPFunctionType, _) => isMethodVirtual(T)
+     rule isVirtualDestructor(T::CPPType, _) => isMethodVirtual(T)
 
-     rule isUserProvidedDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool isUserProvidedConstructor(T, K)
+     rule isUserProvidedDefaultConstructor(T::CPPType, K:K) => isDefaultConstructor(T, K) andBool isUserProvidedConstructor(T, K)
 
-     rule isUserProvidedMoveConstructor(T::CPPFunctionType, K:K) => isUserProvidedConstructor(T, K) andBool isMoveConstructor(T, K)
+     rule isUserProvidedMoveConstructor(T::CPPType, K:K) => isUserProvidedConstructor(T, K) andBool isMoveConstructor(T, K)
 
-     rule isUserProvidedCopyConstructor(T::CPPFunctionType, K:K) => isUserProvidedConstructor(T, K) andBool isCopyConstructor(T, K)
+     rule isUserProvidedCopyConstructor(T::CPPType, K:K) => isUserProvidedConstructor(T, K) andBool isCopyConstructor(T, K)
 
      // 'has' queries
      // -------------
@@ -769,13 +769,13 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule hasUserProvidedMoveAssignOp(_)
           => false // TODO(jantusil)
 
-     rule hasDestructor(T::CPPClassType)
+     rule hasDestructor(T::CPPType)
           => hasDestructorThat(T, #klabel(`isWhatever`))
 
      rule hasDestructor(C::Class)
           => hasDestructor(type(classType(C)))
 
-     rule hasConstructor(T::CPPClassType)
+     rule hasConstructor(T::CPPType)
           => hasConstructorThat(T, #klabel(`isWhatever`))
 
      rule hasConstructor(C::Class)
@@ -787,13 +787,13 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule hasDestructorThat(C::Class, Lbl::K)
           => hasDestructorThat(type(classType(C)), Lbl)
 
-     syntax Bool ::= isWhatever(CPPFunctionType, K) [function]
+     syntax Bool ::= isWhatever(CPPType, K) [function]
 
      rule isWhatever(_, _) => true
 
-     rule hasConstructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPClassType, Lbl:K) => #hasMethodThat(ConstructorId(X), getClassInfo(T), Lbl)
+     rule hasConstructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPType, Lbl:K) => #hasMethodThat(ConstructorId(X), getClassInfo(T), Lbl)
 
-     rule hasDestructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPClassType, Lbl:K) => #hasMethodThat(DestructorId(X), getClassInfo(T), Lbl)
+     rule hasDestructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPType, Lbl:K) => #hasMethodThat(DestructorId(X), getClassInfo(T), Lbl)
 
      rule #hasMethodThat(X::CId, <class>... <cenv>... X |-> M::TypeMap ...</cenv> ...</class>, Lbl:K)
           => some(M, Lbl)
@@ -806,7 +806,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule #isDeleted(...) => false [owise]
 
-     rule isDeletedDefaultConstructor(T::CPPFunctionType, K:K) => isDeleted(T, K) andBool isDefaultConstructor(T, K)
+     rule isDeletedDefaultConstructor(T::CPPType, K:K) => isDeleted(T, K) andBool isDefaultConstructor(T, K)
 
      rule <k> Destructor() => figureDestruct(Bases, NSDM, .K) ...</k>
           <curr-tr-scope> blockScope(C::Class :: DestructorId(_), _, _) </curr-tr-scope>
@@ -827,7 +827,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      // @ref n4296 12.4:5
      rule <k> figureDestruct(.List, ListItem(Class.DataMember(X::CId, T::CPPType)) _, _) => Deleted() ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
-          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
@@ -837,7 +837,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      // @ref n4296 12.4:5.2
      rule <k> (.K => checkDtor(X, T, getMostDerivedArrayElement(T), VM, FuncT)) ~> figureDestruct(.List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-tr-scope>
-          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
@@ -846,28 +846,28 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule <k> (.K => checkDtor(baseClass(M), type(classType(M)), type(classType(M)), VM, FuncT)) ~> figureDestruct((ListItem(M::Class) => .List) _, _, _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-tr-scope>
-          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
           <virtual-bases> .Set </virtual-bases>
 
-     syntax K ::= checkDtor(CId, CPPType, CPPType, Set, CPPFunctionType) [function, klabel(checkDtor3)]
+     syntax K ::= checkDtor(CId, CPPType, CPPType, Set, CPPType) [function, klabel(checkDtor3)]
 
-     rule checkDtor(X::CId, T::CPPType, M::CPPType, VM::Set, FuncT::CPPFunctionType)
+     rule checkDtor(X::CId, T::CPPType, M::CPPType, VM::Set, FuncT::CPPType)
           => figureDestructItem(X, T, VM)
           requires notBool isCPPClassType(M) orBool isMethodUserProvided(FuncT)
 
      rule checkDtor(X::CId, T::CPPType, t(... st: classType(M::Class)), VM::Set, _)
           => checkDtor(M) ~> figureDestructItem(X, T, VM) [owise]
 
-     syntax Bool ::= isDeletedDefaultDestructor(CId, CPPType, Class, CPPFunctionType, Set) [function]
+     syntax Bool ::= isDeletedDefaultDestructor(CId, CPPType, Class, CPPType, Set) [function]
 
      // @ref n4296 12.4:5.1
-     rule isDeletedDefaultDestructor(X::CId, T::CPPType, C::Class, FuncT::CPPFunctionType, VM::Set) => true
+     rule isDeletedDefaultDestructor(X::CId, T::CPPType, C::Class, FuncT::CPPType, VM::Set) => true
           requires X in VM andBool isUnionLikeClass(C) andBool #fun(InnerT::CPPType => isCPPClassType(InnerT)
-               andBool hasDestructorThat({InnerT}:>CPPClassType, #klabel(`isNonTrivialDestructor`)))(getMostDerivedArrayElement(T))
+               andBool hasDestructorThat(InnerT, #klabel(`isNonTrivialDestructor`)))(getMostDerivedArrayElement(T))
                andBool notBool isUserProvidedDestructor(FuncT, .K)
 
      rule isDeletedDefaultDestructor(_::CId, _, _, _, _) => false [owise]
@@ -884,12 +884,12 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule <k> figureDestruct(.List, .List, Res:K) => Res ...</k>
           <curr-tr-scope> blockScope(_ :: DestructorId(_), Base::SymBase, _) </curr-tr-scope>
-          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           requires notBool isMethodVirtual(FuncT)
 
      rule <k> (.K => lookupAllocationFunction(operatordelete, type(classType(C)), false)) ~> figureDestruct(.List, .List, _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-tr-scope>
-          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           requires isMethodVirtual(FuncT)
 
      rule (cSet(... candidates: Cands::TypeMap, id: Q::QualId) #as C:CandidateSet => resolve(resolveOverload(C, list(ListItem(prv(NullPointer, noTrace, type(pointerType(type(void))))) getSecondDeleteArg(Cands, prv(0, noTrace, type(size_t)))), Name(NoNNS(), operatordelete))))
@@ -906,19 +906,19 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      syntax Bool ::= #isTrivialDestructor(ClassInfo) [function]
 
      // @ref n4296 12.4:5.4
-     rule isTrivialDestructor(T::CPPFunctionType, K:K) => notBool isUserProvidedDestructor(T, K) andBool notBool isMethodVirtual(T) andBool #isTrivialDestructor(getClassInfo(getMethodClass(T)))
+     rule isTrivialDestructor(T::CPPType, K:K) => notBool isUserProvidedDestructor(T, K) andBool notBool isMethodVirtual(T) andBool #isTrivialDestructor(getClassInfo(getMethodClass(T)))
 
      rule #isTrivialDestructor(<class>... <base-classes> ListItem(C::Class) => .List ...</base-classes> ...</class>)
           requires hasDestructorThat(type(classType(C)), #klabel(`isTrivialDestructor`))
 
      rule #isTrivialDestructor(<class>... <non-static-data-members> ListItem(Class.DataMember(_, T::CPPType)) => .List ...</non-static-data-members> ...</class>)
-          requires #if isCPPClassType(getMostDerivedArrayElement(T)) #then hasDestructorThat({getMostDerivedArrayElement(T)}:>CPPClassType, #klabel(`isTrivialDestructor`)) #else true #fi
+          requires #if isCPPClassType(getMostDerivedArrayElement(T)) #then hasDestructorThat(getMostDerivedArrayElement(T), #klabel(`isTrivialDestructor`)) #else true #fi
 
      rule #isTrivialDestructor(<class>... <base-classes> .List </base-classes> <non-static-data-members> .List </non-static-data-members> ...</class>) => true
 
      rule #isTrivialDestructor(...) => false [owise]
 
-     rule isNonTrivialDestructor(T::CPPFunctionType, K:K)
+     rule isNonTrivialDestructor(T::CPPType, K:K)
           => notBool isTrivialDestructor(T, K)
 
      syntax AccessSpecifier ::= getDefaultAccessType(Tag) [function]
@@ -954,19 +954,19 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      // thus we encode the layout in the semantics directly.
      // eventually we will want to support arbitrary ABIs which means this will
      // get moved to an extension specific to the Itanium ABI.
-     rule isPODLayoutType(T:CPPScalarType) => true
+     rule isPODLayoutType(cppScalarType #as T::CPPType) => true
 
-     rule isPODLayoutType(T:CPPArrayType) => isPODLayoutType(innerType(T))
+     rule isPODLayoutType(t(... st: _:CPPSimpleArrayType) #as T::CPPType) => isPODLayoutType(innerType(T))
 
-     rule isPODLayoutType(T:CPPClassType) => isPODLayoutClass(T, getClassInfo(T))
+     rule isPODLayoutType(t(... st: classType(...)) #as T::CPPType) => isPODLayoutClass(T, getClassInfo(T))
 
      rule isPODLayoutType(_) => false [owise]
 
-     rule isPOD03Type(T:CPPScalarType) => true
+     rule isPOD03Type(cppScalarType #as T::CPPType) => true
 
-     rule isPOD03Type(T:CPPArrayType) => isPOD03Type(innerType(T))
+     rule isPOD03Type(t(... st: _:CPPSimpleArrayType) #as T::CPPType) => isPOD03Type(innerType(T))
 
-     rule isPOD03Type(T:CPPClassType) => isPOD03Class(T, getClassInfo(T))
+     rule isPOD03Type(t(... st: classType(...)) #as T::CPPType) => isPOD03Class(T, getClassInfo(T))
 
      rule isPOD03Type(_) => false [owise]
 
@@ -984,7 +984,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
                andBool notBool isCPPRefType(T)
                andBool notBool isWideBitfield(T)
 
-     rule isPODLayoutClass(t(... st: classType(_ :: Class(Key::ClassKey, X::CId, _))) #as T::CPPClassType,
+     rule isPODLayoutClass(t(... st: classType(_ :: Class(Key::ClassKey, X::CId, _))) #as T::CPPType,
                <class>...
                  <non-static-data-members> .List </non-static-data-members>
                  <base-classes> .List </base-classes>
@@ -1005,7 +1005,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           requires notBool (isCPPClassType(getMostDerivedArrayElement(T)) andBool notBool isPOD03Type(T))
                andBool notBool isCPPRefType(T)
 
-     rule isPOD03Class(t(... st: classType(_ :: Class(Key::ClassKey, X::CId, _))) #as T::CPPClassType,
+     rule isPOD03Class(t(... st: classType(_ :: Class(Key::ClassKey, X::CId, _))) #as T::CPPType,
                <class>...
                  <non-static-data-members> .List </non-static-data-members>
                  <base-classes> .List </base-classes>
@@ -1018,7 +1018,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule isPOD03Class(...) => false [owise]
 
-     rule isEmptyClass(T::CPPClassType, <class>... <base-classes> .List </base-classes> <non-static-data-members> .List </non-static-data-members> ...</class>)
+     rule isEmptyClass(T::CPPType, <class>... <base-classes> .List </base-classes> <non-static-data-members> .List </non-static-data-members> ...</class>)
           => notBool hasVirtualMembers(T)
 
      rule isEmptyClass(_, <class>... <base-classes> ListItem(B::Class) => .List ...</base-classes> ...
@@ -1027,7 +1027,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule isEmptyClass(...) => false [owise]
 
-     syntax Bool ::= isUserProvidedCopyAssignment(CPPFunctionType, K) [function]
+     syntax Bool ::= isUserProvidedCopyAssignment(CPPType, K) [function]
 
      rule isUserProvidedCopyAssignment(t(... st: functionType(... paramTypes: t(quals(.Set), _, classType(X::Class)), methodInfo: methodInfo(... static: false, class: X, userProvided: true))), envEntry(...)) => true
 
@@ -1037,7 +1037,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      syntax Bool ::= isWideBitfield(CPPType) [function]
 
-     rule isWideBitfield(T:CPPBitfieldType) => bitSizeofType(T) >Int bitSizeofType(innerType(T))
+     rule isWideBitfield(t(... st: bitfieldType(...)) #as T::CPPType) => bitSizeofType(T) >Int bitSizeofType(innerType(T))
 
      rule isWideBitfield(_) => false [owise]
 
@@ -1087,7 +1087,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <deferred-class-actions> (K:K => K ~> layoutField(X, T)) |> _ |> _ |> .Ordering </deferred-class-actions>
           requires notBool (X in_keys(CE)) andBool X =/=K #NoName
 
-     rule <k> declareField(#NoName, T:CPPBitfieldType, NoInit()) => .K ...</k>
+     rule <k> declareField(#NoName, t(... st: bitfieldType(...)) #as T::CPPType, NoInit()) => .K ...</k>
           <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
@@ -1112,7 +1112,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           requires isPODLayoutType(type(classType(C)))
 
      // non-POD-layout, non-wide bitfield
-     rule <k> layoutField(X::CId, T:CPPBitfieldType) => .K ...</k>
+     rule <k> layoutField(X::CId, t(... st: bitfieldType(...)) #as T::CPPType) => .K ...</k>
           <curr-tr-scope> classScope(C::Class, _) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
@@ -1182,16 +1182,16 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           requires notBool isPODLayoutType(type(classType(C)))
                andBool notBool isCPPBitfieldType(T)
                andBool Key =/=K Union()
-               andBool notBool (isBaseClass(X) andBool isEmptyClass(T, getClassInfo({T}:>CPPClassType)))
+               andBool notBool (isBaseClass(X) andBool isEmptyClass(T, getClassInfo(T)))
 
      syntax Int ::= nvSizeof(CPPType) [function]
                   | #nvSizeof(ClassInfo) [function]
                   | nvAlignof(CPPType) [function]
                   | #nvAlignof(ClassInfo) [function]
 
-     rule nvSizeof(T::CPPClassType) => #nvSizeof(getClassInfo(T))
+     rule nvSizeof(T::CPPType) => #nvSizeof(getClassInfo(T))
 
-     rule nvAlignof(T::CPPClassType) => #nvAlignof(getClassInfo(T))
+     rule nvAlignof(T::CPPType) => #nvAlignof(getClassInfo(T))
 
      rule #nvSizeof(<class>... <nvsize> V::Int </nvsize> ...</class>) => V
 
@@ -1273,13 +1273,13 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule getTypesAtOffsetForLayout(t(... st: incompleteArrayType(InnerT::CPPType)) #as T::CPPType, 0)
           => SetItem(utype(T)) getTypesAtOffsetForLayout(InnerT, 0)
 
-     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Struct(), _, _))) #as T::CPPClassType, 0)
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Struct(), _, _))) #as T::CPPType, 0)
           => SetItem(utype(T)) getTypesAtOffsetForLayoutInStruct(T, getClassInfo(T), 0)
 
-     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Class(), _, _))) #as T::CPPClassType, 0)
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Class(), _, _))) #as T::CPPType, 0)
           => SetItem(utype(T)) getTypesAtOffsetForLayoutInStruct(T, getClassInfo(T), 0)
 
-     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Union(), _, _))) #as T::CPPClassType, 0)
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Union(), _, _))) #as T::CPPType, 0)
           => SetItem(utype(T)) getTypesAtOffsetForLayoutInUnion(T, getClassInfo(T), 0)
 
      rule getTypesAtOffsetForLayout(t(... st: arrayType(InnerT::CPPType, _)) #as T::CPPType, Offset::Int)
@@ -1290,15 +1290,15 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           => getTypesAtOffsetForLayout(InnerT, Offset %Int bitSizeofType(InnerT))
           requires Offset >Int 0
 
-     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Struct(), _, _))) #as T::CPPClassType, Offset::Int)
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Struct(), _, _))) #as T::CPPType, Offset::Int)
           => getTypesAtOffsetForLayoutInStruct(T, getClassInfo(T), Offset)
           requires Offset >Int 0
 
-     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Class(), _, _))) #as T::CPPClassType, Offset::Int)
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Class(), _, _))) #as T::CPPType, Offset::Int)
           => getTypesAtOffsetForLayoutInStruct(T, getClassInfo(T), Offset)
           requires Offset >Int 0
 
-     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Union(), _, _))) #as T::CPPClassType, Offset::Int)
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Union(), _, _))) #as T::CPPType, Offset::Int)
           => getTypesAtOffsetForLayoutInUnion(T, getClassInfo(T), Offset)
           requires Offset >Int 0
 
@@ -1470,11 +1470,11 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      // Non-packed bitfields that would cross an alignment boundary and
      // zero-length bitfields have an alignment of the bitfield field type.
-     rule pad(V::Int, T:CPPBitfieldType) => padTo(V, byteAlignofType(innerType(T)))
+     rule pad(V::Int, t(... st: bitfieldType(...)) #as T::CPPType) => padTo(V, byteAlignofType(innerType(T)))
           requires // notBool (Packed() in getModifiers(T)) andBool
             (V +Int bitSizeofType(T)) >Int padTo(V, byteAlignofType(innerType(T)))
 
-     rule pad(V::Int, T:CPPBitfieldType) => padTo(V, byteAlignofType(innerType(T)))
+     rule pad(V::Int, t(... st: bitfieldType(...)) #as T::CPPType) => padTo(V, byteAlignofType(innerType(T)))
           requires bitSizeofType(T) ==Int 0
 
      // Packed bitfields and non-packed bitfields that don't cross an alignment

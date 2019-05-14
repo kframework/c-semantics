@@ -59,7 +59,7 @@ module CPP-TRANSLATION-TYPING-CANONICALIZATION
 
      rule PointerType(T:CPPType) => t(noQuals, .Set, pointerType(T))
 
-     rule MemberPointerType(D:CPPClassType, T:CPPType) => t(noQuals, .Set, memberPointerType(D, T))
+     rule MemberPointerType(t(... st: classType(...)) #as D::CPPType, T:CPPType) => t(noQuals, .Set, memberPointerType(D, T))
 
      rule ArrayType(T:CPPType, NoExpression()) => t(noQuals, .Set, incompleteArrayType(T))
 
@@ -71,7 +71,7 @@ module CPP-TRANSLATION-TYPING-CANONICALIZATION
 
      rule Qualifier(Q::Qualifier, t(Quals::Quals, Mods::Set, S::CPPSimpleType)) => t(Quals +Qual Q, Mods, S)
 
-     rule RefQualifier(Q::RefQualifier, T:CPPFunctionType) => setRefQualifier(T, Q)
+     rule RefQualifier(Q::RefQualifier, t(... st: functionType(...)) #as T::CPPType) => setRefQualifier(T, Q)
 
      rule FunctionPrototype(T:CPPType, krlist(Args::List), E::ExceptionSpec, true) => FunctionPrototype(T, krlist(Args ListItem(variadic)), E, false)
 
@@ -82,15 +82,15 @@ module CPP-TRANSLATION-TYPING-CANONICALIZATION
           ...</k>
           <curr-lang-linkage> L::LanguageLinkage </curr-lang-linkage>
 
-     rule MethodPrototype(IsUserProvided::Bool, IsConstructor::Bool, t(_, _, pointerType(t(CVS::Quals, _, classType(C::Class)))), T:CPPFunctionType) => setMethodConstructor(setMethodUserProvided(setMethodClass(setCVSQuals(setMethod(T), CVS), C), IsUserProvided), IsConstructor)
+     rule MethodPrototype(IsUserProvided::Bool, IsConstructor::Bool, t(_, _, pointerType(t(CVS::Quals, _, classType(C::Class)))), t(... st: functionType(...)) #as T::CPPType) => setMethodConstructor(setMethodUserProvided(setMethodClass(setCVSQuals(setMethod(T), CVS), C), IsUserProvided), IsConstructor)
 
-     rule StaticMethodPrototype(T:CPPFunctionType) => setMethodStatic(setMethod(T))
+     rule StaticMethodPrototype(t(... st: functionType(...)) #as T::CPPType) => setMethodStatic(setMethod(T))
 
-     rule Virtual(T:CPPFunctionType) => setMethodVirtual(T)
+     rule Virtual(t(... st: functionType(...)) #as T::CPPType) => setMethodVirtual(T)
 
-     rule Pure(T:CPPFunctionType) => setMethodPure(T)
+     rule Pure(t(... st: functionType(...)) #as T::CPPType) => setMethodPure(T)
 
-     rule Explicit(T:CPPFunctionType) => setMethodExplicit(T)
+     rule Explicit(t(... st: functionType(...)) #as T::CPPType) => setMethodExplicit(T)
 
      rule ThrowSpec(krlist(L::List)) => exSet(List2Set(adjustExcTypes(L)))
 
@@ -103,15 +103,15 @@ module CPP-TRANSLATION-TYPING-CANONICALIZATION
      rule NoexceptSpec(V:PRVal => convertType(type(bool), V))
           requires notBool(isCPPBoolType(type(V)))
 
-     rule NoexceptSpec(prv(0, _, _:CPPBoolType)) => noexcept(false)
+     rule NoexceptSpec(prv(0, _, t(... st: _:CPPSimpleBoolType))) => noexcept(false)
 
-     rule NoexceptSpec(prv(1, _, _:CPPBoolType)) => noexcept(true)
+     rule NoexceptSpec(prv(1, _, t(... st: _:CPPSimpleBoolType))) => noexcept(true)
 
      syntax List ::= adjustExcTypes(List) [function]
 
-     rule adjustExcTypes(ListItem(T:CPPArrayType) L::List) => ListItem(type(pointerType(innerType(T)))) adjustExcTypes(L)
+     rule adjustExcTypes(ListItem(t(... st: _:CPPSimpleArrayType) #as T::CPPType) L::List) => ListItem(type(pointerType(innerType(T)))) adjustExcTypes(L)
 
-     rule adjustExcTypes(ListItem(T:CPPFunctionType) L::List) => ListItem(type(pointerType(T))) adjustExcTypes(L)
+     rule adjustExcTypes(ListItem(t(... st: functionType(...)) #as T::CPPType) L::List) => ListItem(type(pointerType(T))) adjustExcTypes(L)
 
      rule adjustExcTypes(ListItem(T::CPPType) L::List) => ListItem(utype(T)) adjustExcTypes(L) [owise]
 
@@ -167,18 +167,18 @@ module CPP-TRANSLATION-TYPING-CANONICALIZATION
 
      rule isAdjustedType(t(_, _, functionType(... paramTypes: .CPPTypes))) => true
 
-     syntax CPPFunctionType ::= #adjustFunctionType(CPPFunctionType, List) [function]
+     syntax CPPType ::= #adjustFunctionType(CPPType, List) [function]
 
-     rule adjustFunctionType(T::CPPFunctionType) => #adjustFunctionType(T, .List)
+     rule adjustFunctionType(T::CPPType) => #adjustFunctionType(T, .List)
 
      rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (t(Q::Quals, Mods::Set, T:CPPSimpleArrayType), Ts::CPPTypes => Ts))), _::List (.List => ListItem(t(noQuals, Mods, pointerType(innerType(t(Q, Mods, T)))))))
 
      rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (variadic, Ts::CPPTypes => Ts))), _::List (.List => ListItem(variadic)))
 
-     rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (T:CPPFunctionType, Ts::CPPTypes => Ts))), _::List (.List => ListItem(t(noQuals, .Set, pointerType(T)))))
+     rule #adjustFunctionType(t(_, _, functionType(... paramTypes: ((t(... st: functionType(...)) #as T::CPPType), Ts::CPPTypes => Ts))), _::List (.List => ListItem(t(noQuals, .Set, pointerType(T)))))
 
      rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (t(_, Mods::Set, T::CPPSimpleType), Ts::CPPTypes => Ts))), _::List (.List => ListItem(t(noQuals, Mods, T)))) [owise]
 
-     rule #adjustFunctionType(t(... st: functionType(... paramTypes: .CPPTypes)) #as T::CPPFunctionType, Params::List) => #fun(t(... st: functionType(... paramTypes: _ => toCPPTypes(Params))))(T)
+     rule #adjustFunctionType(t(... st: functionType(... paramTypes: .CPPTypes)) #as T::CPPType, Params::List) => #fun(t(... st: functionType(... paramTypes: _ => toCPPTypes(Params))))(T)
 
 endmodule

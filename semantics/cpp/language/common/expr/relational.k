@@ -25,19 +25,19 @@ module CPP-EXPR-RELATIONAL
           requires isCompositePointerType(T1) andBool T1 ==Type T2
 
      // @ref n4296 5.10:3.1-3.2
-     rule prv(NullMemberFunctionPointer, Tr1::Trace, T1:CPPMemberFunctionPointerType) == prv(P:MemberFunctionPtr, Tr2::Trace, T2:CPPMemberFunctionPointerType)
+     rule prv(NullMemberFunctionPointer, Tr1::Trace, t(... st: memberPointerType(_, t(... st: functionType(...)))) #as T1::CPPType) == prv(P:MemberFunctionPtr, Tr2::Trace, t(... st: memberPointerType(_, t(... st: functionType(...)))) #as T2::CPPType)
           => makeTruth(P ==K NullMemberFunctionPointer, combine(Tr1, Tr2, #klabel(`_==__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool  T1 ==Type T2
 
-     rule prv(P:MemberFunctionPtr, Tr1::Trace, T1:CPPMemberFunctionPointerType) == prv(NullMemberFunctionPointer, Tr2::Trace, T2:CPPMemberFunctionPointerType)
+     rule prv(P:MemberFunctionPtr, Tr1::Trace, t(... st: memberPointerType(_, t(... st: functionType(...)))) #as T1::CPPType) == prv(NullMemberFunctionPointer, Tr2::Trace, t(... st: memberPointerType(_, t(... st: functionType(...)))) #as T2::CPPType)
           => makeTruth(P ==K NullMemberFunctionPointer, combine(Tr1, Tr2, #klabel(`_==__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool T1 ==Type T2
 
-     rule prv(NullMemberPointer, Tr1::Trace, T1:CPPMemberPointerType) == prv(P:MemberPtr, Tr2::Trace, T2:CPPMemberPointerType)
+     rule prv(NullMemberPointer, Tr1::Trace, t(... st: memberPointerType(...)) #as T1::CPPType) == prv(P:MemberPtr, Tr2::Trace, t(... st: memberPointerType(...)) #as T2::CPPType)
           => makeTruth(P ==K NullMemberPointer, combine(Tr1, Tr2, #klabel(`_==__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool  T1 ==Type T2
 
-     rule prv(P:MemberPtr, Tr1::Trace, T1:CPPMemberPointerType) == prv(NullMemberPointer, Tr2::Trace, T2:CPPMemberPointerType)
+     rule prv(P:MemberPtr, Tr1::Trace, t(... st: memberPointerType(...)) #as T1::CPPType) == prv(NullMemberPointer, Tr2::Trace, t(... st: memberPointerType(...)) #as T2::CPPType)
           => makeTruth(P ==K NullMemberPointer, combine(Tr1, Tr2, #klabel(`_==__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool T1 ==Type T2
 
@@ -54,19 +54,19 @@ module CPP-EXPR-RELATIONAL
           requires isCompositePointerType(T1) andBool T1 ==Type T2
 
      // @ref n4296 5.10:3.1-3.2
-     rule prv(NullMemberFunctionPointer, Tr1::Trace, T1:CPPMemberFunctionPointerType) != prv(P:MemberFunctionPtr, Tr2::Trace, T2:CPPMemberFunctionPointerType)
+     rule prv(NullMemberFunctionPointer, Tr1::Trace, t(... st: memberPointerType(_, t(... st: functionType(...)))) #as T1::CPPType) != prv(P:MemberFunctionPtr, Tr2::Trace, t(... st: memberPointerType(_, t(... st: functionType(...)))) #as T2::CPPType)
           => makeTruth(P =/=K NullMemberFunctionPointer, combine(Tr1, Tr2, #klabel(`_!=__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool T1 ==Type T2
 
-     rule prv(P:MemberFunctionPtr, Tr1::Trace, T1:CPPMemberFunctionPointerType) != prv(NullMemberFunctionPointer, Tr2::Trace, T2:CPPMemberFunctionPointerType)
+     rule prv(P:MemberFunctionPtr, Tr1::Trace, t(... st: memberPointerType(_, t(... st: functionType(...)))) #as T1::CPPType) != prv(NullMemberFunctionPointer, Tr2::Trace, t(... st: memberPointerType(_, t(... st: functionType(...)))) #as T2::CPPType)
           => makeTruth(P =/=K NullMemberFunctionPointer, combine(Tr1, Tr2, #klabel(`_!=__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool T1 ==Type T2
 
-     rule prv(NullMemberPointer, Tr1::Trace, T1:CPPMemberPointerType) != prv(P:MemberPtr, Tr2::Trace, T2:CPPMemberPointerType)
+     rule prv(NullMemberPointer, Tr1::Trace, t(... st: memberPointerType(...)) #as T1::CPPType) != prv(P:MemberPtr, Tr2::Trace, t(... st: memberPointerType(...)) #as T2::CPPType)
           => makeTruth(P =/=K NullMemberPointer, combine(Tr1, Tr2, #klabel(`_!=__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool T1 ==Type T2
 
-     rule prv(P:MemberPtr, Tr1::Trace, T1:CPPMemberPointerType) != prv(NullMemberPointer, Tr2::Trace, T2:CPPMemberPointerType)
+     rule prv(P:MemberPtr, Tr1::Trace, t(... st: memberPointerType(...)) #as T1::CPPType) != prv(NullMemberPointer, Tr2::Trace, t(... st: memberPointerType(...)) #as T2::CPPType)
           => makeTruth(P =/=K NullMemberPointer, combine(Tr1, Tr2, #klabel(`_!=__CPP-SYNTAX`)))
           requires isCompositePointerType(T1) andBool T1 ==Type T2
 

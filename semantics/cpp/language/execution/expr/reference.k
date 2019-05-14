@@ -14,7 +14,7 @@ module CPP-EXECUTION-EXPR-REFERENCE
 
      syntax SymLoc ::= referenceTarget(t1: CPPType, loc: SymLoc, t2: CPPType) [function]
 
-     rule referenceTarget(T1:CPPClassType, Loc::SymLoc, T2:CPPClassType) => baseClassSubobject(Loc, T1, T2)
+     rule referenceTarget(t(... st: classType(...)) #as T1::CPPType, Loc::SymLoc, t(... st: classType(...)) #as T2::CPPType) => baseClassSubobject(Loc, T1, T2)
           requires isBaseClassOf(T1, T2)
 
      rule referenceTarget(... loc: Loc::SymLoc) => Loc [owise]
@@ -24,7 +24,7 @@ module CPP-EXECUTION-EXPR-REFERENCE
           <references>... .Map => stripProv(Loc1) |-> referenceTarget(innerType(T1), Loc2, T2) ...</references>
           requires Execution() andBool isCPPLVRefType(T1) andBool notBool isCPPBitfieldType(T2) andBool isReferenceCompatible(innerType(T1), T2)
 
-     rule <k> bindReference(lv(Loc1::SymLoc, Tr::Trace, T1::CPPRefType), xv(Loc2::SymLoc, _, T2::CPPType))
+     rule <k> bindReference(lv(Loc1::SymLoc, Tr::Trace, T1::CPPType), xv(Loc2::SymLoc, _, T2::CPPType))
               => lv(Loc1, Tr, T1) ...</k>
           <references>... .Map => stripProv(Loc1) |-> referenceTarget(innerType(T1), Loc2, T2) ...</references>
           requires Execution() andBool notBool isCPPBitfieldType(T2)  andBool isReferenceCompatible(innerType(T1), T2) andBool isValidReferenceType(T1)

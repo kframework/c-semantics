@@ -36,7 +36,7 @@ module CPP-ALIGNMENT
      rule byteAlignofType(lvRefType(_)) => cfg:alignofReference
      rule byteAlignofType(rvRefType(_)) => cfg:alignofReference
      rule byteAlignofType(nullptr_t) => cfg:alignofNullPtrT
-     rule byteAlignofType(memberPointerType(_, T:CPPFunctionType)) => cfg:memberFunctionPtrAlign
+     rule byteAlignofType(memberPointerType(_, t(... st: functionType(...)) #as T::CPPType)) => cfg:memberFunctionPtrAlign
      rule byteAlignofType(memberPointerType(_, T::CPPType)) => cfg:memberDataPtrAlign
           requires notBool isCPPFunctionType(T)
      rule byteAlignofType(arrayType(t(_, _, T::CPPSimpleType), _) => T)
