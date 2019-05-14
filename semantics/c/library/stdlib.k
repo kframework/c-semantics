@@ -68,11 +68,14 @@ module LIBC-STDLIB
 
      rule builtin("aligned_alloc", tv(Align:Int, _), tv(Sz:Int, _))
           => alignedAlloc(Align, Sz)
-          requires (Sz %Int Align) ==Int 0
+          requires (Sz %Int Align) ==Int 0 andBool (Sz =/=Int 0)
           [structural]
      rule (.K => UNDEF("STDLIB7", "Called aligned_alloc with size parameter not an integral multiple of the requested alignment."))
               ~> builtin("aligned_alloc", tv(Align:Int, _), tv(Sz:Int, _))
           requires (Sz %Int Align) =/=Int 0
+          [structural]
+     rule (.K => IMPL("STDLIB8", "Called calloc, malloc, realloc, or aligned_alloc with a zero size parameter."))
+              ~> builtin("aligned_alloc", _, tv(0, _))
           [structural]
 
      rule <k> alignedAlloc(Align::Int, Sz::Int)
