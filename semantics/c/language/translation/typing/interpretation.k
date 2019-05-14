@@ -3,7 +3,7 @@ module C-TYPING-INTERPRETATION-SYNTAX
      imports COMMON-SORTS
      imports C-DYNAMIC-SORTS
 
-     syntax Type ::= pushTypeDown(Type, K) [function, withConfig]
+     syntax Type ::= pushTypeDown(Type, K) [function]
      syntax KItem ::= makeArrayType(RValue, K)
 
      syntax List ::= numberUnnamed(List) [function]
@@ -135,7 +135,7 @@ module C-TYPING-INTERPRETATION
      rule pushTypeDown(t(Qs::Quals, Mods::Set, typedefType(X:CId, T::Type)), Lbl:K)
           => applyTypeFunction(Lbl, t(Qs, Mods, typedefType(X, T)))
 
-     syntax Type ::= applyTypeFunction(K, Type) [function, withConfig]
+     syntax Type ::= applyTypeFunction(K, Type) [function]
      syntax SimpleType ::= "functionType'" "(" Type "," List ")"
      rule applyTypeFunction(makeFunctionType(L:List), T::Type)
           => t(noQuals, getSpecifiers(T),
