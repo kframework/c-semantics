@@ -162,21 +162,21 @@ module CPP-TRANSLATION-NAME
      rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => templateRef(N :: X, T) ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
-          <templates>... N :: X |-> (_::TypeMap t(... st: classType(...)) #as T::CPPType |-> _) ...</templates>
-          requires type in Mask
+          <templates>... N :: X |-> (_::TypeMap T::CPPType |-> _) ...</templates>
+          requires isCPPClassType(T) andBool type in Mask
 
      rule <k> nameLookupInNamespace(X::CId, N::Namespace, Tag::Tag, Mask::Set) => templateRef(N :: X, T) ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
-          <templates>... N :: X |-> (_::TypeMap t(... st: classType(...)) #as T::CPPType |-> _) ...</templates>
-          requires getTag(T) ==K Tag andBool type in Mask
+          <templates>... N :: X |-> (_::TypeMap T::CPPType |-> _) ...</templates>
+          requires isCPPClassType(T) andBool getTag(T) ==K Tag andBool type in Mask
 
      rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => cSet(T |-> I M, N :: X) ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <nenv> NE::Map </nenv>
-          <templates>... N :: X |-> (t(... st: functionType(...)) #as T::CPPType |-> I::TemplateInfo M::TypeMap) ...</templates>
-          requires notBool X in_keys(NE)
+          <templates>... N :: X |-> (T::CPPType |-> I::TemplateInfo M::TypeMap) ...</templates>
+          requires isCPPFunctionType(T) andBool notBool X in_keys(NE)
                andBool function in Mask
 
      rule <k> nameLookupInNamespace(X::CId, N::Namespace, _, Mask::Set) => notFound(X) ...</k>
