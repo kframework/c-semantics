@@ -35,6 +35,7 @@ module SYMLOC-SYNTAX
      syntax Duration ::= threadLocal(Int)
      // Auto storage duration.
      syntax Duration ::= auto(Int)
+                       | constexpr(String)
      syntax Duration ::= "argv"
      // We strip storage class specifiers when processing declarations, so this
      // is how we keep track of register-ness.
@@ -167,6 +168,7 @@ module SYMLOC
      rule isAutoDuration(obj(... d: auto(_))) => true
      rule isAutoDuration(obj(... d: argv)) => true
      rule isAutoDuration(obj(... d: register(_))) => true
+     rule isAutoDuration(obj(... d: constexpr(_))) => true
      rule isAutoDuration(_::SymBase) => false [owise]
 
      rule isStringLoc(loc(obj(... d: string(_)), _)) => true
@@ -349,6 +351,7 @@ module SYMLOC
      rule showDuration(nativeSymbol(S::String)) => "nativeSymbol" +String wrapParens(S)
      rule showDuration(threadLocal(N::Int)) => "threadLocal" +String wrapParens(showInt(N))
      rule showDuration(auto(N::Int)) => "auto" +String wrapParens(showInt(N))
+     rule showDuration(constexpr(TU::String)) => "constexpr" +String wrapParens(TU)
      rule showDuration(argv) => "argv"
      rule showDuration(register(N::Int)) => "register" +String wrapParens(showInt(N))
      rule showDuration(nativeAddress()) => "native"
