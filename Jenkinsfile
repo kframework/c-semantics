@@ -17,11 +17,10 @@ pipeline {
       steps {
         ansiColor('xterm') {
           sh '''
+            make ocaml-deps
             eval $(opam config env)
-            cd .build/k
-            mvn verify -U -Dcheckstyle.skip -DskipKTest -Dllvm.backend.skip -Dhaskell.backend.skip -DbuildProfile=x86_64-gcc-glibc
-            cd ../..
-            make os-check -j`nproc`
+            make -j4
+            make -C tests/unit-pass -j$(nproc) os-comparison
           '''
         }
       }

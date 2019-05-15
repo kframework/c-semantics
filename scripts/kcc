@@ -14,7 +14,7 @@ use MIME::Base64 qw(encode_base64);
 use String::Escape qw(quote backslash printable);
 use UUID::Tiny qw(:std);
 
-use RV_Kcc::Files qw(profileDir nativeCC nativeCXX distDir tempFile tempDir error IS_CYGWIN);
+use RV_Kcc::Files qw(profileDir nativeCC nativeCXX distDir kBinDir tempFile tempDir error IS_CYGWIN);
 use RV_Kcc::Opts qw(
       getopts arg classify
       cppArgs suppressions ifdefs ldArgs nativeObjFiles srcFiles objFiles trampolineFiles breakpoints
@@ -33,7 +33,7 @@ $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
 use constant KRUN         => do {
-      my $path = defined($ENV{'K_BIN'})? catfile($ENV{'K_BIN'}, 'krun') : 'krun';
+      my $path = kBinDir('krun');
       my $ext = IS_CYGWIN? '.bat' : '';
       $path . $ext;
 };
@@ -127,8 +127,10 @@ sub main {
             close(FILE);
 
             my $profDir = profileDir();
-            $template =~ s?EXTERN_SCRIPTS_DIR?$profDir?g;
-            $template =~ s?EXTERN_HEAP_SIZE?$heapSize?g;
+            my $krun = KRUN;
+            $template =~ s?__EXTERN_SCRIPTS_DIR__?$profDir?g;
+            $template =~ s?__EXTERN_HEAP_SIZE__?$heapSize?g;
+            $template =~ s?__EXTERN_KRUN__?$krun?g;
 
             open(my $programRunner, '>', $oval) or error("Couldn't open file: $!\n");
             print $programRunner "$template\n";
