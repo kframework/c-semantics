@@ -103,6 +103,5 @@ module CPP-EXECUTION-EXPR-REFERENCE
           requires isBaseClassOf(T1, T2)
 
      rule referenceTarget(... loc: Loc::SymLoc) => Loc [owise]
->>>>>>> 624d6647... references - rvalue binding & refactoring
 
 endmodule
