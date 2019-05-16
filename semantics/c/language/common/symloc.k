@@ -7,6 +7,7 @@ module C-SYMLOC-SYNTAX
      // Base, type
      syntax SymBase ::= bnew(Int, Type, Duration) [function]
      syntax SymBase ::= bnew(Int, Type, LinkDuration) [function, klabel(bnew2)]
+     syntax SymBase ::= linc(Type, Duration) [function]
      syntax SymLoc ::= lnew(SymBase) [function]
      syntax SymLoc ::= restrictedNew(SymBase, Scope) [function]
 
@@ -29,6 +30,8 @@ module C-SYMLOC
 
      rule bnew(I::Int, T::Type, D::Duration) => obj(I, getAlignas(T), D) [owise]
      rule bnew(I::Int, T::Type, D::LinkDuration) => obj(I, getAlignas(T), D) [owise]
+
+     rule linc(T::Type, D::Duration) => bnew(!I:Int, T, D)
 
      rule lnew(Base::SymBase) => loc(Base, 0)
 

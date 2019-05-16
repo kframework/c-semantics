@@ -85,14 +85,14 @@ module C-DECL-LOCAL
 
      syntax KItem ::= declareAndDefine(CId, Type, K)
      rule <k> declareAndDefine(X:CId, T:Type, Init:K)
-               => defineAndInit(X, T, Init, bnew(!I:Int, T, D))
+               => defineAndInit(X, T, Init, linc(T, D))
           ...</k>
           <duration> D:Duration </duration>
           <local-vars>... .Set => SetItem(X) </local-vars>
           requires notBool isRegisterType(T)
           [structural]
      rule <k> declareAndDefine(X:CId, T:Type, Init:K)
-               => defineAndInit(X, T, Init, autoToRegister(bnew(!I:Int, T, D)))
+               => defineAndInit(X, T, Init, autoToRegister(linc(T, D)))
           ...</k>
           <duration> D:Duration </duration>
           <local-vars>... .Set => SetItem(X) </local-vars>
