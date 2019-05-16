@@ -81,7 +81,7 @@ module C-STMT-SWITCH
           [structural]
 
      rule #handleSwitch-aux(_:Int, _:RValue, X::CId => nextCaseLabel, _)
-          requires getKLabel(X) =/=K #klabel(`caseLabel`)
+          requires caseLabel(...) :/=K X
                andBool X =/=K nextCaseLabel
           [structural]
 

@@ -185,7 +185,7 @@ module CPP-EXECUTION-STMT-TRY
           requires I =/=Int J
 
      rule catchWithHandler(_, _) ~> (K:KItem => .K)
-          requires getKLabel(K) =/=K #klabel(`tryMark`)
+          requires tryMark(...) :/=K K
 
      syntax Expr ::= "catchAndCallTerminate"
 
