@@ -29,7 +29,7 @@ ifeq ($(origin CC),default)
 endif
 
 ifeq ($(origin CXX),default)
-	CXXX?=g++-7
+	CXX?=g++-7
 endif
 
 KCC ?= ../../dist/kcc
