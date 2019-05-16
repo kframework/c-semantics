@@ -7,7 +7,7 @@ module CPP-TRANSLATION-EXPR-COMMA
      context Comma(V:Val, HOLE:Expr)
              requires Translation() andBool isTExpr(V) andBool notBool isConvertableDiscardedExpr(V)
 
-     rule Comma(V1:TExpr, V2:Val) => pre(Comma(stripHold(V1), stripHold(V2)), combine(trace(V1), trace(V2), #klabel(`Comma`)), type(V2))
+     rule Comma(V1:TExpr, V2:Val) #as O:Expr => pre(Comma(stripHold(V1), stripHold(V2)), combine(trace(V1), trace(V2), O), type(V2))
           requires Translation()
 
      rule Comma(V::GLVal => prDiscardedExpr(V), _)

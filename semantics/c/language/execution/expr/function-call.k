@@ -156,7 +156,7 @@ module C-EXPR-FUNCTION-CALL
                <curr-tu> OldTu </curr-tu>
                <curr-scope> blockScope(X, Base, 0) </curr-scope>
                <curr-program-loc> CurrLoc </curr-program-loc>
-               <stack-depth> OldStackDepth +Int cfg:stackSize(mapList(L, #klabel(`type`)), Locals) </stack-depth>
+               <stack-depth> OldStackDepth +Int cfg:stackSize(types(L), Locals) </stack-depth>
           ...</function-control>)
           requires CallT ==Type toPrototype(DefT)
           [structural]
@@ -165,6 +165,10 @@ module C-EXPR-FUNCTION-CALL
           ~> application(_, _, functionObject(X::CId, DefT::Type, _, _), CallT:Type, _, _)
           requires CallT =/=Type toPrototype(DefT)
           [structural]
+
+     syntax List ::= types(List) [function, klabel(typeOfList)]
+     rule types(.List) => .List
+     rule types(ListItem(K:KItem) L::List) => ListItem(type(K)) types(L)
 
      syntax KItem ::= enterNewTu(CId, SymBase, Type)
      rule <k> enterNewTu(F::CId, Base::SymBase, T::Type)

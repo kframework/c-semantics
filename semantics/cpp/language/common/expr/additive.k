@@ -11,12 +11,12 @@ module CPP-EXPR-ADDITIVE
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule prv(Loc::SymLoc, Tr::Trace, t(... st: pointerType(...)) #as T::CPPType) + prv(I:Int, Tr'::Trace, cppIntegerType #as T'::CPPType)
-          => addToPointer(Loc, T, I, combine(Tr, Tr', #klabel(`_+__CPP-SYNTAX`)))
+     rule (prv(Loc::SymLoc, Tr::Trace, t(... st: pointerType(...)) #as T::CPPType) + prv(I:Int, Tr'::Trace, cppIntegerType #as T'::CPPType)) #as O:Expr
+          => addToPointer(Loc, T, I, combine(Tr, Tr', O))
           requires isCompleteType(innerType(T)) andBool isObjectType(innerType(T))
 
-     rule prv(I:Int, Tr::Trace, cppIntegerType #as T'::CPPType) + prv(Loc::SymLoc, Tr'::Trace, t(... st: pointerType(...)) #as T::CPPType)
-          => addToPointer(Loc, T, I, combine(Tr, Tr', #klabel(`_+__CPP-SYNTAX`)))
+     rule (prv(I:Int, Tr::Trace, cppIntegerType #as T'::CPPType) + prv(Loc::SymLoc, Tr'::Trace, t(... st: pointerType(...)) #as T::CPPType)) #as O:Expr
+          => addToPointer(Loc, T, I, combine(Tr, Tr', O))
           requires isCompleteType(innerType(T)) andBool isObjectType(innerType(T))
 
      syntax KItem ::= addToPointer(SymLoc, CPPType, Int, Trace) [klabel(addToPointerCPP)]
@@ -41,8 +41,8 @@ module CPP-EXPR-ADDITIVE
 
      rule #newFromArray(Loc::SymLoc, .K, _) => Loc
 
-     rule prv(Loc::SymLoc, Tr::Trace, t(... st: pointerType(...)) #as T::CPPType) - prv(Loc'::SymLoc, Tr'::Trace, t(... st: pointerType(...)) #as T'::CPPType)
-          => computePointerDifference(offset(Loc) -Int offset(Loc'), byteSizeofType(innerType(T)), type(ptrdiff_t), combine(Tr, Tr', #klabel(`_-__CPP-SYNTAX`)), "std::ptrdiff_t")
+     rule (prv(Loc::SymLoc, Tr::Trace, t(... st: pointerType(...)) #as T::CPPType) - prv(Loc'::SymLoc, Tr'::Trace, t(... st: pointerType(...)) #as T'::CPPType)) #as O:Expr
+          => computePointerDifference(offset(Loc) -Int offset(Loc'), byteSizeofType(innerType(T)), type(ptrdiff_t), combine(Tr, Tr', O), "std::ptrdiff_t")
           requires sameBase(Loc, Loc')
 
      rule (.K => UNDEF("CEA2",
@@ -61,20 +61,20 @@ module CPP-EXPR-ADDITIVE
           ~> computePointerDifference(Diff::Int, Size::Int, T::CPPType, _, S::String)
           requires notBool inRange(Diff /Int Size, T)
 
-     rule prv(I1:Int, Tr1::Trace, cppIntegerType #as T1::CPPType) + prv(I2:Int, Tr2::Trace, cppIntegerType #as T2::CPPType)
-          => arithInterpret(T1, I1 +Int I2, combine(Tr1, Tr2, #klabel(`_+__CPP-SYNTAX`)))
+     rule (prv(I1:Int, Tr1::Trace, cppIntegerType #as T1::CPPType) + prv(I2:Int, Tr2::Trace, cppIntegerType #as T2::CPPType)) #as O:Expr
+          => arithInterpret(T1, I1 +Int I2, combine(Tr1, Tr2, O))
           requires isPromoted(T1) andBool T1 ==Type T2
 
-     rule prv(F1:Float, Tr1::Trace, t(... st: _:CPPSimpleFloatingType) #as T1::CPPType) + prv(F2:Float, Tr2::Trace, t(... st: _:CPPSimpleFloatingType) #as T2::CPPType)
-          => arithInterpret(T1, F1 +Float F2, combine(Tr1, Tr2, #klabel(`_+__CPP-SYNTAX`)))
+     rule (prv(F1:Float, Tr1::Trace, t(... st: _:CPPSimpleFloatingType) #as T1::CPPType) + prv(F2:Float, Tr2::Trace, t(... st: _:CPPSimpleFloatingType) #as T2::CPPType)) #as O:Expr
+          => arithInterpret(T1, F1 +Float F2, combine(Tr1, Tr2, O))
           requires isPromoted(T1) andBool T1 ==Type T2
 
-     rule prv(I1:Int, Tr1::Trace, cppIntegerType #as T1::CPPType) - prv(I2:Int, Tr2::Trace, cppIntegerType #as T2::CPPType)
-          => arithInterpret(T1, I1 -Int I2, combine(Tr1, Tr2, #klabel(`_-__CPP-SYNTAX`)))
+     rule (prv(I1:Int, Tr1::Trace, cppIntegerType #as T1::CPPType) - prv(I2:Int, Tr2::Trace, cppIntegerType #as T2::CPPType)) #as O:Expr
+          => arithInterpret(T1, I1 -Int I2, combine(Tr1, Tr2, O))
           requires isPromoted(T1) andBool T1 ==Type T2
 
-     rule prv(F1:Float, Tr1::Trace, t(... st: _:CPPSimpleFloatingType) #as T1::CPPType) - prv(F2:Float, Tr2::Trace, t(... st: _:CPPSimpleFloatingType) #as T2::CPPType)
-          => arithInterpret(T1, F1 -Float F2, combine(Tr1, Tr2, #klabel(`_-__CPP-SYNTAX`)))
+     rule (prv(F1:Float, Tr1::Trace, t(... st: _:CPPSimpleFloatingType) #as T1::CPPType) - prv(F2:Float, Tr2::Trace, t(... st: _:CPPSimpleFloatingType) #as T2::CPPType)) #as O:Expr
+          => arithInterpret(T1, F1 -Float F2, combine(Tr1, Tr2, O))
           requires isPromoted(T1) andBool T1 ==Type T2
 
 

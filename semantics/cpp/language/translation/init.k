@@ -18,8 +18,7 @@ module CPP-TRANSLATION-INIT
 
      rule #Execution(<generatedTop>... <compile-time-evaluation> B::Bool </compile-time-evaluation> ...</generatedTop>) => B
 
-     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType)) => Translation() andBool notBool isCPPRefType(T)
-          requires isTExprKLabel(#klabel(Lbl))
+     rule isKResult(le(_, _, T::CPPType) #Or xe(, _, T::CPPType) #Or pre(_, _, T::CPPType)) => Translation() andBool notBool isCPPRefType(T)
 
      rule <k> TranslationUnit(Tu::String, Decls::List)
                => makeTu(Tu +String Uuid)
@@ -50,9 +49,9 @@ module CPP-TRANSLATION-INIT
                         ...</ns>)
           ...</namespaces>
 
-     rule combine(hasTrace(E::Expr), #klabel(Lbl:KLabel)) => hasTrace(Lbl(E))
+     rule combine(hasTrace(E::Expr), O::Expr) => hasTrace(fillExpr(O, E))
 
-     rule combine(hasTrace(E::Expr), hasTrace(E2::Expr), #klabel(Lbl:KLabel)) => hasTrace(Lbl(E, E2))
+     rule combine(hasTrace(E::Expr), hasTrace(E2::Expr), O::Expr) => hasTrace(fillExpr(O, E, E2))
 
      rule combine(hasTrace(E::Expr), hasTrace(E2::Expr), hasTrace(E3::Expr), V::ValueCategory, T::CPPType) => hasTrace(ConditionalOp(E, E2, E3, V, T))
 

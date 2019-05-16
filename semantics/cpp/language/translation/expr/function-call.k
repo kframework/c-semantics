@@ -11,9 +11,8 @@ module CPP-TRANSLATION-EXPR-FUNCTION-CALL
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule CallExpr(Lbl:KLabel(_::K, Tr::Trace, t(... st: functionType(...)) #as T::CPPType) #as V::Val, list(A::List), krlist(DArgs::List))
+     rule CallExpr((lv(_::K, Tr::Trace, t(... st: functionType(...)) #as T::CPPType) #Or le(_, Tr::Trace, t(... st: functionType(...)) #as T::CPPType)) #as V::Val, list(A::List), krlist(DArgs::List))
           => elabCall(V, isVirtualCall(Tr, T), A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
-          requires isLKLabel(#klabel(Lbl))
 
      rule CallExpr(_:KLabel(_::K, _::K, t(... st: pointerType(t(... st: functionType(...)) #as T::CPPType))) #as V:Val, list(A::List), krlist(DArgs::List))
           => elabCall(V, false, A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
@@ -21,7 +20,7 @@ module CPP-TRANSLATION-EXPR-FUNCTION-CALL
      syntax KItem ::= elabCall(Val, Bool, List, CPPType, StrictList) [strict(5)]
 
      rule elabCall(Fun::Val, IsVirtualCall::Bool, Args::List, T::CPPType, krlist(Temps::List))
-          => makeCall(BuiltinCallOp(Fun, IsVirtualCall, Temps), combine(trace(Fun), hasTrace(list(Args)), #klabel(`CallExpr`)), T)
+          => makeCall(BuiltinCallOp(Fun, IsVirtualCall, Temps), combine(trace(Fun), hasTrace(list(Args)), CallExpr(Fun, list(Args))), T)
 
      syntax TExpr ::= makeCall(Expr, Trace, CPPType) [function]
 

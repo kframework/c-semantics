@@ -384,22 +384,18 @@ module CPP-TRANSLATION-NAME
 
      rule (.K => qualifiedNameLookup(X, N, defaultMask)) ~> CallExpr(Name(N:NNSVal, X::CId), _, krlist(.List))
 
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-          requires isValKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr((lv(_, _, t(... st: classType(C::Class))) #Or xv(_, _, t(... st: classType(C::Class))) #Or prv(_, _, t(... st: classType(C::Class))))  . no-template Name(NoNNS(), X::CId), _, krlist(.List))
 
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-          requires isTExprKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr((le(_, _, t(... st: classType(C::Class))) #Or xe(_, _, t(... st: classType(C::Class))) #Or pre(_, _, t(... st: classType(C::Class)))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
 
      rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(V:Val . no-template Name(C:NNSVal, X::CId), _, _)
 
      rule cSet(Y::TypeMap, X::QualId) ~> CallExpr(E::Expr, Args::StrictList, krlist(.List))
           => resolveOverload(cSet(Y, X), Args, E)
 
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
-          requires isValKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> (lv(_, _, t(... st: classType(C::Class))) #Or xv(_, _, t(... st: classType(C::Class))) #Or prv(_, _, t(... st: classType(C::Class)))) . no-template Name(NoNNS(), X::CId)
 
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
-          requires isTExprKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> (le(_, _, t(... st: classType(C::Class))) #Or xe(_, _, t(... st: classType(C::Class))) #Or pre(_, _, t(... st: classType(C::Class)))) . no-template Name(NoNNS(), X::CId)
 
      rule (cSet(_, C:Class :: _) => .K) ~> _ . no-template Name(NoNNS() => C, _)
 
