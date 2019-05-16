@@ -34,7 +34,8 @@ FILES_TO_DIST = \
 PROFILE_FILES = include src compiler-src native pp cpp-pp cc cxx
 PROFILE_FILE_DEPS = $(foreach f, $(PROFILE_FILES), $(PROFILE_DIR)/$(f))
 SUBPROFILE_FILE_DEPS = $(foreach d, $(SUBPROFILE_DIRS), $(foreach f, $(PROFILE_FILES), $(d)/$(f)))
-CC=$(PROFILE_DIR)/cc
+
+CC ?= $(PROFILE_DIR)/cc
 
 PERL_MODULES = \
 	scripts/RV_Kcc/Opts.pm \
