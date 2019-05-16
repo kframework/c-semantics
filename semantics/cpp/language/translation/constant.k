@@ -24,6 +24,8 @@ module CPP-TRANSLATION-CONSTANT
 
      rule <k> compileTimeEval(K::K) => K ~> compileTimeEvalDone ...</k>
           <compile-time-evaluation> false => true </compile-time-evaluation>
+          <duration> _ => constexpr(TU) </duration>
+          <curr-tr-tu> TU::String </curr-tr-tu>
 
      syntax KItem ::= "compileTimeEvalDone"
 
@@ -38,6 +40,8 @@ module CPP-TRANSLATION-CONSTANT
 
      rule <k> evalCoreConstantExpressionInContext(E::Expr, #klabel(Ctx::KLabel)) => Ctx(E) ~> evalCoreConstantExpressionHole(#klabel(Ctx)) ...</k>
           <compile-time-evaluation> false => true </compile-time-evaluation>
+          <duration> _ => constexpr(TU) </duration>
+          <curr-tr-tu> TU::String </curr-tr-tu>
           requires notBool isEvalVal(E)
 
      rule <k> Lbl::KLabel(V:Val) ~> evalCoreConstantExpressionHole(#klabel(Ctx::KLabel)) => evalCoreConstantExpressionInContext(V, #klabel(Ctx)) ...</k>
@@ -46,6 +50,8 @@ module CPP-TRANSLATION-CONSTANT
 
      rule <k> evalCoreConstantExpressionUntil(E::Expr, #klabel(Condition::KLabel)) => E ~> evalCoreConstantExpressionHole(#klabel(Condition)) ...</k>
           <compile-time-evaluation> false => true </compile-time-evaluation>
+          <duration> _ => constexpr(TU) </duration>
+          <curr-tr-tu> TU::String </curr-tr-tu>
           requires notBool Condition(E)
 
      rule <k> E:Expr ~> evalCoreConstantExpressionHole(#klabel(Condition::KLabel)) => evalCoreConstantExpressionUntil(E, #klabel(Condition)) ...</k>
