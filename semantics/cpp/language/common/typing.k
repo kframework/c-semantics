@@ -998,7 +998,7 @@ module C-CPP-TYPING
      imports SETTINGS-SYNTAX
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(... returnType: Ret::CPPType, paramTypes: Args::CPPTypes)))
-          => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertTypeToC`))))
+          => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertDTypeToC`))))
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, void::CPPSimpleVoidType)) => t(Q, Mods, void::SimpleVoidType)
 
@@ -1037,6 +1037,8 @@ module C-CPP-TYPING
      rule convertTypeToC(t(Q::Quals, Mods::Set, long-double::CPPSimpleFloatingType)) => t(Q, Mods, long-double::SimpleFloatType)
 
      rule convertDTypeToC(variadic::CPPVariadic) => variadic::Variadic
+
+     rule convertDTypeToC(t(...) #as T::CPPType) => convertTypeToC(T)
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, pointerType(T::CPPType))) => t(Q, Mods, pointerType(convertTypeToC(T)))
 
