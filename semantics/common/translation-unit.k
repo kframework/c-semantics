@@ -22,6 +22,8 @@ module COMMON-TRANSLATION-UNIT
      imports K-REFLECTION
      imports C-CONFIGURATION
 
+     rule getCurrentTranslationUnit() => getTranslationUnit(nameOfCurrentTranslationUnit())
+
      rule [[ getTranslationUnit(TU::String)
           => <tu> <tu-id> TU </tu-id> B </tu> ]]
           <tu> <tu-id> TU </tu-id> B::Bag </tu>
