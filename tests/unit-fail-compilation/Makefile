@@ -11,8 +11,8 @@ C_TEST_COMPARISON = ${C_TESTS:=.cmp}
 CHECK_RESULT_COMPILE = if [ $$? -eq 1 -o $$? -eq 255 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
-KCC ?= ../../dist/kcc
-KXX ?= ../../dist/k++
+KCC = ../../dist/kcc
+KXX = ../../dist/k++
 
 KCCFLAGS = -fno-diagnostics-color -Werror -Wfatal-errors
 

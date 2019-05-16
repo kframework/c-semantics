@@ -25,15 +25,15 @@ CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
 C_TEST_COMPARISON = ${C_TESTS:=.cmp}
 
 ifeq ($(origin CC),default)
-	CC ?= gcc-7
+	CC = gcc-7
 endif
 
 ifeq ($(origin CXX),default)
-	CXX ?= g++-7
+	CXX=g++-7
 endif
 
-KCC ?= ../../dist/kcc
-KXX ?= ../../dist/k++
+KCC=../../dist/kcc
+KXX=../../dist/k++
 
 LDFLAGS=-pthread
 
