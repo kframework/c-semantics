@@ -629,4 +629,10 @@ module C-TYPING-MISC
           orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
      rule isNonPaddingOffset(_, .List, _, _) => false
 
+     rule rvalType(t(... st: _:SimpleArrayType) #as T::Type)
+          => utype(arrayToPtrType(T))
+     rule rvalType(t(... st: functionType(...)) #as T::Type)
+          => utype(pointerType(T))
+     rule rvalType(T::Type) => utype(T) [owise]
+
 endmodule

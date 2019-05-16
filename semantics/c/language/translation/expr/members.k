@@ -12,7 +12,7 @@ module C-EXPR-MEMBERS
           => le(K . F, addQualifiers(getQualifiers(T), findFieldType(F, T)))
           requires notBool (Atomic() inQuals getQualifiers(T))
 
-     rule te(K:K, structOrUnionUType #as T::UType) . F:CId => te(K . F, utype(findFieldType(F, type(T))))
+     rule te(K:K, structOrUnionUType #as T::UType) . F:CId => te(K . F, rvalType(findFieldType(F, type(T))))
 
      rule ncle(K::InitLValue, t(... st: _:SimpleArrayType) #as T::Type) [[ N::Int ]]
           => le(K [[ N ]], addQualifiers(getQualifiers(T), getElementType(N, T)))
