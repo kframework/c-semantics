@@ -132,27 +132,30 @@ module C-TYPING-COMMON
      rule extractTagInfo(enumInfo(...) #as EI::EnumInfo) => EI
      rule extractTagInfo(_) => #incomplete [owise]
 
-     rule numBytes(bool) => cfg:sizeofBool
-     rule numBytes(_:SimpleSignedCharType) => cfg:sizeofSignedChar
-     rule numBytes(short-int) => cfg:sizeofShortInt
-     rule numBytes(int) => cfg:sizeofInt
-     rule numBytes(long-int) => cfg:sizeofLongInt
-     rule numBytes(long-long-int) => cfg:sizeofLongLongInt
-     rule numBytes(oversized-int) => cfg:sizeofOversizedInt
+     syntax Int ::= numBytesArithmetic(SimpleUType) [function]
 
-     rule numBytes(float) => cfg:sizeofFloat
-     rule numBytes(double) => cfg:sizeofDouble
-     rule numBytes(long-double) => cfg:sizeofLongDouble
-     rule numBytes(oversized-float) => cfg:sizeofOversizedFloat
+     rule numBytesArithmetic(bool) => cfg:sizeofBool
+     rule numBytesArithmetic(_:SimpleSignedCharType) => cfg:sizeofSignedChar
+     rule numBytesArithmetic(short-int) => cfg:sizeofShortInt
+     rule numBytesArithmetic(int) => cfg:sizeofInt
+     rule numBytesArithmetic(long-int) => cfg:sizeofLongInt
+     rule numBytesArithmetic(long-long-int) => cfg:sizeofLongLongInt
+     rule numBytesArithmetic(oversized-int) => cfg:sizeofOversizedInt
 
-     rule numBytes(_:SimpleUnsignedCharType) => numBytes(signed-char)
-     rule numBytes(unsigned-short-int) => numBytes(short-int)
-     rule numBytes(unsigned-int) => numBytes(int)
-     rule numBytes(unsigned-long-int) => numBytes(long-int)
-     rule numBytes(unsigned-long-long-int) => numBytes(long-long-int)
-     rule numBytes(unsigned-oversized-int) => numBytes(oversized-int)
-     rule numBytes(enumType(S::TagId)) => numBytes(getEnumAlias(S))
-     rule numBytes(_) => 0 [owise]
+     rule numBytesArithmetic(float) => cfg:sizeofFloat
+     rule numBytesArithmetic(double) => cfg:sizeofDouble
+     rule numBytesArithmetic(long-double) => cfg:sizeofLongDouble
+     rule numBytesArithmetic(oversized-float) => cfg:sizeofOversizedFloat
+
+     rule numBytesArithmetic(_:SimpleUnsignedCharType) => numBytesArithmetic(signed-char)
+     rule numBytesArithmetic(unsigned-short-int) => numBytesArithmetic(short-int)
+     rule numBytesArithmetic(unsigned-int) => numBytesArithmetic(int)
+     rule numBytesArithmetic(unsigned-long-int) => numBytesArithmetic(long-int)
+     rule numBytesArithmetic(unsigned-long-long-int) => numBytesArithmetic(long-long-int)
+     rule numBytesArithmetic(unsigned-oversized-int) => numBytesArithmetic(oversized-int)
+     rule numBytesArithmetic(_) => 0 [owise]
+     rule numBytes(enumType(S::TagId)) => numBytesArithmetic(getEnumAlias(S))
+     rule numBytes(T::SimpleUType) => numBytesArithmetic(T) [owise]
 
      rule typePrecision(ut(_, float)) => cfg:precisionofFloat
      rule typePrecision(ut(_, double)) => cfg:precisionofDouble
@@ -170,58 +173,31 @@ module C-TYPING-COMMON
      rule Int2CFloat(ut(... st: _:SimpleFloatType) #as T::UType, I:Int) => Int2Float(I, typePrecision(T), typeExponent(T))
      rule zeroCFloat(ut(... st: _:SimpleFloatType) #as T::UType) => Int2CFloat(T, 0)
 
-     syntax Int ::= numBits(SimpleUType) [function]
-     rule numBits(T::SimpleUType) => numBytes(T) *Int cfg:bitsPerByte
+     syntax Int ::= numBits(SimpleIntegerType) [function]
+     rule numBits(T::SimpleIntegerType) => numBytesArithmetic(T) *Int cfg:bitsPerByte
 
      rule min(ut(_, bitfieldType(_:SimpleSignedType, N::Int)))
           => 0 -Int (1 <<Int absInt(N -Int 1))
      rule max(ut(_, bitfieldType(_:SimpleSignedType, N::Int)))
           => (1 <<Int absInt(N -Int 1)) -Int 1
 
-     rule min(ut(_, _:SimpleSignedCharType))
-          => 0 -Int (1 <<Int absInt(numBits(signed-char) -Int 1))
-     rule max(ut(_, _:SimpleSignedCharType))
-          => (1 <<Int absInt(numBits(signed-char) -Int 1)) -Int 1
-     rule min(ut(_, short-int))
-          => 0 -Int (1 <<Int absInt(numBits(short-int) -Int 1))
-     rule max(ut(_, short-int))
-          => (1 <<Int absInt(numBits(short-int) -Int 1)) -Int 1
-     rule min(ut(_, int))
-          => 0 -Int (1 <<Int absInt(numBits(int) -Int 1))
-     rule max(ut(_, int))
-          => (1 <<Int absInt(numBits(int) -Int 1)) -Int 1
-     rule min(ut(_, long-int))
-          => 0 -Int (1 <<Int absInt(numBits(long-int) -Int 1))
-     rule max(ut(_, long-int))
-          => (1 <<Int absInt(numBits(long-int) -Int 1)) -Int 1
-     rule min(ut(_, long-long-int))
-          => 0 -Int (1 <<Int absInt(numBits(long-long-int) -Int 1))
-     rule max(ut(_, long-long-int))
-          => (1 <<Int absInt(numBits(long-long-int) -Int 1)) -Int 1
-     rule min(ut(_, oversized-int))
-          => 0 -Int (1 <<Int absInt(numBits(oversized-int) -Int 1))
-     rule max(ut(_, oversized-int))
-          => (1 <<Int absInt(numBits(oversized-int) -Int 1)) -Int 1
+     rule imin(T:SimpleSignedType)
+          => 0 -Int (1 <<Int absInt(numBits(T) -Int 1))
+     rule imax(T:SimpleSignedType)
+          => (1 <<Int absInt(numBits(T) -Int 1)) -Int 1
 
-     rule min(unsignedIntegerUType) => 0
+     rule imin(_:SimpleUnsignedType) => 0
 
-     rule max(ut(_, bool)) => 1
+     rule imax(bool) => 1
 
      rule max(ut(_, bitfieldType(_:SimpleUnsignedType, N::Int)))
           => (1 <<Int absInt(N)) -Int 1
 
-     rule max(ut(_, _:SimpleUnsignedCharType))
-          => (1 <<Int absInt(numBits(unsigned-char))) -Int 1
-     rule max(ut(_, unsigned-short-int))
-          => (1 <<Int absInt(numBits(unsigned-short-int))) -Int 1
-     rule max(ut(_, unsigned-int))
-          => (1 <<Int absInt(numBits(unsigned-int))) -Int 1
-     rule max(ut(_, unsigned-long-int))
-          => (1 <<Int absInt(numBits(unsigned-long-int))) -Int 1
-     rule max(ut(_, unsigned-long-long-int))
-          => (1 <<Int absInt(numBits(unsigned-long-long-int))) -Int 1
-     rule max(ut(_, unsigned-oversized-int))
-          => (1 <<Int absInt(numBits(unsigned-oversized-int))) -Int 1
+     rule imax(T:SimpleUnsignedType)
+          => (1 <<Int absInt(numBits(T))) -Int 1
+
+     rule min(ut(_, T:SimpleIntegerType)) => imin(T)
+     rule max(ut(_, T:SimpleIntegerType)) => imax(T)
 
      rule min(ut(_, enumType(S::TagId))) => min(utype(getEnumAlias(S)))
      rule max(ut(_, enumType(S::TagId))) => max(utype(getEnumAlias(S)))
