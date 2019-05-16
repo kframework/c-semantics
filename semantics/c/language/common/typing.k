@@ -269,11 +269,14 @@ module C-TYPING-SYNTAX
      syntax UType ::= correspondingUnsignedType(UType) [function]
      syntax UType ::= correspondingSignedType(UType) [function]
 
+     syntax Int ::= imin(SimpleIntegerType) [function]
+     syntax Int ::= imax(SimpleIntegerType) [function]
      syntax Int ::= min(UType) [function]
      syntax Int ::= max(UType) [function]
      syntax Float ::= fmax(UType) [function]
      syntax Float ::= fmin(UType) [function]
      syntax Bool ::= intInRange(Int, UType) [function]
+                   | intInRangeArithmetic(Int, SimpleIntegerType) [function]
      syntax Bool ::= floatInRange(Float, UType) [function]
 
      syntax Modifier ::= Packed()
