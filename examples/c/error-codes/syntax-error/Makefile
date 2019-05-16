@@ -1,7 +1,7 @@
 TUS = $(wildcard ./*.c)
 EXCLUDES=
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link3.c, ${TUS:-link1.c=.c})))
-CC ?= gcc
+CC=gcc
 TEST_COMPARISON = ${TESTS:.c=.cmp}
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
@@ -11,7 +11,7 @@ CHECK_RESULT_COMPILE_FATAL = if [ $$? -eq 1 ] ; then echo "passed $<"; mv $@.tmp
 
 CHECK_RESULT_RUN_FATAL = if [ $$? -eq 139 ] ; then echo "passed $<"; cat $@.tmp > $@; rm $@.tmp; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
-KCC ?= kcc
+KCC = kcc
 KCCFLAGS = -fno-diagnostics-color
 CFLAGS = -fno-diagnostics-color -std=c11
 
