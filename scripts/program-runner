@@ -23,13 +23,13 @@ $SIG{'INT'} = 'interruptHandler'; # handle control-c
 
 # Set heap and stack size of krun
 
-my $HEAP_SIZE = "__EXTERN_HEAP_SIZE__";
+my $HEAP_SIZE = '__EXTERN_HEAP_SIZE__';
 
 $ENV{K_OPTS} = "-Xms64m -Xmx$HEAP_SIZE -Xss32m -XX:+TieredCompilation";
 
-my $SCRIPTS_DIR = "__EXTERN_SCRIPTS_DIR__";
+my $SCRIPTS_DIR = '__EXTERN_SCRIPTS_DIR__';
 
-my $KRUN = "__EXTERN_KRUN__";
+my $KRUN = '__EXTERN_KRUN__';
 
 my $EXEC_DEF = catfile($SCRIPTS_DIR, "c-cpp-kompiled");
 my $EXEC_ND_DEF = catfile($SCRIPTS_DIR, "c-nd-kompiled");
