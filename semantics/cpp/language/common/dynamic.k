@@ -384,6 +384,8 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KItem ::= frozenDeclaration(Int, Int, Decl) [klabel(frozenDeclarationCpp)]
 
+     syntax KItem ::= "not-implemented"
+
      syntax Expr ::= CompoundInitExpr
 
      syntax CompoundInitExpr ::= compoundInit(Expr, Expr) [strict(1)]
