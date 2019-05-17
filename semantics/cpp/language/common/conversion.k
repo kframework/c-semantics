@@ -70,6 +70,7 @@ module CPP-CONVERSION
      imports CPP-SYMLOC-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-SYNTAX
+     imports C-CONFIGURATION
 
      syntax PRVal ::= ErrorResult
 

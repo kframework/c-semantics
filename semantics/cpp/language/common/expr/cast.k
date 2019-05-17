@@ -26,6 +26,7 @@ module CPP-EXPR-CAST
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports C-CONFIGURATION
 
      context <k> ConstCast(T:CPPType, (HOLE:Expr => reval(HOLE))) ...</k>
              <compile-time-evaluation> true </compile-time-evaluation>

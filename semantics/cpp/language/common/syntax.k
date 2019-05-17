@@ -194,6 +194,35 @@ module CPP-SYNTAX
 
      syntax BraceInit ::= ExprLoc(CabsLoc, BraceInit)
 
+     syntax Block ::= BlockStmt(Int, List)
+
+     syntax Decl
+
+     syntax Stmt ::= LabelStmt(CId, List)
+                   | GotoStmt(CId)
+                   | ExpressionStmt(Expr) [strict]
+                   | PRValExpressionStmt(Expr) [strict]
+                   | BreakStmt()
+                   | ReturnOp(Expr)
+                   | IfStmt(Decl, Stmt, Stmt)
+                   | IfStmt(Expr, K, K)
+                   | WhileStmt(Decl, Stmt)
+                   | WhileStmt(Expr, K)
+                   | ForStmt(Expr, K, K) [klabel(ForStmt3)]
+                   | TryStmt(K, List)
+                   | CatchOp(CPPType, K)
+                   | CatchAnyOp(K)
+
+     // returns the current exception object. Used to initialize
+     // catch declarations.
+     syntax Expr ::= exceptionObject(CPPType)
+
+endmodule
+
+module CPP-SYNTAX-HEATING
+     imports CPP-SYNTAX
+     imports C-CONFIGURATION
+
      context <k> _ := (HOLE:Expr => reval(HOLE)) ...</k> 
              <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
      context <k> _ := (HOLE:Expr => reval(HOLE)) ...</k>
@@ -418,29 +447,6 @@ module CPP-SYNTAX
              <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
      context <k> _ >> (HOLE:Expr => reval(HOLE)) ...</k>
              <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
-
-     syntax Block ::= BlockStmt(Int, List)
-
-     syntax Decl
-
-     syntax Stmt ::= LabelStmt(CId, List)
-                   | GotoStmt(CId)
-                   | ExpressionStmt(Expr) [strict]
-                   | PRValExpressionStmt(Expr) [strict]
-                   | BreakStmt()
-                   | ReturnOp(Expr)
-                   | IfStmt(Decl, Stmt, Stmt)
-                   | IfStmt(Expr, K, K)
-                   | WhileStmt(Decl, Stmt)
-                   | WhileStmt(Expr, K)
-                   | ForStmt(Expr, K, K) [klabel(ForStmt3)]
-                   | TryStmt(K, List)
-                   | CatchOp(CPPType, K)
-                   | CatchAnyOp(K)
-
-     // returns the current exception object. Used to initialize
-     // catch declarations.
-     syntax Expr ::= exceptionObject(CPPType)
 
      context <k> IfStmt((HOLE:Expr => reval(HOLE)), _, _) ...</k> 
              <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]

@@ -6,6 +6,7 @@ module CPP-EXPR-UNARY
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
+     imports C-CONFIGURATION
 
      rule *(prv(Loc:SymLoc, Tr::Trace, T:CPPPointerType))
           => lv(Loc, combine(Tr, #klabel(`*__CPP-SYNTAX`)), innerType(T))
