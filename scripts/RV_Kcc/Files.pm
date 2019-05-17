@@ -13,17 +13,18 @@ our $VERSION = 1.00;
 our @ISA = qw(Exporter);
 our @EXPORT = qw();
 our @EXPORT_OK = qw(
-      profileDir
-      nativeCC
-      nativeCXX
-      distDir
       currentProfile
       defaultProfile
-      getProfiles
-      tempFile
-      tempDir
+      distDir
       error
+      getProfiles
       IS_CYGWIN
+      kBinDir
+      nativeCC
+      nativeCXX
+      profileDir
+      tempDir
+      tempFile
 );
 
 use constant IS_CYGWIN    => $^O eq "cygwin" || $^O eq "msys";
@@ -90,6 +91,16 @@ sub profileDir {
       }
 
       return catfile($prof, @_);
+}
+
+sub kBinDir {
+      my $path = defined($ENV{'K_BIN'})? $ENV{'K_BIN'} : distDir('k', 'bin');
+      if (IS_CYGWIN) {
+            $path = shell("cygpath -w $path")->stdout()->run();
+            chop($path);
+      }
+
+      return catfile($path, @_);
 }
 
 sub nativeCC {

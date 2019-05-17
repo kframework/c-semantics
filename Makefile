@@ -1,7 +1,9 @@
 BUILD_DIR = $(CURDIR)/.build
 K_SUBMODULE = $(BUILD_DIR)/k
 export K_OPTS := -Xmx8g -Xss32m
-export K_BIN ?= $(K_SUBMODULE)/k-distribution/target/release/k/bin
+export K_SUBMODULE_DIST := $(K_SUBMODULE)/k-distribution/target/release/k
+export K_SUBMODULE_BIN := $(K_SUBMODULE_DIST)/bin
+export K_BIN ?= $(K_SUBMODULE_BIN)
 export KOMPILE = $(K_BIN)/kompile -O2
 export KDEP = $(K_BIN)/kdep
 
@@ -28,6 +30,7 @@ FILES_TO_DIST = \
 	clang-tools/clang-kast \
 	clang-tools/call-sites \
 	scripts/cdecl-3.6/src/cdecl \
+	$(K_SUBMODULE_DIST) \
 	LICENSE \
 	licenses
 
@@ -48,21 +51,24 @@ define timestamp_of
     dist/profiles/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
-.PHONY: default check-vars semantics clean stdlibs deps c-cpp-semantics test-build pass fail fail-compile parser/cparser clang-tools/clang-kast $(PROFILE)-native
+.PHONY: default check-vars semantics clean stdlibs c-cpp-semantics test-build pass fail fail-compile parser/cparser clang-tools/clang-kast $(PROFILE)-native
 
 default: test-build
 
-deps: $(K_BIN)/kompile
-
-$(K_BIN)/kompile:
+$(K_SUBMODULE)/pom.xml:
 	@echo "== submodule: $@"
 	git submodule update --init -- $(K_SUBMODULE)
+
+$(K_SUBMODULE_DIST): $(K_SUBMODULE)/pom.xml
 	cd $(K_SUBMODULE) \
 		&& mvn package -q -Dhaskell.backend.skip -Dllvm.backend.skip -DskipTests -U
-	$(K_BIN)/k-configure-opam-dev
-	eval `opam config env`
 
-check-vars: deps
+$(K_SUBMODULE_BIN)/kompile: $(K_SUBMODULE_DIST)
+
+ocaml-deps: $(K_SUBMODULE)/pom.xml
+	$(K_SUBMODULE)/k-distribution/src/main/scripts/bin/k-configure-opam-dev
+
+check-vars: $(K_BIN)/kompile
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@if ! $(CC) -v > /dev/null 2>&1; then if ! clang -v > /dev/null 2>&1; then echo "ERROR: You don't seem to have gcc or clang installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi fi
 	@perl scripts/checkForModules.pl
@@ -165,7 +171,7 @@ test-build: stdlibs
 	@rm -f dist/testProgram.out
 	@echo "Done."
 
-parser/cparser:
+parser/cparser: ocaml-deps
 	@echo "Building the C parser..."
 	@$(MAKE) -C parser
 
@@ -210,9 +216,6 @@ fail:	test-build
 
 fail-compile:	test-build
 	@$(MAKE) -C tests/unit-fail-compilation comparison
-
-os-check:	test-build
-	@$(MAKE) -C tests/unit-pass os-comparison
 
 clean:
 	-$(MAKE) -C parser clean

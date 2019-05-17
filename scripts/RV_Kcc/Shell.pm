@@ -11,12 +11,12 @@ use File::Spec::Functions qw(catfile);
 use String::ShellQuote qw(shell_quote_best_effort);
 use Exporter;
 
-use RV_Kcc::Files qw(tempFile IS_CYGWIN);
+use RV_Kcc::Files qw(tempFile kBinDir IS_CYGWIN);
 
 use constant NULL => '/dev/null';
 
 use constant KBIN2TEXT         => do {
-	my $path = defined($ENV{'K_BIN'})? catfile($ENV{'K_BIN'}, 'k-bin-to-text') : 'k-bin-to-text';
+	my $path = kBinDir('k-bin-to-text');
 	my $ext = IS_CYGWIN? '.bat' : '';
 	$path . $ext;
 };

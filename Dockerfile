@@ -21,8 +21,6 @@ ENV LC_ALL en_US.UTF-8
 
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
-RUN curl -sSL https://get.haskellstack.org/ | sh
-
 RUN cpan install App::FatPacker Getopt::Declare String::Escape String::ShellQuote UUID::Tiny
 
 ARG USER_ID=1000
@@ -31,12 +29,3 @@ RUN    groupadd -g $GROUP_ID user                     \
     && useradd -m -u $USER_ID -s /bin/sh -g user user
 
 USER $USER_ID:$GROUP_ID
-
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.28.0
-
-ADD .build/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev .build/k/k-distribution/src/main/scripts/bin/k-configure-opam-common /home/user/.tmp-opam/bin/
-ADD .build/k/k-distribution/src/main/scripts/lib/opam  /home/user/.tmp-opam/lib/opam/
-RUN    cd /home/user \
-    && ./.tmp-opam/bin/k-configure-opam-dev
-
-RUN opam install linenoise
