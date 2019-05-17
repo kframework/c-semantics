@@ -169,11 +169,6 @@ module C-TYPING-SYNTAX
 
      syntax SimpleType ::= SimpleArrayType
                          | SimpleNonArrayType
-                         | SimpleEnumType
-                         | SimplePointerType
-                         | SimpleStructType
-                         | SimpleUnionType
-                         | SimpleFunctionType
      syntax SimpleUType ::= SimpleArrayUType
                           | SimpleNonArrayType
 
@@ -181,7 +176,7 @@ module C-TYPING-SYNTAX
                                  | SimplePointerType
                                  | SimpleStructType
                                  | SimpleUnionType
-                                | SimpleFunctionType
+                                 | SimpleFunctionType
 
      syntax SimpleArrayType ::= SimpleFixedArrayType | SimpleVariableArrayType | SimpleIncompleteArrayType
      syntax SimpleArrayUType ::= SimpleFixedArrayUType
