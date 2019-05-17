@@ -69,12 +69,13 @@ module CPP-TRACE-SYNTAX
                     | combine(Trace, Trace, Trace, ValueCategory, CPPType) [function, klabel(combine3)]
 
      syntax Expr ::= fillExpr(Expr, Expr) [function]
-     syntax Expr ::= fillExpr(Expr, Expr, Expr) [function, klabel(fillBinExpr)]
+     syntax Expr ::= fillExpr(Expr, Expr, K) [function, klabel(fillBinExpr)]
 
 endmodule // CPP-TRACE-SYNTAX
 
 module CPP-TRACE
      imports CPP-TRACE-SYNTAX // self
+     imports CPP-SYNTAX
 
      rule fillExpr(+ _, E::Expr) => + E
      rule fillExpr(- _, E::Expr) => - E
@@ -114,7 +115,7 @@ module CPP-TRACE
      rule fillExpr(_ && _, L::Expr, R::Expr) => L && R
      rule fillExpr(_ || _, L::Expr, R::Expr) => L || R
      rule fillExpr(Comma(_, _), L::Expr, R::Expr) => Comma(L, R)
-     rule fillExpr(CallExpr(_, _), L::Expr, R::Expr) => CallExpr(L, R)
+     rule fillExpr(CallExpr(_, _), L::Expr, R::StrictList) => CallExpr(L, R)
 
 
      // ...

@@ -1,8 +1,10 @@
 module CPP-TRANSLATION-PROMOTION
      imports BOOL
      imports CPP-DYNAMIC-SORTS
+     imports CPP-TRACE-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-SYNTAX
 
      syntax ResolvedExpr ::= arithBinConversionOp(Expr, Expr)
      rule arithBinConversionOp(L::Expr, R::Expr)
@@ -33,10 +35,10 @@ module CPP-TRANSLATION-PROMOTION
      rule - V:PRVal => - convertType(promote(promote(type(V))), V)
           requires (isCPPArithmeticType(type(V)) orBool isCPPEnumType(type(V)))
                andBool notBool isPromoted(type(V))
-     rule + V:PRVal => - convertType(promote(promote(type(V))), V)
+     rule + V:PRVal => + convertType(promote(promote(type(V))), V)
           requires (isCPPArithmeticType(type(V)) orBool isCPPEnumType(type(V)))
                andBool notBool isPromoted(type(V))
-     rule ~ V:PRVal => - convertType(promote(promote(type(V))), V)
+     rule ~ V:PRVal => ~ convertType(promote(promote(type(V))), V)
           requires (isCPPArithmeticType(type(V)) orBool isCPPEnumType(type(V)))
                andBool notBool isPromoted(type(V))
 

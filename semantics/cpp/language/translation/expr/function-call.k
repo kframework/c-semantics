@@ -11,7 +11,7 @@ module CPP-TRANSLATION-EXPR-FUNCTION-CALL
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule CallExpr((lv(_::K, Tr::Trace, t(... st: functionType(...)) #as T::CPPType) #Or le(_, Tr::Trace, t(... st: functionType(...)) #as T::CPPType)) #as V::Val, list(A::List), krlist(DArgs::List))
+     rule CallExpr((lv(_, Tr::Trace, t(... st: functionType(...)) #as T::CPPType) #Or le(_, Tr::Trace, t(... st: functionType(...)) #as T::CPPType)) #as V::Val, list(A::List), krlist(DArgs::List))
           => elabCall(V, isVirtualCall(Tr, T), A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
 
      rule CallExpr(_:KLabel(_::K, _::K, t(... st: pointerType(t(... st: functionType(...)) #as T::CPPType))) #as V:Val, list(A::List), krlist(DArgs::List))

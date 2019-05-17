@@ -1,8 +1,8 @@
 module CPP-EXECUTION-EXPR-ASSIGNMENT-SYNTAX
      imports BASIC-K
-     syntax KItem ::= fillRHoles(K, K) [function, klabel(fillRHolesCpp)]
+     syntax Expr ::= fillRHoles(K, K) [function, klabel(fillRHolesCpp)]
 
-     syntax KItem ::= fillLHoles(K, K) [function, klabel(fillLHolesCpp)]
+     syntax Expr ::= fillLHoles(K, K) [function, klabel(fillLHolesCpp)]
 endmodule
 
 module CPP-EXECUTION-EXPR-ASSIGNMENT
