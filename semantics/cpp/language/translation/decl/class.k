@@ -459,9 +459,9 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      syntax Init ::= copyOrMoveInitializeMember(Expr, CPPType) [function]
 
      // N4296 12.8:15.1
-     rule copyOrMoveInitializeMember(E::Expr, T:CPPArrayType) => BraceInit(copyOrMoveInitializeArrayMember(E, T))
+     rule copyOrMoveInitializeMember(E::Expr, t(... st: _:CPPSimpleArrayType) #as T::CPPType) => BraceInit(copyOrMoveInitializeArrayMember(E, T))
 
-     syntax List ::= copyOrMoveInitializeArrayMember(Expr, CPPArrayType) [function]
+     syntax List ::= copyOrMoveInitializeArrayMember(Expr, CPPType) [function]
 
      rule copyOrMoveInitializeArrayMember(_, t(... st: arrayType(_, 0))) => .List
 
@@ -471,7 +471,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           requires N >Int 0
 
      // N4296 12.8:15.2
-     rule copyOrMoveInitializeMember(E::Expr, T:CPPRVRefType) => StaticCast(T, E)
+     rule copyOrMoveInitializeMember(E::Expr, t(... st: rvRefType(...)) #as T::CPPType) => StaticCast(T, E)
 
      // N4296 12.8:15.3
      rule copyOrMoveInitializeMember(E::Expr, T::CPPType) => E [owise]
@@ -490,27 +490,27 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      // TODO: check non-template.
      // TODO function parameter packs are not allowed
      rule isCopyConstructor(
-               t(... st: functionType(... paramTypes: (t(... st: lvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPFunctionType,
+               t(... st: functionType(... paramTypes: (t(... st: lvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPType,
                envEntry(... defaultArgs: DA::DefaultArgumentsResult)
           ) => acceptsNArgs(1, T, getDefaultArgsVals(DA))
      rule isCopyConstructor(_, _) => false [owise]
 
-     rule isConstCopyConstructor(T::CPPFunctionType, K::K)
+     rule isConstCopyConstructor(T::CPPType, K::K)
           => isCopyConstructor(T, K) andBool  isConstType(innerType(firstParamOf(T)))
 
-     syntax CPPType ::= firstParamOf(CPPFunctionType) [function]
+     syntax CPPType ::= firstParamOf(CPPType) [function]
 
      rule firstParamOf(t(... st: functionType(... paramTypes: (T::CPPType, _)))) => T
 
      // @ref n4296 12.8:3 same as copy constructor, but rvalue reference
      rule isMoveConstructor(
-               t(... st: functionType(... paramTypes: (t(... st: rvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPFunctionType,
+               t(... st: functionType(... paramTypes: (t(... st: rvRefType(t(... st: classType(C::Class)))), _), methodInfo: methodInfo(... class: C::Class))) #as T::CPPType,
                envEntry(... defaultArgs: DA::DefaultArgumentsResult)
           ) => acceptsNArgs(1, T, getDefaultArgsVals(DA))
      rule isMoveConstructor(_, _) => false [owise]
 
-     syntax Bool ::= isExplicitlyDeclaredCopyConstructor(CPPFunctionType, K) [function]
-     rule isExplicitlyDeclaredCopyConstructor(T::CPPFunctionType, K::K) => isUserProvidedConstructor(T, K) andBool isCopyConstructor(T, K)
+     syntax Bool ::= isExplicitlyDeclaredCopyConstructor(CPPType, K) [function]
+     rule isExplicitlyDeclaredCopyConstructor(T::CPPType, K::K) => isUserProvidedConstructor(T, K) andBool isCopyConstructor(T, K)
 
      syntax Stmt ::= "TwriteVTables"
 

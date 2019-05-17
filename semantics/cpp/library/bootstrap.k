@@ -32,7 +32,7 @@ module LIBCPP-BOOTSTRAP
                    list(filterList(mapList(P, #klabel(`makeNamesFromCIds`)), #klabel(`isVarArg`)))))
           ...</k>
           <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
-          <functions>... Base |-> functionObject(F::QualId, T::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(F::QualId, T::CPPType, _, _) ...</functions>
           <curr-function-params> P::List </curr-function-params>
 
      syntax ExecName ::= makeNamesFromCIds(CId) [function]
