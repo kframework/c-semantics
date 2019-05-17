@@ -12,7 +12,7 @@ module CPP-EXECUTION-STMT-TRY
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule TryStmt({pushBlock(Tag::Int) ~> Rest:K}:>Block, Catch::List)
+     rule TryStmt(pushBlock(Tag::Int) ~> Rest:K, Catch::List)
           => pushBlock(Tag) ~> enterTryBlock(Catch) ~> Rest ~> tryMark(Tag)
 
      syntax KItem ::= enterTryBlock(List)
@@ -138,7 +138,7 @@ module CPP-EXECUTION-STMT-TRY
 
      syntax KItem ::= catchWithHandler(Stmt, LVal)
 
-     rule <k> catchWithHandler(CatchAnyOp({pushBlock(N::Int) ~> Rest:K}:>Stmt), V::LVal)
+     rule <k> catchWithHandler(CatchAnyOp(pushBlock(N::Int) ~> Rest:K), V::LVal)
               ~> tryMark(I::Int)
               => popBlock
               ~> pushBlock(N)
@@ -149,7 +149,7 @@ module CPP-EXECUTION-STMT-TRY
           ...</k>
           <block-history> ListItem(I) ...</block-history>
 
-     rule <k> catchWithHandler(CatchOp(_, {pushBlock(N::Int) ~> declareNonStaticObjectExec(... id: X::CId) #as D:KItem ~> Rest:K}:>Stmt), V::LVal)
+     rule <k> catchWithHandler(CatchOp(_, pushBlock(N::Int) ~> declareNonStaticObjectExec(... id: X::CId) #as D:KItem ~> Rest:K), V::LVal)
               ~> tryMark(I::Int)
               => popBlock
               ~> pushBlock(N)

@@ -25,73 +25,58 @@ module C-TYPING-EXPR
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax Bool ::= isTypeStrictUnaryKLabel(K) [function, klabelPredicate]
-                   | isTypeStrictBinaryFirstKLabel(K) [function, klabelPredicate]
-                   | isTypeStrictBinarySecondKLabel(K) [function, klabelPredicate]
+     context typeof(- (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(+ (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(! (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(~ (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(* (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(& (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(++ (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(-- (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) ++) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) --) [result(Type)]
+     context typeof(SizeofExpression(HOLE:KItem => typeof(HOLE))) [result(Type)]
 
-     rule isTypeStrictUnaryKLabel(#klabel(`-__C-SYNTAX`)) => true
-     rule isTypeStrictUnaryKLabel(#klabel(`+__C-SYNTAX`)) => true
-     rule isTypeStrictUnaryKLabel(#klabel(`!__C-SYNTAX`)) => true
-     rule isTypeStrictUnaryKLabel(#klabel(`~__C-SYNTAX`)) => true
-     rule isTypeStrictUnaryKLabel(#klabel(`*__C-SYNTAX`)) => true
-     rule isTypeStrictUnaryKLabel(#klabel(`&__C-SYNTAX`)) => true
-     rule isTypeStrictUnaryKLabel(#klabel(`++__C-SYNTAX`)) => true
-     rule isTypeStrictUnaryKLabel(#klabel(`--__C-SYNTAX`)) => true
-     rule isTypeStrictUnaryKLabel(#klabel(`_++_C-SYNTAX`)) => true
-     rule isTypeStrictUnaryKLabel(#klabel(`_--_C-SYNTAX`)) => true
-     rule isTypeStrictUnaryKLabel(#klabel(`SizeofExpression`)) => true
-     rule isTypeStrictUnaryKLabel(_) => false [owise]
+     context typeof((HOLE:KItem => typeof(HOLE)) * _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) / _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) % _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) + _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) - _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) == _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) != _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) & _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) ^ _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) | _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) && _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) || _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) << _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) >> _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) *= _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) /= _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) %= _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) += _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) -= _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) <<= _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) &= _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) ^= _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) |= _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) >>= _) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) := _) [result(Type)]
+     context typeof(Call((HOLE:KItem => typeof(HOLE)), _)) [result(Type)]
+     context typeof((HOLE:KItem => typeof(HOLE)) . _) [result(Type)]
 
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_*__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_/__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_%__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_+__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_-__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_==__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_!=__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_&__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_^__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_|__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_&&__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(#klabel(`_||__C-SYNTAX`)) => true
-     rule isTypeStrictBinarySecondKLabel(_) => false [owise]
-
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_*__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_/__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_%__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_+__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_-__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_==__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_!=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_&__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_^__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_|__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_&&__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_||__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_<<__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_>>__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_*=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_/=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_%=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_+=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_-=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_<<=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_&=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_^=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_|=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_>>=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_:=__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`Call`)) => true
-     rule isTypeStrictBinaryFirstKLabel(#klabel(`_.__C-SYNTAX`)) => true
-     rule isTypeStrictBinaryFirstKLabel(_) => false [owise]
-
-     context typeof(Lbl:KLabel(HOLE:KItem => typeof(HOLE)))
-          requires isTypeStrictUnaryKLabel(#klabel(Lbl)) [result(Type)]
-
-     context typeof(Lbl:KLabel((HOLE:KItem => typeof(HOLE)), _))
-          requires isTypeStrictBinaryFirstKLabel(#klabel(Lbl)) [result(Type)]
-     context typeof(Lbl:KLabel(_, (HOLE:KItem => typeof(HOLE))))
-          requires isTypeStrictBinarySecondKLabel(#klabel(Lbl)) [result(Type)]
+     context typeof(_ * (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(_ / (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(_ % (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(_ + (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(_ - (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(_ == (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(_ != (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(_ & (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(_ ^ (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(_ | (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(_ && (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context typeof(_ || (HOLE:KItem => typeof(HOLE))) [result(Type)]
 
      // primary expressions
      rule <k> typeof(X:CId => T:Type) ...</k>
@@ -267,7 +252,7 @@ module C-TYPING-EXPR
                => typeof(t(Qs +Quals Qs', Mods Mods', pointerType(compositeType(T, T')))))
           ~> K:KItem
           requires stripQualifiers(T) ==Type stripQualifiers(T')
-               andBool getKLabel(K) =/=K #klabel(`SizeofExpression`)
+               andBool SizeofExpression(...) :/=K K
 
      rule elaborateDone(V:K, _) ~> typeof(_ ? _ : (t(... st: pointerType(_)) #as T::Type))
           => typeof(T)
@@ -323,23 +308,22 @@ module C-TYPING-EXPR
           ~> elaborateDone(_, _) ~> typeof(_ ? structOrUnionType #as T::Type : (structOrUnionType #as T'::Type))
           requires T =/=Type T'
 
-     syntax Bool ::= isAssignmentKLabel(K) [function, klabelPredicate]
-     rule isAssignmentKLabel(#klabel(`_:=__C-SYNTAX`)) => true
-     rule isAssignmentKLabel(#klabel(`_*=__C-SYNTAX`)) => true
-     rule isAssignmentKLabel(#klabel(`_/=__C-SYNTAX`)) => true
-     rule isAssignmentKLabel(#klabel(`_%=__C-SYNTAX`)) => true
-     rule isAssignmentKLabel(#klabel(`_+=__C-SYNTAX`)) => true
-     rule isAssignmentKLabel(#klabel(`_-=__C-SYNTAX`)) => true
-     rule isAssignmentKLabel(#klabel(`_<<=__C-SYNTAX`)) => true
-     rule isAssignmentKLabel(#klabel(`_>>=__C-SYNTAX`)) => true
-     rule isAssignmentKLabel(#klabel(`_&=__C-SYNTAX`)) => true
-     rule isAssignmentKLabel(#klabel(`_^=__C-SYNTAX`)) => true
-     rule isAssignmentKLabel(#klabel(`_|=__C-SYNTAX`)) => true
-     rule isAssignmentKLabel(_) => false [owise]
+     syntax Expression ::= assignmentOp(K, K)
+     rule assignmentOp(L:K, R:K)
+         => ((L := R)
+        #Or ((L *= R)
+        #Or ((L /= R)
+        #Or ((L %= R)
+        #Or ((L += R)
+        #Or ((L -= R)
+        #Or ((L <<= R)
+        #Or ((L >>= R)
+        #Or ((L &= R)
+        #Or ((L ^= R)
+        #Or ((L |= R)))))))))))) [macro]
 
      // assignment expression
-     rule typeof(Lbl:KLabel(t(_, Mods::Set, T::SimpleType),_) => t(noQuals, Mods, T))
-          requires isAssignmentKLabel(#klabel(Lbl))
+     rule typeof(assignmentOp(t(_, Mods::Set, T::SimpleType),_) => t(noQuals, Mods, T))
 
      // comma expression
      rule typeof(Comma(list(_:List ListItem(K:KItem))) => K)
@@ -351,8 +335,12 @@ module C-TYPING-EXPR
           => isSpecifiedVariablyModifiedType(innerType(T))
      rule isSpecifiedVariablyModifiedType(t(... st: pointerType(_)) #as T::Type)
           => isSpecifiedVariablyModifiedType(innerType(T))
-     rule isSpecifiedVariablyModifiedType(t(_, _, functionType(T::UType, Params:List)))
-          => isSpecifiedVariablyModifiedType(type(T)) orBool some(Params, #klabel(`isSpecifiedVariablyModifiedType`))
+     rule isSpecifiedVariablyModifiedType(t(_, _, functionType(_, ListItem(T::UType) _))) => true
+          requires isSpecifiedVariablyModifiedType(type(T))
+     rule isSpecifiedVariablyModifiedType(t(_, _, functionType(T::UType, .List)))
+          => isSpecifiedVariablyModifiedType(type(T))
+     rule isSpecifiedVariablyModifiedType(t(_, _, functionType(_, (ListItem(T::UType) => .List) _)))
+          requires notBool isSpecifiedVariablyModifiedType(type(T))
      rule isSpecifiedVariablyModifiedType(t(_, _, variableLengthArrayType(_, _))) => true
      rule isSpecifiedVariablyModifiedType(_) => false [owise]
 

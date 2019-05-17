@@ -81,8 +81,81 @@ module COMPAT-SYNTAX
 
 endmodule
 
+module COMPAT-KAST [kast]
+     imports COMPAT-SYNTAX
+     imports MAP
+     imports BOOL
+     imports K-EQUAL
+
+     rule all(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel))
+          => Lbl(K) andBool all(L, #klabel(Lbl))
+     rule all(.List, _) => true
+
+     rule some(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel))
+          => Lbl(K) orBool some(L, #klabel(Lbl))
+     rule some(.List, _) => false
+
+     rule filterSet(SetItem(K:KItem) S:Set, #klabel(Pred:KLabel))
+          => #filterSet(K, S, #klabel(Pred))
+     rule filterSet(.Set, _)
+          => .Set
+
+     syntax Set ::= #filterSet(K, Set, K) [function]
+     rule #filterSet(K:KItem, .Set, #klabel(Pred:KLabel))
+          => SetItem(K)
+          requires Pred(K) ==K true
+     rule #filterSet(K:K, .Set, #klabel(Pred:KLabel))
+          => .Set
+          requires Pred(K) =/=K true
+     rule #filterSet(K:KItem, SetItem(K':KItem) S:Set, #klabel(Pred:KLabel))
+          => SetItem(K) #filterSet(K', S, #klabel(Pred))
+          requires Pred(K) ==K true
+     rule #filterSet(K:K, SetItem(K':KItem) S:Set, #klabel(Pred:KLabel))
+          => #filterSet(K', S, #klabel(Pred))
+          requires Pred(K) =/=K true
+
+     rule filterList(ListItem(K:KItem) L:List, #klabel(Pred:KLabel))
+          => #filterList(K, L, #klabel(Pred))
+     rule filterList(.List, _)
+          => .List
+
+     syntax List ::= #filterList(K, List, K) [function]
+     rule #filterList(K:KItem, .List, #klabel(Pred:KLabel))
+          => ListItem(K)
+          requires Pred(K) ==K true
+     rule #filterList(K:K, .List, #klabel(Pred:KLabel))
+          => .List
+          requires Pred(K) =/=K true
+     rule #filterList(K:KItem, ListItem(K':KItem) L:List, #klabel(Pred:KLabel))
+          => ListItem(K) #filterList(K', L, #klabel(Pred))
+          requires Pred(K) ==K true
+     rule #filterList(K:K, ListItem(K':KItem) L:List, #klabel(Pred:KLabel))
+          => #filterList(K', L, #klabel(Pred))
+          requires Pred(K) =/=K true
+
+     rule some(S:Set, Lbl:K) => some'(.K, S, Lbl)
+
+     syntax Bool ::= "some'" "(" K "," Set "," K ")" [function]
+     rule some'(.K, SetItem(K:KItem) S:Set, Lbl:K) => some'(K, S, Lbl)
+     rule some'(K:K, _, #klabel(Lbl:KLabel)) => true
+          requires Lbl(K) ==K true
+     rule some'(K:K, S:Set, #klabel(Lbl:KLabel)) => some'(.K, S, #klabel(Lbl))
+          requires Lbl(K) =/=K true
+               andBool (K =/=K .K)
+     rule some'(.K, .Set, _) => false
+
+     rule some(.Map::Map, Lbl:K) => false
+     rule some(K1:KItem |-> K2:KItem M::Map, #klabel(Lbl:KLabel)) => Lbl(K1, K2) orBool some(M, #klabel(Lbl)) [owise]
+
+     rule mapList(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel)) => ListItem(Lbl(K)) mapList(L, #klabel(Lbl))
+     rule mapList(.List, _) => .List
+     rule flatMapList(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel)) => {Lbl(K)}:>List flatMapList(L, #klabel(Lbl))
+     rule flatMapList(.List, _) => .List
+endmodule
+
 module COMPAT
      imports COMPAT-SYNTAX
+     imports COMPAT-KAST
      imports C-TYPING-SYNTAX
      imports C-CONFIGURATION
      imports K-REFLECTION
@@ -134,14 +207,6 @@ module COMPAT
           requires lengthString(S) >=Int 2
      rule butFirstChar(_) => "" [owise]
 
-     rule all(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel))
-          => Lbl(K) andBool all(L, #klabel(Lbl))
-     rule all(.List, _) => true
-
-     rule some(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel))
-          => Lbl(K) orBool some(L, #klabel(Lbl))
-     rule some(.List, _) => false
-
      rule toUpperCase("") => ""
      rule toUpperCase(C::String) => C
           requires (lengthString(C) ==Int 1)
@@ -186,7 +251,7 @@ module COMPAT
      rule toSSList(.List) => .SSList
      rule ofSSList(krlist(L1::List) seqstrict:: L2::SSList) => L1 ofSSList(L2)
      rule ofSSList(.SSList) => .List
-     rule ofSSList(K:K seqstrict:: L::SSList) => ListItem(K) ofSSList(L) [owise]
+     rule ofSSList(K:KItem seqstrict:: L::SSList) => ListItem(K) ofSSList(L) [owise]
 
      syntax KItem ::= "strict()"
      rule list(HOLE:List) => toSList(HOLE) ~> strict() [heat]
@@ -200,7 +265,7 @@ module COMPAT
      rule toSList(.List) => .SList
      rule ofSList(krlist(L1::List) strict:: L2::SList) => L1 ofSList(L2)
      rule ofSList(.SList) => .List
-     rule ofSList(K:K strict:: L::SList) => ListItem(K) ofSList(L) [owise]
+     rule ofSList(K:KItem strict:: L::SList) => ListItem(K) ofSList(L) [owise]
 
      syntax List ::= reverseAppendList(List, List) [function]
      rule reverseAppendList(.List, L::List) => L
@@ -220,76 +285,19 @@ module COMPAT
           requires N <Int N'
 
      rule times(0, _) => .List
-     rule times(N:Int, K:K) => ListItem(K) times(N -Int 1, K)
+     rule times(N:Int, K:KItem) => ListItem(K) times(N -Int 1, K)
           requires N >Int 0
-
-     rule filterSet(SetItem(K:KItem) S:Set, #klabel(Pred:KLabel))
-          => #filterSet(K, S, #klabel(Pred))
-     rule filterSet(.Set, _)
-          => .Set
-
-     syntax Set ::= #filterSet(K, Set, K) [function]
-     rule #filterSet(K:K, .Set, #klabel(Pred:KLabel))
-          => SetItem(K)
-          requires Pred(K) ==K true
-     rule #filterSet(K:K, .Set, #klabel(Pred:KLabel))
-          => .Set
-          requires Pred(K) =/=K true
-     rule #filterSet(K:K, SetItem(K':KItem) S:Set, #klabel(Pred:KLabel))
-          => SetItem(K) #filterSet(K', S, #klabel(Pred))
-          requires Pred(K) ==K true
-     rule #filterSet(K:K, SetItem(K':KItem) S:Set, #klabel(Pred:KLabel))
-          => #filterSet(K', S, #klabel(Pred))
-          requires Pred(K) =/=K true
-
-     rule filterList(ListItem(K:KItem) L:List, #klabel(Pred:KLabel))
-          => #filterList(K, L, #klabel(Pred))
-     rule filterList(.List, _)
-          => .List
-
-     syntax List ::= #filterList(K, List, K) [function]
-     rule #filterList(K:K, .List, #klabel(Pred:KLabel))
-          => ListItem(K)
-          requires Pred(K) ==K true
-     rule #filterList(K:K, .List, #klabel(Pred:KLabel))
-          => .List
-          requires Pred(K) =/=K true
-     rule #filterList(K:K, ListItem(K':KItem) L:List, #klabel(Pred:KLabel))
-          => ListItem(K) #filterList(K', L, #klabel(Pred))
-          requires Pred(K) ==K true
-     rule #filterList(K:K, ListItem(K':KItem) L:List, #klabel(Pred:KLabel))
-          => #filterList(K', L, #klabel(Pred))
-          requires Pred(K) =/=K true
 
      rule listToSet(ListItem(K:KItem) Tail::List) => SetItem(K) listToSet(Tail)
      rule listToSet(.List) => .Set
 
-     rule some(S:Set, Lbl:K) => some'(.K, S, Lbl)
-
-     syntax Bool ::= "some'" "(" K "," Set "," K ")" [function]
-     rule some'(.K, SetItem(K:KItem) S:Set, Lbl:K) => some'(K, S, Lbl)
-     rule some'(K:K, _, #klabel(Lbl:KLabel)) => true
-          requires Lbl(K) ==K true
-     rule some'(K:K, S:Set, #klabel(Lbl:KLabel)) => some'(.K, S, #klabel(Lbl))
-          requires Lbl(K) =/=K true
-               andBool (K =/=K .K)
-     rule some'(.K, .Set, _) => false
-
-     rule some(.Map::Map, Lbl:K) => false
-     rule some(K1:KItem |-> K2:KItem M::Map, #klabel(Lbl:KLabel)) => Lbl(K1, K2) orBool some(M, #klabel(Lbl)) [owise]
-
      rule ceilDiv(X:Int, Y:Int) => (X +Int Y -Int 1) /Int Y
 
-     rule mapList(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel)) => ListItem(Lbl(K)) mapList(L, #klabel(Lbl))
-     rule mapList(.List, _) => .List
-     rule flatMapList(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel)) => {Lbl(K)}:>List flatMapList(L, #klabel(Lbl))
-     rule flatMapList(.List, _) => .List
+     rule ((A |-> S::Set) M::Map) [A:KItem += B:KItem] => (A |-> (S SetItem(B))) M
+     rule M::Map [A:KItem += B:KItem] => M A |-> SetItem(B) [owise]
 
-     rule ((A |-> S::Set) M::Map) [A:K += B:K] => (A |-> (S SetItem(B))) M
-     rule M::Map [A:K += B:K] => M A |-> SetItem(B) [owise]
-
-     rule ((A |-> M2::Map) M1::Map) [A:K <+ B::Map] => (A |-> (M2 B)) M1
-     rule M::Map [A:K <+ B::Map] => M A |-> B [owise]
+     rule ((A |-> M2::Map) M1::Map) [A:KItem <+ B::Map] => (A |-> (M2 B)) M1
+     rule M::Map [A:KItem <+ B::Map] => M A |-> B [owise]
 
      rule fst(kpair(K:K, _)) => K
      rule snd(kpair(_, K:K)) => K

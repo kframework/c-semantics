@@ -20,6 +20,8 @@ module C-TYPING-MISC
      rule correspondingUnsignedType(ut(S::Set, T:SimpleSignedType))
           => ut(S, flipSignedness(T))
           requires notBool isSimpleEnumType(T)
+     rule correspondingUnsignedType(ut(S::Set, bitfieldType(_:SimpleSignedType, _) #as T::SimpleIntegerType))
+          => ut(S, flipSignedness(T))
      rule correspondingUnsignedType(ut(S::Set, enumType(Tag::TagId)))
           => correspondingUnsignedType(ut(S, getEnumAlias(Tag)))
      rule correspondingUnsignedType(T::UType) => T [owise]
@@ -27,6 +29,8 @@ module C-TYPING-MISC
      rule correspondingSignedType(ut(S::Set, T:SimpleUnsignedType))
           => ut(S, flipSignedness(T))
           requires notBool isSimpleEnumType(T)
+     rule correspondingSignedType(ut(S::Set, bitfieldType(_:SimpleUnsignedType, _) #as T::SimpleIntegerType))
+          => ut(S, flipSignedness(T))
      rule correspondingSignedType(ut(S::Set, enumType(Tag::TagId)))
           => correspondingSignedType(ut(S, getEnumAlias(Tag)))
      rule correspondingSignedType(T::UType) => T [owise]
@@ -119,12 +123,9 @@ module C-TYPING-MISC
      rule stripSpecifiers(T:Type) => stripStorageSpecifiers(stripFunctionSpecifiers(T))
 
      syntax UType ::= stripReadFrom(UType) [function]
-     rule stripReadFrom(ut(Mods::Set, T::SimpleUType))
-          => ut(filterSet(Mods, #klabel(`isNotReadFrom`)), T)
-
-     syntax Bool ::= isNotReadFrom(Modifier) [function]
-     rule isNotReadFrom(readFrom(_, _)) => false
-     rule isNotReadFrom(_) => true [owise]
+     rule stripReadFrom(ut((SetItem(K:KItem) => .Set) _, _))
+          requires readFrom(...) :=K K
+     rule stripReadFrom(T::UType) => T [owise]
 
      rule stripConstants(ut(Mods::Set, T::SimpleUType)) => ut(Mods -Set constantModifiers, T)
      rule stripConstants(t(Qs::Quals, Mods::Set, T::SimpleType)) => t(Qs, Mods -Set constantModifiers, T)
@@ -275,14 +276,24 @@ module C-TYPING-MISC
           => setFieldType(F', A, T)
      rule setActiveVariant(_, T::Type) => T [owise]
 
-     rule mergeVariants(t(_, SetItem(activeVariant(F::CId)) _, unionType(_)) #as T::Type,
-               t(_, SetItem(activeVariant(F)) _, unionType(_)) #as T'::Type)
-          => setFieldType(F, {mergeVariants(getFieldType(F, T), getFieldType(F, T'))}:>Type, T')
-     rule mergeVariants(t(_, SetItem(elementTypes(ETs::Map)) _, _:SimpleArrayType), t(_, SetItem(elementTypes(ETs'::Map)) _, _:SimpleArrayType) #as T'::Type)
-          => setElementTypes(mergeElementVariants(ETs, ETs'), T')
+     rule mergeVariants(t(_, SetItem(activeVariant(F::CId)) _, unionType(_)) #as T::Type, T'::Type)
+          => mergeUnionVariants(F, T, T')
+     rule mergeVariants(t(_, SetItem(elementTypes(ETs::Map)) _, _:SimpleArrayType), T'::Type)
+          => mergeArrayVariants(ETs, T')
      rule mergeVariants(t(... st: structType(...)) #as T::Type, t(... st: structType(...)) #as T'::Type)
           => mergeStructVariants(T, T', getFieldNames(T'))
      rule mergeVariants(_, T'::EffectiveType) => T' [owise]
+
+     syntax EffectiveType ::= mergeUnionVariants(CId, Type, Type) [function]
+     rule mergeUnionVariants(F::CId, T::Type,
+               t(_, SetItem(activeVariant(F)) _, unionType(_)) #as T'::Type)
+          => setFieldType(F, {mergeVariants(getFieldType(F, T), getFieldType(F, T'))}:>Type, T')
+     rule mergeUnionVariants(_, _, T'::Type) => T' [owise]
+
+     syntax EffectiveType ::= mergeArrayVariants(Map, Type) [function]
+     rule mergeArrayVariants(ETs::Map, t(_, SetItem(elementTypes(ETs'::Map)) _, _:SimpleArrayType) #as T'::Type)
+          => setElementTypes(mergeElementVariants(ETs, ETs'), T')
+     rule mergeArrayVariants(_, T'::Type) => T' [owise]
 
      syntax Map ::= mergeElementVariants(Map, Map) [function]
      rule mergeElementVariants((N:Int |-> T::Type) ETs::Map, ETs'::Map)
@@ -516,10 +527,6 @@ module C-TYPING-MISC
                andBool notBool isVoidType(P)
      rule toPrototype(T::Type) => T [owise]
 
-     rule isStructOrUnionKLabel(#klabel(`structType`)) => true
-     rule isStructOrUnionKLabel(#klabel(`unionType`)) => true
-     rule isStructOrUnionKLabel(_) => false [owise]
-
      rule makeStructFieldInfo(Pack::Bool, Fs::List)
           => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)
 
@@ -573,7 +580,10 @@ module C-TYPING-MISC
      rule roundBits(N::Int, A::Int)
           => N +Int ((A *Int cfg:bitsPerByte) -Int (N %Int (A *Int cfg:bitsPerByte))) [owise]
 
-     rule allComplete(L::List) => all(mapList(L, #klabel(`type`)), #klabel(`isCompleteType`))
+     rule allComplete(ListItem(V:KItem) _) => false
+          requires notBool isCompleteType(type(V))
+     rule allComplete(.List) => true
+     rule allComplete((ListItem(_) => .List) _) [owise]
 
      rule makeUnionFieldInfo(Pack::Bool, Fs::List)
           => makeUnionFieldInfo'(Pack, Fs, .Map, .Map, .List)

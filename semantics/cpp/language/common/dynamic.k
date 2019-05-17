@@ -503,6 +503,9 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KItem ::= odrDecl(String, QualId, CId, LanguageLinkage, CPPType)
 
+     syntax Stmt ::= compoundStmt(Stmt, Stmt)
+     syntax Stmt ::= nullStmt()
+
 endmodule // CPP-DYNAMIC-OTHER-SYNTAX
 
 module CPP-DYNAMIC-OTHER
@@ -627,7 +630,7 @@ module CPP-DYNAMIC-OTHER
 
      rule ofSPRValList(.SPRValList) => .List
 
-     rule ofSPRValList(K:K prval:: L::SPRValList) => ListItem(K) ofSPRValList(L) [owise]
+     rule ofSPRValList(K:KItem prval:: L::SPRValList) => ListItem(K) ofSPRValList(L) [owise]
 
      context (HOLE:Expr => reval(HOLE)) prval:: _ [result(EPRVal)]
 
@@ -658,7 +661,7 @@ module CPP-DYNAMIC-OTHER
 
      rule ofSTypeStrictList(.STypeStrictList) => .List
 
-     rule ofSTypeStrictList(K:K typeStrict:: L::STypeStrictList) => ListItem(K) ofSTypeStrictList(L) [owise]
+     rule ofSTypeStrictList(K:KItem typeStrict:: L::STypeStrictList) => ListItem(K) ofSTypeStrictList(L) [owise]
 
      context HOLE:AType typeStrict:: _ [result(CPPType)]
 
@@ -809,18 +812,18 @@ module CPP-DYNAMIC-OTHER
 
      rule showSignature(Q::QualId, t(_, _, functionType(... paramTypes: T::CPPTypes))) => showQualId(Q) +String "(" +String showCPPTypes(T) +String ")"
 
-     rule X:K, T:CPPType in_keys(M::Map) => (X in_keys(M)) andBool (T in_keys({M[X]}:>TypeMap))
+     rule X:KItem, T:CPPType in_keys(M::Map) => (X in_keys(M)) andBool (T in_keys({M[X]}:>TypeMap))
 
-     rule X:K, Y:K in_keys(M::Map) => (X in_keys(M)) andBool (Y in_keys({M[X]}:>Map)) [owise]
+     rule X:KItem, Y:KItem in_keys(M::Map) => (X in_keys(M)) andBool (Y in_keys({M[X] orDefault .Map}:>Map)) [owise]
 
-     rule ((A |-> M2:TypeMap) M1::Map) [A:K, B:CPPType <- C:K] => (A |-> (M2[B <- C])) M1
+     rule ((A |-> M2:TypeMap) M1::Map) [A:KItem, B:CPPType <- C:KItem] => (A |-> (M2[B <- C])) M1
 
-     rule ((A |-> M2::Map) M1::Map) [A:K, B:K <- C:K] => (A |-> (M2[B <- C])) M1
+     rule ((A |-> M2::Map) M1::Map) [A:KItem, B:KItem <- C:KItem] => (A |-> (M2[B <- C])) M1
           requires notBool isCPPType(B)
 
-     rule M::Map [A:K, B:CPPType <- C:K] => M A |-> (B |-> C) [owise]
+     rule M::Map [A:KItem, B:CPPType <- C:KItem] => M A |-> (B |-> C) [owise]
 
-     rule M::Map [A:K, B:K <- C:K] => M A |-> (B |-> C)::Map
+     rule M::Map [A:KItem, B:KItem <- C:KItem] => M A |-> (B |-> C)::Map
           requires notBool isCPPType(B)
           [owise]
 
@@ -959,6 +962,9 @@ module CPP-DYNAMIC-OTHER
 
      // is given prval fully evaluated?
      rule isEPRVal(E:PRVal) => Translation() orBool isPRV(E)
+
+     rule compoundStmt(S1::Stmt, S2::Stmt) => S1 ~> S2
+     rule nullStmt() => .K
 
      rule idOf(Class(_, X::CId, _)) => X
 

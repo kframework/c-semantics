@@ -7,10 +7,12 @@ module CPP-TRANSLATION-DECL-LINKAGE
 
      syntax KItem ::= setLinkage(LanguageLinkage, Bool)
 
+     syntax LanguageLinkage ::= "stuck"
+
      rule <k> LinkageSpec(Linkage:String, HasBraces:Bool, Decls:List)
 
               // error checking handled by parser
-              => setLinkage(#if Linkage ==String "C" #then CLinkage #else #if Linkage ==String "C++" #then CPPLinkage #else .K #fi #fi,
+              => setLinkage(#if Linkage ==String "C" #then CLinkage #else #if Linkage ==String "C++" #then CPPLinkage #else stuck #fi #fi,
                             #if notBool HasBraces #then true #else OldExtern #fi)
               ~> listToK(Decls)
               ~> setLinkage(OldLinkage, OldExtern)

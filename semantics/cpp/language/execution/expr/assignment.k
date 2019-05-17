@@ -48,7 +48,7 @@ module CPP-EXECUTION-EXPR-ASSIGNMENT
           => Lbl(fillRHoles(V, L), fillRHoles(V, M), fillRHoles(V, R))
           requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
 
-     rule fillRHoles(_, K:K) => K [owise]
+     rule fillRHoles(_, K:KItem) => K [owise]
 
      rule fillLHoles(V::LVal, LHOLE) => V
 
@@ -64,6 +64,6 @@ module CPP-EXECUTION-EXPR-ASSIGNMENT
           => Lbl(fillLHoles(V, L), fillLHoles(V, M), fillLHoles(V, R))
           requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
 
-     rule fillLHoles(_, K:K) => K [owise]
+     rule fillLHoles(_, K:KItem) => K [owise]
 
 endmodule

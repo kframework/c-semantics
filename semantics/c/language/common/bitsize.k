@@ -43,17 +43,14 @@ module C-BITSIZE
      rule bitSizeofType(ut(_, T'::SimpleUType) #as T::UType) => bitSizeofSimpleType(T')
           requires notBool isStructOrUnionType(type(T))
 
-     syntax Int ::= bitSizeofSimpleType(SimpleType) [function]
-                  | bitSizeofSimpleType(SimpleUType) [function]
+     syntax Int ::= bitSizeofSimpleType(SimpleUType) [function]
      rule bitSizeofSimpleType(no-type) => 0
      rule bitSizeofSimpleType(arrayUType(T::UType, N::Int)) => bitSizeofType(T) *Int N
-     rule bitSizeofSimpleType(arrayType(T::Type, N::Int)) => bitSizeofType(T) *Int N
-     rule bitSizeofSimpleType(flexibleArrayType(_)) => 0
      rule bitSizeofSimpleType(flexibleArrayUType(_)) => 0
      rule bitSizeofSimpleType(functionType(_, _)) => cfg:bitsPerByte
      rule bitSizeofSimpleType(pointerType(_)) => cfg:ptrsize *Int cfg:bitsPerByte
      rule bitSizeofSimpleType(bitfieldType(_, N::Int)) => N
-     rule bitSizeofSimpleType(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte [owise]
+     rule bitSizeofSimpleType(T::SimpleUType) => numBytes(T) *Int cfg:bitsPerByte [owise]
 
      syntax Int ::= "maxByteSizeofList'" "(" Int "," List ")" [function]
      rule maxByteSizeofList(L:List) => maxByteSizeofList'(0, L)

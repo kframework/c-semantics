@@ -27,6 +27,8 @@ module CPP-TYPE-MAP-SYNTAX
 
      syntax TypeMap ::= TypeMap "[" CPPType "<-" "undef" "]" [function]
 
+     syntax TypeMap ::= updateMap(TypeMap, TypeMap) [function, klabel(updateAllTypeMap), hook(MAP.updateAll)]
+
      syntax Map ::= Map "[" KItem "<+" TypeMap "]" [function]
 
      syntax Bool ::= CPPType "in_keys" "(" TypeMap ")" [function]

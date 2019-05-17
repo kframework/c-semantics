@@ -12,7 +12,7 @@ module CPP-EXECUTION-STMT-GOTO
                Base |-> (_::Map Lbl |-> K:KItem)
           ...</goto-map>
 
-     syntax KItem ::= "preprocessGoto" "(" KItem "," CId ")" [function]
+     syntax K ::= "preprocessGoto" "(" KItem "," CId ")" [function]
 
      rule preprocessGoto(gotoObject(_, _, Blk:K, _, _), funLabel(_))
           => Blk

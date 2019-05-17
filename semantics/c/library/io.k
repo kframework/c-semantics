@@ -28,7 +28,7 @@ module LIBC-IO-SYNTAX
      syntax KItem ::= "getString'" "(" SymLoc ")" [function]
                     | "getString'" "(" SymLoc "," Int ")" [function]
                     | "getWString'" "(" SymLoc ")" [function]
-                    | "getWString'" "(" SymLoc "," Int ")" [function]
+                    | "getWString'" "(" SymLoc "," K ")" [function]
 
      syntax KItem ::= newFixedObject(K) [strict]
 

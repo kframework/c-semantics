@@ -9,7 +9,7 @@ module C-STMT-LOOP
      imports C-SYNTAX
      imports C-TRANSLATION-ERROR-SYNTAX
 
-     rule For(Tag:Int, E1:K, E2:K, E3:K, B:K)
+     rule For(Tag:Int, E1:KItem, E2:K, E3:K, B:K)
           => Block(Tag, list(ListItem(E1) ListItem(For(E2, E3, B))))
 
      // This is the first child of the for if it's not a declaration.
