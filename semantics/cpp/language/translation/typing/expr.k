@@ -112,8 +112,8 @@ module CPP-TRANSLATION-TYPING-EXPR
      rule typeof(NullPointerLiteral() => type(nullptr_t))
 
      context typeof(HOLE:TypeExpr)
-             requires Name(...) :=K HOLE
-                  orBool CallExpr(...) :=K HOLE
+             requires Name(_, _) :=K HOLE
+                  orBool CallExpr(_, _, _) :=K HOLE
                   orBool _ . _ _ :=K HOLE
                   orBool & _ :=K HOLE
 

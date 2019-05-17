@@ -583,7 +583,7 @@ module CPP-TRANSLATION-NAME
      syntax Set ::= getAssociatedNamespaces(List, NamespacesCell) [function]
                    | #getAssociatedNamespaces(Set, NamespacesCell) [function]
 
-     syntax List ::= getAssociatedClasses(CPPType) [function]
+     syntax List ::= getAssociatedClasses(List) [function]
                    | #getAssociatedClasses(CPPType, ClassInfo) [function]
                    | getTemplateArgTypes(TemplateArgs) [function]
 
@@ -594,7 +594,7 @@ module CPP-TRANSLATION-NAME
 
      // @ref n4296 3.4.2:2.2
      rule getAssociatedNamespaces(ListItem(t(... st: classType(_ :: Class(_, _, Args::TemplateArgs))) #as T::CPPType) L::List, B::NamespacesCell)
-          => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(T), #klabel(`getInnermostNamespace1`))), B)
+          => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(ListItem(T)), #klabel(`getInnermostNamespace1`))), B)
 
      // @ref n4296 3.4.2:2.3
      rule getAssociatedNamespaces(ListItem(t(_, _, scopedEnum(N::Namespace :: _, _))) L::List, B::NamespacesCell)
@@ -627,11 +627,12 @@ module CPP-TRANSLATION-NAME
 
      rule #getAssociatedNamespaces(S::Set, _) => S [owise]
 
-     rule getAssociatedClasses(T::CPPType) => #getAssociatedClasses(T, getClassInfo(T))
+     rule getAssociatedClasses(.List) => .List
+     rule getAssociatedClasses(ListItem(T::CPPType) L::List) => #getAssociatedClasses(T, getClassInfo(T)) getAssociatedClasses(L)
 
      rule #getAssociatedClasses(t(... st: classType(N:Namespace :: C::ClassSpecifier)), #incomplete) => ListItem(classScope(N :: C, true))
 
-     rule #getAssociatedClasses(t(... st: classType(N:Namespace :: C::ClassSpecifier)), <class>... <base-classes> Bases::List </base-classes> ...</class>) => ListItem(classScope(N :: C, true)) flatMapList(mapList(mapList(Bases, #klabel(`classType`)), #klabel(`cppType`)), #klabel(`getAssociatedClasses`))
+     rule #getAssociatedClasses(t(... st: classType(N:Namespace :: C::ClassSpecifier)), <class>... <base-classes> Bases::List </base-classes> ...</class>) => ListItem(classScope(N :: C, true)) getAssociatedClasses(mapList(mapList(Bases, #klabel(`classType`)), #klabel(`cppType`)))
 
      rule getTemplateArgTypes(t(Q::Quals, Mods::Set, T::CPPSimpleType), Ps::TemplateArgs) => ListItem(t(Q, Mods, T)) getTemplateArgTypes(Ps)
 

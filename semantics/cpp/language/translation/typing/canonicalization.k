@@ -140,7 +140,7 @@ module CPP-TRANSLATION-TYPING-CANONICALIZATION
      rule (.K => typeof(E)) ~> Decltype(E::Expr)
 
      rule (.K => catof(E)) ~> typeof(T:CPPType) ~> Decltype(E::Expr)
-          requires Name(...) :/=K E
+          requires Name(_, _) :/=K E
 
      rule typeof(T:CPPType) ~> Decltype(Name(_, _)) => T
 

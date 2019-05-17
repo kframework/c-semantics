@@ -57,7 +57,7 @@ module CPP-TRANSLATION-DECL-CLASS-SYNTAX
                              | "hasUserProvidedMoveAssignOp"
                              | "hasUserProvidedMoveConstructor"
                              | "hasUserProvidedCopyConstructor"
-     syntax Bool ::= some(List, ClassPredicate) [function, klabel(someClass)]
+     syntax Bool ::= some(List, ClassPredicate) [function, klabel(someClass), prefer]
 
      syntax Bool ::= isPODLayoutType(CPPType) [function]
 

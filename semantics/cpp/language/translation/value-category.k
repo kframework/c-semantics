@@ -101,8 +101,8 @@ module CPP-TRANSLATION-VALUE-CATEGORY
      rule catof(NullPointerLiteral() => prvalue)
 
      context catof(HOLE:CatExpr)
-             requires Name(...) :=K HOLE
-                  orBool CallExpr(...) :=K HOLE
+             requires Name(_, _) :=K HOLE
+                  orBool CallExpr(_, _, _) :=K HOLE
                   orBool _ . _ _ :=K HOLE
 
      rule catof(L:LVal => lvalue)
