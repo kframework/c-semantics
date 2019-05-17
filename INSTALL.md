@@ -11,19 +11,13 @@ do any installation steps not listed explicitly.
 
 We recommend using Linux or OSX on a computer with at least 1 GB of memory.
 
-On Ubuntu 16.04, the installation process for our C semantics can be summarized as:
+On Ubuntu 18.04, the installation process for our C semantics can be summarized as:
 ```
-$ sudo apt-get install maven git openjdk-8-jdk flex libgmp-dev libmpfr-dev build-essential cmake zlib1g-dev libclang-3.9-dev llvm-3.9 diffutils libuuid-tiny-perl libxml-libxml-perl libstring-escape-perl libstring-shellquote-perl libgetopt-declare-perl opam pkg-config libapp-fatpacker-perl
-$ git clone --depth=1 https://github.com/runtimeverification/k.git
-$ cd k
-$ mvn package
-$ export PATH=$PATH:`pwd`/k-distribution/target/release/k/bin
-$ mvn dependency:copy -Dartifact=com.runtimeverification.rv_match:ocaml-backend:1.0-SNAPSHOT -DoutputDirectory=k-distribution/target/release/k/lib/java
-$ cd ..
+$ sudo apt-get install maven git openjdk-8-jdk flex libgmp-dev libmpfr-dev build-essential cmake zlib1g-dev libclang-3.9-dev llvm-3.9 diffutils libuuid-tiny-perl libstring-escape-perl libstring-shellquote-perl libgetopt-declare-perl opam pkg-config libapp-fatpacker-perl
 $ git clone --depth=1 https://github.com/kframework/c-semantics.git
-$ k-configure-opam-dev
-$ eval `opam config env`
 $ cd c-semantics
+$ make ocaml-deps
+$ eval $(opam config env)
 $ make -j4
 $ export PATH=$PATH:`pwd`/dist
 ```
