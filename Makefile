@@ -171,7 +171,7 @@ test-build: stdlibs
 	@rm -f dist/testProgram.out
 	@echo "Done."
 
-parser/cparser: ocaml-deps
+parser/cparser:
 	@echo "Building the C parser..."
 	@$(MAKE) -C parser
 
