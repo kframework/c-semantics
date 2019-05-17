@@ -77,18 +77,31 @@ module CPP-TRANSLATION-EXPR-CAST
      // this is needed to be able to treat certain expressions as constant expressions.
      // it should be safe since the side condition guarantees that the initialization
      // we are conceptually performing is well formed and would simply perform this conversion
-     rule convertStatic(T::CPPType, V:PRVal, Tr2::Trace)
+     rule convertStatic(T::CPPType, V:PRVal, _)
           => convertType(T, V)
           requires canConvertWithStandardConversion(T, type(V), prvalue)
                andBool notBool isCPPRefType(T) andBool notBool isCPPArrayType(T)
                andBool notBool isCPPClassType(T) andBool notBool isCPPClassType(type(V))
 
+     // @ref n4800 7.6.1.8:3
+     rule convertStatic(T:CPPRVRefType, V:LVal, Tr::Trace)
+          =>
+          #if notBool isCPPBitFieldType(type(V)) #then
+               le(stripHold(V), trace(V), T)
+          #else
+               not-implemented // TODO (h0nzZik)
+          #fi
+          requires isReferenceCompatible(T, type(V))
+
+     // @ref n4800 7.6.1.8:4
      rule convertStatic(T::CPPType, V::Val, Tr::Trace)
           => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, V, DirectInit())) [owise]
 
+     rule tryInit(_, _, V:Val) => V
+
+     // @ref n4800 7.6.1.8:5
      rule tryInit(T::CPPType, V::Val, ill-formed) => #convertStatic(T, makePRVal(V))
 
-     rule tryInit(_, _, V:Val) => V
 
 
      // @ref n4800 7.6.1.8:6
