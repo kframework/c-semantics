@@ -195,7 +195,7 @@ module C-MEMORY-WRITING
           ~> initStructPadding(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, (SetItem(I::Int) => .Set) _), Trap::Bool)
      rule initStructPadding(_, fieldInfo(_, _, _, _, .Set), _) => .K
 
-     syntax KItem ::= initFieldPadding(SymLoc, Type, CId, Bool) [function]
+     syntax K ::= initFieldPadding(SymLoc, Type, CId, Bool) [function]
      rule initFieldPadding(Loc::SymLoc, T::Type, F::CId, Trap::Bool)
           => initPaddingByte(Loc +bits (getFieldOffset(F, T) +Int bitSizeofType(getFieldType(F, T))), Trap)
           requires isBitfieldType(getFieldType(F, T))

@@ -323,9 +323,10 @@ module C-COMMON-PROMOTION
      rule argPromoteType(T::UType) => T [owise]
 
      // "are argument-promoted".
-     rule areArgPromoted(L:List) => true
-          requires all(L, #klabel(`isArgPromoted`))
-     rule areArgPromoted(_) => false [owise]
+     rule areArgPromoted(ListItem(K:KItem) L:List) => false
+          requires notBool isArgPromoted(K)
+     rule areArgPromoted(.List) => true
+     rule areArgPromoted((ListItem(_) => .List) _) [owise]
 
      syntax Bool ::= isArgPromoted(K) [function]
      rule isArgPromoted(variadic) => true

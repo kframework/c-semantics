@@ -7,7 +7,6 @@ require "conversion.k"
 require "dynamic.k"
 require "error.k"
 require "os-settings.k"
-require "promotion-context.k"
 require "promotion.k"
 require "settings.k"
 require "symloc.k"
@@ -43,7 +42,6 @@ module C-COMMON
      imports C-BITSIZE
      imports C-CHECK-USE
      imports C-COMMON-PROMOTION
-     imports C-COMMON-PROMOTION-CONTEXT
      imports C-CONVERSION
      imports C-DYNAMIC
      imports C-ERROR

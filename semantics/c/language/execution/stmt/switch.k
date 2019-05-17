@@ -48,7 +48,7 @@ module C-STMT-SWITCH
      // K to be evaluated, val it should be, casehelper
      syntax KItem ::= tryCase(K, RValue, CId) [strict(1)]
      syntax CId ::= "nextCaseLabel"
-     syntax KItem ::= "#handleSwitch-aux" "(" Int "," RValue "," CId "," Map ")"
+     syntax KItem ::= "#handleSwitch-aux" "(" Int "," RValue "," K "," Map ")"
 
      rule #handleSwitch-aux(_, _, nextCaseLabel, .Map) => .K
           [structural]
@@ -71,9 +71,9 @@ module C-STMT-SWITCH
           requires Exp =/=K #klabel(`Default`)
 
      //  if all that's left is a default, do it
-     rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN:Int, #klabel(`Default`)), M:Map)
+     rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN:Int, defaultCase), M:Map)
           => (#handleSwitch-aux(SN, V, .K, M)
-          ~> Goto(caseLabel(SN, #klabel(`Default`))))
+          ~> Goto(caseLabel(SN, defaultCase)))
           [structural]
 
      rule #handleSwitch-aux(SN:Int, _, caseLabel(SN':Int, _:K) => .K, _)

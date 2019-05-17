@@ -693,7 +693,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <tags> GStructs:Map </tags>
-          requires (tag(X, Tu, global) in_keys({{GStructs[Tu]}<:KItem}:>Map))
+          requires (tag(X, Tu, global) in_keys({{GStructs[Tu] orDefault .Map}<:KItem}:>Map))
           [structural]
 
      // TODO(chathhorn): This is all a mess, I really need to come up with a

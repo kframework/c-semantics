@@ -63,7 +63,7 @@ module C-CONFIGURATION
           // reverse environment
           <renv color="red"> .Map </renv>
           // Like the types cell, but used only for checking local declarations.
-          <local-types> .Map </local-types>
+          <local-types> .Set </local-types>
           <enums> .Map </enums>
           <block-history> .List </block-history>
      </block-control>

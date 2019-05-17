@@ -12,7 +12,7 @@ module C-ELABORATOR-SYNTAX
      syntax KItem ::= elaborateInit(K)
 
      // Converts nclv back to lv, so lvalues are re-evaluated during execution.
-     syntax KItem ::= nclvToLV(Nclv) [function]
+     syntax K ::= nclvToLV(Nclv) [function]
 endmodule
 
 module C-ELABORATOR

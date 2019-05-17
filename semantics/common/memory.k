@@ -16,4 +16,6 @@ module MEMORY-SYNTAX
      /* object(effective type, size, byte map) */
      syntax KItem ::= object(EffectiveType, Int, Array)
 
+     syntax KItem ::= "uninit"
+
 endmodule

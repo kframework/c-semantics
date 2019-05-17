@@ -70,8 +70,8 @@ module C-STMT-EXPR
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
           requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
 
-     syntax KItem ::= getFirstMatch(Set, K) [function]
-                    | "getFirstMatch'" "(" K "," Set "," K ")" [function]
+     syntax K ::= getFirstMatch(Set, K) [function]
+                | "getFirstMatch'" "(" K "," Set "," K ")" [function]
 
      rule getFirstMatch(S:Set, L:K) => getFirstMatch'(.K, S, L)
 

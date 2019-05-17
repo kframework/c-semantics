@@ -148,7 +148,7 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
                </call-stack-frame>
           ) ...</call-stack>
           (<function-control> C::Bag
-               <constructing> Obj:K </constructing>
+               <constructing> Obj::Expr </constructing>
                <curr-program-loc> _ </curr-program-loc>
                <most-derived-class> MDC:K </most-derived-class>
           </function-control>
