@@ -321,6 +321,8 @@ module CPP-TYPING-SYNTAX
      syntax CPPType ::= utype(CPPType) [function, klabel(cppUTypeType)]
 
      syntax Bool ::= isObjectType(K) [function]
+                   | isPointerToObjectType(CPPType) [function]
+                   | isPointerToFunctionType(CPPType) [function]
                    | isCompleteType(CPPType) [function, klabel(isCompleteTypeCPP)]
                    | isAggregateType(CPPType) [function, klabel(isAggregateTypeCPP)]
                    | isVolatileType(CPPType) [function, klabel(isVolatileTypeCPP)]
@@ -677,6 +679,12 @@ module CPP-TYPING
      rule simpleType(t(_, _, T::CPPSimpleType)) => T
 
      rule isObjectType(T:K) => notBool isCPPFunctionType(T) andBool notBool isCPPRefType(T) andBool notBool isCPPVoidType(T)
+
+     rule isPointerToObjectType(T::CPPType)
+          => isCPPPointerType(T) andBool isObjectType(innerType(T))
+
+     rule isPointerToFunctionType(T::CPPType)
+          => isCPPPointerType(T) andBool isCPPFunctionType(innerType(T))
 
      rule utype(V::Val) => utype(type(V))
 

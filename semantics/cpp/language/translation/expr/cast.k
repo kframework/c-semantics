@@ -115,10 +115,11 @@ module CPP-TRANSLATION-EXPR-CAST
           requires (isCPPIntegerType(T2) andBool isCPPPointerType(type(V))
                     andBool byteSizeofType(T2) >=Int byteSizeofType(type(V)))
 
-     rule convertReinterpret(t(... st: pointerType(t(Q::Quals, _, _))) #as T::CPPType, V:PRVal)
-          => StaticCast(T, StaticCast(type(pointerType(t(Q, .Set, void))), V))
-          requires isCPPPointerType(type(V)) andBool isObjectType(innerType(T))
-               andBool isObjectType(innerType(type(V)))
+     // @ref n4800 7.6.1.9:7
+     rule convertReinterpret(T::CPPType, V:PRVal)
+          => StaticCast(T, StaticCast(type(pointerType(t(getQuals(innerType(T)), .Set, void))), V))
+          requires isPointerToObjectType(T)
+           andBool isPointerToObjectType(type(V))
 
 
 endmodule
