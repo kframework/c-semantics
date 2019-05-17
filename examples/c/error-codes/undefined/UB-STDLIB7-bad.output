@@ -1,9 +1,0 @@
-Called aligned_alloc with size parameter not an integral multiple of the requested alignment:
-      > in aligned_alloc at UB-STDLIB7-bad.c:4:7
-        in main at UB-STDLIB7-bad.c:4:7
-
-    Undefined behavior (UB-STDLIB7):
-        see C11 section 7.22.3.1:2 http://rvdoc.org/C11/7.22.3.1
-        see C11 section J.2:1 item 178 http://rvdoc.org/C11/J.2
-        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
-
