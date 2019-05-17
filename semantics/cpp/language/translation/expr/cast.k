@@ -89,32 +89,41 @@ module CPP-TRANSLATION-EXPR-CAST
 
      rule tryInit(_, _, V:Val) => V
 
-     rule convertStatic(_:CPPVoidType, V::Val, _)
-          => prDiscardedExpr(V)
-          requires isConvertableDiscardedExpr(V)
 
+     // @ref n4800 7.6.1.8:6
      rule convertStatic(_:CPPVoidType, V::Val, _)
-          => glDiscardedExpr(V)
-          requires notBool isConvertableDiscardedExpr(V)
+          =>
+          #if isConvertableDiscardedExpr(V) #then
+               prDiscardedExpr(V)
+          #else
+               glDiscardedExpr(V)
+          #fi
 
+     // @ref n4800 7.6.1.9:11
+     // glvalue (lvalue) to reference
      rule convertReinterpret(T2:CPPRefType, V:GLExpr)
           => le(ReinterpretCast(T2, stripHold(V)), trace(V), innerType(T2))
           requires ((isObjectType(innerType(T2)) andBool isObjectType(type(V)))
                orBool (isCPPFunctionType(innerType(T2)) andBool isCPPFunctionType(type(V))))
                andBool isUnnamedLValue(T2)
 
+     // @ref n4800 7.6.1.9:11
+     // glvalue (xvalue) to reference
      rule convertReinterpret(T2:CPPRefType, V:GLExpr)
           => xe(ReinterpretCast(T2, stripHold(V)), trace(V), innerType(T2))
           requires ((isObjectType(innerType(T2)) andBool isObjectType(type(V)))
                orBool (isCPPFunctionType(innerType(T2)) andBool isCPPFunctionType(type(V))))
                andBool isUnnamedXValue(T2)
 
+     // @ref n4800 7.6.1.9:4
+     // pointer to integer
      rule convertReinterpret(T2::CPPType, V:PRExpr)
           => pre(ReinterpretCast(T2, stripHold(V)), trace(V), T2)
           requires (isCPPIntegerType(T2) andBool isCPPPointerType(type(V))
                     andBool byteSizeofType(T2) >=Int byteSizeofType(type(V)))
 
      // @ref n4800 7.6.1.9:7
+     // pointer to pointer
      rule convertReinterpret(T::CPPType, V:PRVal)
           => StaticCast(T, StaticCast(type(pointerType(t(getQuals(innerType(T)), .Set, void))), V))
           requires isPointerToObjectType(T)
