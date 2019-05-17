@@ -127,7 +127,7 @@ module C-STMT-LOOP
           Continue() ~> (K:KItem => .K)
           requires (K =/=K loopMarked)
                andBool (K =/=K popBlock)
-               andBool (K =/=K pushBlock)
+               andBool (pushBlock(...) :/=K K)
                andBool (K =/=K popLoop)
                andBool (IfThenElse(...) :/=K K)
           [structural]

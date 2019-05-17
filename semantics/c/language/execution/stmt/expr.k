@@ -52,7 +52,7 @@ module C-STMT-EXPR
                     | "checkArrayStaticAssign'" "(" Type "," Modifier "," Provenance ")"
 
      rule checkArrayStaticAssign(t(_, Mods:Set, pointerType(T:Type)), L::SymLoc)
-          => checkArrayStaticAssign'(T, getArrayStatic(Mods), getFromArray(L))
+          => checkArrayStaticAssign'(T, getArrayStatic(Mods), {getFromArray(L)}:>Provenance)
      rule (.K => UNDEF("EEA4",
                "Passing a pointer not to an array object as a function parameter with a static-qualified array size."))
           ~> checkArrayStaticAssign(_, Loc:SymLoc)
@@ -69,7 +69,7 @@ module C-STMT-EXPR
           requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
 
      syntax Modifier ::= getArrayStatic(Set) [function]
-     rule getArrayStatic(SetItem(arrayStatic(...) #as M) _) => M
+     rule getArrayStatic(SetItem(arrayStatic(...) #as M::Modifier) _) => M
 
      rule Zero(nclv(Loc::SymLoc, T::Type))
           => initBytesFill(Loc, byteSizeofType(T), piece(0, cfg:bitsPerByte))
