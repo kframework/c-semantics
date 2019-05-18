@@ -41,6 +41,7 @@ module CPP-COMMON
      imports CPP-COMMON-PROMOTION-CONTEXT
      imports CPP-REFERENCE
      imports CPP-SYMLOC
+     imports CPP-SYNTAX-HEATING
      imports C-CPP-TYPING
 
      imports CPP-SETTINGS

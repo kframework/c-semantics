@@ -6,6 +6,7 @@ module CPP-EXPR-UNARY
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
+     imports C-CONFIGURATION
 
      rule *(prv(Loc:SymLoc, Tr::Trace, T:CPPPointerType))
           => lv(Loc, combine(Tr, #klabel(`*__CPP-SYNTAX`)), innerType(T))
@@ -25,7 +26,10 @@ module CPP-EXPR-UNARY
      rule &(dataMemberValue(memberPointer(C::Class, X::CId, T::CPPType), Tr::Trace, _))
           => prv(memberPointer(C, X, T), Tr, t(noQuals, .Set, memberPointerType(t(noQuals, .Set, classType(C)),T)))
 
-     context - (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+     context <k> - (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> - (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
 
      rule - prv(I:Int, Tr::Trace, T::CPPType)
           => arithInterpret(T, 0 -Int I, combine(Tr, #klabel(`-__CPP-SYNTAX`)))
@@ -35,7 +39,10 @@ module CPP-EXPR-UNARY
           => arithInterpret(T, --Float F, combine(Tr, #klabel(`-__CPP-SYNTAX`)))
           requires isPromoted(T)
 
-     context + (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+     context <k> + (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> + (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
 
      rule + prv(I:Int, Tr::Trace, T::CPPType)
           => arithInterpret(T, I, combine(Tr, #klabel(`+__CPP-SYNTAX`)))

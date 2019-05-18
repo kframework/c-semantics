@@ -194,96 +194,6 @@ module CPP-SYNTAX
 
      syntax BraceInit ::= ExprLoc(CabsLoc, BraceInit)
 
-     context _ := (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context _ :=init (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context _ += (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context _ -= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context _ *= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context _ /= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context _ %= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context _ ^= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context _ &= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context _ |= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context _ <<= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context _ >>= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context * (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) + _ [result(EPRVal)]
-
-     context _ + (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) - _ [result(EPRVal)]
-
-     context _ - (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) * _ [result(EPRVal)]
-
-     context _ * (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) / _ [result(EPRVal)]
-
-     context _ / (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) % _ [result(EPRVal)]
-
-     context _ % (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) ^ _ [result(EPRVal)]
-
-     context _ ^ (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) & _ [result(EPRVal)]
-
-     context _ & (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) | _ [result(EPRVal)]
-
-     context _ | (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) != _ [result(EPRVal)]
-
-     context _ != (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) == _ [result(EPRVal)]
-
-     context _ == (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) < _ [result(EPRVal)]
-
-     context _ < (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) <= _ [result(EPRVal)]
-
-     context _ <= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) > _ [result(EPRVal)]
-
-     context _ > (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) >= _ [result(EPRVal)]
-
-     context _ >= (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) << _ [result(EPRVal)]
-
-     context _ << (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
-     context (HOLE:Expr => reval(HOLE)) >> _ [result(EPRVal)]
-
-     context _ >> (HOLE:Expr => reval(HOLE)) [result(EPRVal)]
-
      syntax Block ::= BlockStmt(Int, List)
 
      syntax Decl
@@ -307,6 +217,240 @@ module CPP-SYNTAX
      // catch declarations.
      syntax Expr ::= exceptionObject(CPPType)
 
-     context IfStmt((HOLE:Expr => reval(HOLE)), _, _) [result(EPRVal)]
+endmodule
+
+module CPP-SYNTAX-HEATING
+     imports CPP-SYNTAX
+     imports C-CONFIGURATION
+
+     context <k> _ := (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ := (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ :=init (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ :=init (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ += (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ += (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ -= (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ -= (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ *= (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ *= (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ /= (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ /= (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ %= (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ %= (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ ^= (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ ^= (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ &= (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ &= (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ |= (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ |= (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ <<= (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ <<= (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ >>= (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ >>= (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> * (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> * (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) + _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) + _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ + (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ + (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) - _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) - _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ - (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ - (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) * _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) * _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ * (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ * (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) / _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) / _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ / (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ / (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) % _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) % _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ % (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ % (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) ^ _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) ^ _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ ^ (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ ^ (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) & _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) & _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ & (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ & (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) | _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) | _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ | (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ | (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) != _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) != _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ != (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ != (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) == _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) == _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ == (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ == (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) < _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) < _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ < (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ < (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) <= _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) <= _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ <= (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ <= (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) > _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) > _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ > (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ > (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) >= _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) >= _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ >= (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ >= (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) << _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) << _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ << (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ << (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> (HOLE:Expr => reval(HOLE)) >> _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) >> _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> _ >> (HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> _ >> (HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
+
+     context <k> IfStmt((HOLE:Expr => reval(HOLE)), _, _) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> IfStmt((HOLE:Expr => reval(HOLE)), _, _) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
 
 endmodule

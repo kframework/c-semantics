@@ -266,8 +266,6 @@ module CPP-DYNAMIC-OTHER-SORTS
 
      syntax PRVal ::= PRV
 
-     syntax EPRVal
-
      syntax GLVal ::= LVal | XVal
 
      syntax RVal ::= XVal | PRVal
@@ -632,7 +630,10 @@ module CPP-DYNAMIC-OTHER
 
      rule ofSPRValList(K:KItem prval:: L::SPRValList) => ListItem(K) ofSPRValList(L) [owise]
 
-     context (HOLE:Expr => reval(HOLE)) prval:: _ [result(EPRVal)]
+     context <k> (HOLE:Expr => reval(HOLE)) prval:: _ ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> (HOLE:Expr => reval(HOLE)) prval:: _ ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
 
      context K:KResult prval:: HOLE:SPRValList
 
@@ -914,7 +915,10 @@ module CPP-DYNAMIC-OTHER
 
      rule _:KResult ~> discard => .K
 
-     context makePRVal(HOLE:Expr => reval(HOLE)) [result(EPRVal)]
+     context <k> makePRVal(HOLE:Expr => reval(HOLE)) ...</k> 
+             <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
+     context <k> makePRVal(HOLE:Expr => reval(HOLE)) ...</k>
+             <compile-time-evaluation> false </compile-time-evaluation> [result(PRVal)]
 
      context makeXVal(HOLE:Expr) [result(LVal)]
 
@@ -959,9 +963,6 @@ module CPP-DYNAMIC-OTHER
           requires Execution()
 
      rule Translation() => notBool Execution()
-
-     // is given prval fully evaluated?
-     rule isEPRVal(E:PRVal) => Translation() orBool isPRV(E)
 
      rule compoundStmt(S1::Stmt, S2::Stmt) => S1 ~> S2
      rule nullStmt() => .K
