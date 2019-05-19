@@ -9,6 +9,7 @@ module CPP-TRANSLATION-EXPR-CAST
      imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-REFERENCE-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule convertConst(T2::CPPType, pre(V::Expr, Tr::Trace, T1::CPPType))
@@ -85,12 +86,12 @@ module CPP-TRANSLATION-EXPR-CAST
      // @ref n4800 7.6.1.8:3
      rule convertStatic(T:CPPRVRefType, V:LVal, Tr::Trace)
           =>
-          #if notBool isCPPBitFieldType(type(V)) #then
-               le(stripHold(V), trace(V), T)
+          #if notBool isCPPBitfieldType(type(V)) #then
+               le(stripHold(V), Tr, T)
           #else
                not-implemented // TODO (h0nzZik)
           #fi
-          requires isReferenceCompatible(T, type(V))
+          requires isReferenceCompatible(innerType(T), type(V))
 
      // @ref n4800 7.6.1.8:4
      rule convertStatic(T::CPPType, V::Val, Tr::Trace)
