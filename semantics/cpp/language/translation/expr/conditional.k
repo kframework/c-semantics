@@ -69,7 +69,7 @@ module CPP-TRANSLATION-EXPR-CONDITIONAL
           requires getKLabel(E) =/=K #klabel(`Throw`)
 
      // @ref n4296 5.16:2.2
-     rule typeAndCatOfConditional(_, t(... st: void) #as T::CPPType, _, _, t(... st: nullptr_t), _)
+     rule typeAndCatOfConditional(_, t(... st: void) #as T::CPPType, _, _, t(... st: void), _)
           => typeAndCat(T, prvalue)
 
      // TODO(dwightguth): n4296 5.16:3

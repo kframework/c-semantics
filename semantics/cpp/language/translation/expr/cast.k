@@ -90,11 +90,11 @@ module CPP-TRANSLATION-EXPR-CAST
 
      rule tryInit(_, _, V:Val) => V
 
-     rule convertStatic(t(... st: nullptr_t), V::Val, _)
+     rule convertStatic(t(... st: void), V::Val, _)
           => prDiscardedExpr(V)
           requires isConvertableDiscardedExpr(V)
 
-     rule convertStatic(t(... st: nullptr_t), V::Val, _)
+     rule convertStatic(t(... st: void), V::Val, _)
           => glDiscardedExpr(V)
           requires notBool isConvertableDiscardedExpr(V)
 
