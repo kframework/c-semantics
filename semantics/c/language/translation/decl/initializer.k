@@ -419,7 +419,7 @@ module C-DECL-INITIALIZER
      syntax KItem ::= findStruct(Type)
 
      syntax KItem ::= "subobjectKCell"
-     rule subobjectKCell => fillInit(?_) #Or fillInit-aux(?_) #Or t(?_, ?_, ?_) #Or initFromStructRHS(?_, ?_) [macro]
+     rule subobjectKCell => fillInit(?_) #Or fillInit-aux(?_) #Or t(?_, ?_, ?_) [macro]
 
      rule <k> subobjectKCell ... </k>
           <curr-subobject>
