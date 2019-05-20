@@ -35,6 +35,7 @@ module CPP-EXECUTION-EXPR-ASSIGNMENT
           requires Execution()
 
      rule fillRHoles(V::PRVal, pre(L::Expr := E::Expr, Tr::Trace, T::CPPType)) => pre(L := fillRHoles(V, E), Tr, T)
+     rule fillRHoles(V::PRVal, ConvertType(T::CPPType, E::Expr)) => ConvertType(T, fillRHoles(V, E))
      rule fillRHoles(V::PRVal, compoundOp(E::Expr)) => compoundOp(fillRHoles(V, E))
      rule fillRHoles(V::PRVal, RHOLE) => V
      rule fillRHoles(V::PRVal, L::Expr + R::Expr) => fillRHoles(V, L) + R
