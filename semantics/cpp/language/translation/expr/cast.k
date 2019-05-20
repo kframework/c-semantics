@@ -45,7 +45,7 @@ module CPP-TRANSLATION-EXPR-CAST
            , tryConvert(convertStatic(T, V, hasTrace(ParenthesizedCast(T, V)))
            , tryConvert(ConstCast(T, tryConvert(convertStatic(getStaticThenConstIntermediateType(T), V, hasTrace(ParenthesizedCast(T, V))), V))
            , tryConvert(ReinterpretCast(T, V)
-           , tryConvert(.K, .K)))))
+           , stuck))))
 
      // TODO(dwightguth): is this actually sufficient to catch all cases where a static + const cast would succeed? This seems
      // to be equivalent to what clang does internally, but the standard also does not appear to provide any obvious
@@ -63,6 +63,7 @@ module CPP-TRANSLATION-EXPR-CAST
      rule getStaticThenConstIntermediateType(T::CPPType) => T [owise]
 
      syntax Expr ::= tryConvert(Expr, Expr) [strict(1)]
+     syntax Expr ::= "stuck"
 
      rule tryConvert(cannot-convert, E::Expr) => E
 

@@ -15,7 +15,7 @@ module C-TYPING-EFFECTIVE-SYNTAX
      syntax SymLoc ::= updateLastAccessVariant(SymLoc, CId, EffectiveType) [function]
 
      syntax KItem ::= getEffectiveType(SymBase)
-     syntax KItem ::= updateEffectiveType(SymLoc) [function]
+     syntax K ::= updateEffectiveType(SymLoc) [function]
 
      syntax Bool ::= effectivelyCompat(Type, List) [function]
 

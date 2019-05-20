@@ -60,7 +60,7 @@ module COMMON-SYNTAX
 
      syntax LanguageLinkage ::= "CLinkage" | "CPPLinkage"
 
-     syntax KItem ::= CodeLoc(K, CabsLoc)
+     syntax Definition ::= CodeLoc(K, CabsLoc)
 
      syntax FunctionSpecifier ::= Inline()
      syntax Init ::= NoInit()

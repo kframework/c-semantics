@@ -546,8 +546,10 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           requires isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
 
+     syntax KItem ::= ".Init"
+
      // @ref n4296 12.1:4.6-4.7
-     rule <k> (.K => checkCtorAndDtor(MemInit[X] orDefault .K, X, T, true, I, getMostDerivedArrayElement(T))) ~> figureConstruct(.List, MemInit::Map, .List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
+     rule <k> (.K => checkCtorAndDtor(MemInit[X] orDefault .Init, X, T, true, I, getMostDerivedArrayElement(T))) ~> figureConstruct(.List, MemInit::Map, .List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -557,12 +559,12 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           requires notBool isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
 
-     rule <k> (.K => checkCtorAndDtor(MemInit[C] orDefault .K, baseClass(C), type(classType(C)), false, NoInit(), type(classType(C)))) ~> figureConstruct(.List, MemInit::Map, (ListItem(C::Class) => .List) _, _, _, _, _) ...</k>
+     rule <k> (.K => checkCtorAndDtor(MemInit[C] orDefault .Init, baseClass(C), type(classType(C)), false, NoInit(), type(classType(C)))) ~> figureConstruct(.List, MemInit::Map, (ListItem(C::Class) => .List) _, _, _, _, _) ...</k>
           <curr-tr-scope> blockScope(_, Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires notBool isMethodUserProvided(FuncT)
 
-     rule <k> (.K => figureConstructItem(MemInit[C] orDefault .K, baseClass(C), type(classType(C)), false)) ~> figureConstruct(.List, MemInit::Map, (ListItem(C::Class) => .List) _, _, _, _, _) ...</k>
+     rule <k> (.K => figureConstructItem(MemInit[C] orDefault .Init, baseClass(C), type(classType(C)), false)) ~> figureConstruct(.List, MemInit::Map, (ListItem(C::Class) => .List) _, _, _, _, _) ...</k>
           <curr-tr-scope> blockScope(_, Base::SymBase, _) </curr-tr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires isMethodUserProvided(FuncT)
@@ -642,12 +644,12 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
-          requires I =/=K .K
+          requires I =/=K .Init
 
      // @ref n4296 12.6.2:8.1
      // TODO(dwightguth): ctor-initializers and base classes
      // TODO(traiansf): unions
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, .Map, _, _, _,
+     rule <k> (figureConstructItem(.Init, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, .Map, _, _, _,
                    (Res:K => Res ~> TExpressionStmt(figureConstructorInit(Name(C, X), T, I, false))),
                    B:Bool => B orBool (X in VM andBool notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
@@ -660,7 +662,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      // @ref n4296 12.6.2:8.2
      // TODO(traiansf): anonymous unions
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _, _,
+     rule <k> (figureConstructItem(.Init, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _, _,
                    B:Bool => B orBool (notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -671,7 +673,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           requires I ==K NoInit() andBool X in VM
 
      // @ref n4296 12.6.2:8.3
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _,
+     rule <k> (figureConstructItem(.Init, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _,
                    (Res:K => Res ~> TExpressionStmt(defaultConstructorInit(Name(C, X), T, false))), _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -681,7 +683,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <variant-members> VM::Set </variant-members>
           requires I ==K NoInit() andBool notBool X in VM
 
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, false) => .K) ~> figureConstruct(.List, _, _, _, _,
+     rule <k> (figureConstructItem(.Init, X::CId, T::CPPType, false) => .K) ~> figureConstruct(.List, _, _, _, _,
                    (Res:K => Res ~> TExpressionStmt(defaultConstructorInit(Name(C, X), T, true))), _) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
 

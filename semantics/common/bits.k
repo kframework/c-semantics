@@ -1,9 +1,10 @@
 module BITS-SORTS
      imports INT-SYNTAX
      imports FLOAT-SYNTAX
-     syntax Encodable ::= Int | Trap
+     syntax EncodableOrBitValue ::= Int | Trap | Unknown
+     syntax Encodable ::= EncodableOrBitValue
                         | PtrValue | EncodableValue
-     syntax BitValue ::= Int | Trap | Unknown | Pieces
+     syntax BitValue ::= EncodableOrBitValue | Pieces
                        | EncodedPtr | EncodedValue
      syntax EncodableValue ::= Float | Unknown
      syntax IntPtr ::= EncodedPtr

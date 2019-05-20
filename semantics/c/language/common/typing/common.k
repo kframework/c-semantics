@@ -125,7 +125,7 @@ module C-TYPING-COMMON
 
      syntax TagInfo ::= #getTagInfo(TagId, K) [function]
      rule #getTagInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <tags> M::Map </tags> ...</global> ...</generatedTop>)
-          => extractTagInfo({M[Tu]}:>Map[tag(X, Tu, B)])
+          => extractTagInfo({M[Tu] orDefault .Map}:>Map[tag(X, Tu, B)])
 
      syntax TagInfo ::= extractTagInfo(K) [function]
      rule extractTagInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set)) => fieldInfo(L, I, M1, M2, S)
@@ -170,8 +170,8 @@ module C-TYPING-COMMON
      rule Int2CFloat(ut(... st: _:SimpleFloatType) #as T::UType, I:Int) => Int2Float(I, typePrecision(T), typeExponent(T))
      rule zeroCFloat(ut(... st: _:SimpleFloatType) #as T::UType) => Int2CFloat(T, 0)
 
-     syntax Int ::= numBits(SimpleType) [function]
-     rule numBits(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte
+     syntax Int ::= numBits(SimpleUType) [function]
+     rule numBits(T::SimpleUType) => numBytes(T) *Int cfg:bitsPerByte
 
      rule min(ut(_, bitfieldType(_:SimpleSignedType, N::Int)))
           => 0 -Int (1 <<Int absInt(N -Int 1))
@@ -296,8 +296,9 @@ module C-TYPING-COMMON
      rule showTypeSpecifier(no-type) => "<none>"
 
      syntax String ::= showQualifiers(Set) [function]
-     rule showQualifiers(SetItem(Q1::Qualifier) SetItem(Q2::Qualifier) S::Set)
-          => showQualifier(Q1) +String " " +String showQualifiers(SetItem(Q2) S)
+     rule showQualifiers(SetItem(Q::Qualifier) S::Set)
+          => showQualifier(Q) +String " " +String showQualifiers(S)
+          requires S =/=K .Set
      rule showQualifiers(SetItem(Q::Qualifier)) => showQualifier(Q)
      rule showQualifiers(.Set) => ""
 

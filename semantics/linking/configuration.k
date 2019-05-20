@@ -35,6 +35,8 @@ module C-CONFIGURATION
 
      <deferred-class-actions> .K </deferred-class-actions>
 
+     <compile-time-evaluation> false </compile-time-evaluation>
+
      <tr-block-stack color="violet"> .List </tr-block-stack>
      <tr-block-control>
           <tr-env color="red"> .Map </tr-env>

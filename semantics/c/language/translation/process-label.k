@@ -262,12 +262,12 @@ module C-PROCESS-LABEL
           <curr-scope> blockScope(... functionLoc: Base::SymBase) </curr-scope>
           <functions>...
                Base |-> functionObject(... gotoMap: (
-                    M::Map => M[caseLabel(SwitchNum, #klabel(`Default`))
+                    M::Map => M[caseLabel(SwitchNum, defaultCase)
                               <- gotoObject(BlockHistory,
                               (S ~> K ~> Tail), LoopStack, DeclStack)]
                ))
           ...</functions>
-          requires notBool (caseLabel(SwitchNum, #klabel(`Default`)) in_keys(M))
+          requires notBool (caseLabel(SwitchNum, defaultCase) in_keys(M))
 
 endmodule
 

@@ -2,6 +2,7 @@ module C-ABSTRACT-SORTS
      imports C-DYNAMIC-SORTS
      syntax RValue ::= RHold
      syntax Nclv ::= NCLHold
+     syntax KResult ::= HoldResult
 endmodule
 
 module C-ABSTRACT-SYNTAX
@@ -18,7 +19,7 @@ module C-ABSTRACT-SYNTAX
      syntax SymBase ::= "nonStatic"
 
      // the rest are syntactic
-     syntax C ::= AttributeWrapper(K, K) [function]
+     syntax K ::= AttributeWrapper(K, K) [function]
 
      syntax Statement // defined in C-ABSTRACT-SYNTAX
 
@@ -304,7 +305,7 @@ module C-ABSTRACT-SYNTAX
      */
      syntax Expression ::= OffsetOf(K, K, K) [strict(1)]
      syntax Expression ::= TypesCompat(K, K, K, K) [strict(1, 3)]
-     syntax Expression ::= ExpressionLoc(K, K) [function]
+     syntax K ::= ExpressionLoc(K, K) [function]
 
      //must be declared as function,
      //otherwise, if then else rule failed in for(;;) cases
@@ -333,7 +334,7 @@ module C-ABSTRACT-SYNTAX
      | PAREN of expression
      | VARIABLE of string
      */
-     syntax Expression ::= Constant(K) [function]
+     syntax K ::= Constant(K) [function]
      /*
      | EXPR_SIZEOF of expression
      | TYPE_SIZEOF of specifier * decl_type
@@ -544,7 +545,7 @@ module C-ABSTRACT-REWRITING
      /*@ This macro defines an important identity from
      \source[n1570]{\para{6.5.3.2}{3}}. As a syntactic macro, it should run
      on programs before they even start to reduce. */
-     rule &(*(K::K)) => K [anywhere]
+     rule &(*(K:KItem)) => K [anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
      A postfix expression followed by the \cinline{->} operator and an

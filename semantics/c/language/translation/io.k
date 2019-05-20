@@ -47,6 +47,7 @@ module C-IO
                Base |-> object(_, _, M::Array)
           ...</mem>
           requires Offset in_keys(M)
+               andBool M[Offset] =/=K uninit
                andBool Size >Int 0
           [structural]
      rule <k> readBytes'(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List)
@@ -57,7 +58,7 @@ module C-IO
                Base |-> object(_, _,
                     M::Array => M[Offset <- piece(0, cfg:bitsPerByte)])
           ...</mem>
-          requires notBool (Offset in_keys(M))
+          requires (notBool (Offset in_keys(M)) orBool M[Offset] ==K uninit)
                andBool Size >Int 0
           [structural]
      rule readBytes'(_, 0, Aux:List) => dataList(Aux)

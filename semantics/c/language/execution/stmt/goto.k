@@ -214,7 +214,7 @@ module C-STMT-GOTO
      rule filterIds(_, .List) => .Set
 
      syntax Set ::= filterDecls(Int, Set, List) [function]
-     rule filterDecls(B::Int, Locals::Set, ListItem(frozenDeclaration(B, Decl:K)) Ds::List)
+     rule filterDecls(B::Int, Locals::Set, ListItem(frozenDeclaration(B, Decl:KItem)) Ds::List)
           => SetItem(Decl) filterDecls(B, Locals, Ds)
           requires notBool (getIdOfDecl(Decl) in Locals)
      rule filterDecls(_, _, (ListItem(_) => .List) _) [owise]

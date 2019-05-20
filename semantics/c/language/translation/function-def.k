@@ -98,9 +98,10 @@ module C-FUNCTION-DEF
      rule isVoidOrComplete(_) => true [owise]
 
      syntax Bool ::= areVoidOrComplete(List) [function]
-     rule areVoidOrComplete(L:List) => true
-          requires all(L, #klabel(`isVoidOrComplete`))
-     rule areVoidOrComplete(_) => false [owise]
+     rule areVoidOrComplete(ListItem(K:KItem) L:List) => false
+          requires notBool isVoidOrComplete(K)
+     rule areVoidOrComplete(.List) => true
+     rule areVoidOrComplete((ListItem(_) => .List) _) [owise]
 
      syntax KItem ::= checkMainDef(Type)
      rule checkMainDef(t(_, _, functionType(ut(_, int),

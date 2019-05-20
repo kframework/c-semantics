@@ -282,17 +282,12 @@ module SYMLOC
 
      syntax Bool ::= #isFromArray(SymLoc) [function]
      rule #isFromArray(loc(Base:SymBase, Offset:Int, SetItem(K:KItem) S:Set))
-          => getKLabel(K) ==K #klabel(`fromArray`) orBool #isFromArray(loc(Base, Offset, S))
+          => fromArray(...) :=K K orBool #isFromArray(loc(Base, Offset, S))
      rule #isFromArray(_) => false [owise]
 
-     rule stripFromArray(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
-     rule stripFromArray(loc(Base:SymBase, Offset:Int, Prov:Set))
-          => loc(Base, Offset, filterSet(Prov, #klabel(`notFromArray`)))
+     rule stripFromArray(loc(_, _, (SetItem(K:KItem) => .Set) _))
+          requires fromArray(...) :=K K
      rule stripFromArray(Loc:SymLoc) => Loc [owise]
-
-     syntax Bool ::= notFromArray(Provenance) [function]
-     rule notFromArray(fromArray(_, _)) => false
-     rule notFromArray(_) => true [owise]
 
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
@@ -328,11 +323,9 @@ module SYMLOC
 
      rule getBases(Loc:SymLoc) => getBases(prov(Loc))
 
-     rule getBases(Prov:Set) => filterSet(Prov, #klabel(`isBase`))
-
-     syntax Bool ::= isBase(Provenance) [function]
-     rule isBase(basedOn(_, _)) => true
-     rule isBase(_) => false [owise]
+     rule getBases((SetItem(K:KItem) => .Set) _)
+          requires basedOn(...) :/=K K
+     rule getBases(Prov:Set) => Prov [owise]
 
      rule isLibcFixedDuration(obj(... d: libcFixed)) => true
      rule isLibcFixedDuration(_) => false [owise]

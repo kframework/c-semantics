@@ -14,6 +14,7 @@ module C-TYPING-SORTS
 endmodule
 
 module C-TYPING-MACROS-SYNTAX
+     imports BASIC-K
      syntax SimpleIntegerType ::= "signedCharType" | "unsignedCharType"
      syntax SimpleSignedCharType ::= "signed-char"
      syntax SimpleUnsignedCharType ::= "unsigned-char"
@@ -28,7 +29,6 @@ endmodule
 module C-TYPING-SYNTAX
      imports C-TYPING-SORTS
 
-     imports BASIC-K
      imports MEMORY-SYNTAX
      imports STRING-SYNTAX
      imports MAP
@@ -120,21 +120,16 @@ module C-TYPING-SYNTAX
                   | "functionSpecifiers" [function]
 
      // Basic types
-     syntax SimpleBitfieldType ::= SimpleSignedBitfieldType | SimpleUnsignedBitfieldType
-                                 | bitfieldType(SimpleType, Int)
-     syntax SimpleSignedBitfieldType ::= bitfieldType(SimpleSignedType, Int)
-     syntax SimpleUnsignedBitfieldType ::= bitfieldType(SimpleUnsignedType, Int)
+     syntax SimpleBitfieldType ::= bitfieldType(SimpleType, Int)
 
      syntax SimpleSignedType ::= "short-int" | SimpleSignedIntType
                                | "long-int" | "long-long-int" | "oversized-int"
-                               | SimpleSignedBitfieldType
      syntax SimpleFloatType ::= "float" | "double" | "long-double" | "oversized-float"
      syntax SimpleSignedIntType ::= "int"
      syntax SimpleUnsignedType ::= SimpleBoolType | "unsigned-short-int"
                                  | SimpleUnsignedIntType | "unsigned-long-int"
                                  | "unsigned-long-long-int"
                                  | "unsigned-oversized-int"
-                                 | SimpleUnsignedBitfieldType
      syntax SimpleUnsignedIntType ::= "unsigned-int"
      syntax SimpleBoolType ::= "bool"
      syntax SimpleVoidType ::= "void"
@@ -147,8 +142,7 @@ module C-TYPING-SYNTAX
 
      syntax SimpleBasicType ::= SimpleNoType | SimpleVoidType
                               | SimpleFloatType | SimpleIntegerType
-     syntax SimpleType ::= SimpleBasicType
-     syntax SimpleUType ::= SimpleBasicType
+     syntax SimpleNonArrayType ::= SimpleBasicType
 
      // Composite types
      syntax SimpleFunctionType ::= functionType(UType, List)
@@ -174,17 +168,15 @@ module C-TYPING-SYNTAX
      syntax BlockRef ::= Int | "global"
 
      syntax SimpleType ::= SimpleArrayType
-                         | SimpleEnumType
-                         | SimplePointerType
-                         | SimpleStructType
-                         | SimpleUnionType
-                         | SimpleFunctionType
+                         | SimpleNonArrayType
      syntax SimpleUType ::= SimpleArrayUType
-                          | SimpleEnumType
-                          | SimplePointerType
-                          | SimpleStructType
-                          | SimpleUnionType
-                          | SimpleFunctionType
+                          | SimpleNonArrayType
+
+     syntax SimpleNonArrayType ::= SimpleEnumType
+                                 | SimplePointerType
+                                 | SimpleStructType
+                                 | SimpleUnionType
+                                 | SimpleFunctionType
 
      syntax SimpleArrayType ::= SimpleFixedArrayType | SimpleVariableArrayType | SimpleIncompleteArrayType
      syntax SimpleArrayUType ::= SimpleFixedArrayUType
@@ -198,8 +190,7 @@ module C-TYPING-SYNTAX
 
      // These aren't real types, but are values that can appear in type
      // contexts.
-     syntax SimpleType ::= SimpleTypedefType
-     syntax SimpleUType ::= SimpleTypedefType
+     syntax SimpleNonArrayType ::= SimpleTypedefType
 
      syntax SimpleTypedefType ::= typedefType(CId, Type)
      syntax Variadic ::= "variadic"
@@ -369,8 +360,6 @@ module C-TYPING-SYNTAX
 
      syntax KItem ::= stabilizeVLA(Type)
 
-     syntax Bool ::= isStructOrUnionKLabel(K) [function, klabelPredicate]
-
      // Turns old-style param list into the empty list so that arguments will
      // be promoted on call.
      syntax Type ::= toPrototype(Type) [function]
@@ -380,7 +369,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isFlexibleType(EffectiveType) [function]
 
      // moved from BITSIZE because type compatibility depends on it quite indirectly
-     syntax Int ::= numBytes(SimpleType) [function]
+     syntax Int ::= numBytes(SimpleUType) [function]
 
      syntax Int ::= typePrecision(UType) [function]
      syntax Int ::= typeExponent(UType) [function]

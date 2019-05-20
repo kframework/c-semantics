@@ -208,7 +208,7 @@ module C-IO
                         InBounds:Bool => InBounds orBool assertInBounds(Offset, Len),
                         VolatileErr:Bool => VolatileErr orBool assertVolatile(ObjT, Offset, T),
                         _)
-          requires Size >Int 0 andBool Offset in_keys(M)
+          requires Size >Int 0 andBool Offset in_keys(M) andBool M[Offset] =/=K uninit
      rule readBytes-aux(loc(Base::SymBase, Offset::Int) => loc(Base, Offset) +bytes -1,
                         Size::Int => Size -Int 1,
                         Aux::List => ListItem(M[Offset]) Aux,
@@ -222,7 +222,7 @@ module C-IO
                         InBounds:Bool => InBounds orBool assertInBounds(Offset, Len),
                         VolatileErr:Bool => VolatileErr orBool assertVolatile(ObjT, Offset, T),
                         _)
-          requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M)
+          requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M) andBool M[Offset] =/=K uninit
      rule readBytes-aux(loc(Base::SymBase, Offset::Int) => loc(Base, Offset) +bytes -1,
                         Size::Int => Size -Int 1,
                         Aux::List => ListItem(getUninitializedBits(loc(Base, Offset), ObjT)) Aux,
@@ -237,7 +237,7 @@ module C-IO
                         VolatileErr:Bool => VolatileErr orBool assertVolatile(ObjT, Offset, T),
                         Uninit:Bool => Uninit orBool assertUninit(loc(Base, Offset)))
           requires Size >Int 0 andBool (notBool (loc(Base, Offset) in locations(Mem)))
-               andBool (notBool (Offset in_keys(M))) [owise]
+               andBool (notBool (Offset in_keys(M)) orBool M[Offset] ==K uninit) [owise]
      syntax CValue ::= #readNativeByte(SymLoc) [function, hook(C_SEMANTICS.readNativeByte), impure]
      rule readBytes-aux(Loc::SymLoc => Loc +bytes -1,
                         Size::Int => Size -Int 1,
@@ -376,12 +376,12 @@ module C-IO
                New |-> object(_, _,
                     M'::Array => M'[N' -Int 1 <- M[N' -Int 1] ])
           ...</mem>
-          requires ((N' -Int 1) in_keys(M)) andBool (N' >Int 0)
+          requires ((N' -Int 1) in_keys(M)) andBool M[N' -Int 1] =/=K uninit andBool (N' >Int 0)
           [structural]
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, _)
           ...</k>
           <mem>... Old |-> object(_, _, M::Array) ...</mem>
-          requires (notBool ((N' -Int 1) in_keys(M))) andBool (N' >Int 0)
+          requires (notBool ((N' -Int 1) in_keys(M)) orBool M[N' -Int 1] ==K uninit) andBool (N' >Int 0)
           [structural]
      rule copyBytes(0, _, _) => .K
           [structural]
@@ -407,7 +407,7 @@ module C-IO
           <mem>...
                Base |-> object(_, _, M::Array)
           ...</mem>
-          requires Size >Int 0 andBool notBool (Loc in locations(Mem)) andBool Offset in_keys(M) [structural]
+          requires Size >Int 0 andBool notBool (Loc in locations(Mem)) andBool Offset in_keys(M) andBool M[Offset] =/=K uninit [structural]
      rule <k> dataList(_::List (.List => ListItem(getUninitializedBits(Loc, ObjT))))
                ~> readBytesForWriting(loc(Base::SymBase, Offset::Int) #as Loc::SymLoc => Loc +bytes 1, Size::Int => Size -Int 1)
           ...</k>
@@ -415,7 +415,7 @@ module C-IO
           <mem>...
                Base |-> object(ObjT::EffectiveType, _, (M::Array => M[Offset <- getUninitializedBits(Loc, ObjT)]))
           ...</mem>
-          requires Size >Int 0 andBool (notBool (Offset in_keys(M)))
+          requires Size >Int 0 andBool (notBool (Offset in_keys(M)) orBool M[Offset] ==K uninit)
                andBool notBool (Loc in locations(Mem))
      rule dataList(_) ~> (readBytesForWriting(_, 0) => .K)
           [structural]

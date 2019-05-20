@@ -44,7 +44,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
                M[F, Target <- gotoObject(Depth, BlockHistory,
                     (listToK(L) ~> K ~> Tail), LoopStack, DeclStack)]
           </goto-map>
-          requires notBool (Target in_keys({M[F]}:>Map))
+          requires notBool (Target in_keys({M[F] orDefault .Map}:>Map))
 
      rule <k> waitingOnGotoMap ...</k>
           <computation> pushBlock(Tag::Int) => .K ...</computation>

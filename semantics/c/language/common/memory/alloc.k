@@ -41,19 +41,19 @@ module C-MEMORY-ALLOC
 
      rule <k> alloc(Base:DirectBase, T::Type, Len::Int) => .K ...</k>
           <mem>...
-               .Map => Base |-> object(stripStorageSpecifiers(T), Len, makeEmptyArray(Len))
+               .Map => Base |-> object(stripStorageSpecifiers(T), Len, makeArray(Len, uninit))
           ...</mem>
           requires notBool isNoType(T)
           [structural]
      rule <k> alloc(Base:DirectBase, t(... st: no-type) #as T::Type, Len::Int) => .K ...</k>
           <mem>...
-               .Map => Base |-> object(dynamicType(T), Len, makeEmptyArray(Len))
+               .Map => Base |-> object(dynamicType(T), Len, makeArray(Len, uninit))
           ...</mem>
           [structural]
 
      // Used by calloc.
      syntax Array ::= createArray(Int, Bits) [function]
-     rule createArray(I::Int, B::Bits) => fillArray(makeEmptyArray(I), 0, I, B)
+     rule createArray(I::Int, B::Bits) => fillArray(makeArray(I, uninit), 0, I, B)
 
      rule <k> zeroObject(Base:SymBase) => .K ...</k>
           <mem>...

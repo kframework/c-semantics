@@ -37,14 +37,9 @@ module C-SYMLOC
 
      rule restrictedNew(Base:SymBase, Tag:Scope) => addProv(basedOn(Base, Tag), lnew(Base))
 
-     rule stripBases(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
-     rule stripBases(loc(Base:SymBase, Offset:Int, Prov:Set))
-          => loc(Base, Offset, filterSet(Prov, #klabel(`notBase`)))
+     rule stripBases(loc(_, _, (SetItem(K:KItem) => .Set) _))
+          requires basedOn(...) :=K K
      rule stripBases(Loc:SymLoc) => Loc [owise]
-
-     syntax Bool ::= notBase(Provenance) [function]
-     rule notBase(basedOn(_, _)) => false
-     rule notBase(_) => true [owise]
 
      rule ifFromArrayInBounds(loc(_, _, SetItem(K:KItem) S:Set), T::UType, I:Int)
           => #ifFromArrayInBounds(K, S, T, I)
@@ -61,9 +56,9 @@ module C-SYMLOC
           requires (Offset +Int (I *Int byteSizeofType(innerType(T))) <Int 0)
                orBool (Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len)
      rule #ifFromArrayInBounds(K:K, .Set, _, _) => true
-          requires getKLabel(K) =/=K #klabel(`fromArray`)
+          requires fromArray(...) :/=K K
      rule #ifFromArrayInBounds(K:K, SetItem(K':KItem) S:Set, T::UType, I:Int)
           => #ifFromArrayInBounds(K', S, T, I)
-          requires getKLabel(K) =/=K #klabel(`fromArray`)
+          requires fromArray(...) :/=K K
 
 endmodule
