@@ -289,11 +289,11 @@ module CPP-TYPING-SYNTAX
 
      syntax Type ::= convertTypeToC(CPPType) [function]
 
-     syntax DType ::= convertDTypeToC(CPPDType) [function]
+     syntax ParamDecl ::= convertDTypeToC(CPPDType) [function]
 
      syntax CPPType ::= convertTypeToCPP(Type) [function]
 
-     syntax CPPDType ::= convertDTypeToCPP(DType) [function]
+     syntax CPPDType ::= convertDTypeToCPP(ParamDecl) [function]
 
      syntax CPPType ::= correspondingUnsignedType(CPPType) [function, klabel(correspondingUnsignedTypeCpp)]
 
