@@ -18,7 +18,7 @@ module CPP-EXECUTION-EXPR-REFERENCE
      // we need this result tag because lvalues of reference type aren't KResults
      context bindReference2(HOLE:Expr, _) [result(LVal)]
 
-     rule bindReference2(E1::LVal, E2::Expr)
+     rule bindReference2(E1:LVal, E2::Expr)
           =>
           bindReference3(E1, E2) ~> E1
 
