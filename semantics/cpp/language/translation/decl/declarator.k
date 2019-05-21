@@ -330,7 +330,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
           syntax KItem ::= prepareDeclareNonStaticObject(CId, CPPType, init: Init, InitType, s: Set)
 
-          context prepareDeclareNonStaticObject(...init: HOLE:Expr => evalCoreConstantExpressionUntil(HOLE, #klabel(`isEvalVal`)), s: S::Set)
+          context prepareDeclareNonStaticObject(...init: HOLE:Expr => evalCoreConstantExpressionUntil(HOLE, isEvalVal), s: S::Set)
                requires Constexpr() in S
 
           rule prepareDeclareNonStaticObject(X::CId, T::CPPType, Init::Init, Type::InitType, S::Set)

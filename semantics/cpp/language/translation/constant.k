@@ -1,6 +1,7 @@
 module CPP-TRANSLATION-CONSTANT-SYNTAX
      imports BASIC-K
      imports CPP-SORTS
+     imports CPP-DYNAMIC-OTHER-SORTS
 
      syntax Expr ::= compileTimeEval(K)
 
@@ -8,7 +9,7 @@ module CPP-TRANSLATION-CONSTANT-SYNTAX
 
      syntax Expr ::= evalCoreConstantExpressionInContext(expr: Expr, ctx: K)
 
-     syntax Expr ::= evalCoreConstantExpressionUntil(expr: Expr, condition: K)
+     syntax Expr ::= evalCoreConstantExpressionUntil(expr: Expr, condition: Predicate)
 
 
      syntax Expr ::= evalConstantExpression(Expr)
@@ -48,13 +49,13 @@ module CPP-TRANSLATION-CONSTANT
           <compile-time-evaluation> true => false </compile-time-evaluation>
           requires isEvalVal(V) andBool #klabel(Lbl) ==K #klabel(Ctx)
 
-     rule <k> evalCoreConstantExpressionUntil(E::Expr, #klabel(Condition::KLabel)) => E ~> evalCoreConstantExpressionHole(#klabel(Condition)) ...</k>
+     rule <k> evalCoreConstantExpressionUntil(E::Expr, Condition::Predicate) => E ~> evalCoreConstantExpressionHole(Condition) ...</k>
           <compile-time-evaluation> false => true </compile-time-evaluation>
           <duration> _ => constexpr(TU) </duration>
           <curr-tr-tu> TU::String </curr-tr-tu>
           requires notBool Condition(E)
 
-     rule <k> E:Expr ~> evalCoreConstantExpressionHole(#klabel(Condition::KLabel)) => evalCoreConstantExpressionUntil(E, #klabel(Condition)) ...</k>
+     rule <k> E:Expr ~> evalCoreConstantExpressionHole(Condition:Predicate) => evalCoreConstantExpressionUntil(E, Condition) ...</k>
           <compile-time-evaluation> true => false </compile-time-evaluation>
           requires Condition(E)
 
@@ -77,7 +78,7 @@ module CPP-TRANSLATION-CONSTANT
 
      syntax Expr ::= evalCoreConstantExpression(Expr)
 
-     rule evalCoreConstantExpression(E::Expr) => evalCoreConstantExpressionUntil(E, #klabel(`isEvalVal`))
+     rule evalCoreConstantExpression(E::Expr) => evalCoreConstantExpressionUntil(E, isEvalVal)
 
 endmodule
 
