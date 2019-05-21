@@ -96,10 +96,10 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPSimpleBitfieldType ::= bitfieldType(CPPSimpleType, Int) [klabel(bitfieldTypeCpp)]
 
-     syntax CPPSimpleSignedType ::= CPPSimpleSignedCharType | "short" | "int" | "long" | "long-long"
+     syntax CPPSimpleSignedType ::= CPPSimpleSignedCharType | "short" | "int" | "long" | "long-long" | "oversized"
 
      syntax CPPSimpleUnsignedType ::= CPPSimpleUnsignedCharType | "unsigned-short" | "unsigned" | "unsigned-long" | "unsigned-long-long"
-                                    | "oversized" | "unsigned-oversized"
+                                    | "unsigned-oversized"
 
      syntax CPPSimpleFloatingType ::= "float" | "double" | "long-double"
 
@@ -177,7 +177,7 @@ module CPP-TYPING-SYNTAX
                       | "cppFundamentalType"
                       | "cppScalarType"
 
-     rule cppIntegerType => t(?_, ?_, signed-char #Or unsigned-char #Or char #Or bool #Or short #Or int #Or long #Or long-long #Or unsigned-short #Or unsigned #Or unsigned-long #Or unsigned-long-long #Or wchar_t #Or char16_t #Or char32_t #Or bitfieldType(signed-char #Or unsigned-char #Or char #Or bool #Or short #Or int #Or long #Or long-long #Or unsigned-short #Or unsigned #Or unsigned-long #Or unsigned-long-long #Or wchar_t #Or char16_t #Or char32_t, ?_)) [macro]
+     rule cppIntegerType => t(?_, ?_, signed-char #Or unsigned-char #Or char #Or bool #Or short #Or int #Or long #Or long-long #Or oversized #Or unsigned-short #Or unsigned #Or unsigned-long #Or unsigned-long-long #Or unsigned-oversized #Or wchar_t #Or char16_t #Or char32_t #Or bitfieldType(signed-char #Or unsigned-char #Or char #Or bool #Or short #Or int #Or long #Or long-long #Or oversized #Or unsigned-short #Or unsigned #Or unsigned-long #Or unsigned-long-long #Or unsigned-oversized #Or wchar_t #Or char16_t #Or char32_t, ?_)) [macro]
      rule cppEnumType => t(?_, ?_, scopedEnum(?_, ?_) #Or unscopedEnum(?_, ?_, ?_) #Or bitfieldType(scopedEnum(?_, ?_) #Or unscopedEnum(?_, ?_, ?_), ?_)) [macro]
      rule cppRefType => t(?_, ?_, lvRefType(?_) #Or rvRefType(?_)) [macro]
      rule cppFundamentalType => cppIntegerType #Or t(?_, ?_, void #Or nullptr_t #Or float #Or double #Or long-double) [macro]
