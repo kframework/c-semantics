@@ -53,7 +53,7 @@ module LINKING-CPP-BUILTIN
      rule <k> declareCppBuiltinFunction(N::Namespace :: X::CId, T::CPPType, Base::SymBase)
                => Odr.newDef(N :: X, T, Base)
           ...</k>
-          <mem> Mem::Map => Mem[Base <- object(T, 0, makeEmptyArray(0))] </mem>
+          <mem> Mem::Map => Mem[Base <- object(T, 0, makeArray(0, uninit))] </mem>
           <functions> Fun::Map => Fun[Base <- functionObject(N :: X, T, getDummyParams(T), callBuiltin)] </functions>
           <odr-decls> Decls::Map => Decls[Base += odrDecl("cpp-builtin", N :: X, X, CPPLinkage, T)] </odr-decls>
 
