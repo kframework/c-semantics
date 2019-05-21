@@ -96,6 +96,18 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPSimpleBitfieldType ::= bitfieldType(CPPSimpleType, Int) [klabel(bitfieldTypeCpp)]
 
+     syntax CPPSimpleSignedType ::= CPPSimpleBottomType
+     syntax CPPSimpleUnsignedType ::= CPPSimpleBottomType
+     syntax CPPSimpleSignedCharType ::= CPPSimpleBottomType
+     syntax CPPSimpleUnsignedCharType ::= CPPSimpleBottomType
+     syntax CPPSimpleBoolType ::= CPPSimpleBottomType
+     syntax CPPSimpleWideCharType ::= CPPSimpleBottomType
+     syntax CPPSimpleScopedEnumType ::= CPPSimpleBottomType
+     syntax CPPSimpleUnscopedEnumType ::= CPPSimpleBottomType
+     syntax CPPSimpleBitfieldType ::= CPPSimpleBottomType
+
+     syntax CPPSimpleBottomType ::= bitfieldType(CPPSimpleBottomType, Int) [klabel(bitfieldTypeCpp)]
+
      syntax CPPSimpleSignedType ::= CPPSimpleSignedCharType | "short" | "int" | "long" | "long-long" | "oversized"
 
      syntax CPPSimpleUnsignedType ::= CPPSimpleUnsignedCharType | "unsigned-short" | "unsigned" | "unsigned-long" | "unsigned-long-long"
