@@ -54,6 +54,7 @@ module C-COMMON-EXPR-MEMBERS
           ~> createLv(_, _, _, _, t(... st: no-type))
 
      // Same deal as above, only for byte lists.
+     // TODO(chathhorn): possible array-to-pointer here requires temp object.
      rule tv(agg(L:List), structOrUnionUType #as T::UType) . F:CId
           => concretize(addModifiers(getModifiers(T) getModifiers(findFieldTypeU(F, T)), rvalType(findFieldTypeU(F, T))),
                fillToBytes(extractBitsFromList(dataList(L), findFieldOffsetU(F, T), bitSizeofType(findFieldTypeU(F, T)))))
