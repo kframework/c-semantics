@@ -4,11 +4,10 @@ module CPP-TRANSLATION-EXPR-NEW-SYNTAX
      imports MAP
      imports COMMON-SORTS
      imports CPP-DYNAMIC-SORTS
-     imports CPP-TYPE-MAP-SORTS
      imports CPP-TYPING-SORTS
      syntax KItem ::= lookupAllocationFunction(CId, CPPType, Bool)
 
-     syntax List ::= getSecondDeleteArg(TypeMap, PRVal) [function]
+     syntax List ::= getSecondDeleteArg(Map, PRVal) [function]
 endmodule
 
 module CPP-TRANSLATION-EXPR-NEW
@@ -129,12 +128,12 @@ module CPP-TRANSLATION-EXPR-NEW
 
      // </group>
 
-     rule getSecondDeleteArg(M::TypeMap, V::PRVal)
+     rule getSecondDeleteArg(M::Map, V::PRVal)
           => #getSecondDeleteArg(M, func(type(void), ptr(type(void))), func(type(void), ptr(type(void)), type(size_t)), V)
 
-     syntax List ::= #getSecondDeleteArg(TypeMap, CPPType, CPPType, PRVal) [function]
+     syntax List ::= #getSecondDeleteArg(Map, CPPType, CPPType, PRVal) [function]
 
-     rule #getSecondDeleteArg((T1 |-> _) (T2 |-> _) M::TypeMap, T1::CPPType, T2::CPPType, V::PRVal) => ListItem(V)
+     rule #getSecondDeleteArg((stripType(T1) |-> _) (stripType(T2) |-> _) M::Map, T1::CPPType, T2::CPPType, V::PRVal) => ListItem(V)
 
      rule #getSecondDeleteArg(...) => .List [owise]
 
@@ -145,7 +144,7 @@ module CPP-TRANSLATION-EXPR-NEW
           requires isCPPPointerType(type(V)) andBool #fun(InnerT::CPPType => notBool isCPPClassType(InnerT) orBool notBool hasDestructorThat(InnerT, isVirtualDestructor))(innerType(type(V)))
 
      rule (
-            cSet(Cands::TypeMap, Q::QualId) #as C:CandidateSet
+            cSet(Cands::Map, Q::QualId) #as C:CandidateSet
             => resolveOverload(
                  C,
                  list(

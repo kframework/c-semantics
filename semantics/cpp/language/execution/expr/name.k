@@ -13,7 +13,7 @@ module CPP-EXECUTION-EXPR-NAME
      imports CPP-TYPING-SYNTAX
 
      rule <k> ExecName(NoNNS(), X:CId) => lv(lnew(getBase(Entry)), noTrace, T) ...</k>
-          <env>... X |-> (T::CPPType |-> Entry::EnvEntry) ...</env>
+          <env>... X |-> (_::CPPType |-> (T::CPPType, Entry::EnvEntry)) ...</env>
           requires Execution()
 
      rule <k> ExecName(NoNNS(), X:CId) => T ...</k>
