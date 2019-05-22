@@ -1,5 +1,5 @@
 # Irrespective of where this is invoked from.
-export C_SEMANTICS_ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+C_SEMANTICS_ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 
 # Default values.
