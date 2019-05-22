@@ -1,17 +1,36 @@
-BUILD_DIR = $(CURDIR)/.build
-K_SUBMODULE = $(BUILD_DIR)/k
-export K_OPTS := -Xmx8g -Xss32m
-export K_SUBMODULE_DIST := $(K_SUBMODULE)/k-distribution/target/release/k
-export K_SUBMODULE_BIN := $(K_SUBMODULE_DIST)/bin
-export K_BIN ?= $(K_SUBMODULE_BIN)
-export KOMPILE = $(K_BIN)/kompile -O2
-export KDEP = $(K_BIN)/kdep
+# Irrespective of where this is invoked from.
+export C_SEMANTICS_ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
-export PROFILE_DIR = $(shell pwd)/profiles/x86-gcc-limited-libc
-export PROFILE = $(shell basename $(PROFILE_DIR))
-export SUBPROFILE_DIRS =
-KCCFLAGS = -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
-CFLAGS = -std=gnu11 -Wall -Wextra -Werror -pedantic
+
+# Default values.
+# Do NOT override these.
+_K_ROOT := $(C_SEMANTICS_ROOT)/.build/k
+_K_OPTS := -Xmx8g -Xss32m
+_K_DISTRIBUTION := $(_K_ROOT)/k-distribution/target/release/k
+_K_BIN := $(_K_DISTRIBUTION)/bin
+_KOMPILE := $(_K_BIN)/kompile -O2
+_KDEP := $(_K_BIN)/kdep
+_PROFILE_DIR := $(_C_SEMANTICS_ROOT)/profiles/x86-gcc-limited-libc
+_PROFILE := $(notdir $(_PROFILE_DIR))
+_SUBPROFILE_DIRS :=
+
+
+# Allow the environment to override these.
+K_ROOT ?= $(_K_ROOT)
+export K_OPTS ?= $(_K_OPTS)
+export K_DISTRIBUTION ?= $(_K_DISTRIBUTION)
+export K_BIN ?= $(_K_BIN)
+export KOMPILE ?= $(_KOMPILE)
+export KDEP ?= $(_K_DEP)
+export PROFILE_DIR ?= $(_PROFILE_DIR)
+export PROFILE ?= $(_PROFILE)
+export SUBPROFILE_DIRS ?= $(_SUBPROFILE_DIRS)
+
+# Do NOT allow the environment to override these.
+KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
+CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
+CC := $(PROFILE_DIR)/cc
+
 
 FILES_TO_DIST = \
 	scripts/kcc \
@@ -30,14 +49,14 @@ FILES_TO_DIST = \
 	clang-tools/clang-kast \
 	clang-tools/call-sites \
 	scripts/cdecl-3.6/src/cdecl \
-	$(K_SUBMODULE_DIST) \
+	$(K_DISTRIBUTION) \
 	LICENSE \
 	licenses
 
-PROFILE_FILES = include src compiler-src native pp cpp-pp cc cxx
-PROFILE_FILE_DEPS = $(foreach f, $(PROFILE_FILES), $(PROFILE_DIR)/$(f))
-SUBPROFILE_FILE_DEPS = $(foreach d, $(SUBPROFILE_DIRS), $(foreach f, $(PROFILE_FILES), $(d)/$(f)))
-CC=$(PROFILE_DIR)/cc
+
+PROFILE_FILES := include src compiler-src native pp cpp-pp cc cxx
+PROFILE_FILE_DEPS := $(foreach f, $(PROFILE_FILES), $(PROFILE_DIR)/$(f))
+SUBPROFILE_FILE_DEPS := $(foreach d, $(SUBPROFILE_DIRS), $(foreach f, $(PROFILE_FILES), $(d)/$(f)))
 
 PERL_MODULES = \
 	scripts/RV_Kcc/Opts.pm \
@@ -55,18 +74,18 @@ endef
 
 default: test-build
 
-$(K_SUBMODULE)/pom.xml:
+$(K_ROOT)/pom.xml:
 	@echo "== submodule: $@"
-	git submodule update --init -- $(K_SUBMODULE)
+	git submodule update --init -- $(K_ROOT)
 
-$(K_SUBMODULE_DIST): $(K_SUBMODULE)/pom.xml
-	cd $(K_SUBMODULE) \
+$(K_DISTRIBUTION): $(K_ROOT)/pom.xml
+	cd $(K_ROOT) \
 		&& mvn package -q -Dhaskell.backend.skip -Dllvm.backend.skip -DskipTests -U
 
-$(K_SUBMODULE_BIN)/kompile: $(K_SUBMODULE_DIST)
+$(K_BIN)/kompile: $(K_DISTRIBUTION)
 
-ocaml-deps: $(K_SUBMODULE)/pom.xml
-	$(K_SUBMODULE)/k-distribution/src/main/scripts/bin/k-configure-opam-dev
+ocaml-deps: $(K_ROOT)/pom.xml
+	$(K_ROOT)/k-distribution/src/main/scripts/bin/k-configure-opam-dev
 
 check-vars: $(K_BIN)/kompile
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
@@ -225,6 +244,6 @@ clean:
 	-$(MAKE) -C tests/unit-pass clean
 	-$(MAKE) -C tests/unit-fail clean
 	-$(MAKE) -C tests/unit-fail-compilation clean
-	-rm -f $(K_SUBMODULE)/make.timestamp
+	-rm -f $(K_ROOT)/make.timestamp
 	-rm -rf dist
 	-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre 
