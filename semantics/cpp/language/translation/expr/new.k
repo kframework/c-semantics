@@ -37,7 +37,7 @@ module CPP-TRANSLATION-EXPR-NEW
           ~> NewExpr(IsGlobal::Bool, T:CPPType, _:PRVal, _, _)
 
      rule (.K => lookupAllocationFunction(operatornew[], getMostDerivedArrayElement(T), IsGlobal))
-          ~> NewExpr(IsGlobal::Bool, T:CPPArrayType, _, _, _)
+          ~> NewExpr(IsGlobal::Bool, t(... st: _:CPPSimpleArrayType) #as T::CPPType, _, _, _)
 
      rule lookupAllocationFunction(X::CId, T::CPPType, IsGlobal:Bool)
           => qualifiedNameLookup(X, GlobalNamespace(), defaultMask)
@@ -117,7 +117,7 @@ module CPP-TRANSLATION-EXPR-NEW
 
      syntax KItem ::= "New.potentiallyInvokeDestructor" "(" CPPType ")"
 
-     rule New.potentiallyInvokeDestructor(T:CPPArrayType)
+     rule New.potentiallyInvokeDestructor(t(... st: _:CPPSimpleArrayType) #as T::CPPType)
           => #if isCPPClassType(innerType(T)) #then
                Class.potentiallyInvokeDestructor(classFromType(innerType(T)))
              #else
@@ -142,7 +142,7 @@ module CPP-TRANSLATION-EXPR-NEW
 
      rule (.K => lookupAllocationFunction(operatordelete, innerType(type(V)), IsGlobal))
           ~> DeleteExpr(IsGlobal::Bool, false, V:PRVal)
-          requires isCPPPointerType(type(V)) andBool #fun(InnerT::CPPType => notBool isCPPClassType(InnerT) orBool notBool hasDestructorThat({InnerT}:>CPPClassType, #klabel(`isVirtualDestructor`)))(innerType(type(V)))
+          requires isCPPPointerType(type(V)) andBool #fun(InnerT::CPPType => notBool isCPPClassType(InnerT) orBool notBool hasDestructorThat(InnerT, #klabel(`isVirtualDestructor`)))(innerType(type(V)))
 
      rule (
             cSet(Cands::TypeMap, Q::QualId) #as C:CandidateSet

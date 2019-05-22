@@ -26,18 +26,18 @@ module CPP-SYMLOC-SYNTAX
                         | MemberFunctionPtr
 
      syntax MemberFunctionPtr ::= "NullMemberFunctionPointer"
-                                | memberPointer(Class, CId, CPPFunctionType)
+                                | memberPointer(Class, CId, CPPType)
 
      syntax ValResult ::= dataMemberValue(MemberPtr, Trace, CPPType)
 
-     syntax MemberPtr ::= derivedClassSuperobject(MemberPtr, CPPClassType, CPPClassType) [function]
-                        | baseClassSubobject(MemberPtr, base: CPPClassType, derived: CPPClassType) [function]
+     syntax MemberPtr ::= derivedClassSuperobject(MemberPtr, CPPType, CPPType) [function]
+                        | baseClassSubobject(MemberPtr, base: CPPType, derived: CPPType) [function]
 
-     syntax SymLoc ::= baseClassSubobject(SymLoc, base: CPPClassType, derived: CPPClassType) [function]
-                     | derivedClassSuperobject(SymLoc, CPPClassType, CPPClassType) [function]
+     syntax SymLoc ::= baseClassSubobject(SymLoc, base: CPPType, derived: CPPType) [function]
+                     | derivedClassSuperobject(SymLoc, CPPType, CPPType) [function]
 
-     syntax Bool ::= containsMember(MemberPtr, CPPClassType) [function]
-                   | isBaseClassSubobject(SymLoc, CPPClassType, CPPClassType) [function]
+     syntax Bool ::= containsMember(MemberPtr, CPPType) [function]
+                   | isBaseClassSubobject(SymLoc, CPPType, CPPType) [function]
 
      syntax EnvEntry ::= envEntry(base: SymBase, using: Bool, defaultArgs: DefaultArgumentsResult)
 

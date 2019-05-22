@@ -37,14 +37,17 @@ module CPP-CLASS-BASIC-SYNTAX
      // code involving ClassQualifier and NNSVal.
      syntax ClassQualifier ::= Namespace | Class | LocalQualifier
 
-     syntax Class ::= ClassQualifier "::" ClassSpecifier
+     syntax Class ::= ClassQualifier "::" ClassSpecifier [klabel(classId)]
 
-     syntax LocalClass ::= LocalQualifier "::" ClassSpecifier
+     syntax LocalClass ::= LocalQualifier "::" ClassSpecifier [klabel(classId)]
 
-     syntax InnerClass ::= Class "::" ClassSpecifier
+     syntax Class ::= LocalClass
+     syntax Class ::= InnerClass
+
+     syntax InnerClass ::= Class "::" ClassSpecifier [klabel(classId)]
 
      syntax LocalInnerClass ::= LocalClass
-                             | LocalInnerClass "::" ClassSpecifier
+                             | LocalInnerClass "::" ClassSpecifier [klabel(classId)]
 
      syntax ClassSpecifier ::= Class(Tag, CId, TemplateArgs) [klabel(classSpecifier)]
 
@@ -75,12 +78,12 @@ endmodule // CPP-CLASS-INFO-SORTS
 
 module CPP-CLASS-INFO-SYNTAX
      imports CPP-CLASS-INFO-SORTS // self
-     imports CPP-TYPING-SORTS // CPPClassType, IncompleteInfo
+     imports CPP-TYPING-SORTS // CPPType, IncompleteInfo
 
      // foreign sort
      syntax Class
 
-     syntax ClassInfo ::= getClassInfo(CPPClassType) [function]
+     syntax ClassInfo ::= getClassInfo(CPPType) [function]
                         | getClassInfo(Class) [function, klabel(getClassInfoOfClass)]
 
      syntax ClassInfo ::= ClassCell | IncompleteInfo

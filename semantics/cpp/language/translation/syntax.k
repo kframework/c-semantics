@@ -16,8 +16,6 @@ module CPP-ABSTRACT-SYNTAX
      imports CPP-DEPENDENT-SYNTAX
      imports COMMON-SYNTAX
 
-     syntax CPPIntegerType
-
      syntax LVal ::= LExpr
 
      syntax XVal ::= XExpr

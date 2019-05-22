@@ -16,13 +16,13 @@ module CPP-TRANSLATION-EXPR-CAST
           => pre(ConstCast(T2, V), Tr, T2)
           requires isSimilar(T2, T1)
 
-     rule convertConst(T2:CPPLVRefType, le(Loc::Expr, Tr::Trace, T1::CPPType))
+     rule convertConst(t(... st: lvRefType(...)) #as T2::CPPType, le(Loc::Expr, Tr::Trace, T1::CPPType))
           => le(Loc, Tr, innerType(T2))
           requires isObjectType(T1) andBool isObjectType(innerType(T2))
                andBool isSimilar(type(pointerType(innerType(T2))),
                                  type(pointerType(T1)))
 
-     rule convertConst(T2:CPPRVRefType, V:TExpr)
+     rule convertConst(t(... st: rvRefType(...)) #as T2::CPPType, V:TExpr)
           => xe(ConstCast(T2, stripHold(V)), trace(V), innerType(T2))
           requires isObjectType(type(V)) andBool isObjectType(innerType(T2))
                andBool isSimilar(type(pointerType(innerType(T2))),
@@ -57,7 +57,7 @@ module CPP-TRANSLATION-EXPR-CAST
      rule getStaticThenConstIntermediateType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods::Set, T::CPPSimpleType))))
           => t(Q, Mods, pointerType(t(Q' +Qual Const() +Qual Volatile(), Mods, T)))
 
-     rule getStaticThenConstIntermediateType(t(Q::Quals, Mods::Set, memberPointerType(C::CPPClassType, t(Q'::Quals, Mods::Set, T::CPPSimpleType))))
+     rule getStaticThenConstIntermediateType(t(Q::Quals, Mods::Set, memberPointerType(C::CPPType, t(Q'::Quals, Mods::Set, T::CPPSimpleType))))
           => t(Q, Mods, memberPointerType(C, t(Q' +Qual Const() +Qual Volatile(), Mods, T)))
 
      rule getStaticThenConstIntermediateType(T::CPPType) => T [owise]
@@ -85,7 +85,7 @@ module CPP-TRANSLATION-EXPR-CAST
                andBool notBool isCPPClassType(T) andBool notBool isCPPClassType(type(V))
 
      // @ref n4800 7.6.1.8:3
-     rule convertStatic(T:CPPRVRefType, V:LVal, Tr::Trace)
+     rule convertStatic(t(... st: rvRefType(...)) #as T::CPPType, V:LVal, Tr::Trace)
           =>
           #if notBool isCPPBitfieldType(type(V)) #then
                le(stripHold(V), Tr, T)
@@ -104,9 +104,8 @@ module CPP-TRANSLATION-EXPR-CAST
      rule tryInit(T::CPPType, V::Val, ill-formed) => #convertStatic(T, makePRVal(V))
 
 
-
      // @ref n4800 7.6.1.8:6
-     rule convertStatic(_:CPPVoidType, V::Val, _)
+     rule convertStatic(t(... st: void), V::Val, _)
           =>
           #if isConvertableDiscardedExpr(V) #then
                prDiscardedExpr(V)
@@ -116,7 +115,7 @@ module CPP-TRANSLATION-EXPR-CAST
 
      // @ref n4800 7.6.1.9:11
      // glvalue (lvalue) to reference
-     rule convertReinterpret(T2:CPPRefType, V:GLExpr)
+     rule convertReinterpret(cppRefType #as T2::CPPType, V:GLExpr)
           => le(ReinterpretCast(T2, stripHold(V)), trace(V), innerType(T2))
           requires ((isObjectType(innerType(T2)) andBool isObjectType(type(V)))
                orBool (isCPPFunctionType(innerType(T2)) andBool isCPPFunctionType(type(V))))
@@ -124,7 +123,7 @@ module CPP-TRANSLATION-EXPR-CAST
 
      // @ref n4800 7.6.1.9:11
      // glvalue (xvalue) to reference
-     rule convertReinterpret(T2:CPPRefType, V:GLExpr)
+     rule convertReinterpret(cppRefType #as T2::CPPType, V:GLExpr)
           => xe(ReinterpretCast(T2, stripHold(V)), trace(V), innerType(T2))
           requires ((isObjectType(innerType(T2)) andBool isObjectType(type(V)))
                orBool (isCPPFunctionType(innerType(T2)) andBool isCPPFunctionType(type(V))))

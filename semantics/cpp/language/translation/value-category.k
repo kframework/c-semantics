@@ -257,11 +257,11 @@ module CPP-TRANSLATION-VALUE-CATEGORY
 
      rule #catofBuiltinOperator(operator>=, _, _, _) => catof(prvalue)
 
-     rule #catofBuiltinOperator(operator[], _:CPPPointerType, _, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator[], t(... st: pointerType(...)), _, _) => catof(lvalue)
 
-     rule #catofBuiltinOperator(operator[], _:CPPArrayType, lvalue, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator[], t(... st: _:CPPSimpleArrayType), lvalue, _) => catof(lvalue)
 
-     rule #catofBuiltinOperator(operator[], _:CPPArrayType, _:RValueCategory, _) => catof(xvalue)
+     rule #catofBuiltinOperator(operator[], t(... st: _:CPPSimpleArrayType), _:RValueCategory, _) => catof(xvalue)
 
      rule #catofBuiltinOperator(operator->, _, E1::Expr, E2::Name)
           => catof((* E1) . no-template E2)

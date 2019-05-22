@@ -49,7 +49,7 @@ module CPP-EXECUTION-STMT-BLOCK
           <local-addresses> Locals::Set </local-addresses>
           [structural]
 
-     rule <k> addToConstructed(L:LVal, T:CPPClassType) => .K ...</k>
+     rule <k> addToConstructed(L:LVal, t(... st: classType(...)) #as T::CPPType) => .K ...</k>
           <locally-constructed> .List => ListItem(ktriple(L, false, false)) ...</locally-constructed>
 
      rule (.K => addToConstructed(L [ prv(N -Int 1, noTrace, type(size_t)) ], T))
@@ -79,7 +79,7 @@ module CPP-EXECUTION-STMT-BLOCK
 
      // we don't need an explicit type conversion here because the type of the implicit parameter is already the same
      // as the type of the address taken unless the function is virtual, which is handled elsewhere.
-     rule <k> destruct(lv(_, _, t(... st: classType(_ :: Class(_, X::CId, _) #as C::Class)) #as T::CPPClassType) #as V::LVal, CanBeVirtual:Bool)
+     rule <k> destruct(lv(_, _, t(... st: classType(_ :: Class(_, X::CId, _) #as C::Class)) #as T::CPPType) #as V::LVal, CanBeVirtual:Bool)
               => ExpressionStmt(BuiltinCallOp(lv(lnew(Base), noTrace, FuncT),
                    CanBeVirtual andBool isMethodVirtual(FuncT),
                    ListItem(getAddress(V))))
@@ -87,6 +87,6 @@ module CPP-EXECUTION-STMT-BLOCK
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... DestructorId(X) |-> (FuncT::CPPFunctionType |-> envEntry(... base: Base::SymBase)) ...</cenv>
+          <cenv>... DestructorId(X) |-> (FuncT::CPPType |-> envEntry(... base: Base::SymBase)) ...</cenv>
 
 endmodule

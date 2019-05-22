@@ -21,7 +21,7 @@ module CPP-EXECUTION-STMT-RETURN
      // Return (from C++ function)
      rule <k> ReturnOp(V::Expr) => prepareReturn(getReturnType(T), V) ...</k>
           <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
-          <functions>... Base |-> functionObject(_, T::CPPFunctionType, _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, T::CPPType, _, _) ...</functions>
 
      syntax KItem ::= prepareReturn(CPPType, K)
 
@@ -29,7 +29,7 @@ module CPP-EXECUTION-STMT-RETURN
           => Return'(Init, T)
           requires notBool isCPPVoidType(T)
 
-     rule prepareReturn(T:CPPVoidType, V:PRVal) => Return''(V)
+     rule prepareReturn(t(... st: void) #as T::CPPType, V:PRVal) => Return''(V)
 
      syntax KItem ::= "Return'" "(" K "," CPPType ")" [strict(1)]
 

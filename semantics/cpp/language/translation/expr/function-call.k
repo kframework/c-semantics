@@ -11,11 +11,11 @@ module CPP-TRANSLATION-EXPR-FUNCTION-CALL
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule CallExpr(Lbl:KLabel(_::K, Tr::Trace, T:CPPFunctionType) #as V::Val, list(A::List), krlist(DArgs::List))
+     rule CallExpr(Lbl:KLabel(_::K, Tr::Trace, t(... st: functionType(...)) #as T::CPPType) #as V::Val, list(A::List), krlist(DArgs::List))
           => elabCall(V, isVirtualCall(Tr, T), A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
           requires isLKLabel(#klabel(Lbl))
 
-     rule CallExpr(_:KLabel(_::K, _::K, t(... st: pointerType(T:CPPFunctionType))) #as V:Val, list(A::List), krlist(DArgs::List))
+     rule CallExpr(_:KLabel(_::K, _::K, t(... st: pointerType(t(... st: functionType(...)) #as T::CPPType))) #as V:Val, list(A::List), krlist(DArgs::List))
           => elabCall(V, false, A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
 
      syntax KItem ::= elabCall(Val, Bool, List, CPPType, StrictList) [strict(5)]
@@ -42,7 +42,7 @@ module CPP-TRANSLATION-EXPR-FUNCTION-CALL
      // in this case we are calling bindReference instead of the regular initialization scenario, but
      // bindReference shouldn't be executed in the calling context, it needs to be executed only in the
      // called function, otherwise we will end up with an lvalue where the parameter should be an xvalue.
-     rule bindParams(ListItem(T:CPPRefType) P::List, ListItem(Init:Expr) A::List, ListItem(_) DArgs::List)
+     rule bindParams(ListItem(cppRefType #as T::CPPType) P::List, ListItem(Init:Expr) A::List, ListItem(_) DArgs::List)
           => ListItem(Init) bindParams(P, A, DArgs)
 
      // ignore implicit object parameter for static function member
@@ -51,7 +51,7 @@ module CPP-TRANSLATION-EXPR-FUNCTION-CALL
           => ListItem(Obj) bindParams(P, A, DArgs)
 
      // we use getAddress instead of & because technically speaking the this argument can be any value category
-     rule bindParams(ListItem(implicitObjectParameter(T:CPPRefType)) P::List, ListItem(Obj::Expr) A::List, DArgs::List)
+     rule bindParams(ListItem(implicitObjectParameter(cppRefType #as T::CPPType)) P::List, ListItem(Obj::Expr) A::List, DArgs::List)
           => ListItem(ParenthesizedCast(type(pointerType(innerType(T))), getAddress(Obj))) bindParams(P, A, DArgs)
           requires T =/=K type(no-type)
 

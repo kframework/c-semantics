@@ -19,26 +19,26 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
      imports CPP-TYPING-SYNTAX
      imports CPP-EXPR-MEMBERS-SYNTAX
 
-     rule BuiltinCallOp(lv(_, _, T:CPPPointerType) #as L::LVal => * L, false, _)
+     rule BuiltinCallOp(lv(_, _, t(... st: pointerType(...)) #as T::CPPType) #as L::LVal => * L, false, _)
           requires isCPPFunctionType(innerType(T))
 
      context BuiltinCallOp((* _) #as HOLE:Expr, false, _)
           requires Execution()
 
      // Function call (from C++ function)
-     rule BuiltinCallOp(lv((loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset)), _, _:CPPFunctionType), _, _)
+     rule BuiltinCallOp(lv((loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset)), _, t(... st: functionType(...))), _, _)
 
-     rule <k> BuiltinCallOp(lv(loc((Base::SymBase => Base'), _), _, _:CPPFunctionType), _, _) ...</k>
+     rule <k> BuiltinCallOp(lv(loc((Base::SymBase => Base'), _), _, t(... st: functionType(...))), _, _) ...</k>
           <linkings>... Base |-> Base'::SymBase ...</linkings>
 
-     rule <k> BuiltinCallOp(lv(loc(Base::SymBase, 0), _, T:CPPFunctionType), IsVirtual:Bool, Args::List)
+     rule <k> BuiltinCallOp(lv(loc(Base::SymBase, 0), _, t(... st: functionType(...)) #as T::CPPType), IsVirtual:Bool, Args::List)
               => prepareArguments(CurrLoc, Base, Fun, T, CPPLinkage, IsVirtual, Args)
           ...</k>
           <functions>... Base |-> Fun:KItem ...</functions>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           requires isDirectBase(Base) orBool (isMethodPure(T) andBool IsVirtual)
 
-     rule <k> BuiltinCallOp(lv(loc(obj(0, Align::Int, nativeSymbol(S::String)) #as Base::SymBase, _), _, T:CPPFunctionType), IsVirtual:Bool, Args::List)
+     rule <k> BuiltinCallOp(lv(loc(obj(0, Align::Int, nativeSymbol(S::String)) #as Base::SymBase, _), _, t(... st: functionType(...)) #as T::CPPType), IsVirtual:Bool, Args::List)
               => prepareArguments(CurrLoc, obj(0, Align, nativeSymbol(S)), functionObject(Identifier(S), CType, .List, .Map), T, CLinkage, IsVirtual, Args)
           ...</k>
           <external-types>... Identifier(S) |-> CType::Type ...</external-types>
@@ -120,12 +120,12 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
 
      rule getOverride(_, .Map) => type(no-type)::CPPType
 
-     rule virtualCall(StaticT::CPPFunctionType, L:LVal, krlist(Args::List))
+     rule virtualCall(StaticT::CPPType, L:LVal, krlist(Args::List))
           => setType(#fun(Ret::CPPType => #if isCPPRefType(Ret) #then innerType(Ret) #else Ret #fi)(getReturnType(StaticT)), BuiltinCallOp(L, false, Args))
 
      // Function call (into C++ function)
      rule <k> application(CurrLoc::CabsLoc, Base::SymBase,
-                    functionObject(X::QualId, DefT::CPPFunctionType, Params::List, Blk:K),
+                    functionObject(X::QualId, DefT::CPPType, Params::List, Blk:K),
                     _, CallingLang::LanguageLinkage, krlist(L::List))
               ~> K:K
               => sequencePoint

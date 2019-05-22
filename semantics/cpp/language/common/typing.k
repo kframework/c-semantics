@@ -1,9 +1,7 @@
 module CPP-TYPING-SORTS
      syntax AType
 
-     syntax CPPType ::= CPPFunctionType
-                      | CPPClassType
-                      | CPPRefType
+     syntax CPPType
 
      syntax CPPDType ::= CPPType | CPPVariadic | InitListType | NoInitType
 
@@ -20,12 +18,6 @@ module CPP-TYPING-SORTS
      syntax CPPTypes ::= List{CPPDType, ","}
 
      syntax ExceptionSet
-
-     syntax CPPFunctionType
-
-     syntax CPPClassType
-
-     syntax CPPRefType
 
      syntax ClassInfo
 
@@ -69,8 +61,6 @@ module CPP-TYPING-SYNTAX
      // removes all syntax not part of the type of the entity.
      syntax CPPType ::= stripType(CPPType) [function]
 
-     syntax CPPClassType ::= stripType(CPPClassType) [function]
-
      syntax CPPSimpleIntegerType ::= CPPSimpleSignedType
                                    | CPPSimpleUnsignedType
                                    | CPPSimpleCharType
@@ -106,10 +96,10 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPSimpleBitfieldType ::= bitfieldType(CPPSimpleType, Int) [klabel(bitfieldTypeCpp)]
 
-     syntax CPPSimpleSignedType ::= CPPSimpleSignedCharType | "short" | "int" | "long" | "long-long"
+     syntax CPPSimpleSignedType ::= CPPSimpleSignedCharType | "short" | "int" | "long" | "long-long" | "oversized"
 
      syntax CPPSimpleUnsignedType ::= CPPSimpleUnsignedCharType | "unsigned-short" | "unsigned" | "unsigned-long" | "unsigned-long-long"
-                                    | "oversized" | "unsigned-oversized"
+                                    | "unsigned-oversized"
 
      syntax CPPSimpleFloatingType ::= "float" | "double" | "long-double"
 
@@ -152,10 +142,7 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPSimplePointerType ::= pointerType(CPPType) [klabel(cppPointerType)]
 
-     syntax CPPSimpleMemberPointerType ::= CPPSimpleMemberFunctionPointerType
-                                         | memberPointerType(CPPClassType, CPPType)
-
-     syntax CPPSimpleMemberFunctionPointerType ::= memberPointerType(CPPClassType, CPPFunctionType)
+     syntax CPPSimpleMemberPointerType ::= memberPointerType(CPPType, CPPType)
 
      syntax CPPSimpleLVRefType ::= lvRefType(CPPType)
 
@@ -170,70 +157,13 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleAutoType ::= "auto"
                                 | "decltype(auto)"
 
-     syntax CPPSimpleScopedEnumType ::= scopedEnum(id: Enum, underlyingType: CPPIntegerType)
+     syntax CPPSimpleScopedEnumType ::= scopedEnum(id: Enum, underlyingType: CPPType)
 
-     syntax CPPSimpleUnscopedEnumType ::= unscopedEnum(id: Enum, underlyingType: CPPIntegerType, utFixed: Bool)
+     syntax CPPSimpleUnscopedEnumType ::= unscopedEnum(id: Enum, underlyingType: CPPType, utFixed: Bool)
 
      syntax CPPSimpleEnumType ::= CPPSimpleScopedEnumType | CPPSimpleUnscopedEnumType
 
      syntax CPPSimpleCompoundType ::= CPPSimpleEnumType
-
-     syntax CPPFunctionType ::= t(q: Quals, m: Set, st: CPPSimpleFunctionType) [klabel(tcpp)]
-
-     syntax CPPArithmeticType ::= CPPIntegerType | CPPFloatingType
-
-     syntax CPPScalarType ::= CPPArithmeticType | CPPEnumType | CPPPointerType | CPPMemberPointerType | CPPNullPtrTType
-
-     syntax CPPFundamentalType ::= CPPVoidType | CPPArithmeticType | CPPNullPtrTType
-
-     syntax CPPCharType ::= t(q: Quals, m: Set, st: CPPSimpleCharType) [klabel(tcpp)]
-
-     syntax CPPBoolType ::= t(q: Quals, m: Set, st: CPPSimpleBoolType) [klabel(tcpp)]
-
-     syntax CPPFloatingType ::= t(q: Quals, m: Set, st: CPPSimpleFloatingType) [klabel(tcpp)]
-
-     syntax CPPIntegerType ::= CPPCharType | CPPBoolType | CPPSignedType | CPPUnsignedType | CPPWideCharType
-
-     syntax CPPSignedType ::= t(q: Quals, m: Set, st: CPPSimpleSignedType) [klabel(tcpp)]
-
-     syntax CPPUnsignedType ::= t(q: Quals, m: Set, st: CPPSimpleUnsignedType) [klabel(tcpp)]
-
-     syntax CPPVoidType ::= t(q: Quals, m: Set, st: CPPSimpleVoidType) [klabel(tcpp)]
-
-     syntax CPPArrayType ::= t(q: Quals, m: Set, st: CPPSimpleArrayType) [klabel(tcpp)]
-
-     syntax CPPPointerType ::= t(q: Quals, m: Set, st: CPPSimplePointerType) [klabel(tcpp)]
-
-     syntax CPPMemberPointerType ::= CPPMemberFunctionPointerType
-                                   | t(q: Quals, m: Set, st: CPPSimpleMemberPointerType) [klabel(tcpp)]
-
-     syntax CPPMemberFunctionPointerType ::= t(q: Quals, m: Set, st: CPPSimpleMemberFunctionPointerType) [klabel(tcpp)]
-
-     syntax CPPLVRefType ::= t(q: Quals, m: Set, st: CPPSimpleLVRefType) [klabel(tcpp)]
-
-     syntax CPPRVRefType ::= t(q: Quals, m: Set, st: CPPSimpleRVRefType) [klabel(tcpp)]
-
-     syntax CPPNullPtrTType ::= t(q: Quals, m: Set, st: CPPSimpleNullPtrTType) [klabel(tcpp)]
-
-     syntax CPPRefType ::= CPPLVRefType | CPPRVRefType
-
-     syntax CPPClassType ::= t(q: Quals, m: Set, st: CPPSimpleClassType) [klabel(tcpp)]
-
-     syntax CPPWideCharType ::= t(q: Quals, m: Set, st: CPPSimpleWideCharType) [klabel(tcpp)]
-
-     syntax CPPBitfieldType ::= t(q: Quals, m: Set, st: CPPSimpleBitfieldType) [klabel(tcpp)]
-
-     syntax CPPEnumType ::= CPPScopedEnumType | CPPUnscopedEnumType
-
-     syntax CPPScopedEnumType ::= t(q: Quals, m: Set, st: CPPSimpleScopedEnumType) [klabel(tcpp)]
-
-     syntax CPPUnscopedEnumType ::= t(q: Quals, m: Set, st: CPPSimpleUnscopedEnumType) [klabel(tcpp)]
-
-     syntax CPPType ::= CPPScalarType
-                      | CPPArrayType
-                      | CPPFundamentalType
-                      | CPPBitfieldType
-
 
      syntax CPPVariadic ::= "variadic"
 
@@ -241,65 +171,101 @@ module CPP-TYPING-SYNTAX
 
      syntax NoInitType ::= NoInitType()
 
+     syntax CPPType ::= "cppIntegerType"
+                      | "cppEnumType"
+                      | "cppRefType"
+                      | "cppFundamentalType"
+                      | "cppScalarType"
+
+     rule cppIntegerType => t(?_, ?_, signed-char #Or unsigned-char #Or char #Or bool #Or short #Or int #Or long #Or long-long #Or oversized #Or unsigned-short #Or unsigned #Or unsigned-long #Or unsigned-long-long #Or unsigned-oversized #Or wchar_t #Or char16_t #Or char32_t #Or bitfieldType(signed-char #Or unsigned-char #Or char #Or bool #Or short #Or int #Or long #Or long-long #Or oversized #Or unsigned-short #Or unsigned #Or unsigned-long #Or unsigned-long-long #Or unsigned-oversized #Or wchar_t #Or char16_t #Or char32_t, ?_)) [macro]
+     rule cppEnumType => t(?_, ?_, scopedEnum(?_, ?_) #Or unscopedEnum(?_, ?_, ?_) #Or bitfieldType(scopedEnum(?_, ?_) #Or unscopedEnum(?_, ?_, ?_), ?_)) [macro]
+     rule cppRefType => t(?_, ?_, lvRefType(?_) #Or rvRefType(?_)) [macro]
+     rule cppFundamentalType => cppIntegerType #Or t(?_, ?_, void #Or nullptr_t #Or float #Or double #Or long-double) [macro]
+     rule cppScalarType => cppIntegerType #Or cppEnumType #Or t(?_, ?_, float #Or double #Or long-double #Or pointerType(?_) #Or memberPointerType(?_, ?_) #Or nullptr_t) [macro]
+
+     syntax Bool ::= isCPPVoidType(CPPDType) [function]
+                   | isCPPUnsignedType(CPPDType) [function]
+                   | isCPPUnscopedEnumType(CPPDType) [function]
+                   | isCPPSignedType(CPPDType) [function]
+                   | isCPPScopedEnumType(CPPDType) [function]
+                   | isCPPRefType(CPPDType) [function]
+                   | isCPPRVRefType(CPPDType) [function]
+                   | isCPPPointerType(CPPDType) [function]
+                   | isCPPNullPtrTType(CPPDType) [function]
+                   | isCPPMemberPointerType(CPPDType) [function]
+                   | isCPPMemberFunctionPointerType(CPPDType) [function]
+                   | isCPPLVRefType(CPPDType) [function]
+                   | isCPPIntegerType(CPPDType) [function]
+                   | isCPPFunctionType(CPPDType) [function]
+                   | isCPPFloatingType(CPPDType) [function]
+                   | isCPPEnumType(CPPDType) [function]
+                   | isCPPClassType(CPPDType) [function]
+                   | isCPPBoolType(CPPDType) [function]
+                   | isCPPBitfieldType(CPPDType) [function]
+                   | isCPPArrayType(CPPDType) [function]
+                   | isCPPArithmeticType(CPPDType) [function]
+                   | isCPPWideCharType(CPPDType) [function]
+                   | isCPPCharType(CPPDType) [function]
+
      syntax Expr ::= setType(CPPType, Expr) [strict]
 
      syntax Quals ::= getQuals(CPPType) [function]
 
      syntax CPPType ::= addQuals(Quals, CPPType) [function]
 
-     syntax Bool ::= isAdjustedType(CPPFunctionType) [function]
+     syntax Bool ::= isAdjustedType(CPPType) [function]
 
-     syntax CPPFunctionType ::= adjustFunctionType(CPPFunctionType) [function]
+     syntax CPPType ::= adjustFunctionType(CPPType) [function]
 
-     syntax CPPFunctionType ::= setMethod(CPPFunctionType) [function]
+     syntax CPPType ::= setMethod(CPPType) [function]
 
-     syntax Bool ::= isFunctionMember(CPPFunctionType) [function]
-                   | hasImplicitParameter(CPPFunctionType) [function]
+     syntax Bool ::= isFunctionMember(CPPType) [function]
+                   | hasImplicitParameter(CPPType) [function]
 
-     syntax List ::= getParams(CPPFunctionType) [function, klabel(cppgetParams)]
-                   | getRealParams(CPPFunctionType) [function]
+     syntax List ::= getParams(CPPType) [function, klabel(cppgetParams)]
+                   | getRealParams(CPPType) [function]
 
-     syntax RefQualifier ::= getRefQualifier(CPPFunctionType) [function]
+     syntax RefQualifier ::= getRefQualifier(CPPType) [function]
 
-     syntax CPPFunctionType ::= setRefQualifier(CPPFunctionType, RefQualifier) [function]
+     syntax CPPType ::= setRefQualifier(CPPType, RefQualifier) [function]
 
-     syntax Quals ::= getCVSQuals(CPPFunctionType) [function]
+     syntax Quals ::= getCVSQuals(CPPType) [function]
 
-     syntax CPPFunctionType ::= setCVSQuals(CPPFunctionType, Quals) [function]
+     syntax CPPType ::= setCVSQuals(CPPType, Quals) [function]
 
-     syntax Bool ::= isMethodStatic(CPPFunctionType) [function]
+     syntax Bool ::= isMethodStatic(CPPType) [function]
 
-     syntax CPPFunctionType ::= setMethodStatic(CPPFunctionType) [function]
+     syntax CPPType ::= setMethodStatic(CPPType) [function]
 
-     syntax Bool ::= isMethodVirtual(CPPFunctionType) [function]
+     syntax Bool ::= isMethodVirtual(CPPType) [function]
 
-     syntax CPPFunctionType ::= setMethodVirtual(CPPFunctionType) [function]
+     syntax CPPType ::= setMethodVirtual(CPPType) [function]
 
-     syntax Bool ::= isMethodPure(CPPFunctionType) [function]
+     syntax Bool ::= isMethodPure(CPPType) [function]
 
-     syntax CPPFunctionType ::= setMethodPure(CPPFunctionType) [function]
+     syntax CPPType ::= setMethodPure(CPPType) [function]
 
-     syntax Bool ::= isMethodExplicit(CPPFunctionType) [function]
+     syntax Bool ::= isMethodExplicit(CPPType) [function]
 
-     syntax CPPFunctionType ::= setMethodExplicit(CPPFunctionType) [function]
+     syntax CPPType ::= setMethodExplicit(CPPType) [function]
 
-     syntax Bool ::= isMethodUserProvided(CPPFunctionType) [function]
+     syntax Bool ::= isMethodUserProvided(CPPType) [function]
 
-     syntax CPPFunctionType ::= setMethodUserProvided(CPPFunctionType, Bool) [function]
+     syntax CPPType ::= setMethodUserProvided(CPPType, Bool) [function]
 
-     syntax Bool ::= isMethodConstructor(CPPFunctionType) [function]
+     syntax Bool ::= isMethodConstructor(CPPType) [function]
 
-     syntax CPPFunctionType ::= setMethodConstructor(CPPFunctionType, Bool) [function]
+     syntax CPPType ::= setMethodConstructor(CPPType, Bool) [function]
 
-     syntax Class ::= getMethodClass(CPPFunctionType) [function]
+     syntax Class ::= getMethodClass(CPPType) [function]
 
-     syntax CPPFunctionType ::= setMethodClass(CPPFunctionType, Class) [function]
+     syntax CPPType ::= setMethodClass(CPPType, Class) [function]
 
-     syntax Bool ::= isVariadicFunction(CPPFunctionType) [function]
+     syntax Bool ::= isVariadicFunction(CPPType) [function]
 
-     syntax CPPType ::= getReturnType(CPPFunctionType) [function, klabel(cppgetReturnType)]
+     syntax CPPType ::= getReturnType(CPPType) [function, klabel(cppgetReturnType)]
 
-     syntax Bool ::= acceptsNArgs(Int, CPPFunctionType, List) [function]
+     syntax Bool ::= acceptsNArgs(Int, CPPType, List) [function]
 
      syntax CPPType ::= const(CPPSimpleType) [function, klabel(constCpp)]
                       | const(CPPType) [function, klabel(constCpp2)]
@@ -307,12 +273,6 @@ module CPP-TYPING-SYNTAX
                       | volatile(CPPType) [function, klabel(volatileCpp2)]
 
      syntax CPPType ::= type(CPPSimpleType) [function, klabel(cppType)]
-
-     // this significantly reduces the number of casts we have to do when converting between Class and CPPClassType
-     syntax CPPClassType ::= type(CPPSimpleClassType) [function, klabel(cppType)]
-
-     // useful for stripType
-     syntax CPPIntegerType ::= type(CPPSimpleIntegerType) [function, klabel(cppType)]
 
      syntax CPPType ::= utype(Typed) [function, klabel(cppUTypeVal)]
 
@@ -331,18 +291,18 @@ module CPP-TYPING-SYNTAX
 
      syntax Type ::= convertTypeToC(CPPType) [function]
 
-     syntax DType ::= convertTypeToC(CPPDType) [function]
+     syntax ParamDecl ::= convertDTypeToC(CPPDType) [function]
 
      syntax CPPType ::= convertTypeToCPP(Type) [function]
 
-     syntax CPPDType ::= convertTypeToCPP(DType) [function]
+     syntax CPPDType ::= convertDTypeToCPP(ParamDecl) [function]
 
      syntax CPPType ::= correspondingUnsignedType(CPPType) [function, klabel(correspondingUnsignedTypeCpp)]
 
      syntax Int ::= max(CPPType) [function, klabel(maxCpp)]
                   | min(CPPType) [function, klabel(minCpp)]
-                  | precision(CPPFloatingType) [function]
-                  | exponent(CPPFloatingType) [function]
+                  | precision(CPPType) [function]
+                  | exponent(CPPType) [function]
 
      syntax Float ::= fmax(CPPType) [function, klabel(fmaxCpp)]
                     | fmin(CPPType) [function, klabel(fminCpp)]
@@ -359,25 +319,25 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPDType ::= implicitObjectParameter(CPPType)
 
-     syntax CPPType ::= implicitObjectParameterType(CPPFunctionType) [function]
+     syntax CPPType ::= implicitObjectParameterType(CPPType) [function]
 
-     syntax Expr ::= getBaseClassSubobject(base: LVal, baseType: CPPClassType) [strict]
+     syntax Expr ::= getBaseClassSubobject(base: LVal, baseType: CPPType) [strict]
 
-     syntax Bool ::= isBaseClassOf(base: CPPClassType, derived: CPPClassType) [function]
-                   | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
+     syntax Bool ::= isBaseClassOf(base: CPPType, derived: CPPType) [function]
+                   | isVirtualBaseClassOf(CPPType, CPPType) [function]
                    | isBaseClassOf(base: Class, derived: Class) [function, klabel(isClassBaseClassOf)]
                    | isPropperBaseClassOf(base: Class, derived: Class) [function, klabel(isClassPropperBaseClassOf)]
                    | isDirectBaseClassOf(base: Class, derived: Class) [function]
                    | hasVirtualMembers(Class) [function, klabel(hasVirtualMembersCl)]
-                   | hasVirtualMembers(CPPClassType) [function]
+                   | hasVirtualMembers(CPPType) [function]
                    | isUnionLikeClass(Class) [function]
-                   | isVirtualCall(Trace, CPPFunctionType) [function]
+                   | isVirtualCall(Trace, CPPType) [function]
 
      syntax CPPType ::= getMostDerivedArrayElement(CPPType) [function]
 
      syntax IncompleteInfo ::= "#incomplete"
 
-     syntax EnumInfo ::= getEnumInfo(CPPEnumType) [function]
+     syntax EnumInfo ::= getEnumInfo(CPPType) [function]
                        | #getEnumInfo(Enum, K) [function]
 
      syntax EnumInfo ::= CppenumCell | IncompleteInfo
@@ -401,7 +361,7 @@ module CPP-TYPING-SYNTAX
 
      syntax Enum ::= getEnumId(CPPType) [function]
 
-     syntax Bool ::= isEnumScoped(CPPEnumType) [function]
+     syntax Bool ::= isEnumScoped(CPPType) [function]
                    | isEnumFixed(CPPType) [function]
 
      // Intended to use only when the derived class
@@ -433,13 +393,13 @@ module CPP-TYPING
 
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, _, _, C::Class, _, false)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
 
-     rule getRealParams(T::CPPFunctionType) => #getRealParams(getParams(T))
+     rule getRealParams(T::CPPType) => #getRealParams(getParams(T))
 
      rule getReturnType(t(_, _, functionType(... returnType: T::CPPType))) => T
 
-     rule isVariadicFunction(T::CPPFunctionType) => size(getParams(T)) =/=Int size(getRealParams(T))
+     rule isVariadicFunction(T::CPPType) => size(getParams(T)) =/=Int size(getRealParams(T))
 
-     rule implicitObjectParameterType(T::CPPFunctionType)
+     rule implicitObjectParameterType(T::CPPType)
           => {#fun((implicitObjectParameter(T2::CPPType) => T2))(getParams(T)[0])}:>CPPType
 
      syntax List ::= #getRealParams(List) [function]
@@ -449,20 +409,20 @@ module CPP-TYPING
      rule #getRealParams(L::List) => L [owise]
 
      // 13.3.2:2.1
-     rule acceptsNArgs(M::Int, T::CPPFunctionType, _) => true
+     rule acceptsNArgs(M::Int, T::CPPType, _) => true
           requires size(getRealParams(T)) ==Int M
 
      // 13.3.2:2.2
-     rule acceptsNArgs(M::Int, T::CPPFunctionType, _) => isVariadicFunction(T)
+     rule acceptsNArgs(M::Int, T::CPPType, _) => isVariadicFunction(T)
           requires size(getRealParams(T)) <Int M
 
      // 13.3.2:2.3
-     rule acceptsNArgs(M::Int, T::CPPFunctionType, DArgs::List)
+     rule acceptsNArgs(M::Int, T::CPPType, DArgs::List)
           => notBool isNoArg(DArgs[#if hasImplicitParameter(T) #then M -Int 1 #else M #fi])
           requires size(getRealParams(T)) >Int M
 
      // members cannot be C linkage
-     rule setMethod(T::CPPFunctionType) => #fun(t(... st: functionType(... linkage: L::LanguageLinkage => #if L ==K CLinkage #then CPPLinkage #else L #fi)))(T)
+     rule setMethod(T::CPPType) => #fun(t(... st: functionType(... linkage: L::LanguageLinkage => #if L ==K CLinkage #then CPPLinkage #else L #fi)))(T)
 
      rule isFunctionMember(t(... st: functionType(... methodInfo: methodInfo(...)))) => true
 
@@ -488,7 +448,7 @@ module CPP-TYPING
 
      rule getRefQualifier(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIRefQualifier(MI)
 
-     rule setRefQualifier(T::CPPFunctionType, RQ::RefQualifier)
+     rule setRefQualifier(T::CPPType, RQ::RefQualifier)
        => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIRefQualifier(MI, RQ))))(T)
 
      syntax RefQualifier ::= getMIRefQualifier(MethodInfo) [function]
@@ -505,7 +465,7 @@ module CPP-TYPING
 
      rule getCVSQuals(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMICVSQuals(MI)
 
-     rule setCVSQuals(T::CPPFunctionType, CVS::Quals)
+     rule setCVSQuals(T::CPPType, CVS::Quals)
        => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMICVSQuals(MI, CVS))))(T)
 
      syntax Quals ::= getMICVSQuals(MethodInfo) [function]
@@ -522,7 +482,7 @@ module CPP-TYPING
 
      rule isMethodStatic(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIStatic(MI)
 
-     rule setMethodStatic(T::CPPFunctionType)
+     rule setMethodStatic(T::CPPType)
       => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIStatic(MI))))(T)
 
      syntax Bool ::= getMIStatic(MethodInfo) [function]
@@ -539,7 +499,7 @@ module CPP-TYPING
 
      rule isMethodUserProvided(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIUserProvided(MI)
 
-     rule setMethodUserProvided(T::CPPFunctionType, B::Bool)
+     rule setMethodUserProvided(T::CPPType, B::Bool)
        => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIUserProvided(MI, B))))(T)
 
      syntax Bool ::= getMIUserProvided(MethodInfo) [function]
@@ -556,7 +516,7 @@ module CPP-TYPING
 
      rule isMethodConstructor(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIConstructor(MI)
 
-     rule setMethodConstructor(T::CPPFunctionType, B::Bool)
+     rule setMethodConstructor(T::CPPType, B::Bool)
        => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIConstructor(MI, B))))(T)
 
      syntax Bool ::= getMIConstructor(MethodInfo) [function]
@@ -573,7 +533,7 @@ module CPP-TYPING
 
      rule isMethodVirtual(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIVirtual(MI)
 
-     rule setMethodVirtual(T::CPPFunctionType)
+     rule setMethodVirtual(T::CPPType)
           => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIVirtual(MI))))(T)
 
      syntax Bool ::= getMIVirtual(MethodInfo) [function]
@@ -590,7 +550,7 @@ module CPP-TYPING
 
      rule isMethodPure(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIPure(MI)
 
-     rule setMethodPure(T::CPPFunctionType)
+     rule setMethodPure(T::CPPType)
           => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIPure(MI))))(T)
 
      syntax Bool ::= getMIPure(MethodInfo) [function]
@@ -607,7 +567,7 @@ module CPP-TYPING
 
      rule isMethodExplicit(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIExplicit(MI)
 
-     rule setMethodExplicit(T::CPPFunctionType)
+     rule setMethodExplicit(T::CPPType)
           => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIExplicit(MI))))(T)
 
      syntax Bool ::= getMIExplicit(MethodInfo) [function]
@@ -624,7 +584,7 @@ module CPP-TYPING
 
      rule getMethodClass(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIClass(MI)
 
-     rule setMethodClass(T::CPPFunctionType, C::Class)
+     rule setMethodClass(T::CPPType, C::Class)
           => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIClass(MI, C))))(T)
 
      syntax Class ::= getMIClass(MethodInfo) [function]
@@ -678,7 +638,7 @@ module CPP-TYPING
 
      rule simpleType(t(_, _, T::CPPSimpleType)) => T
 
-     rule isObjectType(T:K) => notBool isCPPFunctionType(T) andBool notBool isCPPRefType(T) andBool notBool isCPPVoidType(T)
+     rule isObjectType(T::CPPType) => notBool isCPPFunctionType(T) andBool notBool isCPPRefType(T) andBool notBool isCPPVoidType(T)
 
      rule isPointerToObjectType(T::CPPType)
           => isCPPPointerType(T) andBool isObjectType(innerType(T))
@@ -707,7 +667,7 @@ module CPP-TYPING
 
      rule getQuals(t(Q::Quals, _, _)) => Q
 
-     rule getEnumInfo(E::CPPEnumType) => #getEnumInfo(getEnumId(E), #configuration)
+     rule getEnumInfo(E::CPPType) => #getEnumInfo(getEnumId(E), #configuration)
 
      rule #getEnumInfo(X::Enum, <generatedTop>... <cppenum> <enum-id> X </enum-id> B::Bag </cppenum> ...</generatedTop>) => <cppenum> <enum-id> X </enum-id> B </cppenum>
 
@@ -715,20 +675,20 @@ module CPP-TYPING
 
      rule isCompleteType(t(_, _, incompleteArrayType(_))) => false
 
-     rule isCompleteType(T:CPPEnumType) => getEnumInfo(T) =/=K #incomplete //TODO(h0nzZik): false in 7.2, par 6
+     rule isCompleteType(cppEnumType #as T::CPPType) => getEnumInfo(T) =/=K #incomplete //TODO(h0nzZik): false in 7.2, par 6
 
-     rule isCompleteType(T:CPPClassType) => getClassInfo(T) =/=K #incomplete
+     rule isCompleteType(t(... st: classType(...)) #as T::CPPType) => getClassInfo(T) =/=K #incomplete
 
-     rule isCompleteType(T:CPPArrayType) => false
+     rule isCompleteType(t(... st: _:CPPSimpleArrayType) #as T::CPPType) => false
           requires notBool isCompleteType(innerType(T))
 
      rule isCompleteType(t(_, _, void)) => false
 
      rule isCompleteType(_) => true [owise]
 
-     rule isAggregateType(T:CPPArrayType) => true
+     rule isAggregateType(t(... st: _:CPPSimpleArrayType) #as T::CPPType) => true
 
-     rule isAggregateType(T:CPPClassType) => isAggregateClass(getClassInfo(T))
+     rule isAggregateType(t(... st: classType(...)) #as T::CPPType) => isAggregateClass(getClassInfo(T))
 
      rule isAggregateType(_) => false [owise]
 
@@ -762,7 +722,7 @@ module CPP-TYPING
 
      rule stripType(t(Q::Quals, _, rvRefType(T::CPPType))) => t(Q, .Set, rvRefType(stripType(T)))
 
-     rule stripType(t(Q::Quals, _, memberPointerType(C::CPPClassType, T::CPPType))) => t(Q, .Set, memberPointerType(stripType(C), stripType(T)))
+     rule stripType(t(Q::Quals, _, memberPointerType(C::CPPType, T::CPPType))) => t(Q, .Set, memberPointerType(stripType(C), stripType(T)))
 
      rule stripType(t(Q::Quals, _, functionType(Ret::CPPType, Params::CPPTypes, MI::MethodInfo, L::LanguageLinkage, _))) => t(Q, .Set, functionType(stripType(Ret), toCPPTypes(stripTypes(toTemplateArgs(Params))), stripMI(MI), L, noexcept(false)))
 
@@ -817,25 +777,25 @@ module CPP-TYPING
      rule underlyingType(t(Q::Quals, Mods::Set, T::CPPSimpleType))
           => t(Q, Mods, underlyingType(T))
 
-     rule underlyingType(scopedEnum(_, T::CPPIntegerType)) => simpleType(T)
+     rule underlyingType(scopedEnum(_, T::CPPType)) => simpleType(T)
 
-     rule underlyingType(unscopedEnum(_, T::CPPIntegerType, _)) => simpleType(T)
+     rule underlyingType(unscopedEnum(_, T::CPPType, _)) => simpleType(T)
 
      rule underlyingType(bitfieldType(T::CPPSimpleType, N::Int)) => bitfieldType(underlyingType(T), N)
 
-     rule inRange(I:Int, T::CPPIntegerType)
+     rule inRange(I:Int, T::CPPType)
           => I <=Int max(T) andBool I >=Int min(T)
 
-     rule inRange(F:Float, T::CPPFloatingType)
+     rule inRange(F:Float, T::CPPType)
           => F <=Float fmax(T) andBool F >=Float fmin(T)
 
-     rule inRange(Loc:SymLoc, T::CPPIntegerType)
+     rule inRange(Loc:SymLoc, T::CPPType)
           => bitSizeofType(T) >=Int cfg:ptrsize *Int cfg:bitsPerByte
 
      // bitfields can't have values beyond their actual type, regardless of their width
-     rule min(T:CPPBitfieldType) => maxInt(#min(T), #min(innerType(T)))
+     rule min(t(... st: bitfieldType(...)) #as T::CPPType) => maxInt(#min(T), #min(innerType(T)))
 
-     rule max(T:CPPBitfieldType) => minInt(#max(T), #max(innerType(T)))
+     rule max(t(... st: bitfieldType(...)) #as T::CPPType) => minInt(#max(T), #max(innerType(T)))
 
      rule min(T::CPPType) => #min(T) [owise]
 
@@ -844,17 +804,17 @@ module CPP-TYPING
      syntax Int ::= #min(CPPType) [function]
                   | #max(CPPType) [function]
 
-     rule #min(T:CPPSignedType) => 0 -Int (1 <<Int ((bitSizeofType(T)) -Int 1))
+     rule #min(t(... st: _:CPPSimpleSignedType) #as T::CPPType) => 0 -Int (1 <<Int ((bitSizeofType(T)) -Int 1))
 
-     rule #max(T:CPPSignedType) => (1 <<Int ((bitSizeofType(T)) -Int 1)) -Int 1
+     rule #max(t(... st: _:CPPSimpleSignedType) #as T::CPPType) => (1 <<Int ((bitSizeofType(T)) -Int 1)) -Int 1
 
-     rule #min(_:CPPUnsignedType) => 0
+     rule #min(t(... st: _:CPPSimpleUnsignedType)) => 0
 
-     rule #max(T:CPPUnsignedType) => (1 <<Int (bitSizeofType(T))) -Int 1
+     rule #max(t(... st: _:CPPSimpleUnsignedType) #as T::CPPType) => (1 <<Int (bitSizeofType(T))) -Int 1
 
-     rule #min(_:CPPBoolType) => 0
+     rule #min(t(... st: _:CPPSimpleBoolType)) => 0
 
-     rule #max(_:CPPBoolType) => 1
+     rule #max(t(... st: _:CPPSimpleBoolType)) => 1
 
      rule #min(t(_, _, char)) => #min(underlyingType(type(char)))
 
@@ -864,20 +824,20 @@ module CPP-TYPING
 
      rule #max(t(_, _, bitfieldType(char, N::Int))) => #max(underlyingType(type(bitfieldType(char, N))))
 
-     rule #min(T:CPPWideCharType) => #min(underlyingType(T))
+     rule #min(t(... st: _:CPPSimpleWideCharType) #as T::CPPType) => #min(underlyingType(T))
 
-     rule #max(T:CPPWideCharType) => #max(underlyingType(T))
+     rule #max(t(... st: _:CPPSimpleWideCharType) #as T::CPPType) => #max(underlyingType(T))
 
-     rule #min(T:CPPEnumType) => #min(underlyingType(T))
+     rule #min(cppEnumType #as T::CPPType) => #min(underlyingType(T))
           requires isEnumFixed(T)
 
-     rule #max(T:CPPEnumType) => #max(underlyingType(T))
+     rule #max(cppEnumType #as T::CPPType) => #max(underlyingType(T))
           requires isEnumFixed(T)
 
-     rule #min(T:CPPEnumType) => #getEnumMin(getEnumInfo(T))
+     rule #min(cppEnumType #as T::CPPType) => #getEnumMin(getEnumInfo(T))
           requires notBool isEnumFixed(T)
 
-     rule #max(T:CPPEnumType) => #getEnumMax(getEnumInfo(T))
+     rule #max(cppEnumType #as T::CPPType) => #getEnumMax(getEnumInfo(T))
           requires notBool isEnumFixed(T)
 
      rule precision(t(_, _, float)) => cfg:precisionofFloat
@@ -892,9 +852,9 @@ module CPP-TYPING
 
      rule exponent(t(_, _, long-double)) => cfg:exponentofLongDouble
 
-     rule fmax(T::CPPFloatingType) => maxValueFloat(precision(T), exponent(T))
+     rule fmax(T::CPPType) => maxValueFloat(precision(T), exponent(T))
 
-     rule fmin(T::CPPFloatingType) => --Float fmax(T)
+     rule fmin(T::CPPType) => --Float fmax(T)
 
      rule isUnnamedLValue(T::CPPType)
           => isCPPLVRefType(T) orBool (isCPPRVRefType(T) andBool isCPPFunctionType(innerType(T)))
@@ -905,7 +865,7 @@ module CPP-TYPING
      rule isUnnamedPRValue(T::CPPType)
           => notBool isUnnamedLValue(T) andBool notBool isUnnamedXValue(T)
 
-     rule getBaseClassSubobject(lv(L::SymLoc, Tr::Trace, D::CPPClassType), B::CPPClassType) => lv(baseClassSubobject(L, B, D), Tr, B)
+     rule getBaseClassSubobject(lv(L::SymLoc, Tr::Trace, D::CPPType), B::CPPType) => lv(baseClassSubobject(L, B, D), Tr, B)
 
      rule getBaseClassOffset(Base::Class, Derived::Class)
          => {getAllBaseClassOffsets(Derived)[ Base ]}:>Int
@@ -975,7 +935,7 @@ module CPP-TYPING
 
      rule hasVirtualMembers(C::Class) => hasVirtualMembers(type(classType(C)))
 
-     rule hasVirtualMembers(T::CPPClassType) => #hasVirtualMembers(getClassInfo(T))
+     rule hasVirtualMembers(T::CPPType) => #hasVirtualMembers(getClassInfo(T))
 
      syntax Bool ::= #hasVirtualMembers(ClassInfo) [function]
 
@@ -996,7 +956,7 @@ module CPP-TYPING
 
      rule #isUnionLikeClass(<class>... <variant-members> S::Set </variant-members> ...</class>) => size(S) >Int 0
 
-     rule getMostDerivedArrayElement(T:CPPArrayType => innerType(T))
+     rule getMostDerivedArrayElement(t(... st: _:CPPSimpleArrayType) #as T::CPPType => innerType(T))
 
      rule getMostDerivedArrayElement(T::CPPType) => T [owise]
 
@@ -1012,13 +972,13 @@ module CPP-TYPING
 
      rule isEnumFixed(t(... st: unscopedEnum(_, _, B::Bool))) => B
 
-     rule isEnumFixed(T:CPPBitfieldType => innerType(T))
+     rule isEnumFixed(t(... st: bitfieldType(...)) #as T::CPPType => innerType(T))
 
      rule getEnumId(t(_, _, scopedEnum(X::Enum, _))) => X
 
      rule getEnumId(t(_, _, unscopedEnum(X::Enum, _, _))) => X
 
-     rule getEnumId(T:CPPBitfieldType => innerType(T))
+     rule getEnumId(t(... st: bitfieldType(...)) #as T::CPPType => innerType(T))
 
      syntax Int ::= #getEnumMin(K) [function]
                   | #getEnumMax(K) [function]
@@ -1033,7 +993,7 @@ module CPP-TYPING
      rule isVirtualCall(hasTrace(_ . _ Name(N::NNS, _)), _) => false
           requires N =/=K NoNNS()
 
-     rule isVirtualCall(_, T::CPPFunctionType) => false
+     rule isVirtualCall(_, T::CPPType) => false
           requires notBool isMethodVirtual(T)
 
      rule isVirtualCall(hasTrace(_), _) => true [owise]
@@ -1046,7 +1006,7 @@ module C-CPP-TYPING
      imports SETTINGS-SYNTAX
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(... returnType: Ret::CPPType, paramTypes: Args::CPPTypes)))
-          => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertTypeToC`))))
+          => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertDTypeToC`))))
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, void::CPPSimpleVoidType)) => t(Q, Mods, void::SimpleVoidType)
 
@@ -1084,7 +1044,9 @@ module C-CPP-TYPING
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, long-double::CPPSimpleFloatingType)) => t(Q, Mods, long-double::SimpleFloatType)
 
-     rule convertTypeToC(variadic::CPPVariadic) => variadic::Variadic
+     rule convertDTypeToC(variadic::CPPVariadic) => variadic::Variadic
+
+     rule convertDTypeToC(t(...) #as T::CPPType) => convertTypeToC(T)
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, pointerType(T::CPPType))) => t(Q, Mods, pointerType(convertTypeToC(T)))
 
@@ -1095,11 +1057,11 @@ module C-CPP-TYPING
      rule convertTypeToC(t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType))) => t(Q, Mods, incompleteArrayType(convertTypeToC(T)))
 
      // TODO(chathhorn): struct/union namespace, memberPointerType, classes, template args
-     rule convertTypeToC(t(Q::Quals, Mods::Set, classType(_::Namespace :: Class(Struct(), X::CId, _))) #as C::CPPClassType) => t(Q, Mods, structType(tag(X, "C++", global)))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, classType(_::Namespace :: Class(Struct(), X::CId, _))) #as C::CPPType) => t(Q, Mods, structType(tag(X, "C++", global)))
 
-     rule convertTypeToC(t(Q::Quals, Mods::Set, classType(_::Namespace :: Class(Union(), X::CId, _))) #as C::CPPClassType) => t(Q, Mods, unionType(tag(X, "C++", global)))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, classType(_::Namespace :: Class(Union(), X::CId, _))) #as C::CPPType) => t(Q, Mods, unionType(tag(X, "C++", global)))
 
-     rule convertTypeToC(t(Q::Quals, Mods::Set, classType(_::Namespace :: Class(Class(), X::CId, _))) #as C::CPPClassType) => t(Q, Mods, structType(tag(X, "C++", global)))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, classType(_::Namespace :: Class(Class(), X::CId, _))) #as C::CPPType) => t(Q, Mods, structType(tag(X, "C++", global)))
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, lvRefType(T::CPPType))) => t(Q, Mods, pointerType(convertTypeToC(T)))
 
@@ -1109,9 +1071,9 @@ module C-CPP-TYPING
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, wchar_t)) => convertTypeToC(t(Q, Mods, underlyingType(wchar_t)))
 
-     rule convertTypeToC(t(Q::Quals, Mods::Set, unscopedEnum(_, T::CPPIntegerType, _))) => convertTypeToC(t(Q, Mods, simpleType(T)::CPPSimpleType))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, unscopedEnum(_, T::CPPType, _))) => convertTypeToC(t(Q, Mods, simpleType(T)::CPPSimpleType))
 
-     rule convertTypeToC(t(Q::Quals, Mods::Set, scopedEnum(_, T::CPPIntegerType))) => convertTypeToC(t(Q, Mods, simpleType(T)::CPPSimpleType))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, scopedEnum(_, T::CPPType))) => convertTypeToC(t(Q, Mods, simpleType(T)::CPPSimpleType))
 
      // TODO(chathhorn): make configurable
      rule convertTypeToC(t(Q::Quals, Mods::Set, char16_t)) => t(Q, Mods, unsigned-short-int)
@@ -1170,5 +1132,51 @@ module C-CPP-TYPING
      rule type(V:Val)::Type => convertTypeToC(type(V))
 
      rule type(V:TExpr)::Type => convertTypeToC(type(V))
+
+     rule isCPPVoidType(t(... st: void)) => true
+     rule isCPPVoidType(_) => false [owise]
+     rule isCPPUnsignedType(t(... st: _:CPPSimpleUnsignedType)) => true
+     rule isCPPUnsignedType(_) => false [owise]
+     rule isCPPUnscopedEnumType(t(... st: _:CPPSimpleUnscopedEnumType)) => true
+     rule isCPPUnscopedEnumType(_) => false [owise]
+     rule isCPPSignedType(t(... st: _:CPPSimpleSignedType)) => true
+     rule isCPPSignedType(_) => false [owise]
+     rule isCPPScopedEnumType(t(... st: _:CPPSimpleScopedEnumType)) => true
+     rule isCPPScopedEnumType(_) => false [owise]
+     rule isCPPRefType(cppRefType) => true
+     rule isCPPRefType(_) => false [owise]
+     rule isCPPRVRefType(t(... st: rvRefType(...))) => true
+     rule isCPPRVRefType(_) => false [owise]
+     rule isCPPPointerType(t(... st: pointerType(...))) => true
+     rule isCPPPointerType(_) => false [owise]
+     rule isCPPNullPtrTType(t(... st: nullptr_t)) => true
+     rule isCPPNullPtrTType(_) => false [owise]
+     rule isCPPMemberPointerType(t(... st: memberPointerType(...))) => true
+     rule isCPPMemberPointerType(_) => false [owise]
+     rule isCPPMemberFunctionPointerType(t(... st: memberPointerType(_, t(... st: functionType(...))))) => true
+     rule isCPPMemberFunctionPointerType(_) => false [owise]
+     rule isCPPLVRefType(t(... st: lvRefType(...))) => true
+     rule isCPPLVRefType(_) => false [owise]
+     rule isCPPIntegerType(cppIntegerType) => true
+     rule isCPPIntegerType(_) => false [owise]
+     rule isCPPFunctionType(t(... st: functionType(...))) => true
+     rule isCPPFunctionType(_) => false [owise]
+     rule isCPPFloatingType(t(... st: _:CPPSimpleFloatingType)) => true
+     rule isCPPFloatingType(_) => false [owise]
+     rule isCPPEnumType(cppEnumType) => true
+     rule isCPPEnumType(_) => false [owise]
+     rule isCPPClassType(t(... st: classType(...))) => true
+     rule isCPPClassType(_) => false [owise]
+     rule isCPPBoolType(t(... st: _:CPPSimpleBoolType)) => true
+     rule isCPPBoolType(_) => false [owise]
+     rule isCPPBitfieldType(t(... st: _:CPPSimpleBitfieldType)) => true
+     rule isCPPBitfieldType(_) => false [owise]
+     rule isCPPArrayType(t(... st: _:CPPSimpleArrayType)) => true
+     rule isCPPArrayType(_) => false [owise]
+     rule isCPPArithmeticType(T::CPPType) => isCPPIntegerType(T) orBool isCPPFloatingType(T)
+     rule isCPPWideCharType(t(... st: _:CPPSimpleWideCharType)) => true
+     rule isCPPWideCharType(_) => false [owise]
+     rule isCPPCharType(t(... st: _:CPPSimpleCharType)) => true
+     rule isCPPCharType(_) => false [owise]
 
 endmodule

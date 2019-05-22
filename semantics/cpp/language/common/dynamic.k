@@ -547,7 +547,7 @@ module CPP-DYNAMIC-OTHER
 
      rule classFromScope(blockScope(C:Class :: _::CId, _, _)) => C
 
-     rule classFromType(T:CPPClassType) => classFromSimpleType(simpleType(T))
+     rule classFromType(t(... st: classType(...)) #as T::CPPType) => classFromSimpleType(simpleType(T))
 
      rule classFromSimpleType(classType(C::Class)) => C
 
@@ -579,16 +579,16 @@ module CPP-DYNAMIC-OTHER
      rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType)) => notBool isCPPRefType(T)
           requires isValKLabel(#klabel(Lbl))
 
-     rule Lbl:KLabel((loc(Base::SymBase, 0, _) => loc(Base, 0)), _::Trace, _:CPPRefType)
+     rule Lbl:KLabel((loc(Base::SymBase, 0, _) => loc(Base, 0)), _::Trace, cppRefType)
           requires isValKLabel(#klabel(Lbl))
 
      // not all references are lvalues. Some are xvalues. The individual
      // cases where this is true must handle this explicitly.
-     rule <k> Lbl:KLabel(loc(Base::SymBase, Offset::Int), Tr::Trace, T:CPPRefType) => Lbl(V, Tr, innerType(T)) ...</k>
+     rule <k> Lbl:KLabel(loc(Base::SymBase, Offset::Int), Tr::Trace, cppRefType #as T::CPPType) => Lbl(V, Tr, innerType(T)) ...</k>
           <references>... loc(Base, Offset) |-> V::SymLoc ...</references>
           requires isValKLabel(#klabel(Lbl))
 
-     rule <k> Lbl:KLabel(E::Expr, Tr::Trace, T:CPPRefType) => Lbl(E, Tr, innerType(T)) ...</k>
+     rule <k> Lbl:KLabel(E::Expr, Tr::Trace, cppRefType #as T::CPPType) => Lbl(E, Tr, innerType(T)) ...</k>
           requires isTExprKLabel(#klabel(Lbl)) andBool isTExpr(Lbl(E, Tr, T))
 
      rule isLKLabel(#klabel(`lvcpp`)) => true
@@ -902,9 +902,9 @@ module CPP-DYNAMIC-OTHER
 
      syntax String ::= parens(CPPType, String) [function]
 
-     rule parens(_:CPPFunctionType, S::String) => "(" +String S +String ")"
+     rule parens(t(... st: functionType(...)), S::String) => "(" +String S +String ")"
 
-     rule parens(_:CPPArrayType, S::String) => "(" +String S +String ")"
+     rule parens(t(... st: _:CPPSimpleArrayType), S::String) => "(" +String S +String ")"
 
      rule parens(_, S::String) => S [owise]
 

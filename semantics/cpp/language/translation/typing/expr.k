@@ -137,21 +137,21 @@ module CPP-TRANSLATION-TYPING-EXPR
      rule typeof(ParenthesizedCast(T:CPPType, _) => T)
           requires notBool isCPPRefType(T)
 
-     rule typeof(ParenthesizedCast(T:CPPRefType, _) => innerType(T))
+     rule typeof(ParenthesizedCast(cppRefType #as T::CPPType, _) => innerType(T))
 
      context typeof(ReinterpretCast(HOLE:AType, _))
 
      rule typeof(ReinterpretCast(T:CPPType, _) => T)
           requires notBool isCPPRefType(T)
 
-     rule typeof(ReinterpretCast(T:CPPRefType, _) => innerType(T))
+     rule typeof(ReinterpretCast(cppRefType #as T::CPPType, _) => innerType(T))
 
      context typeof(StaticCast(HOLE:AType, _))
 
      rule typeof(StaticCast(T:CPPType, _) => T)
           requires notBool isCPPRefType(T)
 
-     rule typeof(StaticCast(T:CPPRefType, _) => innerType(T))
+     rule typeof(StaticCast(cppRefType #as T::CPPType, _) => innerType(T))
 
      context typeof(FunctionalCast(HOLE:AType, _))
 
@@ -168,7 +168,7 @@ module CPP-TRANSLATION-TYPING-EXPR
      rule typeof(NewExpr(_, T:CPPType, _, _, _) => type(pointerType(T)))
           requires notBool isCPPArrayType(T)
 
-     rule typeof(NewExpr(_, T:CPPArrayType, _, _, _) => type(pointerType(innerType(T))))
+     rule typeof(NewExpr(_, t(... st: _:CPPSimpleArrayType) #as T::CPPType, _, _, _) => type(pointerType(innerType(T))))
 
      rule typeof(Throw(_) => type(void))
 
@@ -278,47 +278,47 @@ module CPP-TRANSLATION-TYPING-EXPR
 
      rule #typeofBuiltinOperator(operator>>=, T::CPPType, _, _) => typeof(T)
 
-     rule #typeofBuiltinOperator(operator[], T:CPPArrayType, _, _) => typeof(innerType(T))
+     rule #typeofBuiltinOperator(operator[], t(... st: _:CPPSimpleArrayType) #as T::CPPType, _, _) => typeof(innerType(T))
 
-     rule #typeofBuiltinOperator(operator[], T:CPPPointerType, _, _) => typeof(innerType(T))
+     rule #typeofBuiltinOperator(operator[], t(... st: pointerType(...)) #as T::CPPType, _, _) => typeof(innerType(T))
 
-     rule #typeofBuiltinOperator(operator[], _, _, T:CPPArrayType) => typeof(innerType(T))
+     rule #typeofBuiltinOperator(operator[], _, _, t(... st: _:CPPSimpleArrayType) #as T::CPPType) => typeof(innerType(T))
 
-     rule #typeofBuiltinOperator(operator[], _, _, T:CPPPointerType) => typeof(innerType(T))
+     rule #typeofBuiltinOperator(operator[], _, _, t(... st: pointerType(...)) #as T::CPPType) => typeof(innerType(T))
 
-     rule #typeofBuiltinOperator(operator->, T:CPPPointerType, E1::Expr, E2::Name)
+     rule #typeofBuiltinOperator(operator->, t(... st: pointerType(...)) #as T::CPPType, E1::Expr, E2::Name)
           => typeof((* E1) . no-template E2)
 
      rule #typeofBuiltinOperator(operator+, T1::CPPType, _, T2::CPPType)
           => typeof(usualArithmeticConversions(T1, T2))
           requires (isCPPArithmeticType(T1) orBool isCPPUnscopedEnumType(T1)) andBool (isCPPArithmeticType(T2) orBool isCPPUnscopedEnumType(T2))
 
-     rule #typeofBuiltinOperator(operator+, T:CPPPointerType, _, _) => typeof(T)
+     rule #typeofBuiltinOperator(operator+, t(... st: pointerType(...)) #as T::CPPType, _, _) => typeof(T)
 
-     rule #typeofBuiltinOperator(operator+, T:CPPArrayType, _, _) => typeof(revalType(T))
+     rule #typeofBuiltinOperator(operator+, t(... st: _:CPPSimpleArrayType) #as T::CPPType, _, _) => typeof(revalType(T))
 
-     rule #typeofBuiltinOperator(operator+, _, _, T:CPPPointerType) => typeof(T)
+     rule #typeofBuiltinOperator(operator+, _, _, t(... st: pointerType(...)) #as T::CPPType) => typeof(T)
 
-     rule #typeofBuiltinOperator(operator+, _, _, T:CPPArrayType) => typeof(revalType(T))
+     rule #typeofBuiltinOperator(operator+, _, _, t(... st: _:CPPSimpleArrayType) #as T::CPPType) => typeof(revalType(T))
 
      rule #typeofBuiltinOperator(operator-, T1::CPPType, _, T2::CPPType)
           => typeof(usualArithmeticConversions(T1, T2))
           requires (isCPPArithmeticType(T1) orBool isCPPUnscopedEnumType(T1)) andBool (isCPPArithmeticType(T2) orBool isCPPUnscopedEnumType(T2))
 
-     rule #typeofBuiltinOperator(operator-, T:CPPPointerType, _, _) => typeof(T)
+     rule #typeofBuiltinOperator(operator-, t(... st: pointerType(...)) #as T::CPPType, _, _) => typeof(T)
 
-     rule #typeofBuiltinOperator(operator-, T:CPPArrayType, _, _) => typeof(revalType(T))
+     rule #typeofBuiltinOperator(operator-, t(... st: _:CPPSimpleArrayType) #as T::CPPType, _, _) => typeof(revalType(T))
 
-     rule #typeofBuiltinOperator(operator-, _:CPPPointerType, _, _:CPPPointerType)
+     rule #typeofBuiltinOperator(operator-, t(... st: pointerType(...)), _, t(... st: pointerType(...)))
           => typeof(type(ptrdiff_t))
 
-     rule #typeofBuiltinOperator(operator-, _:CPPPointerType, _, _:CPPArrayType)
+     rule #typeofBuiltinOperator(operator-, t(... st: pointerType(...)), _, t(... st: _:CPPSimpleArrayType))
           => typeof(type(ptrdiff_t))
 
-     rule #typeofBuiltinOperator(operator-, _:CPPArrayType, _, _:CPPPointerType)
+     rule #typeofBuiltinOperator(operator-, t(... st: _:CPPSimpleArrayType), _, t(... st: pointerType(...)))
           => typeof(type(ptrdiff_t))
 
-     rule #typeofBuiltinOperator(operator-, _:CPPArrayType, _, _:CPPArrayType)
+     rule #typeofBuiltinOperator(operator-, t(... st: _:CPPSimpleArrayType), _, t(... st: _:CPPSimpleArrayType))
           => typeof(type(ptrdiff_t))
 
      rule #typeofBuiltinOperator(operator*, T1::CPPType, _, T2::CPPType)
@@ -454,7 +454,7 @@ module CPP-TRANSLATION-TYPING-EXPR
 
      context GnuEnumUnderlyingType2(HOLE:AType, _) [result(CPPType)]
 
-     rule GnuEnumUnderlyingType2(T:CPPEnumType, _) => underlyingType(T)
+     rule GnuEnumUnderlyingType2(cppEnumType #as T::CPPType, _) => underlyingType(T)
 
      rule TypeofExpression(E::Expr) => typeofExpr(E)
 
