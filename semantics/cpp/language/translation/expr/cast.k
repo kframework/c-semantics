@@ -9,6 +9,7 @@ module CPP-TRANSLATION-EXPR-CAST
      imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-REFERENCE-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule convertConst(T2::CPPType, pre(V::Expr, Tr::Trace, T1::CPPType))
@@ -77,48 +78,70 @@ module CPP-TRANSLATION-EXPR-CAST
      // this is needed to be able to treat certain expressions as constant expressions.
      // it should be safe since the side condition guarantees that the initialization
      // we are conceptually performing is well formed and would simply perform this conversion
-     rule convertStatic(T::CPPType, V:PRVal, Tr2::Trace)
+     rule convertStatic(T::CPPType, V:PRVal, _)
           => convertType(T, V)
           requires canConvertWithStandardConversion(T, type(V), prvalue)
                andBool notBool isCPPRefType(T) andBool notBool isCPPArrayType(T)
                andBool notBool isCPPClassType(T) andBool notBool isCPPClassType(type(V))
 
+     // @ref n4800 7.6.1.8:3
+     rule convertStatic(t(... st: rvRefType(...)) #as T::CPPType, V:LVal, Tr::Trace)
+          =>
+          #if notBool isCPPBitfieldType(type(V)) #then
+               le(stripHold(V), Tr, T)
+          #else
+               not-implemented // TODO (h0nzZik)
+          #fi
+          requires isReferenceCompatible(innerType(T), type(V))
+
+     // @ref n4800 7.6.1.8:4
      rule convertStatic(T::CPPType, V::Val, Tr::Trace)
           => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, V, DirectInit())) [owise]
 
-     rule tryInit(T::CPPType, V::Val, ill-formed) => #convertStatic(T, makePRVal(V))
-
      rule tryInit(_, _, V:Val) => V
 
-     rule convertStatic(t(... st: void), V::Val, _)
-          => prDiscardedExpr(V)
-          requires isConvertableDiscardedExpr(V)
+     // @ref n4800 7.6.1.8:5
+     rule tryInit(T::CPPType, V::Val, ill-formed) => #convertStatic(T, makePRVal(V))
 
-     rule convertStatic(t(... st: void), V::Val, _)
-          => glDiscardedExpr(V)
-          requires notBool isConvertableDiscardedExpr(V)
 
+     // @ref n4800 7.6.1.8:6
+     rule convertStatic(t(... st: void), V::Val, _)
+          =>
+          #if isConvertableDiscardedExpr(V) #then
+               prDiscardedExpr(V)
+          #else
+               glDiscardedExpr(V)
+          #fi
+
+     // @ref n4800 7.6.1.9:11
+     // glvalue (lvalue) to reference
      rule convertReinterpret(cppRefType #as T2::CPPType, V:GLExpr)
           => le(ReinterpretCast(T2, stripHold(V)), trace(V), innerType(T2))
           requires ((isObjectType(innerType(T2)) andBool isObjectType(type(V)))
                orBool (isCPPFunctionType(innerType(T2)) andBool isCPPFunctionType(type(V))))
                andBool isUnnamedLValue(T2)
 
+     // @ref n4800 7.6.1.9:11
+     // glvalue (xvalue) to reference
      rule convertReinterpret(cppRefType #as T2::CPPType, V:GLExpr)
           => xe(ReinterpretCast(T2, stripHold(V)), trace(V), innerType(T2))
           requires ((isObjectType(innerType(T2)) andBool isObjectType(type(V)))
                orBool (isCPPFunctionType(innerType(T2)) andBool isCPPFunctionType(type(V))))
                andBool isUnnamedXValue(T2)
 
+     // @ref n4800 7.6.1.9:4
+     // pointer to integer
      rule convertReinterpret(T2::CPPType, V:PRExpr)
           => pre(ReinterpretCast(T2, stripHold(V)), trace(V), T2)
           requires (isCPPIntegerType(T2) andBool isCPPPointerType(type(V))
                     andBool byteSizeofType(T2) >=Int byteSizeofType(type(V)))
 
-     rule convertReinterpret(t(... st: pointerType(t(Q::Quals, _, _))) #as T::CPPType, V:PRVal)
-          => StaticCast(T, StaticCast(type(pointerType(t(Q, .Set, void))), V))
-          requires isCPPPointerType(type(V)) andBool isObjectType(innerType(T))
-               andBool isObjectType(innerType(type(V)))
+     // @ref n4800 7.6.1.9:7
+     // pointer to pointer
+     rule convertReinterpret(T::CPPType, V:PRVal)
+          => StaticCast(T, StaticCast(type(pointerType(t(getQuals(innerType(T)), .Set, void))), V))
+          requires isPointerToObjectType(T)
+           andBool isPointerToObjectType(type(V))
 
 
 endmodule
