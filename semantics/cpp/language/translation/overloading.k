@@ -1,14 +1,13 @@
 module CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports COMPAT-SYNTAX
      imports CPP-DYNAMIC-SORTS
-     imports CPP-TYPE-MAP-SORTS
      imports CPP-TYPING-SORTS
      imports CPP-TRANSLATION-TYPING-EXPR-SORTS
      imports CPP-TRANSLATION-VALUE-CATEGORY-SORTS
 
      syntax ValResult ::= CandidateSet
 
-     syntax CandidateSet ::= cSet(candidates: TypeMap, id: QualId)
+     syntax CandidateSet ::= cSet(candidates: Map, id: QualId)
 
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, Expr)
                    | resolveConversionOverload(CandidateSet, StrictList, Expr, CPPType)
@@ -118,24 +117,24 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule cSetUnion(E::Expr, notFound(_)) => E
 
-     rule cSetUnion(cSet(M1::TypeMap, QX::QualId), cSet(M2::TypeMap, QX)) => cSet(M1 M2, QX)
+     rule cSetUnion(cSet(M1::Map, QX::QualId), cSet(M2::Map, QX)) => cSet(M1 M2, QX)
 
      // function version
      rule cSetUnion2(notFound(_), E::CandidateSet) => E
 
      rule cSetUnion2(E::CandidateSet, notFound(_)) => E
 
-     rule cSetUnion2(cSet(M1::TypeMap, QX::QualId), cSet(M2::TypeMap, QX)) => cSet(M1 M2, QX)
+     rule cSetUnion2(cSet(M1::Map, QX::QualId), cSet(M2::Map, QX)) => cSet(M1 M2, QX)
 
      context #resolveOverload(... types: (HOLE:StrictList => types(HOLE)))
 
      context #resolveOverload(... cats: (HOLE:StrictList => cats(HOLE)))
 
-     rule #resolveOverload(cSet(... candidates: (T::CPPType |-> envEntry(... defaultArgs: DA::DefaultArgumentsResult) => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _, _)
+     rule #resolveOverload(cSet(... candidates: (_::CPPType |-> (T::CPPType, envEntry(... defaultArgs: DA::DefaultArgumentsResult)) => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _, _)
           requires isCPPFunctionType(T) andBool (notBool acceptsNArgs(size(Args), T, getDefaultArgsVals(DA))
             orBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA)))
 
-     rule #resolveOverload(cSet(... candidates: (T::CPPType |-> builtinOp(_) => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _, _)
+     rule #resolveOverload(cSet(... candidates: (_::CPPType |-> (T::CPPType, builtinOp(_)) => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _, _)
           requires isCPPFunctionType(T) andBool #fun(DA::DefaultArgumentsResult =>
                notBool acceptsNArgs(size(Args), T, getDefaultArgsVals(DA))
                  orBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA)))
@@ -278,7 +277,7 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule computeUDC(t(... st: classType(P::Class)), t(... st: classType(A::Class)), C::ValueCategory) => resolveUDC(ListItem(computeUDCFrom(type(classType(P)), A, getClassInfo(A), C)) ListItem(computeUDCTo(P, getClassInfo(P), type(classType(A)), C)), .List)
 
-     rule computeUDCTo(_ :: Class(_, X::CId, _) #as P::Class, <class>... <cenv>... ConstructorId(X) |-> M::TypeMap ...</cenv> ...</class>, A::CPPType, C::ValueCategory)
+     rule computeUDCTo(_ :: Class(_, X::CId, _) #as P::Class, <class>... <cenv>... ConstructorId(X) |-> M::Map ...</cenv> ...</class>, A::CPPType, C::ValueCategory)
           => resolveUDC(#computeUDCTo(P, keys_list(stripExplicit(M)), A, C), .List)
 
      rule computeUDCFrom(P::CPPType, A::Class, <class>... <conversion-functions> L::List </conversion-functions> ...</class>, C::ValueCategory)
@@ -446,13 +445,13 @@ module CPP-TRANSLATION-OVERLOADING
 
      // do not actually perform overload resolution, this was a function call
      // in which the postfix expression was a function pointer
-     rule #resolveOverload(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase), id: X::QualId), list(Args::List), _, _, E::Expr, _)
+     rule #resolveOverload(cSet(... candidates: _::CPPType |-> (T::CPPType, envEntry(... base: Base::SymBase)), id: X::QualId), list(Args::List), _, _, E::Expr, _)
           => Odr.newUse(Base)
           ~> updateExternalUses(Base)
           ~> checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T))))))
           requires isCPPPointerType(T) andBool isCPPFunctionType(innerType(T)) andBool Base =/=K nonStatic
 
-     rule #resolveOverload(cSet(... candidates: T::CPPType |-> envEntry(... base: nonStatic)), list(Args::List), _, _, E::Expr, _)
+     rule #resolveOverload(cSet(... candidates: _::CPPType |-> (T::CPPType, envEntry(... base: nonStatic))), list(Args::List), _, _, E::Expr, _)
           => checkAccess(CallExpr(le(E, hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T))))))
           requires isCPPPointerType(T) andBool isCPPFunctionType(innerType(T))
 
@@ -466,29 +465,29 @@ module CPP-TRANSLATION-OVERLOADING
      rule bestViable(T::CPPType, builtinOp(E::Expr)) ~> #resolveOverload(...) => E
 
      rule (.K => computeBestViable(M, Types, Cats, O))
-          ~> #resolveOverload(cSet(... candidates: M::TypeMap), list(Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)
+          ~> #resolveOverload(cSet(... candidates: M::Map), list(Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)
           requires allViable(M, size(Args), Types, Cats) [owise] //allViable is expensive so we evaluate this rule late in order to avoid recomputing it over and over unnecessarily
 
-     syntax Bool ::= allViable(cands: TypeMap, Int, List, List) [function]
+     syntax Bool ::= allViable(cands: Map, Int, List, List) [function]
 
-     rule allViable(T::CPPType |-> envEntry(... defaultArgs: DA::DefaultArgumentsResult) M::TypeMap, NArgs::Int, Types::List, Cats::List)
+     rule allViable(_::CPPType |-> (T::CPPType, envEntry(... defaultArgs: DA::DefaultArgumentsResult)) M::Map, NArgs::Int, Types::List, Cats::List)
           => isCPPFunctionType(T) andBool acceptsNArgs(NArgs, T, getDefaultArgsVals(DA))
                andBool notBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA))
                andBool allViable(M, NArgs, Types, Cats)
 
      // TODO(traiansf): properly resolve default arguments for templates
-     rule allViable(T::CPPType |-> Val:KItem M::TypeMap, NArgs::Int, Types::List, Cats::List)
+     rule allViable(_::CPPType |-> (T::CPPType, Val:KItem) M::Map, NArgs::Int, Types::List, Cats::List)
           => isCPPFunctionType(T) andBool #fun(DA::DefaultArgumentsResult =>
                acceptsNArgs(NArgs, T, getDefaultArgsVals(DA))
                andBool notBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA)))(emptyDefaultArguments(T))
                andBool allViable(M, NArgs, Types, Cats)
           requires isTemplateSpecialization(Val) orBool isBuiltinOp(Val)
 
-     rule allViable(T::CPPType |-> templateInfo(...) _, _, _, _) => false
+     rule allViable(_::CPPType |-> (T::CPPType, templateInfo(...)) _, _, _, _) => false
 
      rule allViable(... cands: .Map) => true
 
-     syntax KItem ::= computeBestViable(TypeMap, List, List, OverloadType) [function]
+     syntax KItem ::= computeBestViable(Map, List, List, OverloadType) [function]
                     | #computeBestViable(CPPType, K, List, List, List, OverloadType, List) [function]
                     | checkIsBest(CPPType, K, List, List, OverloadType, List) [function]
                     | bestViable(CPPType, K)
@@ -496,7 +495,7 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule computeBestViable(.Map, _, _, _) => noBestViable
 
-     rule computeBestViable(T::CPPType |-> K:KItem M::TypeMap, Types::List, Cats::List, O::OverloadType)
+     rule computeBestViable(_::CPPType |-> (T::CPPType, K:KItem) M::Map, Types::List, Cats::List, O::OverloadType)
           => #computeBestViable(T, K, Map2List(M), Types, Cats, O, .List)
 
      rule #computeBestViable(
@@ -820,14 +819,14 @@ module CPP-TRANSLATION-OVERLOADING
      // normally this is ill formed, but it can be well formed in some cases such as operator overloading of certain operators
      rule noBestViable ~> #resolveOverload(... cands: cSet(... id: X::QualId)) => notFound(getId(X))
 
-     rule #resolveOverload(... cands: cSet(... candidates: (T::CPPType => adjustFunctionType(T)) |-> _:TemplateInfo))
+     rule #resolveOverload(... cands: cSet(... candidates: (_::CPPType => stripType(adjustFunctionType(T))) |-> (T::CPPType => adjustFunctionType(T), _:TemplateInfo)))
           requires isCPPFunctionType(T) andBool notBool isAdjustedType(T)
 
      // TODO(traiansf): properly resolve default arguments for templates
      rule (lv(loc(Base::SymBase, 0), _, _) => .K)
           ~> bestViable(T::CPPType, (_ => envEntry(Base, false, emptyDefaultArguments(T))))
 
-     rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase), id: X::QualId), E::Expr, _)
+     rule resolveUniqueDecl(cSet(... candidates: _::CPPType |-> (T::CPPType, envEntry(... base: Base::SymBase)), id: X::QualId), E::Expr, _)
           => Odr.newUse(Base)
           ~> updateExternalUses(Base)
           ~> lv(lnew(Base), hasTrace(E), T)
@@ -835,22 +834,22 @@ module CPP-TRANSLATION-OVERLOADING
                andBool notBool isCPPRefType(T)
                andBool notBool isMemberBase(Base)
 
-     rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: nonStatic)), E::Expr, _) => le(E, hasTrace(E), T)
+     rule resolveUniqueDecl(cSet(... candidates: _::CPPType |-> (T::CPPType, envEntry(... base: nonStatic))), E::Expr, _) => le(E, hasTrace(E), T)
 
      // resolve anonymous union member lookup
-     rule resolveUniqueDecl(cSet(... candidates: _ |-> envEntry(... base: memberBase(unnamedObject(C::Class), X::CId, _))), _, _)
+     rule resolveUniqueDecl(cSet(... candidates: _ |-> (_, envEntry(... base: memberBase(unnamedObject(C::Class), X::CId, _)))), _, _)
           => Name(NoNNS(), unnamedObject(C)) . no-template Name(NoNNS(), X)
 
-     rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId), E::Expr, false) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
+     rule resolveUniqueDecl(cSet(_::CPPType |-> (T::CPPType, _:ClassOffset), C:Class :: X::CId), E::Expr, false) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
 
-     rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId), E::Expr, true)
+     rule resolveUniqueDecl(cSet(_::CPPType |-> (T::CPPType, _:ClassOffset), C:Class :: X::CId), E::Expr, true)
           => dataMemberValue(memberPointer(C, X, T), hasTrace(E), T)
 
-     rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase)), E::Expr, _) => le(E, hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(... candidates: _::CPPType |-> (T::CPPType, envEntry(... base: Base::SymBase))), E::Expr, _) => le(E, hasTrace(E), T) ...</k>
           <references> Refs::Map </references>
           requires isCPPRefType(T) andBool notBool loc(Base, 0) in_keys(Refs)
 
-     rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase)), E::Expr, _) => lv(lnew(Base), hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(... candidates: _::CPPType |-> (T::CPPType, envEntry(... base: Base::SymBase))), E::Expr, _) => lv(lnew(Base), hasTrace(E), T) ...</k>
           <references>... loc(Base, 0) |-> _ ...</references>
           requires isCPPRefType(T)
 

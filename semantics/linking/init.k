@@ -164,7 +164,7 @@ module LINKING-INIT
                   | #mergeDefs(Map, Map, Set) [function]
      rule mergeDefs(M1::Map, M2::Map) => #mergeDefs(M1, updateMap(M1, M2), intersectSet(keys(M1), keys(M2)))
      rule #mergeDefs(OldValues::Map, NewValues::Map, SetItem(Key:KItem) CommonKeys::Set)
-          => #mergeDefs(OldValues, NewValues[Key <- updateMap({{OldValues[Key] orDefault .Map::TypeMap}<:KItem}:>TypeMap, {{NewValues[Key] orDefault .Map::TypeMap}<:KItem}:>TypeMap)], CommonKeys)
+          => #mergeDefs(OldValues, NewValues[Key <- updateMap({{OldValues[Key] orDefault .Map::Map}<:KItem}:>Map, {{NewValues[Key] orDefault .Map::Map}<:KItem}:>Map)], CommonKeys)
      rule #mergeDefs(_, NewValues::Map, .Set) => NewValues
 
      // Allows definitions to be overridden in the Match extensions.

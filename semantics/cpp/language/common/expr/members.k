@@ -31,7 +31,7 @@ module CPP-EXPR-MEMBERS
            => fieldExp(V, addQuals(getQuals(type(V)), T), Offset +Int PrevOffset)
           ...</k>
           <class-id> FC </class-id>
-          <cenv>... F |-> (T::CPPType |-> classOffset(_, Offset::Int)) ...</cenv>
+          <cenv>... F |-> (_ |-> (T::CPPType, classOffset(_, Offset::Int))) ...</cenv>
           requires type(simpleType(TC)) ==Type type(classType(FC))
 
      rule lookupFieldCPP(_::Val, t(... st: classType(DC::Class => BC)), Name(BC::Class, _), PrevOffset::Int => PrevOffset +Int getBaseClassOffset(BC, DC))
@@ -39,7 +39,7 @@ module CPP-EXPR-MEMBERS
 
      rule <k> lookupFieldCPP(_::Val, t(... st: classType(FC::Class => C)), Name(FC::Class => C, F::CId), PrevOffset::Int => PrevOffset +Int Offset) ...</k>
           <class-id> FC </class-id>
-          <cenv>... F |-> (_::CPPType |-> envEntry(... base: memberBase(unnamedObject(C::Class), _, _))) unnamedObject(C) |-> (_::CPPType |-> classOffset(_, Offset::Int)) ...</cenv>
+          <cenv>... F |-> (_::CPPType |-> (_, envEntry(... base: memberBase(unnamedObject(C::Class), _, _)))) unnamedObject(C) |-> (_::CPPType |-> (_, classOffset(_, Offset::Int))) ...</cenv>
 
      rule fieldExp(L::GLVal, T::CPPType, Offset::Int)
           => makeVal(cat(L), locOf(L) +bytes Offset /Int cfg:bitsPerByte, noTrace, T)

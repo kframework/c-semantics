@@ -93,7 +93,7 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
           <tu-id> Tu </tu-id>
           <class-id> Candidate </class-id>
           <base-classes> Bases::List </base-classes>
-          <cenv>... VF |-> M::TypeMap ...</cenv>
+          <cenv>... VF |-> M::Map ...</cenv>
           requires isBaseClassOf(C, Candidate) andBool getOverride(T, M) ==K type(no-type)::CPPType
 
      rule <k> getOverrides((C::Class => Candidate), VF::CId, (T::CPPType => getOverride(T, M)), (ListItem(Candidate::Class) => .List) _) ...</k>
@@ -101,18 +101,18 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
           <tu-id> Tu </tu-id>
           <class-id> Candidate </class-id>
           <base-classes> Bases::List </base-classes>
-          <cenv>... VF |-> M::TypeMap ...</cenv>
+          <cenv>... VF |-> M::Map ...</cenv>
           requires isBaseClassOf(C, Candidate) andBool getOverride(T, M) =/=K type(no-type)::CPPType
 
      rule <k> getOverrides(C::Class, VF::CId, T::CPPType, .List) => lv(lnew(Base), noTrace, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... VF |-> (_::TypeMap T::CPPType |-> envEntry(... base: Base::SymBase)) ...</cenv>
+          <cenv>... VF |-> (_::Map stripType(T::CPPType) |-> (_, envEntry(... base: Base::SymBase))) ...</cenv>
 
-     syntax CPPType ::= getOverride(CPPType, TypeMap) [function]
+     syntax CPPType ::= getOverride(CPPType, Map) [function]
 
-     rule getOverride(BaseClassFunc::CPPType, DerivedClassFunc::CPPType |-> envEntry(Base::SymBase, false, _) _)
+     rule getOverride(BaseClassFunc::CPPType, _::CPPType |-> (DerivedClassFunc::CPPType, envEntry(Base::SymBase, false, _)) _)
           => DerivedClassFunc
           requires overrides(DerivedClassFunc, BaseClassFunc)
 

@@ -93,7 +93,7 @@ module CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... DestructorId(X) |-> (_::CPPType |-> envEntry(... base: Base::SymBase)) ...</cenv>
+          <cenv>... DestructorId(X) |-> (_::CPPType |-> (_, envEntry(... base: Base::SymBase))) ...</cenv>
 
      // @ref N4296 12.4/11
      // @ref N4778 10.3.6/12
@@ -266,7 +266,7 @@ module CPP-TRANSLATION-DECL-CLASS
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... ConstructorId(X) |-> M::TypeMap DestructorId(X) |-> _ ...</cenv>
+          <cenv>... ConstructorId(X) |-> M::Map DestructorId(X) |-> _ ...</cenv>
           <is-aggregate> B:Bool => B andBool notBool some(M, isUserProvidedConstructor) andBool notBool hasVirtualMembers(type(classType(C))) </is-aggregate>
 
      // TODO(dwightguth): implicit exception spec
@@ -542,7 +542,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
-          <initializers>... X |-> (T |-> I::Init) ...</initializers>
+          <initializers>... X |-> (stripType(T) |-> (_, I::Init)) ...</initializers>
           requires isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
 
      syntax KItem ::= ".Init"
@@ -555,7 +555,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
-          <initializers>... X |-> (T |-> I::Init) ...</initializers>
+          <initializers>... X |-> (stripType(T) |-> (_, I::Init)) ...</initializers>
           requires notBool isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
 
      rule <k> (.K => checkCtorAndDtor(MemInit[C] orDefault .Init, baseClass(C), type(classType(C)), false, NoInit(), type(classType(C)))) ~> figureConstruct(.List, MemInit::Map, (ListItem(C::Class) => .List) _, _, _, _, _) ...</k>
@@ -590,7 +590,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> M </class-id>
-          <cenv>... ConstructorId(X) |-> Candidates::TypeMap ...</cenv>
+          <cenv>... ConstructorId(X) |-> Candidates::Map ...</cenv>
 
      rule resolve(E:ResolvedExpr) ~> checkCtor(_) => .K
           requires notBool isNotFoundNameRef(E)
@@ -601,7 +601,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> M </class-id>
-          <cenv>... DestructorId(X) |-> (T::CPPType |-> envEntry(... base: Base::SymBase)) ...</cenv>
+          <cenv>... DestructorId(X) |-> (_::CPPType |-> (T::CPPType, envEntry(... base: Base::SymBase))) ...</cenv>
 
      rule resolve(E:ResolvedExpr) ~> checkDtor(_) => .K
           requires notBool isNotFoundNameRef(E)
@@ -655,7 +655,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <initializers>... X |-> (T |-> I::Init) ...</initializers>
+          <initializers>... X |-> (stripType(T) |-> (_, I::Init)) ...</initializers>
           <variant-members> VM::Set </variant-members>
           requires I =/=K NoInit()
 
@@ -667,7 +667,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <initializers>... X |-> (T |-> I::Init) ...</initializers>
+          <initializers>... X |-> (stripType(T) |-> (_, I::Init)) ...</initializers>
           <variant-members> VM::Set </variant-members>
           requires I ==K NoInit() andBool X in VM
 
@@ -678,7 +678,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <initializers>... X |-> (T |-> I::Init) ...</initializers>
+          <initializers>... X |-> (stripType(T) |-> (_, I::Init)) ...</initializers>
           <variant-members> VM::Set </variant-members>
           requires I ==K NoInit() andBool notBool X in VM
 
@@ -708,7 +708,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           requires hasConstructorThat(type(classType(C)), isTrivialDefaultConstructor)
 
      // @ref n4296 12.1:4.9,4.11
-     rule #isTrivialDefaultConstructor(<class>... <non-static-data-members> ListItem(Class.DataMember(X::CId, T::CPPType)) => .List ...</non-static-data-members> <initializers>... X |-> (T |-> NoInit()) ...</initializers> ...</class>)
+     rule #isTrivialDefaultConstructor(<class>... <non-static-data-members> ListItem(Class.DataMember(X::CId, T::CPPType)) => .List ...</non-static-data-members> <initializers>... X |-> (stripType(T) |-> (_, NoInit())) ...</initializers> ...</class>)
           requires #if isCPPClassType(getMostDerivedArrayElement(T)) #then hasConstructorThat(getMostDerivedArrayElement(T), isTrivialDefaultConstructor) #else true #fi
 
      rule #isTrivialDefaultConstructor(<class>... <base-classes> .List </base-classes> <non-static-data-members> .List </non-static-data-members> ...</class>) => true
@@ -782,7 +782,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule hasDestructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPType, Lbl::TypePredicate) => #hasMethodThat(DestructorId(X), getClassInfo(T), Lbl)
 
-     rule #hasMethodThat(X::CId, <class>... <cenv>... X |-> M::TypeMap ...</cenv> ...</class>, Lbl::TypePredicate)
+     rule #hasMethodThat(X::CId, <class>... <cenv>... X |-> M::Map ...</cenv> ...</class>, Lbl::TypePredicate)
           => some(M, Lbl)
 
      rule #hasMethodThat(...) => false [owise]
@@ -879,7 +879,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           requires isMethodVirtual(FuncT)
 
-     rule (cSet(... candidates: Cands::TypeMap, id: Q::QualId) #as C:CandidateSet => resolve(resolveOverload(C, list(ListItem(prv(NullPointer, noTrace, type(pointerType(type(void))))) getSecondDeleteArg(Cands, prv(0, noTrace, type(size_t)))), Name(NoNNS(), operatordelete))))
+     rule (cSet(... candidates: Cands::Map, id: Q::QualId) #as C:CandidateSet => resolve(resolveOverload(C, list(ListItem(prv(NullPointer, noTrace, type(pointerType(type(void))))) getSecondDeleteArg(Cands, prv(0, noTrace, type(size_t)))), Name(NoNNS(), operatordelete))))
           ~> figureDestruct(...)
 
      rule resolve(E:ResolvedExpr) ~> figureDestruct(.List, .List, Res:K) => Res
@@ -1300,18 +1300,18 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
                <non-static-data-members>... ListItem(Class.DataMember(X::CId, T::CPPType)) => .List </non-static-data-members>
-               <cenv>... X |-> (_::TypeMap T |-> classOffset(_, FOffset::Int)) ...</cenv>
+               <cenv>... X |-> (_::Map stripType(T) |-> (_, classOffset(_, FOffset::Int))) ...</cenv>
           ...</class>, Offset::Int)
           requires FOffset >Int Offset
 
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
                <non-static-data-members>... ListItem(Class.DataMember(X::CId, T::CPPType)) => .List </non-static-data-members>
-               <cenv>... X |-> (_::TypeMap T |-> uninitialized) ...</cenv>
+               <cenv>... X |-> (_::Map stripType(T) |-> (_, uninitialized)) ...</cenv>
           ...</class>, Offset::Int)
 
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <non-static-data-members>... ListItem(Class.DataMember(X::CId, T'::CPPType)) </non-static-data-members>
-               <cenv>... X |-> (_::TypeMap T' |-> classOffset(_, FOffset::Int)) ...</cenv>
+               <cenv>... X |-> (_::Map stripType(T') |-> (_, classOffset(_, FOffset::Int))) ...</cenv>
           ...</class>, Offset::Int)
           => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
           requires FOffset <=Int Offset
@@ -1323,20 +1323,20 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>
                <non-static-data-members> .List </non-static-data-members>
-               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> classOffset(_, FOffset::Int)) ...</cenv>
+               <cenv>... baseClass(C) |-> (_::Map stripType(T') |-> (_, classOffset(_, FOffset::Int))) ...</cenv>
           ...</class>, Offset::Int)
           requires FOffset >Int Offset
 
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>
                <non-static-data-members> .List </non-static-data-members>
-               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> uninitialized) ...</cenv>
+               <cenv>... baseClass(C) |-> (_::Map stripType(T') |-> (_, uninitialized)) ...</cenv>
           ...</class>, Offset::Int)
 
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) </base-classes>
                <non-static-data-members> .List </non-static-data-members>
-               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> classOffset(_, FOffset::Int)) ...</cenv>
+               <cenv>... baseClass(C) |-> (_::Map stripType(T') |-> (_, classOffset(_, FOffset::Int))) ...</cenv>
           ...</class>, Offset::Int)
           => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
           requires FOffset <=Int Offset
