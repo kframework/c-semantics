@@ -835,16 +835,16 @@ module CPP-DYNAMIC-OTHER
 
      rule showSignature(Q::QualId, t(_, _, functionType(... paramTypes: T::CPPTypes))) => showQualId(Q) +String "(" +String showCPPTypes(T) +String ")"
 
-     rule X:KItem, T:CPPType in_keys(M::Map) => (X in_keys(M)) andBool (T in_keys({M[X]}:>TypeMap))
+     rule X:KItem, T:CPPType in_keys(M::Map) => (X in_keys(M)) andBool (T in_keys({M[X]}:>Map))
 
      rule X:KItem, Y:KItem in_keys(M::Map) => (X in_keys(M)) andBool (Y in_keys({M[X] orDefault .Map}:>Map)) [owise]
 
-     rule ((A |-> M2:TypeMap) M1::Map) [A:KItem, B:CPPType <- C:KItem] => (A |-> (M2[B <- C])) M1
+     rule ((A |-> M2:Map) M1::Map) [A:KItem, B:CPPType <- C:KItem] => (A |-> (M2[stripType(B) <- (B, C)])) M1
 
      rule ((A |-> M2::Map) M1::Map) [A:KItem, B:KItem <- C:KItem] => (A |-> (M2[B <- C])) M1
           requires notBool isCPPType(B)
 
-     rule M::Map [A:KItem, B:CPPType <- C:KItem] => M A |-> (B |-> C) [owise]
+     rule M::Map [A:KItem, B:CPPType <- C:KItem] => M A |-> (stripType(B) |-> (B, C)) [owise]
 
      rule M::Map [A:KItem, B:KItem <- C:KItem] => M A |-> (B |-> C)::Map
           requires notBool isCPPType(B)

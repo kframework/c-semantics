@@ -16,7 +16,7 @@ module CPP-EXECUTION-INIT
      rule Execution() => true
 
      rule <k> initMainThread(EP::String) => initMainThread'(getTU(Base)) ...</k>
-          <odr-defs>... GlobalNamespace() :: Identifier(EP) |-> (_::CPPType |-> Base::SymBase) ...</odr-defs>
+          <odr-defs>... GlobalNamespace() :: Identifier(EP) |-> (_::CPPType |-> (_, Base::SymBase)) ...</odr-defs>
 
      rule <k> callEntryPoint(EP::String, N:Int, Args:K)
                => enterRestrictTU ~> K ~> reval(#callCppEntryPoint(T, getBase(Entry), N, mainArguments, Args)) ~> callAtExit
@@ -26,7 +26,7 @@ module CPP-EXECUTION-INIT
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> GlobalNamespace() </ns-id>
-          <nenv>... Identifier(EP) |-> (T::CPPType |-> Entry::EnvEntry) ...</nenv>
+          <nenv>... Identifier(EP) |-> (_::CPPType |-> (T::CPPType, Entry::EnvEntry)) ...</nenv>
           <status> _ => mainCalled </status>
 
      syntax Expr ::= #callCppEntryPoint(CPPType, SymBase, Int, CId, K)
@@ -44,7 +44,7 @@ module CPP-EXECUTION-INIT
      rule <k> setupCppEnv(Argc::Int) => .K ...</k>
 
           // adjust environment to C++ form
-          <env>... mainArguments |-> Argv::SymBase => mainArguments |-> (type(arrayType(type(pointerType(type(char))), Argc +Int 1)) |-> envEntry(Argv, false, NoDefArgs())) ...</env>
+          <env>... mainArguments |-> Argv::SymBase => mainArguments |-> (#fun(T::CPPType => T |-> (T, envEntry(Argv, false, NoDefArgs())))(type(arrayType(type(pointerType(type(char))), Argc +Int 1)))) ...</env>
           <types>... mainArguments |-> _ => .Map ...</types>
 
      rule <k> reval(V:PRVal) ~> callAtExit => AtExit:KItem ~> reval(V) ~> callAtExit ...</k>

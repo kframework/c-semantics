@@ -87,6 +87,6 @@ module CPP-EXECUTION-STMT-BLOCK
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... DestructorId(X) |-> (FuncT::CPPType |-> envEntry(... base: Base::SymBase)) ...</cenv>
+          <cenv>... DestructorId(X) |-> (_::CPPType |-> (FuncT::CPPType, envEntry(... base: Base::SymBase))) ...</cenv>
 
 endmodule
