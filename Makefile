@@ -3,30 +3,22 @@ C_SEMANTICS_ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 
 # Default values.
-# Do NOT override these.
 _K_ROOT := $(C_SEMANTICS_ROOT)/.build/k
-_K_OPTS := -Xmx8g -Xss32m
-_K_DISTRIBUTION := $(_K_ROOT)/k-distribution/target/release/k
-_K_BIN := $(_K_DISTRIBUTION)/bin
-_KOMPILE := $(_K_BIN)/kompile -O2
-_KDEP := $(_K_BIN)/kdep
-_PROFILE_DIR := $(_C_SEMANTICS_ROOT)/profiles/x86-gcc-limited-libc
-_PROFILE := $(notdir $(_PROFILE_DIR))
-_SUBPROFILE_DIRS :=
+_PROFILE_DIR := $(C_SEMANTICS_ROOT)/profiles/x86-gcc-limited-libc
 
-
-# Allow the environment to override these.
+# Overridable by the environment.
 K_ROOT ?= $(_K_ROOT)
-export K_OPTS ?= $(_K_OPTS)
-export K_DISTRIBUTION ?= $(_K_DISTRIBUTION)
-export K_BIN ?= $(_K_BIN)
-export KOMPILE ?= $(_KOMPILE)
-export KDEP ?= $(_K_DEP)
 export PROFILE_DIR ?= $(_PROFILE_DIR)
-export PROFILE ?= $(_PROFILE)
-export SUBPROFILE_DIRS ?= $(_SUBPROFILE_DIRS)
+SUBPROFILE_DIRS ?= 
 
-# Do NOT allow the environment to override these.
+# Protected from the environment.
+export K_OPTS := -Xmx8g -Xss32m
+export K_DISTRIBUTION := $(K_ROOT)/k-distribution/target/release/k
+export K_BIN := $(K_DISTRIBUTION)/bin
+export KOMPILE := $(K_BIN)/kompile -O2
+export KDEP := $(K_BIN)/kdep
+export PROFILE := $(notdir $(PROFILE_DIR))
+
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
 CC := $(PROFILE_DIR)/cc
