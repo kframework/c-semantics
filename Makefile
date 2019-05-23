@@ -79,9 +79,20 @@ $(K_BIN)/kompile: $(K_DISTRIBUTION)
 ocaml-deps: $(K_ROOT)/pom.xml
 	$(K_ROOT)/k-distribution/src/main/scripts/bin/k-configure-opam-dev
 
-check-vars: $(K_BIN)/kompile
-	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
-	@if ! $(CC) -v > /dev/null 2>&1; then if ! clang -v > /dev/null 2>&1; then echo "ERROR: You don't seem to have gcc or clang installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi fi
+check-vars: $(K_BIN)/kompile check-ocaml check-cc check-perl
+
+check-ocaml:
+	@ocaml -version &> /dev/null || \
+		echo "ERROR: Missing OCaml installation. Please see INSTALL.md for more information." \
+		&& false
+
+check-cc:
+	@$(CC) -v &> /dev/null || \
+		clang -v &> /dev/null || \
+			echo "ERROR: Missing GCC/Clang installation. Please see INSTALL.md for more information." \
+			&& false
+
+check-perl:
 	@perl scripts/checkForModules.pl
 
 dist/writelong: scripts/writelong.c
