@@ -1,24 +1,35 @@
-# Irrespective of where this is invoked from.
+# Notes:
+# 
+# * All values flow from K_ROOT.
+# * The environment overrides
+#   - K_ROOT
+#   - K_BIN
+#   - PROFILE_DIR
+#   - SUBPROFILE_DIRS
+# * Setting K_BIN only affects K_DISTRIBUTION, which is not used outside this makefile.
+
+
+
+# The directory where this Makefile is located.
 C_SEMANTICS_ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 
 # Default values.
 _K_ROOT := $(C_SEMANTICS_ROOT)/.build/k
-_PROFILE_DIR := $(C_SEMANTICS_ROOT)/profiles/x86-gcc-limited-libc
 
 # Overridable by the environment.
 K_ROOT ?= $(_K_ROOT)
-export PROFILE_DIR ?= $(_PROFILE_DIR)
+export K_BIN ?= $(K_ROOT)/k-distribution/target/release/k/bin
+export PROFILE_DIR ?= $(C_SEMANTICS_ROOT)/profiles/x86-gcc-limited-libc
 SUBPROFILE_DIRS ?= 
 
 # Protected from the environment.
 export K_OPTS := -Xmx8g -Xss32m
-export K_DISTRIBUTION := $(K_ROOT)/k-distribution/target/release/k
-export K_BIN := $(K_DISTRIBUTION)/bin
 export KOMPILE := $(K_BIN)/kompile -O2
 export KDEP := $(K_BIN)/kdep
 export PROFILE := $(notdir $(PROFILE_DIR))
 
+K_DISTRIBUTION := $(realpath $(K_BIN)/..)
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
 CC := $(PROFILE_DIR)/cc
