@@ -29,3 +29,24 @@ RUN    groupadd -g $GROUP_ID user                     \
     && useradd -m -u $USER_ID -s /bin/sh -g user user
 
 USER $USER_ID:$GROUP_ID
+
+
+###################
+# Configure opam. #
+###################
+
+ARG K_OPAM_DIR=/home/user/opam-config
+
+# Copy the necessary things.
+COPY --chown=user:user \
+  .build/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev \
+  ${K_OPAM_DIR}/bin/k-configure-opam-dev
+COPY --chown=user:user \
+  .build/k/k-distribution/src/main/scripts/bin/k-configure-opam-common \
+  ${K_OPAM_DIR}/bin/k-configure-opam-common
+COPY --chown=user:user \
+  .build/k/k-distribution/src/main/scripts/lib/opam \
+  ${K_OPAM_DIR}/lib/opam
+
+# Run the scripts.
+RUN ${K_OPAM_DIR}/bin/k-configure-opam-dev
