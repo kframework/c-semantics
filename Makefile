@@ -225,7 +225,7 @@ $(XYZ_SEMANTICS): check-vars
 semantics: check-vars
 	@$(MAKE) -C semantics all
 
-check:	pass fail fail-compile
+check: pass fail fail-compile
 
 pass:	test-build
 	@$(MAKE) -C tests/unit-pass comparison
