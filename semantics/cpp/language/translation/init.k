@@ -18,7 +18,7 @@ module CPP-TRANSLATION-INIT
 
      rule #Execution(<generatedTop>... <compile-time-evaluation> B::Bool </compile-time-evaluation> ...</generatedTop>) => B
 
-     rule isKResult(le(_, _, T::CPPType) #Or xe(, _, T::CPPType) #Or pre(_, _, T::CPPType)) => Translation() andBool notBool isCPPRefType(T)
+     rule isKResult(le(_, _, T::CPPType) #Or xe(_, _, T::CPPType) #Or pre(_, _, T::CPPType)) => Translation() andBool notBool isCPPRefType(T)
 
      rule <k> TranslationUnit(Tu::String, Decls::List)
                => makeTu(Tu +String Uuid)

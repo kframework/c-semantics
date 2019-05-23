@@ -698,7 +698,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      syntax Bool ::= #isTrivialDefaultConstructor(ClassInfo) [function]
                    | #hasMethodThat(CId, ClassInfo, TypePredicate) [function]
-                   | #isDeleted(SymBase) [function]
+                   | #isDeleted(SymBase, K) [function]
 
      // @ref n4296 12.1:4.8
      rule isTrivialDefaultConstructor(T::CPPType, K:K) => isDefaultConstructor(T, K) andBool notBool isUserProvidedConstructor(T, K) andBool notBool hasVirtualMembers(type(classType(getMethodClass(T)))) andBool #isTrivialDefaultConstructor(getClassInfo(getMethodClass(T)))
