@@ -82,12 +82,12 @@ ocaml-deps: $(K_ROOT)/pom.xml
 check-vars: $(K_BIN)/kompile check-ocaml check-cc check-perl
 
 check-ocaml:
-	@ocaml -version &> /dev/null || \
+	ocaml -version &> /dev/null || \
 		echo "ERROR: Missing OCaml installation. Please see INSTALL.md for more information." \
 		&& false
 
 check-cc:
-	@$(CC) -v &> /dev/null || \
+	$(CC) -v &> /dev/null || \
 		clang -v &> /dev/null || \
 			echo "ERROR: Missing GCC/Clang installation. Please see INSTALL.md for more information." \
 			&& false
