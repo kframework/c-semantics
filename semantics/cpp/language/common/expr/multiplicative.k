@@ -38,7 +38,7 @@ module CPP-EXPR-MULTIPLICATIVE
           requires isCPPFloatingType(type(L)) andBool Z ==Float 0.0
                andBool type(L) ==Type T2
 
-     rule prv(I1:Int, Tr1::Trace, T1::CPPIntegerType) % prv(I2:Int, Tr2::Trace, T2::CPPType)
+     rule prv(I1:Int, Tr1::Trace, T1::CPPType) % prv(I2:Int, Tr2::Trace, T2::CPPType)
           => arithInterpret(T1, I1 %Int I2, combine(Tr1, Tr2, #klabel(`_%__CPP-SYNTAX`)))
           requires isPromoted(T1) andBool I2 =/=Int 0
                andBool min(T1) <=Int I1 /Int I2
@@ -51,7 +51,7 @@ module CPP-EXPR-MULTIPLICATIVE
                andBool type(L) ==Type T2
 
      rule (.K => UNDEF("CEMX3", "Signed integer overflow."))
-          ~> prv(I1:Int, _, T1::CPPIntegerType) % prv(I2:Int, _, T2::CPPType)
+          ~> prv(I1:Int, _, T1::CPPType) % prv(I2:Int, _, T2::CPPType)
           requires I2 =/=Int 0
                andBool notBool (min(T1) <=Int I1 /Int I2
                     andBool max(T1) >=Int I1 /Int I2)

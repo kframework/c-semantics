@@ -3,7 +3,7 @@ module CPP-REFERENCE-SYNTAX
 
      syntax Bool ::= isReferenceCompatible(CPPType, CPPType) [function]
                    | isReferenceRelated(CPPType, CPPType) [function]
-                   | isValidReferenceType(CPPRefType) [function]
+                   | isValidReferenceType(CPPType) [function]
 
 endmodule
 
@@ -16,7 +16,7 @@ module CPP-REFERENCE
      rule isReferenceRelated(T1::CPPType, T2::CPPType) => true
           requires utype(T1) ==Type utype(T2)
 
-     rule isReferenceRelated(T1:CPPClassType, T2:CPPClassType) => isBaseClassOf(T1, T2)
+     rule isReferenceRelated(t(... st: classType(...)) #as T1::CPPType, t(... st: classType(...)) #as T2::CPPType) => isBaseClassOf(T1, T2)
 
      rule isReferenceRelated(T1::CPPType, T2::CPPType) => false
           [owise]

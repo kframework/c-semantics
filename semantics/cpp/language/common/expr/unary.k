@@ -8,7 +8,7 @@ module CPP-EXPR-UNARY
      imports CPP-SYMLOC-SYNTAX
      imports C-CONFIGURATION
 
-     rule *(prv(Loc:SymLoc, Tr::Trace, T:CPPPointerType))
+     rule *(prv(Loc:SymLoc, Tr::Trace, t(... st: pointerType(...)) #as T::CPPType))
           => lv(Loc, combine(Tr, #klabel(`*__CPP-SYNTAX`)), innerType(T))
 
      rule &(lv(Loc:SymLoc, Tr::Trace, T::CPPType))

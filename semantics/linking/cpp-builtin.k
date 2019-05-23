@@ -28,7 +28,7 @@ module LINKING-CPP-BUILTIN
      rule addCppBuiltins(.K, _) => .K
 
      syntax KItem ::= addCppBuiltin(QualId, CPPType, Bool)
-     rule <k> addCppBuiltin(Q::QualId, T:CPPFunctionType, AddAll:Bool)
+     rule <k> addCppBuiltin(Q::QualId, t(... st: functionType(...)) #as T::CPPType, AddAll:Bool)
               => declareCppBuiltinFunction(Q, T, obj(0, 0, builtinCppSymbol(showSignature(Q, T)))) ...</k>
           <odr-defs> Defs:Map </odr-defs>
           requires (notBool (Q, T in_keys(Defs))) orBool AddAll

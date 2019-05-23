@@ -4,7 +4,7 @@ module CPP-TRANSLATION-EXPR-UNARY
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule *(pre(E::Expr, Tr::Trace, T:CPPPointerType))
+     rule *(pre(E::Expr, Tr::Trace, t(... st: pointerType(...)) #as T::CPPType))
           => le(* E, combine(Tr, #klabel(`*__CPP-SYNTAX`)), innerType(T))
 
      rule &(le(E::Expr, Tr::Trace, T::CPPType))

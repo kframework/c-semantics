@@ -413,7 +413,7 @@ module C-DECL-INITIALIZER
                (.List => ListItem(findStruct(t(Qs, S, structType(X)))))
                L:List
           </curr-subobject>
-          requires {L[0]}<:KItem =/=K next
+          requires {L[0]}<:KItem =/=K next andBool {L[0]}<:KItem =/=K down
           [structural]
 
      syntax KItem ::= findStruct(Type)

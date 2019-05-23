@@ -6,16 +6,16 @@ module CPP-EXPR-EVAL
 
      rule reval(L:GLVal => convertReval(L))
 
-     rule convertReval(lv(Loc::SymLoc, Tr::Trace, T:CPPArrayType))
+     rule convertReval(lv(Loc::SymLoc, Tr::Trace, t(... st: _:CPPSimpleArrayType) #as T::CPPType))
           => convertArray(lv(Loc, Tr, T))
 
-     rule convertReval(xv(Loc::SymLoc, Tr::Trace, T:CPPArrayType))
+     rule convertReval(xv(Loc::SymLoc, Tr::Trace, t(... st: _:CPPSimpleArrayType) #as T::CPPType))
           => convertArray(xv(Loc, Tr, T))
 
-     rule convertReval(prv(Loc::SymLoc, Tr::Trace, T:CPPArrayType))
+     rule convertReval(prv(Loc::SymLoc, Tr::Trace, t(... st: _:CPPSimpleArrayType) #as T::CPPType))
           => convertArray(prv(Loc, Tr, T))
 
-     rule convertReval(lv(Loc::SymLoc, Tr::Trace, T:CPPFunctionType))
+     rule convertReval(lv(Loc::SymLoc, Tr::Trace, t(... st: functionType(...)) #as T::CPPType))
           => convertFunction(lv(Loc, Tr, T))
 
      rule convertReval(L:GLVal)

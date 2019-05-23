@@ -37,7 +37,7 @@ module CPP-EXECUTION-EXPR-REFERENCE
 
      // @ref n4800 9.3.3:5.3 - converted initializer is NOT a prvalue
      rule bindReference3(
-               lv(... t: T1::CPPRefType) #as V1::LVal,
+               lv(... t: T1::CPPType) #as V1::LVal,
                xv(... t: T2::CPPType) #as V2::Expr
           )
           => bindReference4(V1, V2)
@@ -98,7 +98,7 @@ module CPP-EXECUTION-EXPR-REFERENCE
 
      syntax SymLoc ::= referenceTarget(t1: CPPType, loc: SymLoc, t2: CPPType) [function]
 
-     rule referenceTarget(T1:CPPClassType, Loc::SymLoc, T2:CPPClassType)
+     rule referenceTarget(t(... st: classType(...)) #as T1::CPPType, Loc::SymLoc, t(... st: classType(...)) #as T2::CPPType)
           => baseClassSubobject(Loc, T1, T2)
           requires isBaseClassOf(T1, T2)
 

@@ -69,7 +69,7 @@ module CPP-TRANSLATION-EXPR-CONDITIONAL
           requires getKLabel(E) =/=K #klabel(`Throw`)
 
      // @ref n4296 5.16:2.2
-     rule typeAndCatOfConditional(_, T:CPPVoidType, _, _, _:CPPVoidType, _)
+     rule typeAndCatOfConditional(_, t(... st: void) #as T::CPPType, _, _, t(... st: void), _)
           => typeAndCat(T, prvalue)
 
      // TODO(dwightguth): n4296 5.16:3
@@ -119,13 +119,13 @@ module CPP-TRANSLATION-EXPR-CONDITIONAL
           => typeAndCat(compositePointerType(E1, T1, E2, T2), prvalue)
           requires isCPPMemberPointerType(T1) orBool isCPPMemberPointerType(T2)
 
-     rule typeAndCatOfConditional6(_, T:CPPNullPtrTType, _, _:CPPNullPtrTType)
+     rule typeAndCatOfConditional6(_, t(... st: nullptr_t) #as T::CPPType, _, t(... st: nullptr_t))
           => typeAndCat(T, prvalue)
 
-     rule typeAndCatOfConditional6(_, T:CPPNullPtrTType, IntegerLiteral(0, _), _)
+     rule typeAndCatOfConditional6(_, t(... st: nullptr_t) #as T::CPPType, IntegerLiteral(0, _), _)
           => typeAndCat(T, prvalue)
 
-     rule typeAndCatOfConditional6(IntegerLiteral(0, _), _, _, T:CPPNullPtrTType)
+     rule typeAndCatOfConditional6(IntegerLiteral(0, _), _, _, t(... st: nullptr_t) #as T::CPPType)
           => typeAndCat(T, prvalue)
 
 endmodule

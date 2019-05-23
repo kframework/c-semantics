@@ -35,9 +35,9 @@ module CPP-TRANSLATION-STMT-TRY
 
      context Throw.prepare(_, HOLE:TypeExpr => typeof(HOLE)) [result(CPPType)]
 
-     rule Throw.prepare(_, T:CPPArrayType => type(pointerType(innerType(T))))
+     rule Throw.prepare(_, t(... st: _:CPPSimpleArrayType) #as T::CPPType => type(pointerType(innerType(T))))
 
-     rule Throw.prepare(_, T:CPPFunctionType => type(pointerType(T)))
+     rule Throw.prepare(_, t(... st: functionType(...)) #as T::CPPType => type(pointerType(T)))
 
      rule Throw.prepare(E::Expr, T:CPPType)
           => Throw.potentiallyInvokeDestructor(T)
@@ -94,9 +94,9 @@ module CPP-TRANSLATION-STMT-TRY
 
      rule processCatchDecl(NormalizedDecl(... type: T::CPPType, init: NoInit() => exceptionObject(T)))
 
-     rule processCatchDecl(NormalizedDecl(... type: T:CPPArrayType => type(pointerType(innerType(T)))))
+     rule processCatchDecl(NormalizedDecl(... type: t(... st: _:CPPSimpleArrayType) #as T::CPPType => type(pointerType(innerType(T)))))
 
-     rule processCatchDecl(NormalizedDecl(... type: T:CPPFunctionType => type(pointerType(T))))
+     rule processCatchDecl(NormalizedDecl(... type: t(... st: functionType(...)) #as T::CPPType => type(pointerType(T))))
 
      rule processCatchDecl(D::Decl) => D [owise]
 
