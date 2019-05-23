@@ -163,7 +163,12 @@ dist/profiles/$(PROFILE)/%-kompiled/timestamp: dist/profiles/$(PROFILE) $$(notdi
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp semantics/.build/$(PROFILE)/$(NAME)-kompiled dist/profiles/$(shell basename $(d));)
 
-$(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) $(call timestamp_of,cpp-translation) $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) dist/profiles/$(PROFILE)
+$(LIBSTDCXX_SO): \
+		$(call timestamp_of,c-cpp-linking) \
+		$(call timestamp_of,cpp-translation) \
+		$(PROFILE_DIR)/compiler-src/*.C \
+		$(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) \
+		dist/profiles/$(PROFILE)
 	@echo "$(PROFILE): Translating the C++ standard library..."
 	@cd $(PROFILE_DIR)/compiler-src && $(shell pwd)/dist/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$@ *.C $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
@@ -171,25 +176,38 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) $(call timestamp_of,cpp-tran
 		$(shell pwd)/dist/kcc --use-profile $(shell basename $(d)) -shared -o $(shell pwd)/dist/profiles/$(shell basename $(d))/lib/libstdc++.so *.C $(KCCFLAGS) -I .;)
 	@echo "$(PROFILE): Done translating the C++ standard library."
 
-$(LIBC_SO): $(call timestamp_of,c-cpp-linking) $(call timestamp_of,c-translation) $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) dist/profiles/$(PROFILE)
+$(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
+						$(call timestamp_of,c-translation) \
+						$(PROFILE_DIR)/src/*.c \
+						$(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) \
+						dist/profiles/$(PROFILE)
 	@echo "$(PROFILE): Translating the C standard library..."
 	@cd $(PROFILE_DIR)/src && $(shell pwd)/dist/kcc --use-profile $(PROFILE) -shared -o $(shell pwd)/$@ *.c $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/src && $(shell pwd)/dist/kcc --use-profile $(shell basename $(d)) -shared -o $(shell pwd)/dist/profiles/$(shell basename $(d))/lib/libc.so *.c $(KCCFLAGS) -I .)
 	@echo "$(PROFILE): Done translating the C standard library."
 
-$(PROFILE)-native: dist/profiles/$(PROFILE)/native/main.o dist/profiles/$(PROFILE)/native/server.c dist/profiles/$(PROFILE)/native/builtins.o dist/profiles/$(PROFILE)/native/platform.o dist/profiles/$(PROFILE)/native/platform.h dist/profiles/$(PROFILE)/native/server.h
+$(PROFILE)-native: \
+	dist/profiles/$(PROFILE)/native/main.o \
+	dist/profiles/$(PROFILE)/native/server.c \
+	dist/profiles/$(PROFILE)/native/builtins.o \
+	dist/profiles/$(PROFILE)/native/platform.o \
+	dist/profiles/$(PROFILE)/native/platform.h \
+	dist/profiles/$(PROFILE)/native/server.h
 
 dist/profiles/$(PROFILE)/native/main.o: native-server/main.c native-server/server.h
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@  -g
+
 dist/profiles/$(PROFILE)/native/%.h: native-server/%.h
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
+
 dist/profiles/$(PROFILE)/native/server.c: native-server/server.c
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
-dist/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c $(wildcard native-server/*.h)
+
+dist/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c native-server/*.h
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@ -I native-server
 
