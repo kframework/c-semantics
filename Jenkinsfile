@@ -20,24 +20,13 @@ pipeline {
           --build-arg GROUP_ID=$(id -g) \
         '''
       } }
-      stages {
-        stage('Build') {
-          steps { ansiColor('xterm') {
-            sh '''
-              eval $(opam config env)
-              make -j4
-            '''
-          } }
-        }
-        stage('Test') {
-          steps { ansiColor('xterm') {
-            sh '''
-              eval $(opam config env)
-              make -C tests/unit-pass -j$(nproc) os-comparison
-            '''
-          } }
-        }
-      }
+      steps { ansiColor('xterm') {
+        sh '''
+          eval $(opam config env)
+          make -j4
+          make -C tests/unit-pass -j$(nproc) os-comparison
+        '''
+      } }
     }
   }
 }
