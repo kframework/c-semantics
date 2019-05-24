@@ -88,7 +88,7 @@ module CPP-TRANSLATION-EXPR-CAST
      rule convertStatic(t(... st: rvRefType(...)) #as T::CPPType, V:LVal, Tr::Trace)
           =>
           #if notBool isCPPBitfieldType(type(V)) #then
-               le(stripHold(V), Tr, T)
+               xe(stripHold(V), Tr, T)
           #else
                not-implemented // TODO (h0nzZik)
           #fi
