@@ -24,6 +24,11 @@ pipeline {
           '''
         }
       }
+      post {
+        always {
+          archiveArtifacts 'tests/unit-pass/*config'
+        }
+      }
     }
   }
 }
