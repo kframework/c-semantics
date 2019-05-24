@@ -26,7 +26,7 @@ pipeline {
       }
       post {
         always {
-          archiveArtifacts 'tests/unit-pass/*config'
+          archiveArtifacts artifacts: 'tests/unit-pass/*config', allowEmptyArchive: true
         }
       }
     }
