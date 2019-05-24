@@ -6,22 +6,23 @@
 #   - K_BIN
 #   - PROFILE_DIR
 #   - SUBPROFILE_DIRS
-# * Setting K_BIN only affects K_DISTRIBUTION, which is not used outside this makefile.
 
 
 
 # The directory where this Makefile is located.
-C_SEMANTICS_ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+export C_SEMANTICS_ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 
-# Default values.
+# Default value.
 _K_ROOT := $(C_SEMANTICS_ROOT)/.build/k
+
 
 # Overridable by the environment.
 K_ROOT ?= $(_K_ROOT)
 export K_BIN ?= $(K_ROOT)/k-distribution/target/release/k/bin
 export PROFILE_DIR ?= $(C_SEMANTICS_ROOT)/profiles/x86-gcc-limited-libc
 SUBPROFILE_DIRS ?=
+
 
 # Protected from the environment.
 export K_OPTS := -Xmx8g -Xss32m
@@ -76,19 +77,6 @@ endef
 .PHONY: default check-vars semantics clean stdlibs c-cpp-semantics test-build pass fail fail-compile parser/cparser clang-tools/clang-kast $(PROFILE)-native
 
 default: test-build
-
-$(K_ROOT)/pom.xml:
-	@echo "== submodule: $@"
-	git submodule update --init -- $(K_ROOT)
-
-$(K_DISTRIBUTION): $(K_ROOT)/pom.xml
-	cd $(K_ROOT) \
-		&& mvn package -q -Dhaskell.backend.skip -Dllvm.backend.skip -DskipTests -U
-
-$(K_BIN)/kompile: $(K_DISTRIBUTION)
-
-ocaml-deps: $(K_ROOT)/pom.xml
-	$(K_ROOT)/k-distribution/src/main/scripts/bin/k-configure-opam-dev
 
 check-vars: $(K_BIN)/kompile check-ocaml check-cc check-perl
 
@@ -278,6 +266,5 @@ clean:
 	-$(MAKE) -C tests/unit-pass clean
 	-$(MAKE) -C tests/unit-fail clean
 	-$(MAKE) -C tests/unit-fail-compilation clean
-	-rm -f $(K_ROOT)/make.timestamp
 	-rm -rf dist
 	-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre 
