@@ -87,7 +87,7 @@ module CPP-TYPE-MAP
 
      rule some(K1::CPPType |-> K2:KItem M::TypeMap, T::TypePredicate) => T(K1, K2) orBool some(M, T) [owise]
 
-     rule keys_list(_::CPPType |-> K2:KItem M::TypeMap) => ListItem(K2) keys_list(M)
+     rule keys_list(T::CPPType |-> _:KItem M::TypeMap) => ListItem(T) keys_list(M)
      rule keys_list(.Map::TypeMap) => .List
 
      rule Map2List(K1::CPPType |-> K2:KItem M::TypeMap) => ListItem(kpair(K1, K2)) Map2List(M)
