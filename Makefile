@@ -1,5 +1,5 @@
 # Notes:
-# 
+#
 # * All values flow from K_ROOT.
 # * The environment overrides
 #   - K_ROOT
@@ -21,7 +21,7 @@ _K_ROOT := $(C_SEMANTICS_ROOT)/.build/k
 K_ROOT ?= $(_K_ROOT)
 export K_BIN ?= $(K_ROOT)/k-distribution/target/release/k/bin
 export PROFILE_DIR ?= $(C_SEMANTICS_ROOT)/profiles/x86-gcc-limited-libc
-SUBPROFILE_DIRS ?= 
+SUBPROFILE_DIRS ?=
 
 # Protected from the environment.
 export K_OPTS := -Xmx8g -Xss32m
@@ -96,7 +96,7 @@ check-ocaml:
 	@ocaml -version > /dev/null 2>&1 || { \
 		echo "ERROR: Missing OCaml installation. Please see INSTALL.md for more information." \
 		&& false; \
-	}	
+	}
 
 check-cc:
 	@$(CC) -v > /dev/null 2>&1 || \
