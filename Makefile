@@ -78,7 +78,7 @@ endef
 
 default: test-build
 
-check-vars: $(K_BIN)/kompile check-ocaml check-cc check-perl
+check-vars: check-ocaml check-cc check-perl
 
 check-ocaml:
 	@ocaml -version > /dev/null 2>&1 || { \
