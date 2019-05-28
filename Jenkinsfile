@@ -1,6 +1,16 @@
 pipeline {
-  agent { label 'docker' }
-  stages {
+  agent {
+    dockerfile {
+      additionalBuildArgs ''' \
+        --build-arg USER_ID=$(id -u) \
+        --build-arg GROUP_ID=$(id -g) \
+      '''
+    }
+  }
+  options {
+    ansiColor('xterm')
+  }
+  stages{
     stage("Init title") {
       when { changeRequest() }
       steps {
@@ -9,34 +19,20 @@ pipeline {
         }
       }
     }
-    stage('Build + Test') {
-      when {
-        changeRequest()
-        beforeAgent true
-      }
-      agent { dockerfile {
-        additionalBuildArgs ''' \
-          --build-arg USER_ID=$(id -u) \
-          --build-arg GROUP_ID=$(id -g) \
+    stage('Build') {
+      steps {
+        sh '''
+          eval $(opam config env)
+          make -j4
         '''
-      } }
-      stages {
-        stage('Build') {
-          steps { ansiColor('xterm') {
-            sh '''
-              eval $(opam config env)
-              make -j4
-            '''
-          } }
-        }
-        stage('Test') {
-          steps { ansiColor('xterm') {
-            sh '''
-              eval $(opam config env)
-              make -C tests/unit-pass -j$(nproc) os-comparison
-            '''
-          } }
-        }
+      }
+    }
+    stage('Test') {
+      steps {
+        sh '''
+          eval $(opam config env)
+          make -C tests/unit-pass -j$(nproc) os-comparison
+        '''
       }
     }
   }
