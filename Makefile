@@ -1,6 +1,6 @@
 ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
-export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
+export K_BIN ?= $(ROOT)/k/k-distribution/target/release/k/bin
 
 export K_OPTS := -Xmx8g -Xss32m
 export KOMPILE := $(K_BIN)/kompile -O2
