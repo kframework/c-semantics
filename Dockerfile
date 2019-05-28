@@ -39,13 +39,13 @@ ARG K_OPAM_DIR=/home/user/opam-config
 
 # Copy the necessary things.
 COPY --chown=user:user \
-  k/k-distribution/src/main/scripts/bin/k-configure-opam-dev \
+  deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev \
   ${K_OPAM_DIR}/bin/k-configure-opam-dev
 COPY --chown=user:user \
-  k/k-distribution/src/main/scripts/bin/k-configure-opam-common \
+  deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-common \
   ${K_OPAM_DIR}/bin/k-configure-opam-common
 COPY --chown=user:user \
-  k/k-distribution/src/main/scripts/lib/opam \
+  deps/k/k-distribution/src/main/scripts/lib/opam \
   ${K_OPAM_DIR}/lib/opam
 
 # Run the scripts.
@@ -58,7 +58,7 @@ RUN ${K_OPAM_DIR}/bin/k-configure-opam-dev
 
 ARG K_BUILD_DIR=/home/user/k-build
 
-COPY --chown=user:user external-deps/k/ ${K_BUILD_DIR}/
+COPY --chown=user:user deps/k/ ${K_BUILD_DIR}/
 
 RUN cd ${K_BUILD_DIR} \
   && mvn package -q -U \
