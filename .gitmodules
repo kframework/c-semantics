@@ -1,3 +1,3 @@
 [submodule ".build/k"]
-	path = k
+	path = external-deps/k
 	url = https://github.com/kframework/k

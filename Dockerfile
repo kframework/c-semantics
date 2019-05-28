@@ -58,7 +58,7 @@ RUN ${K_OPAM_DIR}/bin/k-configure-opam-dev
 
 ARG K_BUILD_DIR=/home/user/k-build
 
-COPY --chown=user:user k/ ${K_BUILD_DIR}/
+COPY --chown=user:user external-deps/k/ ${K_BUILD_DIR}/
 
 RUN cd ${K_BUILD_DIR} \
   && mvn package -q -U \
