@@ -1,17 +1,19 @@
-BUILD_DIR = $(CURDIR)/.build
-K_SUBMODULE = $(BUILD_DIR)/k
+ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
+export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
+
 export K_OPTS := -Xmx8g -Xss32m
-export K_SUBMODULE_DIST := $(K_SUBMODULE)/k-distribution/target/release/k
-export K_SUBMODULE_BIN := $(K_SUBMODULE_DIST)/bin
-export K_BIN ?= $(K_SUBMODULE_BIN)
 export KOMPILE = $(K_BIN)/kompile -O2
 export KDEP = $(K_BIN)/kdep
 
-export PROFILE_DIR = $(shell pwd)/profiles/x86-gcc-limited-libc
-export PROFILE = $(shell basename $(PROFILE_DIR))
-export SUBPROFILE_DIRS =
-KCCFLAGS = -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
-CFLAGS = -std=gnu11 -Wall -Wextra -Werror -pedantic
+export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
+export PROFILE := $(shell basename $(PROFILE_DIR))
+export SUBPROFILE_DIRS :=
+
+KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
+CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
+
+K_DIST := $(realpath $(K_BIN)/..)
 
 FILES_TO_DIST = \
 	scripts/kcc \
@@ -30,7 +32,7 @@ FILES_TO_DIST = \
 	clang-tools/clang-kast \
 	clang-tools/call-sites \
 	scripts/cdecl-3.6/src/cdecl \
-	$(K_SUBMODULE_DIST) \
+	$(K_DIST) \
 	LICENSE \
 	licenses
 
@@ -55,23 +57,30 @@ endef
 
 default: test-build
 
-$(K_SUBMODULE)/pom.xml:
-	@echo "== submodule: $@"
-	git submodule update --init -- $(K_SUBMODULE)
+check-vars: check-ocaml check-cc check-perl check-k
 
-$(K_SUBMODULE_DIST): $(K_SUBMODULE)/pom.xml
-	cd $(K_SUBMODULE) \
-		&& mvn package -q -Dhaskell.backend.skip -Dllvm.backend.skip -DskipTests -U
+check-ocaml:
+	@ocaml -version > /dev/null 2>&1 || { \
+		echo "ERROR: Missing OCaml installation. Please see INSTALL.md for more information." \
+		&& false; \
+	}
 
-$(K_SUBMODULE_BIN)/kompile: $(K_SUBMODULE_DIST)
+check-cc:
+	@$(CC) -v > /dev/null 2>&1 || \
+		clang -v > /dev/null 2>&1 || { \
+			echo "ERROR: Missing GCC/Clang installation. Please see INSTALL.md for more information." \
+			&& false; \
+		}
 
-ocaml-deps: $(K_SUBMODULE)/pom.xml
-	$(K_SUBMODULE)/k-distribution/src/main/scripts/bin/k-configure-opam-dev
-
-check-vars: $(K_BIN)/kompile
-	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
-	@if ! $(CC) -v > /dev/null 2>&1; then if ! clang -v > /dev/null 2>&1; then echo "ERROR: You don't seem to have gcc or clang installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi fi
+check-perl:
 	@perl scripts/checkForModules.pl
+
+
+check-k:
+	@$(K_BIN)/kompile --version > /dev/null 2>&1 || { \
+		echo "ERROR: Missing K installation. Please see Install.md for more information." \
+		&& false; \
+	}
 
 dist/writelong: scripts/writelong.c
 	@mkdir -p dist
@@ -225,6 +234,5 @@ clean:
 	-$(MAKE) -C tests/unit-pass clean
 	-$(MAKE) -C tests/unit-fail clean
 	-$(MAKE) -C tests/unit-fail-compilation clean
-	-rm -f $(K_SUBMODULE)/make.timestamp
 	-rm -rf dist
 	-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre 

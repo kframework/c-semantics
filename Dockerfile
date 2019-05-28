@@ -50,3 +50,20 @@ COPY --chown=user:user \
 
 # Run the scripts.
 RUN ${K_OPAM_DIR}/bin/k-configure-opam-dev
+
+
+############
+# Build K. #
+############
+
+ARG K_BUILD_DIR=/home/user/k-build
+
+COPY --chown=user:user ./.build/k/ ${K_BUILD_DIR}/
+
+RUN cd ${K_BUILD_DIR} \
+  && mvn package -q -U \
+      -DskipTests -DskipKTest \
+      -Dhaskell.backend.skip -Dllvm.backend.skip \
+      -Dcheckstyle.skip
+
+ENV K_BIN="${K_BUILD_DIR}/k-distribution/target/release/k/bin"
