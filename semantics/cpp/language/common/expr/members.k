@@ -41,8 +41,8 @@ module CPP-EXPR-MEMBERS
           <class-id> FC </class-id>
           <cenv>... F |-> (_::CPPType |-> envEntry(... base: memberBase(unnamedObject(C::Class), _, _))) unnamedObject(C) |-> (_::CPPType |-> classOffset(_, Offset::Int)) ...</cenv>
 
-     rule fieldExp(lv(Loc:SymLoc, _, _), T::CPPType, Offset::Int)
-          => lv(Loc +bytes Offset /Int cfg:bitsPerByte, noTrace, T)
+     rule fieldExp(L::GLVal, T::CPPType, Offset::Int)
+          => makeVal(cat(L), locOf(L) +bytes Offset /Int cfg:bitsPerByte, noTrace, T)
           requires notBool isCPPBitfieldType(T)
 
      rule E::Expr -> T::TemplateKeyword N::Name => (* E) . T N [anywhere]
