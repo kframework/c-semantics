@@ -401,4 +401,7 @@ module C-TYPING-SYNTAX
      // updating the effective types of accesses.
      syntax Provenance ::= objectType(EffectiveType)
 
+     // Unqualify, array-to-pointer, and function-to-pointer conversion.
+     syntax UType ::= rvalType(Type) [function]
+
 endmodule

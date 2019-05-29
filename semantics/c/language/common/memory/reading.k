@@ -52,12 +52,12 @@ module C-MEMORY-READING
 
      syntax KItem ::= readActual(SymLoc, Type)
      rule readActual(Loc::SymLoc, T::Type)
-          => concretize(updateReadFrom(utype(T), Loc),
+          => concretize(updateReadFrom(rvalType(T), Loc),
                readBytes(Loc, byteSizeofType(T), T))
           requires notBool isBitfieldType(T)
           [structural]
      rule readActual(Loc::SymLoc, t(... st: bitfieldType(...)) #as T::Type)
-          => concretize(updateReadFrom(utype(T), Loc),
+          => concretize(updateReadFrom(rvalType(T), Loc),
               fillToBytes(extractBitsFromMem(Loc, T)))
           [structural]
 
