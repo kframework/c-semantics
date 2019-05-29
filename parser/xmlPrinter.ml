@@ -1,6 +1,5 @@
 open Escape
 open Cabs
-open Big_int
 
 let counter = ref 0
 let currentSwitchId = ref 0

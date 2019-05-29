@@ -1,10 +1,16 @@
 pipeline {
   agent {
     dockerfile {
-      additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+      additionalBuildArgs ''' \
+        --build-arg USER_ID=$(id -u) \
+        --build-arg GROUP_ID=$(id -g) \
+      '''
     }
   }
-  stages {
+  options {
+    ansiColor('xterm')
+  }
+  stages{
     stage("Init title") {
       when { changeRequest() }
       steps {
@@ -13,16 +19,20 @@ pipeline {
         }
       }
     }
-    stage('Build and test open source semantics') {
+    stage('Build') {
       steps {
-        ansiColor('xterm') {
-          sh '''
-            make ocaml-deps
-            eval $(opam config env)
-            make -j4
-            make -C tests/unit-pass -j$(nproc) os-comparison
-          '''
-        }
+        sh '''
+          eval $(opam config env)
+          make -j4
+        '''
+      }
+    }
+    stage('Test') {
+      steps {
+        sh '''
+          eval $(opam config env)
+          make -C tests/unit-pass -j$(nproc) os-comparison
+        '''
       }
       post {
         always {
