@@ -53,6 +53,7 @@ module C-STMT-EXPR
 
      rule checkArrayStaticAssign(t(_, Mods:Set, pointerType(T:Type)), L::SymLoc)
           => checkArrayStaticAssign'(T, getArrayStatic(Mods), {getFromArray(L)}:>Provenance)
+          requires isFromArray(L)
      rule (.K => UNDEF("EEA4",
                "Passing a pointer not to an array object as a function parameter with a static-qualified array size."))
           ~> checkArrayStaticAssign(_, Loc:SymLoc)
