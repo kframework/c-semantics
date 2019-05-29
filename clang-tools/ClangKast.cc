@@ -48,7 +48,7 @@ static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 static cl::extrahelp MoreHelp("\nMore help text...");
 
 enum KKind {
-  KAPPLY, KSEQUENCE, KTOKEN
+  KAPPLY, KSEQUENCE, LIST, KTOKEN
 };
 
 struct Node {
@@ -155,8 +155,10 @@ public:
       return RecursiveASTVisitor::TraverseStmt(S);
 
     if (Expr *E = dyn_cast<Expr>(S)) {
-      AddKApplyNode("ExprLoc", 2);
-      AddCabsLoc(E->getExprLoc());
+      if (!dyn_cast<CXXDefaultArgExpr>(S)) {
+        AddKApplyNode("ExprLoc", 2);
+        AddCabsLoc(E->getExprLoc());
+      }
     }
     return RecursiveASTVisitor::TraverseStmt(S);
   }
@@ -245,12 +247,20 @@ public:
     nodes.push_back(node);
   }
 
+  void AddListNode(int size) {
+    Node *list = new Node();
+    list->size = size;
+    list->kind = LIST;
+    nodes.push_back(list);
+  }
+
   void AddKSequenceNode(int size) {
     Node *list = new Node();
     list->size = size;
     list->kind = KSEQUENCE;
     nodes.push_back(list);
   }
+
 
   void AddKTokenNode(const char *s, const char *sort) {
     Node *node = new Node();
@@ -301,7 +311,7 @@ public:
         i++;
       }
     }
-    AddKSequenceNode(i);
+    AddListNode(i);
   }
 
   bool TraverseDeclContextNode(DeclContext *D) {
@@ -317,7 +327,7 @@ public:
   void AddStmtChildrenNode(Stmt *S) {
     int i = 0;
     for (Stmt::child_iterator iter = S->child_begin(), end = S->child_end(); iter != end; ++i, ++iter);
-    AddKSequenceNode(i);
+    AddListNode(i);
   }
 
   bool VisitTranslationUnitDecl(TranslationUnitDecl *D) {
@@ -529,7 +539,7 @@ public:
           AddKApplyNode("TemplateSpecialization", 2);
           AddKApplyNode("TemplateSpecializationType", 2);
           TRY_TO(TraverseDeclarationName(FTSI->getTemplate()->getDeclName()));
-          AddKSequenceNode(TALI->NumTemplateArgs);
+          AddListNode(TALI->NumTemplateArgs);
           TRY_TO(TraverseTemplateArgumentLocs(TALI->getTemplateArgs(),
                                                     TALI->NumTemplateArgs));
         } else {
@@ -548,7 +558,7 @@ public:
           }
           AddKApplyNode("TemplateSpecializationType", 2);
           TRY_TO(TraverseDeclarationName(FTSI->getTemplate()->getDeclName()));
-          AddKSequenceNode(TALI->NumTemplateArgs);
+          AddListNode(TALI->NumTemplateArgs);
           TRY_TO(TraverseTemplateArgumentLocs(TALI->getTemplateArgs(),
                                                     TALI->NumTemplateArgs));
         } else {
@@ -628,7 +638,7 @@ public:
       doThrow("something implicit in functions??");
     }
 
-    AddKSequenceNode(D->parameters().size());
+    AddListNode(D->parameters().size());
     for (unsigned i = 0; i < D->parameters().size(); i++) {
       TRY_TO(TraverseDecl(D->parameters()[i]));
     }
@@ -642,7 +652,7 @@ public:
             i++;
           }
         }
-        AddKSequenceNode(i);
+        AddListNode(i);
         for (auto *I : Ctor->inits()) {
           if(I->isWritten()) {
             TRY_TO(TraverseConstructorInitializer(I));
@@ -805,7 +815,7 @@ public:
     if (TPL) { \
       int i = 0; \
       for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++i, ++I); \
-      AddKSequenceNode(i); \
+      AddListNode(i); \
       for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++I) { \
         TRY_TO(TraverseDecl(*I)); \
       } \
@@ -829,7 +839,7 @@ public:
         break;
       }
     }
-    AddKSequenceNode(i);
+    AddListNode(i);
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
       case TSK_ImplicitInstantiation:
@@ -844,7 +854,7 @@ public:
   }
 
   bool TraverseTemplateInstantiations(TypeAliasTemplateDecl *D) {
-    AddKSequenceNode(0);
+    AddListNode(0);
     return true;
   }
 
@@ -860,7 +870,7 @@ public:
         break;
       }
     }
-    AddKSequenceNode(i);
+    AddListNode(i);
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
       case TSK_ImplicitInstantiation:
@@ -890,7 +900,7 @@ public:
         break;
       }
     }
-    AddKSequenceNode(i);
+    AddListNode(i);
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
       case TSK_ImplicitInstantiation:
@@ -948,7 +958,7 @@ public:
     if (TPL) {
       int i = 0;
       for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++i, ++I);
-      AddKSequenceNode(i);
+      AddListNode(i);
       for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++I) {
         TRY_TO(TraverseDecl(*I));
       }
@@ -975,7 +985,7 @@ public:
       return getDerived().TraverseType(Arg.getIntegralType());
     case TemplateArgument::Pack:
       AddKApplyNode("PackArg", 1);
-      AddKSequenceNode(Arg.pack_size());
+      AddListNode(Arg.pack_size());
       for (const TemplateArgument arg : Arg.pack_elements()) {
         TRY_TO(TraverseTemplateArgument(arg));
       }
@@ -1044,7 +1054,7 @@ public:
       for (const auto &I : D->bases()) {
         i++;
       }
-      AddKSequenceNode(i);
+      AddListNode(i);
       for (const auto &I : D->bases()) {
         AddKApplyNode("BaseClass", 4);
         VisitBool(I.isVirtual());
@@ -1127,12 +1137,12 @@ public:
          I != E; ++I) {
       i++;
     }
-    AddKSequenceNode(i);
+    AddListNode(i);
     for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end();
          I != E; ++I) {
       TRY_TO(TraverseDecl(*I));
     }
-    AddKSequenceNode(D->getTemplateArgsAsWritten()->NumTemplateArgs);
+    AddListNode(D->getTemplateArgsAsWritten()->NumTemplateArgs);
     /* The args that remains unspecialized. */
     TRY_TO(TraverseTemplateArgumentLocs(
         D->getTemplateArgsAsWritten()->getTemplateArgs(),
@@ -1180,7 +1190,7 @@ public:
     TRY_TO(TraverseType(T->getReturnType()));
 
     AddKApplyNode("list", 1);
-    AddKSequenceNode(T->getNumParams());
+    AddListNode(T->getNumParams());
     for(unsigned i = 0; i < T->getNumParams(); i++) {
       TRY_TO(TraverseType(T->getParamType(i)));
     }
@@ -1200,12 +1210,12 @@ public:
     case EST_DynamicNone:
       AddKApplyNode("ThrowSpec", 1);
       AddKApplyNode("list", 1);
-      AddKSequenceNode(0);
+      AddListNode(0);
       break;
     case EST_Dynamic:
       AddKApplyNode("ThrowSpec", 1);
       AddKApplyNode("list", 1);
-      AddKSequenceNode(T->getNumExceptions());
+      AddListNode(T->getNumExceptions());
       for(unsigned i = 0; i < T->getNumExceptions(); i++) {
         TRY_TO(TraverseType(T->getExceptionType(i)));
       }
@@ -1425,7 +1435,7 @@ public:
     AddKApplyNode("Name", 2);
     TRY_TO(TraverseNestedNameSpecifier(T->getQualifier()));
     TRY_TO(TraverseIdentifierInfo(T->getIdentifier()));
-    AddKSequenceNode(T->getNumArgs());
+    AddListNode(T->getNumArgs());
     TRY_TO(TraverseTemplateArguments(T->getArgs(), T->getNumArgs()));
     return true;
   }
@@ -1433,7 +1443,7 @@ public:
   bool TraverseTemplateSpecializationType(const TemplateSpecializationType *T) {
     AddKApplyNode("TemplateSpecializationType", 2);
     TRY_TO(TraverseTemplateName(T->getTemplateName()));
-    AddKSequenceNode(T->getNumArgs());
+    AddListNode(T->getNumArgs());
     TRY_TO(TraverseTemplateArguments(T->getArgs(), T->getNumArgs()));
     return true;
   }
@@ -1513,7 +1523,7 @@ public:
     for (auto *I : S->decls()) {
       i++;
     }
-    AddKSequenceNode(i);
+    AddListNode(i);
     return false;
   }
 
@@ -1641,7 +1651,7 @@ public:
   bool TraverseCXXTryStmt(CXXTryStmt *S) {
     AddKApplyNode("TryAStmt", 2);
     TRY_TO(TraverseStmt(S->getTryBlock()));
-    AddKSequenceNode(S->getNumHandlers());
+    AddListNode(S->getNumHandlers());
     for (unsigned i = 0; i < S->getNumHandlers(); i++) {
       TRY_TO(TraverseStmt(S->getHandler(i)));
     }
@@ -1709,7 +1719,7 @@ public:
       TRY_TO(TraverseStmt(SubStmt));
       if (first) {
         AddKApplyNode("list", 1);
-        AddKSequenceNode(i-1);
+        AddListNode(i-1);
       }
       first = false;
     }
@@ -2000,7 +2010,7 @@ public:
     for (Expr **iter = begin; iter != end; ++iter) {
       i++;
     }
-    AddKSequenceNode(i);
+    AddListNode(i);
     for (Expr **iter = begin; iter != end; ++iter) {
       TRY_TO(TraverseStmt(*iter));
     }
@@ -2096,7 +2106,7 @@ public:
     } else {
       AddKApplyNode("NoInit", 0);
     }
-    AddKSequenceNode(E->getNumPlacementArgs());
+    AddListNode(E->getNumPlacementArgs());
     for (unsigned i = 0; i < E->getNumPlacementArgs(); i++) {
       TRY_TO(TraverseStmt(E->getPlacementArg(i)));
     }
@@ -2165,7 +2175,7 @@ public:
         i++;
       }
     }
-    AddKSequenceNode(i);
+    AddListNode(i);
     for (unsigned I = 0, N = E->capture_size(); I != N; ++I) {
       const LambdaCapture *C = E->capture_begin() + I;
       if (C->isExplicit()) {
@@ -2301,7 +2311,7 @@ public:
   bool TraverseInitListExpr(InitListExpr *E) {
     InitListExpr *Syntactic = E->isSemanticForm() ? E->getSyntacticForm() ? E->getSyntacticForm() : E : E;
     AddKApplyNode("BraceInit", 1);
-    AddKSequenceNode(Syntactic->getNumInits());
+    AddListNode(Syntactic->getNumInits());
     for (Stmt *SubStmt : Syntactic->children()) {
       TRY_TO(TraverseStmt(SubStmt));
     }
@@ -2310,7 +2320,7 @@ public:
 
   bool VisitImplicitValueInitExpr(ImplicitValueInitExpr *E) {
     AddKApplyNode("ExpressionList", 1);
-    AddKSequenceNode(0);
+    AddListNode(0);
     return false;
   }
 
@@ -2382,7 +2392,7 @@ public:
     TRAIT(TT_IsNothrowConstructible, "IsNothrowConstructible")
     TRAIT(TT_IsTriviallyConstructible, "IsTriviallyConstructible")
     }
-    AddKSequenceNode(E->getNumArgs());
+    AddListNode(E->getNumArgs());
     return false;
   }
 
@@ -2426,7 +2436,7 @@ public:
       ATOMIC_BUILTIN(__atomic_nand_fetch, "__atomic_nand_fetch")
       #undef ATOMIC_BUILTIN
     }
-    AddKSequenceNode(E->getNumSubExprs());
+    AddListNode(E->getNumSubExprs());
     return false;
   }
 
@@ -2444,12 +2454,12 @@ public:
 
   bool VisitParenListExpr(ParenListExpr *E) {
     AddKApplyNode("ParenList", 1);
-    AddKSequenceNode(E->getNumExprs());
+    AddListNode(E->getNumExprs());
     return false;
   }
 
   bool VisitCXXDefaultArgExpr(CXXDefaultArgExpr *E) {
-    AddKApplyNode("DefaultArg", 0);
+    AddKSequenceNode(0);
     return false;
   }
 
@@ -2520,6 +2530,16 @@ void makeKast(int& idx) {
     printf(")");
     break;
   case KSEQUENCE:
+    if (current->size == 0) {
+      printf(".K");
+    }
+    idx++;
+    for (int i = 0; i < current->size; i++) {
+      makeKast(idx);
+      if (i != current->size - 1) printf("~>");
+    }
+    break;
+  case LIST:
     printf("kSeqToList(");
     if (current->size == 0) {
       printf(".K");

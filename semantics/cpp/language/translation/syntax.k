@@ -265,7 +265,6 @@ module CPP-ABSTRACT-SYNTAX
                    | UnresolvedConstructorCall(AType, List)
                    | TemporaryObjectExpr(AType, List)
                    | ParenList(List)
-                   | DefaultArg()
 
      syntax AStmt ::= StmtLoc(CabsLoc, AStmt)
 
@@ -318,8 +317,6 @@ module CPP-TRANSLATION-ABSTRACT-REWRITING
      rule TypeId(Name(NoNNS(), X::CId)) => ConstructorId(X) [anywhere]
 
      rule DestructorTypeId(Name(NoNNS(), X::CId)) => DestructorId(X) [anywhere]
-
-     rule ExprLoc(_, DefaultArg()) => .K [anywhere]
 
      context IfTStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
 
