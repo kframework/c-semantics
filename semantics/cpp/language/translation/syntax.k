@@ -31,7 +31,7 @@ module CPP-ABSTRACT-SYNTAX
      syntax SymBase ::= "nonStatic"
 
      syntax TypeId ::= TypeId(AType)
-                     | DestructorTypeId(AType)
+     syntax DestructorId ::= DestructorTypeId(AType)
 
      syntax CId ::= TypeId
 
@@ -261,10 +261,10 @@ module CPP-ABSTRACT-SYNTAX
      // things that are not technically expressions, but will be transformed out
      // of existence by the semantics
      syntax Expr ::= MaterializeTemporaryExpr(Expr)
-                   | ConstructorCall(Bool, AType, List)
                    | UnresolvedConstructorCall(AType, List)
                    | TemporaryObjectExpr(AType, List)
                    | ParenList(List)
+     syntax Init ::= ConstructorCall(Bool, AType, List)
 
      syntax AStmt ::= StmtLoc(CabsLoc, AStmt)
 

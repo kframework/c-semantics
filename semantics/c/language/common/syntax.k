@@ -276,7 +276,7 @@ module C-SYNTAX
      /*
      | MEMBEROF of expression * string
      */
-     syntax Expression ::= K "." CId [left, strict(1)]
+     syntax KItem ::= K "." CId [left, strict(1)]
 
      syntax Expression ::= GnuBody(K)
 
