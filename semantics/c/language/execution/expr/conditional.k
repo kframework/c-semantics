@@ -30,9 +30,9 @@ module C-EXPR-CONDITIONAL
           [structural]
 
      rule (types(
-               t(Qs::Quals, Mods::Set, pointerType(T::Type)),
-               t(Qs'::Quals, Mods'::Set, pointerType(T'::Type))
-          ) => convertedType(t(Qs +Quals Qs', Mods Mods', pointerType(compositeType(T, T')))))
+               t(_, Mods::Set, pointerType(T::Type)),
+               t(_, Mods'::Set, pointerType(T'::Type))
+          ) => convertedType(t(noQuals, Mods Mods', pointerType(compositeType(T, T')))))
           ~> _? _ : _
           requires stripQualifiers(T) ==Type stripQualifiers(T')
           [structural]
@@ -42,10 +42,10 @@ module C-EXPR-CONDITIONAL
           [structural]
 
      syntax KItem ::= convertedType(Type)
-     rule convertedType(T:Type) ~> tv(1, ut(_, int)) ? E1:K : _
+     rule convertedType(T::Type) ~> tv(1, ut(_, int)) ? E1:K : _
           => sequencePoint ~> Cast(T, E1)
           [structural]
-     rule convertedType(T:Type) ~> tv(0, ut(_, int)) ? _ : E2:K
+     rule convertedType(T::Type) ~> tv(0, ut(_, int)) ? _ : E2:K
           => sequencePoint ~> Cast(T, E2)
           [structural]
      rule convertedType(_) ~> tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi), ut(_, int)) ? _ : _
