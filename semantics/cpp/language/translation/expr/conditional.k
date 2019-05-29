@@ -36,7 +36,7 @@ module CPP-TRANSLATION-EXPR-CONDITIONAL
 
      context makeCondOp(_, _, HOLE:Expr, typeAndCat(_, _))
 
-     rule makeCondOp(V1:PRExpr, V2:Val, V3:Val, typeAndCat(T::CPPType, V::ValueCategory)) => makeExpr(V, T, ConditionalOp(V1, V2, V3, V, T), combine(trace(V1), trace(V2), trace(V3), V, T))
+     rule makeCondOp(V1:PRExpr, V2:Val, V3:Val, typeAndCat(T::CPPType, V::ValueCategory)) => makeExpr(V, ConditionalOp(V1, V2, V3, V, T), combine(trace(V1), trace(V2), trace(V3), V, T), T)
 
      rule makeCondOp(prv(0, _, _), _, V:Val, typeAndCat(T::CPPType, prvalue)) => ConvertType(T, makePRVal(V))
 

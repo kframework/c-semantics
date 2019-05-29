@@ -486,9 +486,9 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax Expr ::= makeXVal(K)
 
-     syntax Val ::= makeVal(ValueCategory, CPPType, CPPValue, Trace) [function]
+     syntax Val ::= makeVal(ValueCategory, CPPValue, Trace, CPPType) [function]
 
-     syntax Val ::= makeExpr(ValueCategory, CPPType, Expr, Trace) [function]
+     syntax Val ::= makeExpr(ValueCategory, Expr, Trace, CPPType) [function]
 
      // synthetic sort for KResults that result from expressions, but aren't actually values
      syntax ValResult
@@ -934,17 +934,17 @@ module CPP-DYNAMIC-OTHER
 
      rule makeXVal(le(E::Expr, Tr::Trace, T::CPPType)) => xe(E, Tr, T)
 
-     rule makeVal(lvalue, T::CPPType, V::SymLoc, Tr::Trace) => lv(V, Tr, T)
+     rule makeVal(lvalue, V::SymLoc, Tr::Trace, T::CPPType) => lv(V, Tr, T)
 
-     rule makeVal(xvalue, T::CPPType, V::SymLoc, Tr::Trace) => xv(V, Tr, T)
+     rule makeVal(xvalue, V::SymLoc, Tr::Trace, T::CPPType) => xv(V, Tr, T)
 
-     rule makeVal(prvalue, T::CPPType, V::CPPValue, Tr::Trace) => prv(V, Tr, T)
+     rule makeVal(prvalue, V::CPPValue, Tr::Trace, T::CPPType) => prv(V, Tr, T)
 
-     rule makeExpr(lvalue, T::CPPType, V::Expr, Tr::Trace) => le(V, Tr, T)
+     rule makeExpr(lvalue, V::Expr, Tr::Trace, T::CPPType) => le(V, Tr, T)
 
-     rule makeExpr(xvalue, T::CPPType, V::Expr, Tr::Trace) => xe(V, Tr, T)
+     rule makeExpr(xvalue, V::Expr, Tr::Trace, T::CPPType) => xe(V, Tr, T)
 
-     rule makeExpr(prvalue, T::CPPType, V::Expr, Tr::Trace) => pre(V, Tr, T)
+     rule makeExpr(prvalue, V::Expr, Tr::Trace, T::CPPType) => pre(V, Tr, T)
 
      rule callTerminate
           => BuiltinCallOp(
