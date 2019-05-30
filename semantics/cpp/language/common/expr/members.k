@@ -43,7 +43,7 @@ module CPP-EXPR-MEMBERS
 
      rule fieldExp(L::GLVal, T::CPPType, Offset::Int)
           => makeVal(cat(L), locOf(L) +bytes Offset /Int cfg:bitsPerByte, noTrace, T)
-          requires notBool isCPPBitfieldType(T)
+          requires isEvalVal(L) andBool notBool isCPPBitfieldType(T)
 
      rule E::Expr -> T::TemplateKeyword N::Name => (* E) . T N [anywhere]
 endmodule
