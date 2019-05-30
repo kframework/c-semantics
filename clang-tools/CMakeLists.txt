@@ -6,8 +6,12 @@ project ( clang-tools LANGUAGES CXX )
 find_package ( Curses REQUIRED )
 find_package ( LLVM 6.0 EXACT REQUIRED CONFIG )
 
+message ( STATUS "${CURSES_LIBRARIES}" )
+
 link_directories ( ${LLVM_LIBRARY_DIRS} )
-link_directories ( ${CURSES_LIBRARY_DIRS} )
+
+# NOTE: not needed because CURSES_LIBRARIES contains full paths.
+# link_directories ( ${CURSES_LIBRARY_DIRS} )
 
 include_directories ( ${LLVM_INCLUDE_DIRS} )
 include_directories ( ${CURSES_INCLUDE_DIRS} )
