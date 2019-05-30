@@ -611,7 +611,7 @@ module CPP-DYNAMIC-OTHER
      // cases where this is true must handle this explicitly.
      rule <k> lv(loc(Base::SymBase, Offset::Int), Tr::Trace, cppRefType #as T::CPPType) => lv(V, Tr, innerType(T)) ...</k>
           <references>... loc(Base, Offset) |-> V::SymLoc ...</references>
-     rule <k> xv(loc(Base::SymBase, Offset::Int), Tr::Trace, cppRefType #as T::CPPType) => lv(V, Tr, innerType(T)) ...</k>
+     rule <k> xv(loc(Base::SymBase, Offset::Int), Tr::Trace, cppRefType #as T::CPPType) => xv(V, Tr, innerType(T)) ...</k>
           <references>... loc(Base, Offset) |-> V::SymLoc ...</references>
 
      rule le(E::Expr, Tr::Trace, cppRefType #as T::CPPType) => le(E, Tr, innerType(T))
