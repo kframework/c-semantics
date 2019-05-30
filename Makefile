@@ -16,6 +16,9 @@ CXXFLAGS := -std=c++17
 
 K_DIST := $(realpath $(K_BIN)/..)
 
+CLANG_TOOLS_BUILD_DIR := clang-tools/build
+CLANG_TOOLS_BIN := $(CLANG_TOOLS_BUILD_DIR)/bin
+
 FILES_TO_DIST := \
 	scripts/kcc \
 	scripts/k++ \
@@ -30,8 +33,8 @@ FILES_TO_DIST := \
 	scripts/program-runner \
 	scripts/histogram-csv \
 	parser/cparser \
-	clang-tools/clang-kast \
-	clang-tools/call-sites \
+	$(CLANG_TOOLS_BIN)/clang-kast \
+	$(CLANG_TOOLS_BIN)/call-sites \
 	scripts/cdecl-3.6/src/cdecl \
 	$(K_DIST) \
 	LICENSE \
@@ -227,15 +230,12 @@ parser/cparser:
 	@echo "Building the C parser..."
 	@$(MAKE) -C parser
 
-clang-tools/call-sites: clang-tools/clang-kast
+$(CLANG_TOOLS_BIN)/%: $(CLANG_TOOLS_BUILD_DIR)/Makefile
+	@$(MAKE) -C $(CLANG_TOOLS_BUILD_DIR) $*
 
-.PHONY: clang-tools/clang-kast
-clang-tools/clang-kast: clang-tools/Makefile
-	@echo "Building the C++ parser..."
-	@$(MAKE) -C clang-tools
-
-clang-tools/Makefile:
-	@cd clang-tools && cmake .
+$(CLANG_TOOLS_BUILD_DIR)/Makefile:
+	@mkdir -p $(CLANG_TOOLS_BUILD_DIR)
+	@cd $(CLANG_TOOLS_BUILD_DIR) && cmake ..
 
 scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 	flock -w 120 $< sh -c 'cd scripts && tar xvf cdecl-$*.tar.gz && cd cdecl-$* && ./configure --without-readline && $(MAKE)' || true

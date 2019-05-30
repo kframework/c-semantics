@@ -27,6 +27,7 @@ set_target_properties (
     CXX_STANDARD 11
     CXX_EXTENSIONS OFF
     CXX_STANDARD_REQUIRED ON 
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
 add_definitions (
@@ -76,8 +77,3 @@ target_link_libraries ( call-sites PRIVATE ${LLVM_LIBRARIES} )
 
 target_link_libraries ( clang-kast PRIVATE ${CURSES_LIBRARIES} )
 target_link_libraries ( call-sites PRIVATE ${CURSES_LIBRARIES} )
-
-install(TARGETS clang-kast
-        RUNTIME DESTINATION bin)
-install(TARGETS call-sites
-        RUNTIME DESTINATION bin)
