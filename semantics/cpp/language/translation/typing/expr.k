@@ -112,10 +112,10 @@ module CPP-TRANSLATION-TYPING-EXPR
      rule typeof(NullPointerLiteral() => type(nullptr_t))
 
      context typeof(HOLE:TypeExpr)
-             requires getKLabel(HOLE) ==K #klabel(`Name`)
-                  orBool getKLabel(HOLE) ==K #klabel(`CallExpr`)
-                  orBool getKLabel(HOLE) ==K #klabel(`_.___CPP-SYNTAX`)
-                  orBool getKLabel(HOLE) ==K #klabel(`&__CPP-SYNTAX`)
+             requires Name(_, _) :=K HOLE
+                  orBool CallExpr(_, _, _) :=K HOLE
+                  orBool _ . _ _ :=K HOLE
+                  orBool & _ :=K HOLE
 
      rule typeof(T:Typed => type(T))
 

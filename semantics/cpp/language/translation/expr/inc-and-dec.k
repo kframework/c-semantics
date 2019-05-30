@@ -4,16 +4,16 @@ module CPP-TRANSLATION-EXPR-INC-AND-DEC
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule LV:LVal ++
-          => postOp(LV, le(LHOLE, trace(LV), type(LV)) := pre(RHOLE, trace(LV), utype(LV)) + prv(1, noTrace, type(int)), combine(trace(LV), #klabel(`_++_CPP-SYNTAX`)))
+     rule LV:LVal ++ #as O:Expr
+          => postOp(LV, le(LHOLE, trace(LV), type(LV)) := pre(RHOLE, trace(LV), utype(LV)) + prv(1, noTrace, type(int)), combine(trace(LV), O))
           requires notBool isCPPBoolType(type(LV))
 
-     rule LV:LVal ++
-          => postOp(LV, le(LHOLE, trace(LV), type(LV)) := prv(1, noTrace, type(bool)), combine(trace(LV), #klabel(`_++_CPP-SYNTAX`)))
+     rule LV:LVal ++ #as O:Expr
+          => postOp(LV, le(LHOLE, trace(LV), type(LV)) := prv(1, noTrace, type(bool)), combine(trace(LV), O))
           requires isCPPBoolType(type(LV))
 
-     rule LV:LVal --
-          => postOp(LV, le(LHOLE, trace(LV), type(LV)) := pre(RHOLE, trace(LV), utype(LV)) - prv(1, noTrace, type(int)), combine(trace(LV), #klabel(`_--_CPP-SYNTAX`)))
+     rule LV:LVal -- #as O:Expr
+          => postOp(LV, le(LHOLE, trace(LV), type(LV)) := pre(RHOLE, trace(LV), utype(LV)) - prv(1, noTrace, type(int)), combine(trace(LV), O))
 
      context postOp(_, (HOLE:Expr => reval(HOLE)), _) [result(PRVal)]
 

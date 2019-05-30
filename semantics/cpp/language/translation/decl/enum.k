@@ -167,9 +167,9 @@ module CPP-TRANSLATION-DECL-ENUM
 
      context declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, HOLE:Expr => reval(HOLE))) _::List, _, _) [result(PRVal)]
 
-     context declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, HOLE:PRVal => evalCoreConstantExpressionUntil(reval(HOLE), #klabel(`isRevalDone`)))) _::List, _, _) [result(PRV)]
+     context declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, HOLE:PRVal => evalCoreConstantExpressionUntil(reval(HOLE), isRevalDone))) _::List, _, _) [result(PRV)]
 
-     syntax Bool ::= isRevalDone(K) [function]
+     syntax Predicate ::= "isRevalDone"
 
      rule isRevalDone(reval(prv(...))) => true
 

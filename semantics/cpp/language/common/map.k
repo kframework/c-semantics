@@ -32,7 +32,9 @@ module CPP-TYPE-MAP-SYNTAX
      syntax Map ::= Map "[" KItem "<+" TypeMap "]" [function]
 
      syntax Bool ::= CPPType "in_keys" "(" TypeMap ")" [function]
-                   | some(TypeMap, K) [function, klabel(someTypeMap)]
+                   | some(TypeMap, TypePredicate) [function, klabel(someTypeMap)]
+     syntax TypePredicate
+     syntax Bool ::= TypePredicate "(" CPPType "," K ")" [function]
 
      syntax List ::= "keys_list" "(" TypeMap ")" [function]
 
@@ -81,11 +83,12 @@ module CPP-TYPE-MAP
 
      rule T::CPPType in_keys(M::TypeMap) => inKeys(stripType(T), M)
 
-     rule some(.Map::TypeMap, Lbl:K) => false
+     rule some(.Map::TypeMap, _) => false
 
-     rule some(K1::CPPType |-> K2:KItem M::TypeMap, #klabel(Lbl:KLabel)) => Lbl(K1, K2) orBool some(M, #klabel(Lbl)) [owise]
+     rule some(K1::CPPType |-> K2:KItem M::TypeMap, T::TypePredicate) => T(K1, K2) orBool some(M, T) [owise]
 
-     rule keys_list(M::TypeMap) => mapList(values(M), #klabel(`fst`))
+     rule keys_list(T::CPPType |-> _:KItem M::TypeMap) => ListItem(T) keys_list(M)
+     rule keys_list(.Map::TypeMap) => .List
 
      rule Map2List(K1::CPPType |-> K2:KItem M::TypeMap) => ListItem(kpair(K1, K2)) Map2List(M)
 

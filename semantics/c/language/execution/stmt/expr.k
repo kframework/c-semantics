@@ -45,16 +45,15 @@ module C-STMT-EXPR
 
      syntax Bool ::= fromArrayStatic(Type) [function]
      rule fromArrayStatic(t(Qs::Quals, SetItem(K:KItem) S:Set, T::SimpleType))
-          => (getKLabel(K) ==K #klabel(`arrayStatic`)) orBool fromArrayStatic(t(Qs, S, T))
+          => (arrayStatic(...) :=K K) orBool fromArrayStatic(t(Qs, S, T))
      rule fromArrayStatic(_) => false [owise]
 
      syntax KItem ::= checkArrayStaticAssign(Type, CValue)
                     | "checkArrayStaticAssign'" "(" Type "," Modifier "," Provenance ")"
 
-     rule checkArrayStaticAssign(t(_, Mods:Set, pointerType(T:Type)), loc(_, _, Prov:Set))
-          => checkArrayStaticAssign'(T,
-               {getFirstMatch(Mods, #klabel(`arrayStatic`))}:>Modifier,
-               {getFirstMatch(Prov, #klabel(`fromArray`))}:>Provenance)
+     rule checkArrayStaticAssign(t(_, Mods:Set, pointerType(T:Type)), L::SymLoc)
+          => checkArrayStaticAssign'(T, getArrayStatic(Mods), {getFromArray(L)}:>Provenance)
+          requires isFromArray(L)
      rule (.K => UNDEF("EEA4",
                "Passing a pointer not to an array object as a function parameter with a static-qualified array size."))
           ~> checkArrayStaticAssign(_, Loc:SymLoc)
@@ -70,18 +69,8 @@ module C-STMT-EXPR
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
           requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
 
-     syntax K ::= getFirstMatch(Set, K) [function]
-                | "getFirstMatch'" "(" K "," Set "," K ")" [function]
-
-     rule getFirstMatch(S:Set, L:K) => getFirstMatch'(.K, S, L)
-
-     rule getFirstMatch'((.K => K), (SetItem(K:KItem) => .Set) _, _)
-     rule getFirstMatch'((K:K => .K), _, L:K)
-          requires getKLabel(K) =/=K L
-               andBool K =/=K .K
-     rule getFirstMatch'(K:K, _, L:K) => K
-          requires getKLabel(K) ==K L
-     rule getFirstMatch'(.K, .Set, _) => .K
+     syntax Modifier ::= getArrayStatic(Set) [function]
+     rule getArrayStatic(SetItem(arrayStatic(...) #as M::Modifier) _) => M
 
      rule Zero(nclv(Loc::SymLoc, T::Type))
           => initBytesFill(Loc, byteSizeofType(T), piece(0, cfg:bitsPerByte))

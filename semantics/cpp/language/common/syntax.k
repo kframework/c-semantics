@@ -30,6 +30,7 @@ module CPP-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports CPP-REVAL-SYNTAX
      imports CPP-TYPING-SORTS
+     imports COMPAT-SORTS
 
      syntax OpId ::= "operatornew"
                    | "operatordelete"
@@ -104,6 +105,9 @@ module CPP-SYNTAX
      syntax RefQualifier ::= RefLValue() | RefRValue() | RefNone()
 
      syntax TemplateKeyword ::= "template" | "no-template"
+
+     // for trace
+     syntax Expr ::= CallExpr(Expr, StrictList) [klabel(CallExpr2)]
 
      syntax Expr ::= ResolvedExpr
 
