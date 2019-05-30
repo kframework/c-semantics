@@ -22,7 +22,7 @@ pipeline {
     stage('Build') {
       steps {
         sh '''
-          eval $(opam config env)
+          eval "$(opam config env)"
           make -j4
         '''
       }
@@ -30,7 +30,7 @@ pipeline {
     stage('Test') {
       steps {
         sh '''
-          eval $(opam config env)
+          eval "$(opam config env)"
           make -C tests/unit-pass -j$(nproc) os-comparison
         '''
       }

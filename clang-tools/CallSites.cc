@@ -1,4 +1,13 @@
 #define _XOPEN_SOURCE 700
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcomment"
+#elif defined __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcomment"
+#endif
+
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Mangle.h"
@@ -7,8 +16,15 @@
 #include "clang/Frontend/FrontendAction.h"
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
-#include<cstdio>
-#include<string>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#elif defined __clang__
+#pragma clang diagnostic pop
+#endif
+
+#include <cstdio>
+#include <string>
 
 using namespace clang;
 using namespace clang::tooling;
@@ -43,7 +59,7 @@ public:
 
 
 #define TYPE(CLASS, BASE)                                                     \
-  bool WalkUpFrom##CLASS##Type(clang::CLASS##Type *T) {                              \
+  bool WalkUpFrom##CLASS##Type(clang::CLASS##Type *T) {                       \
     WALK_UP_HELPER(Visit##CLASS##Type(T));                                    \
     WALK_UP_HELPER(WalkUpFrom##BASE(T));                                      \
     return true;                                                              \

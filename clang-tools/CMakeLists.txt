@@ -1,23 +1,42 @@
-cmake_minimum_required(VERSION 2.8.4)
-project(clang-tools)
+cmake_minimum_required ( VERSION 3.10.2 )
 
-set(LLVM_PATH /usr/lib/llvm-6.0 CACHE PATH "LLVM path")
-link_directories(${LLVM_PATH}/lib)
-include_directories(${LLVM_PATH}/include)
+project ( clang-tools LANGUAGES CXX )
 
-add_definitions(
--D__STDC_LIMIT_MACROS
--D__STDC_CONSTANT_MACROS
+
+find_package ( Curses REQUIRED )
+find_package ( LLVM 6.0 EXACT REQUIRED CONFIG )
+
+link_directories ( ${LLVM_LIBRARY_DIRS} )
+link_directories ( ${CURSES_LIBRARY_DIRS} )
+
+include_directories ( ${LLVM_INCLUDE_DIRS} )
+include_directories ( ${CURSES_INCLUDE_DIRS} )
+
+add_compile_options (
+  -Wall
+  -Wno-unused-variable
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-unused-variable")
-set(CLANG_KAST_FILES ClangKast.cc)
-set(CALL_SITES_FILES CallSites.cc)
-add_executable(clang-kast ${CLANG_KAST_FILES})
-add_executable(call-sites ${CALL_SITES_FILES})
+add_executable(clang-kast ClangKast.cc)
+add_executable(call-sites CallSites.cc)
 
-include(FindCurses)
-set(LIBS
+set_target_properties (
+  clang-kast
+  call-sites
+  PROPERTIES
+    CXX_STANDARD 11
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON 
+)
+
+add_definitions (
+  -D__STDC_LIMIT_MACROS
+  -D__STDC_CONSTANT_MACROS
+)
+
+
+# NOTE: find_package(LLVM...) does not populate this variable, unfortunately.
+set ( LLVM_LIBRARIES
   clangFrontend
   clangSerialization
   clangDriver
@@ -49,14 +68,14 @@ set(LIBS
   LLVMCore # Support
   LLVMBinaryFormat
   LLVMSupport
-  pthread
-  z
-  dl
-  ${CURSES_LIBRARIES}
 )
 
-target_link_libraries(clang-kast ${LIBS})
-target_link_libraries(call-sites ${LIBS})
+
+target_link_libraries ( clang-kast PRIVATE ${LLVM_LIBRARIES} )
+target_link_libraries ( call-sites PRIVATE ${LLVM_LIBRARIES} )
+
+target_link_libraries ( clang-kast PRIVATE ${CURSES_LIBRARIES} )
+target_link_libraries ( call-sites PRIVATE ${CURSES_LIBRARIES} )
 
 install(TARGETS clang-kast
         RUNTIME DESTINATION bin)

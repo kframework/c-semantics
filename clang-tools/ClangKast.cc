@@ -1,4 +1,13 @@
 #define _XOPEN_SOURCE 700
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcomment"
+#elif defined __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcomment"
+#endif
+
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Mangle.h"
@@ -8,10 +17,19 @@
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/CommandLine.h"
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#elif defined __clang__
+#pragma clang diagnostic pop
+#endif
+
+
 #include <cstdio>
 #include <vector>
 #include <fcntl.h>
 #include <unistd.h>
+
 
 using namespace clang;
 using namespace clang::tooling;
@@ -2371,41 +2389,43 @@ public:
   bool VisitAtomicExpr(AtomicExpr *E) {
     AddKApplyNode("GnuAtomicExpr", 2);
     switch(E->getOp()) {
-    #define ATOMIC_BUILTIN(Name, Spelling)         \
-    case AtomicExpr::AO##Name:                                 \
-      AddKTokenNode("\"" Spelling "\"", "String"); \
-      break;
-    ATOMIC_BUILTIN(__c11_atomic_init, "__c11_atomic_init")
-    ATOMIC_BUILTIN(__c11_atomic_load, "__c11_atomic_load")
-    ATOMIC_BUILTIN(__c11_atomic_store, "__c11_atomic_store")
-    ATOMIC_BUILTIN(__c11_atomic_exchange, "__c11_atomic_exchange")
-    ATOMIC_BUILTIN(__c11_atomic_compare_exchange_strong, "__c11_atomic_compare_exchange_strong")
-    ATOMIC_BUILTIN(__c11_atomic_compare_exchange_weak, "__c11_atomic_compare_exchange_weak")
-    ATOMIC_BUILTIN(__c11_atomic_fetch_add, "__c11_atomic_fetch_add")
-    ATOMIC_BUILTIN(__c11_atomic_fetch_sub, "__c11_atomic_fetch_sub")
-    ATOMIC_BUILTIN(__c11_atomic_fetch_and, "__c11_atomic_fetch_and")
-    ATOMIC_BUILTIN(__c11_atomic_fetch_or, "__c11_atomic_fetch_or")
-    ATOMIC_BUILTIN(__c11_atomic_fetch_xor, "__c11_atomic_fetch_xor")
-    ATOMIC_BUILTIN(__atomic_load, "__atomic_load")
-    ATOMIC_BUILTIN(__atomic_load_n, "__atomic_load_n")
-    ATOMIC_BUILTIN(__atomic_store, "__atomic_store")
-    ATOMIC_BUILTIN(__atomic_store_n, "__atomic_store_n")
-    ATOMIC_BUILTIN(__atomic_exchange, "__atomic_exchange")
-    ATOMIC_BUILTIN(__atomic_exchange_n, "__atomic_exchange_n")
-    ATOMIC_BUILTIN(__atomic_compare_exchange, "__atomic_compare_exchange")
-    ATOMIC_BUILTIN(__atomic_compare_exchange_n, "__atomic_compare_exchange_n")
-    ATOMIC_BUILTIN(__atomic_fetch_add, "__atomic_fetch_add")
-    ATOMIC_BUILTIN(__atomic_fetch_sub, "__atomic_fetch_sub")
-    ATOMIC_BUILTIN(__atomic_fetch_and, "__atomic_fetch_and")
-    ATOMIC_BUILTIN(__atomic_fetch_or, "__atomic_fetch_or")
-    ATOMIC_BUILTIN(__atomic_fetch_xor, "__atomic_fetch_xor")
-    ATOMIC_BUILTIN(__atomic_fetch_nand, "__atomic_fetch_nand")
-    ATOMIC_BUILTIN(__atomic_add_fetch, "__atomic_add_fetch")
-    ATOMIC_BUILTIN(__atomic_sub_fetch, "__atomic_sub_fetch")
-    ATOMIC_BUILTIN(__atomic_and_fetch, "__atomic_and_fetch")
-    ATOMIC_BUILTIN(__atomic_or_fetch, "__atomic_or_fetch")
-    ATOMIC_BUILTIN(__atomic_xor_fetch, "__atomic_xor_fetch")
-    ATOMIC_BUILTIN(__atomic_nand_fetch, "__atomic_nand_fetch")
+			#define ATOMIC_BUILTIN(Name, Spelling)           \
+				case AtomicExpr::AO##Name:                     \
+					AddKTokenNode("\"" Spelling "\"", "String"); \
+					break;
+      ATOMIC_BUILTIN(__c11_atomic_init, "__c11_atomic_init")
+      ATOMIC_BUILTIN(__c11_atomic_load, "__c11_atomic_load")
+      ATOMIC_BUILTIN(__c11_atomic_store, "__c11_atomic_store")
+      ATOMIC_BUILTIN(__c11_atomic_exchange, "__c11_atomic_exchange")
+      ATOMIC_BUILTIN(__c11_atomic_compare_exchange_strong, "__c11_atomic_compare_exchange_strong")
+      ATOMIC_BUILTIN(__c11_atomic_compare_exchange_weak, "__c11_atomic_compare_exchange_weak")
+      ATOMIC_BUILTIN(__c11_atomic_fetch_add, "__c11_atomic_fetch_add")
+      ATOMIC_BUILTIN(__c11_atomic_fetch_sub, "__c11_atomic_fetch_sub")
+      ATOMIC_BUILTIN(__c11_atomic_fetch_and, "__c11_atomic_fetch_and")
+      ATOMIC_BUILTIN(__c11_atomic_fetch_or, "__c11_atomic_fetch_or")
+      ATOMIC_BUILTIN(__c11_atomic_fetch_xor, "__c11_atomic_fetch_xor")
+      ATOMIC_BUILTIN(__atomic_load, "__atomic_load")
+      ATOMIC_BUILTIN(__atomic_load_n, "__atomic_load_n")
+      ATOMIC_BUILTIN(__atomic_store, "__atomic_store")
+      ATOMIC_BUILTIN(__atomic_store_n, "__atomic_store_n")
+      ATOMIC_BUILTIN(__atomic_exchange, "__atomic_exchange")
+      ATOMIC_BUILTIN(__atomic_exchange_n, "__atomic_exchange_n")
+      ATOMIC_BUILTIN(__atomic_compare_exchange, "__atomic_compare_exchange")
+      ATOMIC_BUILTIN(__atomic_compare_exchange_n, "__atomic_compare_exchange_n")
+      ATOMIC_BUILTIN(__atomic_fetch_add, "__atomic_fetch_add")
+      ATOMIC_BUILTIN(__atomic_fetch_sub, "__atomic_fetch_sub")
+      ATOMIC_BUILTIN(__atomic_fetch_and, "__atomic_fetch_and")
+      ATOMIC_BUILTIN(__atomic_fetch_or, "__atomic_fetch_or")
+      ATOMIC_BUILTIN(__atomic_fetch_xor, "__atomic_fetch_xor")
+      ATOMIC_BUILTIN(__atomic_fetch_nand, "__atomic_fetch_nand")
+      ATOMIC_BUILTIN(__atomic_add_fetch, "__atomic_add_fetch")
+      ATOMIC_BUILTIN(__atomic_sub_fetch, "__atomic_sub_fetch")
+      ATOMIC_BUILTIN(__atomic_and_fetch, "__atomic_and_fetch")
+      ATOMIC_BUILTIN(__atomic_or_fetch, "__atomic_or_fetch")
+      ATOMIC_BUILTIN(__atomic_xor_fetch, "__atomic_xor_fetch")
+      ATOMIC_BUILTIN(__atomic_nand_fetch, "__atomic_nand_fetch")
+			#undef ATOMIC_BUILTIN
+      default: break;
     }
     AddKSequenceNode(E->getNumSubExprs());
     return false;
@@ -2414,6 +2434,7 @@ public:
   bool VisitPredefinedExpr(PredefinedExpr *E) {
     return false;
   }
+
 
   // the rest of these are not part of the syntax of C but we keep them and transform them later
   // in order to avoid having to deal with messy syntax transformations within the parser
