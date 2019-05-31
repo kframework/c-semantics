@@ -278,7 +278,7 @@ fail-compile:	| test-build
 .PHONY: clean
 clean:
 	-$(MAKE) -C parser clean
-	-$(MAKE) -C clang-tools clean
+	-rm -rf $(CLANG_TOOLS_BUILD_DIR)
 	-$(MAKE) -C semantics clean
 	-$(MAKE) -C tests clean
 	-$(MAKE) -C tests/unit-pass clean
