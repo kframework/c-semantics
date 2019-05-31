@@ -108,10 +108,8 @@ module SYMLOC-SYNTAX
      syntax Bool ::= isFromArray(SymLoc) [function]
 
      syntax SymLoc ::= stripFromArray(SymLoc) [function]
+     syntax K ::= getFromArray(SymLoc) [function]
      syntax SymLoc ::= stripProv(SymLoc) [function]
-
-     syntax SymLoc ::= stripProv(SymLoc, K) [function, klabel(stripProvByKLabel)]
-     syntax K ::= getProv(SymLoc, K) [function]
 
      // Given a loc (with a bit offset) and a size in bits, calculate the
      // number of bytes from the loc's byte offset required to cover all bits.
@@ -289,6 +287,9 @@ module SYMLOC
           requires fromArray(...) :=K K
      rule stripFromArray(Loc:SymLoc) => Loc [owise]
 
+     rule getFromArray(loc(_, _, SetItem(fromArray(...) #as F::Provenance) _)) => F
+     rule getFromArray(Loc::SymLoc) => .K [owise]
+
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripProv(Loc:SymLoc) => Loc [owise]
@@ -305,14 +306,6 @@ module SYMLOC
 
      rule setBitOffset(0, Loc::SymLoc) => Loc
      rule setBitOffset(Offset::Int, Loc::SymLoc) => addProv(bits(Offset), Loc) [owise]
-
-     rule stripProv(loc(Base::SymBase, Offset::Int, SetItem(K:KItem) S::Set), Lbl:K) => loc(Base, Offset, S)
-          requires getKLabel(K) ==K Lbl
-     rule stripProv(Loc::SymLoc, _) => Loc [owise]
-
-     rule getProv(loc(_, _, SetItem(K:KItem) _), Lbl:K) => K
-          requires getKLabel(K) ==K Lbl
-     rule getProv(_, _) => .K [owise]
 
      rule resolveLinking(loc(Base::SymBase, Offset::Int, Prov::Set), _ Base |-> Base'::SymBase) => loc(Base', Offset, Prov)
      rule resolveLinking(loc(Base::SymBase, Offset::Int), _ Base |-> Base'::SymBase) => loc(Base', Offset)

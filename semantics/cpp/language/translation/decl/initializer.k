@@ -49,9 +49,9 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax Expr ::= #figureInit(base: Expr, destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType)
                    | constructorInit(LVal, InitType, Class, List, ConstructorType)
-                   | defaultInit(base: Expr, CPPType, ConstructorType)
-                   | #valueInit(base: Expr, CPPType, ConstructorType)
-                   | #zeroInit(base: Expr, CPPType, ConstructorType)
+                   | InitStyle "(" Expr "," CPPType "," ConstructorType ")"
+
+     syntax InitStyle ::= "defaultInit" | "#valueInit" | "#zeroInit"
 
      rule valueInit(Base::Expr, T::CPPType) => #valueInit(Base, T, NoConstructorInit)
 
@@ -63,11 +63,11 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      context #figureInit(... base: HOLE:Expr) [result(LVal)]
 
-     context #valueInit(... base: HOLE:Expr) [result(LVal)]
+     context #valueInit(HOLE:Expr, _, _) [result(LVal)]
 
-     context #zeroInit(... base: HOLE:Expr) [result(LVal)]
+     context #zeroInit(HOLE:Expr, _, _) [result(LVal)]
 
-     context defaultInit(... base: HOLE:Expr) [result(LVal)]
+     context defaultInit(HOLE:Expr, _, _) [result(LVal)]
 
      context #figureInit(... srcT: HOLE:TypeExpr => typeof(HOLE)) [result(CPPType)]
 
@@ -88,7 +88,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // 8.5:6.3 TODO
 
      // @ref n4296 8.5:6.4
-     rule #zeroInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as T::CPPType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`#zeroInit`), 0, noExpr)
+     rule #zeroInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as T::CPPType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #zeroInit, 0, noExpr)
 
      // 8.5:6.5 TODO
 
@@ -142,7 +142,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule defaultInit(Base:LVal, t(... st: classType(C::Class)), IsConstructor::ConstructorType) => constructorInit(Base, DirectInit(), C, .List, IsConstructor)
 
      // @ref n4296 8.5:7.2 (array of classes)
-     rule defaultInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as T::CPPType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`defaultInit`), 0, noExpr)
+     rule defaultInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as T::CPPType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, defaultInit, 0, noExpr)
           requires isCPPClassType(getMostDerivedArrayElement(T))
 
      // @ref n4296 8.5:7.2-7.3 (non-class, non-array-of-classes)
@@ -152,9 +152,9 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      // @ref n4296 8.5:8.1 (class with no defaulted default constructor)
      rule #valueInit(Base:LVal, t(... st: classType(...)) #as T::CPPType, IsConstructor::ConstructorType) => defaultInit(Base, T, IsConstructor)
-          requires (notBool hasConstructorThat(T, #klabel(`isDefaultConstructor`)))
-               orBool hasConstructorThat(T, #klabel(`isUserProvidedDefaultConstructor`))
-               orBool hasConstructorThat(T, #klabel(`isDeletedDefaultConstructor2`))
+          requires (notBool hasConstructorThat(T, isDefaultConstructor))
+               orBool hasConstructorThat(T, isUserProvidedDefaultConstructor)
+               orBool hasConstructorThat(T, isDeletedDefaultConstructor)
 
      syntax Expr ::= strictCompoundInit(Expr, Expr) [strict]
 
@@ -162,16 +162,16 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      // @ref n4296 8.5:8.2 (class without user-provided or deleted default constructor)
      rule #valueInit(Base:LVal, t(... st: classType(...)) #as T::CPPType, IsConstructor::ConstructorType)
-          => #if hasConstructorThat(T, #klabel(`isNonTrivialDefaultConstructor`)) #then
+          => #if hasConstructorThat(T, isNonTrivialDefaultConstructor) #then
                strictCompoundInit(zeroInit(Base, T), defaultInit(Base, T, IsConstructor))
           #else
                zeroInit(Base, T)
           #fi
-          requires (notBool hasConstructorThat(T, #klabel(`isUserProvidedDefaultConstructor`)))
-               andBool (notBool hasConstructorThat(T, #klabel(`isDeletedDefaultConstructor2`)))
+          requires (notBool hasConstructorThat(T, isUserProvidedDefaultConstructor))
+               andBool (notBool hasConstructorThat(T, isDeletedDefaultConstructor))
 
      // @ref n4296 8.5:8.3 (array)
-     rule #valueInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as T::CPPType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #klabel(`#valueInit`), 0, noExpr)
+     rule #valueInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as T::CPPType, IsConstructor::ConstructorType) => initEachElement(Base, T, IsConstructor, #valueInit, 0, noExpr)
 
      // @ref n4296 8.5:8.4 (non-class, non-array)
      rule #valueInit(Base:LVal, T::CPPType, _) => zeroInit(Base, T)
@@ -179,10 +179,10 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                andBool notBool isCPPArrayType(T)
                andBool notBool isCPPRefType(T)
 
-     syntax Expr ::= initEachElement(LVal, CPPType, ConstructorType, K, Int, initExp: MaybeExpr)
+     syntax Expr ::= initEachElement(LVal, CPPType, ConstructorType, InitStyle, Int, initExp: MaybeExpr)
 
-     rule (.K => Lbl(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, IsConstructor))
-          ~> initEachElement(Base::LVal, t(... st: arrayType(T::CPPType, N::Int)), IsConstructor::ConstructorType, #klabel(Lbl:KLabel), I::Int => I +Int 1, _)
+     rule (.K => Init(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, IsConstructor))
+          ~> initEachElement(Base::LVal, t(... st: arrayType(T::CPPType, N::Int)), IsConstructor::ConstructorType, Init::InitStyle, I::Int => I +Int 1, _)
           requires I <Int N
 
      rule (V:Val => .K) ~> initEachElement(... initExp: E::MaybeExpr => compoundInitJoin(E, V))
@@ -247,7 +247,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule listInit(Base::LVal, t(... st: classType(...)) #as T::CPPType, _, .List, CT::ConstructorType)
           => #valueInit(Base, T, CT)
           requires notBool isAggregateType(T)
-               andBool hasConstructorThat(T, #klabel(`isDefaultConstructor`))
+               andBool hasConstructorThat(T, isDefaultConstructor)
 
      // @ref n4296 8.5.4:3.5 (single element, non-aggregate, non-class, non-reference)
      // see comment below about narrowing conversions in classAggInit

@@ -326,11 +326,11 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                <curr-tr-scope> _:BlockScope </curr-tr-scope>
                <curr-template-context> noTemplate </curr-template-context>
                requires completeDeclaration(T, Init) ==K T
-                    andBool getKLabel(Next) =/=K #klabel(`dummyBind`)
+                    andBool dummyBind(...) :/=K Next
 
           syntax KItem ::= prepareDeclareNonStaticObject(CId, CPPType, init: Init, InitType, s: Set)
 
-          context prepareDeclareNonStaticObject(...init: HOLE:Expr => evalCoreConstantExpressionUntil(HOLE, #klabel(`isEvalVal`)), s: S::Set)
+          context prepareDeclareNonStaticObject(...init: HOLE:Expr => evalCoreConstantExpressionUntil(HOLE, isEvalVal), s: S::Set)
                requires Constexpr() in S
 
           rule prepareDeclareNonStaticObject(X::CId, T::CPPType, Init::Init, Type::InitType, S::Set)
@@ -439,7 +439,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, char32_t))), StringLiteral(UTF32(), S::String)) => t(Q, Mods, arrayType(t(Q', Mods', char32_t), lengthString(S) +Int 1))
 
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)), BraceInit(ListItem(Init::Init) L::List)) => t(Q, Mods, arrayType(T, size(L) +Int 1))
-          requires (size(L) =/=Int 0 orBool getKLabel(Init) =/=K #klabel(`StringLiteral`))
+          requires (size(L) =/=Int 0 orBool StringLiteral(...) :/=K Init)
                andBool (notBool isAggregateType(T) orBool isBraceInit(Init))
 
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(... st: classType(...)) #as T::CPPType)), BraceInit((ListItem(Init::Init) _) #as L::List)) => t(Q, Mods, arrayType(T, computeAggArraySize(getClassInfo(T), L)))

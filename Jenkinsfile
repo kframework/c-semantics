@@ -34,6 +34,11 @@ pipeline {
           make -C tests/unit-pass -j$(nproc) os-comparison
         '''
       }
+      post {
+        always {
+          archiveArtifacts artifacts: 'tests/unit-pass/*config', allowEmptyArchive: true
+        }
+      }
     }
   }
 }

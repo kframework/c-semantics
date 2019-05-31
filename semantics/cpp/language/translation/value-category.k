@@ -85,9 +85,9 @@ module CPP-TRANSLATION-VALUE-CATEGORY
      rule catof(NullPointerLiteral() => prvalue)
 
      context catof(HOLE:CatExpr)
-             requires getKLabel(HOLE) ==K #klabel(`Name`)
-                  orBool getKLabel(HOLE) ==K #klabel(`CallExpr`) //[result(Val)]
-                  orBool getKLabel(HOLE) ==K #klabel(`_.___CPP-SYNTAX`)
+             requires Name(_, _) :=K HOLE
+                  orBool CallExpr(_, _, _) :=K HOLE
+                  orBool _ . _ _ :=K HOLE
 
      rule catof(L:LVal => lvalue)
 

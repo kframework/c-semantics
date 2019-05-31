@@ -705,7 +705,7 @@ module LIBC-STDIO
           [structural]
      rule (.K => errorUninitVaList)
           ~> builtin("vprintf", _, tv(V::CValue, _))
-          requires getKLabel(V) =/=K #klabel(`opaque`)
+          requires opaque(...) :/=K V
           [structural]
      rule <k> (.K => errorUninitVaList)
                ~> builtin("vprintf", _, tv(opaque(VaList::Int, _), _))
@@ -729,7 +729,7 @@ module LIBC-STDIO
           [structural]
      rule (.K => errorUninitVaList)
           ~> builtin("vfprintf", _, _, tv(V::CValue, _))
-          requires getKLabel(V) =/=K #klabel(`opaque`)
+          requires opaque(...) :/=K V
           [structural]
      rule <k> (.K => errorUninitVaList)
                ~> builtin("vfprintf", _, _, tv(opaque(VaList::Int, _), _))
@@ -770,7 +770,7 @@ module LIBC-STDIO
           [structural]
      rule (.K => errorUninitVaList)
           ~> builtin("vsprintf", _, _, tv(V::CValue, _))
-          requires getKLabel(V) =/=K #klabel(`opaque`)
+          requires opaque(...) :/=K V
           [structural]
      rule <k> (.K => errorUninitVaList)
                ~> builtin("vsprintf", _, _, tv(opaque(VaList::Int, _), _))
@@ -790,7 +790,7 @@ module LIBC-STDIO
           [structural]
      rule (.K => errorUninitVaList)
           ~> builtin("vasprintf", _, _, tv(V::CValue, _))
-          requires getKLabel(V) =/=K #klabel(`opaque`)
+          requires opaque(...) :/=K V
           [structural]
      rule <k> (.K => errorUninitVaList)
                ~> builtin("vasprintf", _, _, tv(opaque(VaList::Int, _), _))
@@ -827,7 +827,7 @@ module LIBC-STDIO
           [structural]
      rule (.K => errorUninitVaList)
           ~> builtin("vsnprintf", _, _, _, tv(V::CValue, _))
-          requires getKLabel(V) =/=K #klabel(`opaque`)
+          requires opaque(...) :/=K V
           [structural]
      rule <k> (.K => errorUninitVaList)
                ~> builtin("vsnprintf", _, _, _, tv(opaque(VaList::Int, _), _))

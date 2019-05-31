@@ -4,17 +4,17 @@ module CPP-TRANSLATION-EXPR-UNARY
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule *(pre(E::Expr, Tr::Trace, t(... st: pointerType(...)) #as T::CPPType))
-          => le(* E, combine(Tr, #klabel(`*__CPP-SYNTAX`)), innerType(T))
+     rule (*(pre(E::Expr, Tr::Trace, t(... st: pointerType(...)) #as T::CPPType))) #as O:Expr
+          => le(* E, combine(Tr, O), innerType(T))
 
-     rule &(le(E::Expr, Tr::Trace, T::CPPType))
-          => pre(& E, combine(Tr, #klabel(`&__CPP-SYNTAX`)), type(pointerType(T)))
+     rule (&(le(E::Expr, Tr::Trace, T::CPPType))) #as O:Expr
+          => pre(& E, combine(Tr, O), type(pointerType(T)))
 
      rule getAddress(E:TExpr)
-          => pre(getAddress(stripHold(E)), combine(trace(E), #klabel(`&__CPP-SYNTAX`)), type(pointerType(type(E))))
+          => pre(getAddress(stripHold(E)), combine(trace(E), & E), type(pointerType(type(E))))
 
-     rule - (pre(E::Expr, Tr::Trace, T::CPPType))
-          => pre(- E, combine(Tr, #klabel(`-__CPP-SYNTAX`)), T)
+     rule (- (pre(E::Expr, Tr::Trace, T::CPPType))) #as O:Expr
+          => pre(- E, combine(Tr, O), T)
           requires isPromoted(T)
 
 endmodule

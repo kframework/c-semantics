@@ -108,7 +108,7 @@ module LIBC-STDARG
           [structural]
      // Avoid triggering errors if it's a trap.
      rule checkDead(V:KResult) => .K
-          requires getKLabel(V) =/=K #klabel(`tv`)
+          requires tv(...) :/=K V
           [structural]
 
      syntax HeatList ::= filterVarArgs(List) [function]

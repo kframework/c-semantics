@@ -74,7 +74,7 @@ module CPP-SYMLOC
 
      syntax Bool ::= #ifFromArrayInBounds(K, Int) [function, klabel(#ifFromArrayInBoundsCPP)]
 
-     rule ifFromArrayInBounds(Loc::SymLoc, T::CPPType, I::Int) => #ifFromArrayInBounds(getProv(Loc, #klabel(`fromArray`)), byteSizeofType(innerType(T)) *Int I)
+     rule ifFromArrayInBounds(Loc::SymLoc, T::CPPType, I::Int) => #ifFromArrayInBounds(getFromArray(Loc), byteSizeofType(innerType(T)) *Int I)
 
      rule #ifFromArrayInBounds(fromArray(Offset::Int, Len::Int), NewOffset::Int) => Offset +Int NewOffset >=Int 0 andBool Offset +Int NewOffset <=Int Len
 

@@ -62,11 +62,11 @@ module CPP-TRANSLATION-EXPR-CONDITIONAL
      // @ref n4296 5.16:2.1
      rule typeAndCatOfConditional(Throw(_), _, _, E::Expr, T:CPPType, V:ValueCategory)
           => typeAndCat(T, V)
-          requires getKLabel(E) =/=K #klabel(`Throw`)
+          requires Throw(...) :/=K E
 
      rule typeAndCatOfConditional(E::Expr, T:CPPType, V:ValueCategory, Throw(_), _, _)
           => typeAndCat(T, V)
-          requires getKLabel(E) =/=K #klabel(`Throw`)
+          requires Throw(...) :/=K E
 
      // @ref n4296 5.16:2.2
      rule typeAndCatOfConditional(_, t(... st: void) #as T::CPPType, _, _, t(... st: void), _)

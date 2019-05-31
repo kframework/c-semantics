@@ -1,8 +1,8 @@
 module CPP-EXECUTION-EXPR-ASSIGNMENT-SYNTAX
      imports BASIC-K
-     syntax KItem ::= fillRHoles(K, K) [function, klabel(fillRHolesCpp)]
+     syntax Expr ::= fillRHoles(K, K) [function, klabel(fillRHolesCpp)]
 
-     syntax KItem ::= fillLHoles(K, K) [function, klabel(fillLHolesCpp)]
+     syntax Expr ::= fillLHoles(K, K) [function, klabel(fillLHolesCpp)]
 endmodule
 
 module CPP-EXECUTION-EXPR-ASSIGNMENT
@@ -34,36 +34,23 @@ module CPP-EXECUTION-EXPR-ASSIGNMENT
      rule compoundOp(Lbl:KLabel(L:K, R:KResult)) => Lbl(L, R)
           requires Execution()
 
+     rule fillRHoles(V::PRVal, pre(L::Expr := E::Expr, Tr::Trace, T::CPPType)) => pre(L := fillRHoles(V, E), Tr, T)
+     rule fillRHoles(V::PRVal, V':PRV) => V'
+     rule fillRHoles(V::PRVal, ConvertType(T::CPPType, E::Expr)) => ConvertType(T, fillRHoles(V, E))
+     rule fillRHoles(V::PRVal, compoundOp(E::Expr)) => compoundOp(fillRHoles(V, E))
      rule fillRHoles(V::PRVal, RHOLE) => V
+     rule fillRHoles(V::PRVal, L::Expr + R::Expr) => fillRHoles(V, L) + R
+     rule fillRHoles(V::PRVal, L::Expr - R::Expr) => fillRHoles(V, L) - R
+     rule fillRHoles(V::PRVal, L::Expr * R::Expr) => fillRHoles(V, L) * R
+     rule fillRHoles(V::PRVal, L::Expr / R::Expr) => fillRHoles(V, L) / R
+     rule fillRHoles(V::PRVal, L::Expr % R::Expr) => fillRHoles(V, L) % R
+     rule fillRHoles(V::PRVal, L::Expr & R::Expr) => fillRHoles(V, L) & R
+     rule fillRHoles(V::PRVal, L::Expr ^ R::Expr) => fillRHoles(V, L) ^ R
+     rule fillRHoles(V::PRVal, L::Expr | R::Expr) => fillRHoles(V, L) | R
+     rule fillRHoles(V::PRVal, L::Expr << R::Expr) => fillRHoles(V, L) << R
+     rule fillRHoles(V::PRVal, L::Expr >> R::Expr) => fillRHoles(V, L) >> R
 
-     rule fillRHoles(V::PRVal, Lbl:KLabel(L:K))
-          => Lbl(fillRHoles(V, L))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-
-     rule fillRHoles(V::PRVal, Lbl:KLabel(L:K, R:K))
-          => Lbl(fillRHoles(V, L), fillRHoles(V, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-
-     rule fillRHoles(V::PRVal, Lbl:KLabel(L:K, M:K, R:K))
-          => Lbl(fillRHoles(V, L), fillRHoles(V, M), fillRHoles(V, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-
-     rule fillRHoles(_, K:KItem) => K [owise]
-
-     rule fillLHoles(V::LVal, LHOLE) => V
-
-     rule fillLHoles(V::LVal, Lbl:KLabel(L:K))
-          => Lbl(fillLHoles(V, L))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-
-     rule fillLHoles(V::LVal, Lbl:KLabel(L:K, R:K))
-          => Lbl(fillLHoles(V, L), fillLHoles(V, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-
-     rule fillLHoles(V::PRVal, Lbl:KLabel(L:K, M:K, R:K))
-          => Lbl(fillLHoles(V, L), fillLHoles(V, M), fillLHoles(V, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
-
-     rule fillLHoles(_, K:KItem) => K [owise]
+     rule fillLHoles(LV::Expr, pre(LHOLE := R::Expr, Tr::Trace, T::CPPType))
+          => pre(LV := R, Tr, T)
 
 endmodule
