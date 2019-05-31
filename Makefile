@@ -233,9 +233,10 @@ parser/cparser:
 $(CLANG_TOOLS_BIN)/%: $(CLANG_TOOLS_BUILD_DIR)/Makefile
 	@$(MAKE) -C $(CLANG_TOOLS_BUILD_DIR) $*
 
-$(CLANG_TOOLS_BUILD_DIR)/Makefile:
+$(CLANG_TOOLS_BUILD_DIR)/Makefile: clang-tools/CMakeLists.txt
 	@mkdir -p $(CLANG_TOOLS_BUILD_DIR)
-	@cd $(CLANG_TOOLS_BUILD_DIR) && cmake ..
+	@cd $(CLANG_TOOLS_BUILD_DIR) \
+		&& test -f Makefile || cmake ..
 
 scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 	flock -w 120 $< sh -c 'cd scripts && tar xvf cdecl-$*.tar.gz && cd cdecl-$* && ./configure --without-readline && $(MAKE)' || true
