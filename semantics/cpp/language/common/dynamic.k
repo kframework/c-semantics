@@ -68,10 +68,55 @@ module CPP-TRACE-SYNTAX
                     | combine(Trace, Trace, K) [function, klabel(combine2)]
                     | combine(Trace, Trace, Trace, ValueCategory, CPPType) [function, klabel(combine3)]
 
+     syntax Expr ::= fillExpr(Expr, Expr) [function]
+     syntax Expr ::= fillExpr(Expr, Expr, K) [function, klabel(fillBinExpr)]
+
 endmodule // CPP-TRACE-SYNTAX
 
 module CPP-TRACE
      imports CPP-TRACE-SYNTAX // self
+     imports CPP-SYNTAX
+
+     rule fillExpr(+ _, E::Expr) => + E
+     rule fillExpr(- _, E::Expr) => - E
+     rule fillExpr(& _, E::Expr) => & E
+     rule fillExpr(* _, E::Expr) => * E
+     rule fillExpr(! _, E::Expr) => ! E
+     rule fillExpr(_ ++, E::Expr) => E ++
+     rule fillExpr(_ --, E::Expr) => E --
+
+     rule fillExpr(_ + _, L::Expr, R::Expr) => L + R
+     rule fillExpr(_ - _, L::Expr, R::Expr) => L - R
+     rule fillExpr(_ * _, L::Expr, R::Expr) => L * R
+     rule fillExpr(_ / _, L::Expr, R::Expr) => L / R
+     rule fillExpr(_ % _, L::Expr, R::Expr) => L % R
+     rule fillExpr(_ ^ _, L::Expr, R::Expr) => L ^ R
+     rule fillExpr(_ & _, L::Expr, R::Expr) => L & R
+     rule fillExpr(_ | _, L::Expr, R::Expr) => L | R
+     rule fillExpr(_ != _, L::Expr, R::Expr) => L != R
+     rule fillExpr(_ == _, L::Expr, R::Expr) => L == R
+     rule fillExpr(_ < _, L::Expr, R::Expr) => L < R
+     rule fillExpr(_ <= _, L::Expr, R::Expr) => L <= R
+     rule fillExpr(_ > _, L::Expr, R::Expr) => L > R
+     rule fillExpr(_ >= _, L::Expr, R::Expr) => L >= R
+     rule fillExpr(_ >> _, L::Expr, R::Expr) => L >> R
+     rule fillExpr(_ << _, L::Expr, R::Expr) => L << R
+     rule fillExpr(_ := _, L::Expr, R::Expr) => L := R
+     rule fillExpr(_ += _, L::Expr, R::Expr) => L += R
+     rule fillExpr(_ -= _, L::Expr, R::Expr) => L -= R
+     rule fillExpr(_ *= _, L::Expr, R::Expr) => L *= R
+     rule fillExpr(_ /= _, L::Expr, R::Expr) => L /= R
+     rule fillExpr(_ %= _, L::Expr, R::Expr) => L %= R
+     rule fillExpr(_ ^= _, L::Expr, R::Expr) => L ^= R
+     rule fillExpr(_ &= _, L::Expr, R::Expr) => L &= R
+     rule fillExpr(_ |= _, L::Expr, R::Expr) => L |= R
+     rule fillExpr(_ <<= _, L::Expr, R::Expr) => L <<= R
+     rule fillExpr(_ >>= _, L::Expr, R::Expr) => L >>= R
+     rule fillExpr(_ && _, L::Expr, R::Expr) => L && R
+     rule fillExpr(_ || _, L::Expr, R::Expr) => L || R
+     rule fillExpr(Comma(_, _), L::Expr, R::Expr) => Comma(L, R)
+     rule fillExpr(CallExpr(_, _), L::Expr, R::StrictList) => CallExpr(L, R)
+
 
      // ...
 
@@ -307,6 +352,8 @@ module CPP-DYNAMIC-OTHER-SORTS
      syntax TemplateArg
 
      syntax CPPValue
+
+     syntax Predicate
 endmodule // CPP-DYNAMIC-OTHER-SORTS
 
 module CPP-REVAL-SYNTAX
@@ -359,12 +406,15 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax ValueCategory ::= cat(Typed) [function]
 
+     syntax SymLoc ::= locOf(GLVal) [function]
+
      syntax Bool ::= Execution() [function]
                    | Translation() [function]
 
      syntax Expr ::= stripHold(Expr) [function, klabel(stripHoldCpp)]
 
-     syntax Bool ::= isEvalVal(K) [function]
+     syntax Bool ::= Predicate "(" K ")" [function]
+     syntax Predicate ::= "isEvalVal"
 
      syntax FunctionDeclarationType ::= Function(List)
 
@@ -445,8 +495,6 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KResult ::= CPPType | NameRef
 
-     syntax Bool ::= isLKLabel(K) [function, klabelPredicate]
-
      syntax StrictList ::= prval(StrictList)
 
      syntax TemplateArgs ::= toTemplateArgs(List) [function]
@@ -465,10 +513,6 @@ module CPP-DYNAMIC-OTHER-SYNTAX
                      | showSignature(QualId, CPPType) [function]
                      | showQualId(QualId) [function]
 
-     syntax Bool ::= isValKLabel(K) [function, klabelPredicate]
-
-     syntax Bool ::= isTExprKLabel(K) [function, klabelPredicate]
-
      syntax Expr ::= bindReference(Expr, Expr) [strict(2)]
 
      syntax KItem ::= "discard"
@@ -485,6 +529,12 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      syntax Trace ::= trace(Typed) [function]
 
      syntax Expr ::= makeXVal(K)
+
+     syntax LocOrVal ::= CPPValue | SymLoc
+
+     syntax Val ::= makeVal(ValueCategory, LocOrVal, Trace, CPPType) [function]
+
+     syntax TExpr ::= makeExpr(ValueCategory, Expr, Trace, CPPType) [function]
 
      // synthetic sort for KResults that result from expressions, but aren't actually values
      syntax ValResult
@@ -551,22 +601,6 @@ module CPP-DYNAMIC-OTHER
 
      rule classFromSimpleType(classType(C::Class)) => C
 
-     rule isValKLabel(#klabel(`prv`)) => true
-
-     rule isValKLabel(#klabel(`xv`)) => true
-
-     rule isValKLabel(#klabel(`lvcpp`)) => true
-
-     rule isValKLabel(_) => false [owise]
-
-     rule isTExprKLabel(#klabel(`pre`)) => true
-
-     rule isTExprKLabel(#klabel(`xe`)) => true
-
-     rule isTExprKLabel(#klabel(`lecpp`)) => true
-
-     rule isTExprKLabel(_) => false [owise]
-
      rule isEvalVal(lv(...)) => true
 
      rule isEvalVal(xv(...)) => true
@@ -576,26 +610,20 @@ module CPP-DYNAMIC-OTHER
      rule isEvalVal(_) => false [owise]
 
      // references aren't kresults because they need to get transformed into the object they refer to.
-     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType)) => notBool isCPPRefType(T)
-          requires isValKLabel(#klabel(Lbl))
+     rule isKResult(lv(_, _, T::CPPType) #Or xv(_, _, T::CPPType) #Or prv(_, _, T::CPPType)) => notBool isCPPRefType(T)
 
-     rule Lbl:KLabel((loc(Base::SymBase, 0, _) => loc(Base, 0)), _::Trace, cppRefType)
-          requires isValKLabel(#klabel(Lbl))
+     rule lv((loc(Base::SymBase, 0, _) => loc(Base, 0)), _::Trace, cppRefType)
+     rule xv((loc(Base::SymBase, 0, _) => loc(Base, 0)), _::Trace, cppRefType)
 
      // not all references are lvalues. Some are xvalues. The individual
      // cases where this is true must handle this explicitly.
-     rule <k> Lbl:KLabel(loc(Base::SymBase, Offset::Int), Tr::Trace, cppRefType #as T::CPPType) => Lbl(V, Tr, innerType(T)) ...</k>
+     rule <k> lv(loc(Base::SymBase, Offset::Int), Tr::Trace, cppRefType #as T::CPPType) => lv(V, Tr, innerType(T)) ...</k>
           <references>... loc(Base, Offset) |-> V::SymLoc ...</references>
-          requires isValKLabel(#klabel(Lbl))
+     rule <k> xv(loc(Base::SymBase, Offset::Int), Tr::Trace, cppRefType #as T::CPPType) => xv(V, Tr, innerType(T)) ...</k>
+          <references>... loc(Base, Offset) |-> V::SymLoc ...</references>
 
-     rule <k> Lbl:KLabel(E::Expr, Tr::Trace, cppRefType #as T::CPPType) => Lbl(E, Tr, innerType(T)) ...</k>
-          requires isTExprKLabel(#klabel(Lbl)) andBool isTExpr(Lbl(E, Tr, T))
-
-     rule isLKLabel(#klabel(`lvcpp`)) => true
-
-     rule isLKLabel(#klabel(`lecpp`)) => true
-
-     rule isLKLabel(_) => false [owise]
+     rule le(E::Expr, Tr::Trace, cppRefType #as T::CPPType) => le(E, Tr, innerType(T))
+     rule xe(E::Expr, Tr::Trace, cppRefType #as T::CPPType) => xe(E, Tr, innerType(T))
 
      rule stripHold(le(E::Expr, _, _)) => E
 
@@ -669,6 +697,10 @@ module CPP-DYNAMIC-OTHER
      context HOLE:AType typeStrict:: _ [result(CPPType)]
 
      context K:KResult typeStrict:: HOLE:STypeStrictList
+
+     rule locOf(lv(L::SymLoc, _, _)) => L
+
+     rule locOf(xv(L::SymLoc, _, _)) => L
 
      rule trace(lv(_, Tr::Trace, _)) => Tr
 
@@ -929,6 +961,18 @@ module CPP-DYNAMIC-OTHER
      rule makeXVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType)) => xv(Loc, Tr, T)
 
      rule makeXVal(le(E::Expr, Tr::Trace, T::CPPType)) => xe(E, Tr, T)
+
+     rule makeVal(lvalue, V:SymLoc, Tr::Trace, T::CPPType) => lv(V, Tr, T)
+
+     rule makeVal(xvalue, V:SymLoc, Tr::Trace, T::CPPType) => xv(V, Tr, T)
+
+     rule makeVal(prvalue, V:CPPValue, Tr::Trace, T::CPPType) => prv(V, Tr, T)
+
+     rule makeExpr(lvalue, V::Expr, Tr::Trace, T::CPPType) => le(V, Tr, T)
+
+     rule makeExpr(xvalue, V::Expr, Tr::Trace, T::CPPType) => xe(V, Tr, T)
+
+     rule makeExpr(prvalue, V::Expr, Tr::Trace, T::CPPType) => pre(V, Tr, T)
 
      rule callTerminate
           => BuiltinCallOp(

@@ -7,7 +7,6 @@ require "dynamic.k"
 require "error.k"
 require "io.k"
 require "map.k"
-require "promotion-context.k"
 require "reference.k"
 require "settings.k"
 require "symloc.k"
@@ -38,7 +37,6 @@ module CPP-COMMON
      imports CPP-DYNAMIC
      imports CPP-ERROR
      imports CPP-TYPE-MAP
-     imports CPP-COMMON-PROMOTION-CONTEXT
      imports CPP-REFERENCE
      imports CPP-SYMLOC
      imports CPP-SYNTAX-HEATING

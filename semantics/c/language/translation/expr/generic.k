@@ -7,9 +7,11 @@ module C-EXPR-GENERIC
      imports C-TYPING-EXPR-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule (.K => typeof(E)) ~> Generic(E:K, _)
+     context Generic(HOLE:KItem => reval(HOLE), _)
+     rule (.K => typeof(E)) ~> Generic(E:RValue, _)
+
      rule typeof(T:Type) ~> Generic(_, list(Assocs::List))
-          => evalGeneric(T, Assocs, .List, .K)
+          => evalGeneric(type(rvalType(T)), Assocs, .List, .K)
 
      syntax KItem ::= evalGeneric(Type, List, List, K)
      rule (.K => DeclType(T', X))

@@ -384,22 +384,18 @@ module CPP-TRANSLATION-NAME
 
      rule (.K => qualifiedNameLookup(X, N, defaultMask)) ~> CallExpr(Name(N:NNSVal, X::CId), _, krlist(.List))
 
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-          requires isValKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr((lv(_, _, t(... st: classType(C::Class))) #Or xv(_, _, t(... st: classType(C::Class))) #Or prv(_, _, t(... st: classType(C::Class))))  . no-template Name(NoNNS(), X::CId), _, krlist(.List))
 
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-          requires isTExprKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr((le(_, _, t(... st: classType(C::Class))) #Or xe(_, _, t(... st: classType(C::Class))) #Or pre(_, _, t(... st: classType(C::Class)))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
 
      rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(V:Val . no-template Name(C:NNSVal, X::CId), _, _)
 
      rule cSet(Y::TypeMap, X::QualId) ~> CallExpr(E::Expr, Args::StrictList, krlist(.List))
           => resolveOverload(cSet(Y, X), Args, E)
 
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
-          requires isValKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> (lv(_, _, t(... st: classType(C::Class))) #Or xv(_, _, t(... st: classType(C::Class))) #Or prv(_, _, t(... st: classType(C::Class)))) . no-template Name(NoNNS(), X::CId)
 
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
-          requires isTExprKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> (le(_, _, t(... st: classType(C::Class))) #Or xe(_, _, t(... st: classType(C::Class))) #Or pre(_, _, t(... st: classType(C::Class)))) . no-template Name(NoNNS(), X::CId)
 
      rule (cSet(_, C:Class :: _) => .K) ~> _ . no-template Name(NoNNS() => C, _)
 
@@ -587,7 +583,7 @@ module CPP-TRANSLATION-NAME
      syntax Set ::= getAssociatedNamespaces(List, NamespacesCell) [function]
                    | #getAssociatedNamespaces(Set, NamespacesCell) [function]
 
-     syntax List ::= getAssociatedClasses(CPPType) [function]
+     syntax List ::= getAssociatedClasses(List) [function]
                    | #getAssociatedClasses(CPPType, ClassInfo) [function]
                    | getTemplateArgTypes(TemplateArgs) [function]
 
@@ -598,7 +594,7 @@ module CPP-TRANSLATION-NAME
 
      // @ref n4296 3.4.2:2.2
      rule getAssociatedNamespaces(ListItem(t(... st: classType(_ :: Class(_, _, Args::TemplateArgs))) #as T::CPPType) L::List, B::NamespacesCell)
-          => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(T), #klabel(`getInnermostNamespace1`))), B)
+          => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(ListItem(T)), #klabel(`getInnermostNamespace1`))), B)
 
      // @ref n4296 3.4.2:2.3
      rule getAssociatedNamespaces(ListItem(t(_, _, scopedEnum(N::Namespace :: _, _))) L::List, B::NamespacesCell)
@@ -631,11 +627,12 @@ module CPP-TRANSLATION-NAME
 
      rule #getAssociatedNamespaces(S::Set, _) => S [owise]
 
-     rule getAssociatedClasses(T::CPPType) => #getAssociatedClasses(T, getClassInfo(T))
+     rule getAssociatedClasses(.List) => .List
+     rule getAssociatedClasses(ListItem(T::CPPType) L::List) => #getAssociatedClasses(T, getClassInfo(T)) getAssociatedClasses(L)
 
      rule #getAssociatedClasses(t(... st: classType(N:Namespace :: C::ClassSpecifier)), #incomplete) => ListItem(classScope(N :: C, true))
 
-     rule #getAssociatedClasses(t(... st: classType(N:Namespace :: C::ClassSpecifier)), <class>... <base-classes> Bases::List </base-classes> ...</class>) => ListItem(classScope(N :: C, true)) flatMapList(mapList(mapList(Bases, #klabel(`classType`)), #klabel(`cppType`)), #klabel(`getAssociatedClasses`))
+     rule #getAssociatedClasses(t(... st: classType(N:Namespace :: C::ClassSpecifier)), <class>... <base-classes> Bases::List </base-classes> ...</class>) => ListItem(classScope(N :: C, true)) getAssociatedClasses(mapList(mapList(Bases, #klabel(`classType`)), #klabel(`cppType`)))
 
      rule getTemplateArgTypes(t(Q::Quals, Mods::Set, T::CPPSimpleType), Ps::TemplateArgs) => ListItem(t(Q, Mods, T)) getTemplateArgTypes(Ps)
 

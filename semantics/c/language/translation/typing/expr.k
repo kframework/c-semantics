@@ -144,7 +144,7 @@ module C-TYPING-EXPR
      context typeof(Cast((HOLE:KItem), _, _)) [result(Type)]
      rule typeof(Cast(T:Type, K:K, V:K) => Cast(DeclType(T, K), V))
      context typeof(Cast(HOLE:KItem,_))
-     rule typeof(Cast(T:Type, _) => elideDeclParams(T))
+     rule typeof(Cast(T:Type, _) => elideDeclParams(type(rvalType(T))))
      rule typeof(cast(T:UType, _) => elideDeclParams(type(T)))
 
      syntax Type ::= usualArithmeticConversion(Type, Type) [klabel(usualArithmeticConversionQ), function]
@@ -203,17 +203,12 @@ module C-TYPING-EXPR
      context elaborateDone(_, _) ~> typeof(_ ? (HOLE:KItem => typeof(HOLE)) : _) [result(Type)]
      context elaborateDone(_, _) ~> typeof(_ ? _ : (HOLE:KItem => typeof(HOLE))) [result(Type)]
 
-     // fixme, not handling qualifiers correctly
-     syntax Type ::= retype(Type) [function]
-     rule retype(t(... st: _:SimpleArrayType) #as T::Type) => type(pointerType(innerType(T)))
-     rule retype(t(... st: functionType(...)) #as T::Type) => type(pointerType(T))
-
      syntax Bool ::= isNPC(K) [function]
      rule isNPC(V:RValue) => isNullPointerConstant(V)
      rule isNPC(_) => false [owise]
 
-     rule elaborateDone(_, _) ~> typeof(_ ? (arrayOrFunctionType #as T::Type => retype(T)) : _)
-     rule elaborateDone(_, _) ~> typeof(_ ? _ : (arrayOrFunctionType #as T::Type => retype(T)))
+     rule elaborateDone(_, _) ~> typeof(_ ? (arrayOrFunctionType #as T::Type => rvalType(T)) : _)
+     rule elaborateDone(_, _) ~> typeof(_ ? _ : (arrayOrFunctionType #as T::Type => rvalType(T)))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
      If both the second and third operands have arithmetic type, the result
@@ -243,13 +238,14 @@ module C-TYPING-EXPR
      type is a pointer to an appropriately qualified version of
      \cinline{void}.
      }*/
-     rule (elaborateDone(_, _) ~> typeof(_ ? t(Qs::Quals, Mods::Set, pointerType(T::Type)) : t(Qs'::Quals, Mods'::Set, pointerType(T'::Type)))
-               => typeof(t(Qs +Quals Qs', Mods Mods', pointerType(compositeType(T, T')))))
+     // The result of the conditional is an rvalue, so it will be an unqualified type.
+     rule (elaborateDone(_, _) ~> typeof(_ ? t(_, Mods::Set, pointerType(T::Type)) : t(_, Mods'::Set, pointerType(T'::Type)))
+               => typeof(t(noQuals, Mods Mods', pointerType(compositeType(T, T')))))
           ~> SizeofExpression(_)
           requires stripQualifiers(T) ==Type stripQualifiers(T')
                andBool notBool (isSpecifiedVariablyModifiedType(T) orBool isSpecifiedVariablyModifiedType(T'))
-     rule (elaborateDone(_, _) ~> typeof(_ ? t(Qs::Quals, Mods::Set, pointerType(T::Type)) : t(Qs'::Quals, Mods'::Set, pointerType(T'::Type)))
-               => typeof(t(Qs +Quals Qs', Mods Mods', pointerType(compositeType(T, T')))))
+     rule (elaborateDone(_, _) ~> typeof(_ ? t(_, Mods::Set, pointerType(T::Type)) : t(_, Mods'::Set, pointerType(T'::Type)))
+               => typeof(t(noQuals, Mods Mods', pointerType(compositeType(T, T')))))
           ~> K:KItem
           requires stripQualifiers(T) ==Type stripQualifiers(T')
                andBool SizeofExpression(...) :/=K K
@@ -262,13 +258,13 @@ module C-TYPING-EXPR
           requires isNPC(V)
 
      rule elaborateDone(_, V:K)
-          ~> typeof(_ ? t(Qs1::Quals, Mods1::Set, pointerType(t(Qs1'::Quals, Mods1'::Set, T::SimpleType))) : t(Qs2::Quals, Mods2::Set, pointerType(t(Qs2'::Quals, Mods2'::Set, void))))
-          => typeof(t(Qs1 +Quals Qs2, Mods1 Mods2, pointerType(t(Qs1' +Quals Qs2', Mods1' Mods2', void))))
+          ~> typeof(_ ? t(_, Mods1::Set, pointerType(t(Qs1'::Quals, Mods1'::Set, T::SimpleType))) : t(_, Mods2::Set, pointerType(t(Qs2'::Quals, Mods2'::Set, void))))
+          => typeof(t(noQuals, Mods1 Mods2, pointerType(t(Qs1' +Quals Qs2', Mods1' Mods2', void))))
           requires notBool isFunctionType(type(T))
                andBool notBool isNPC(V)
      rule elaborateDone(V:K, _)
-          ~> typeof(_ ? t(Qs1::Quals, Mods1::Set, pointerType(t(Qs1'::Quals, Mods1'::Set, void))) : t(Qs2::Quals, Mods2::Set, pointerType(t(Qs2'::Quals, Mods2'::Set, T::SimpleType))))
-          => typeof(t(Qs1 +Quals Qs2, Mods1 Mods2, pointerType(t(Qs1' +Quals Qs2', Mods1' Mods2', void))))
+          ~> typeof(_ ? t(_, Mods1::Set, pointerType(t(Qs1'::Quals, Mods1'::Set, void))) : t(_, Mods2::Set, pointerType(t(Qs2'::Quals, Mods2'::Set, T::SimpleType))))
+          => typeof(t(noQuals, Mods1 Mods2, pointerType(t(Qs1' +Quals Qs2', Mods1' Mods2', void))))
           requires notBool isFunctionType(type(T))
                andBool notBool isNPC(V)
 

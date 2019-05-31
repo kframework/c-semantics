@@ -1006,7 +1006,11 @@ module C-CPP-TYPING
      imports SETTINGS-SYNTAX
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(... returnType: Ret::CPPType, paramTypes: Args::CPPTypes)))
-          => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertDTypeToC`))))
+          => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), convertDTypesToC(toList(Args))))
+
+     syntax List ::= convertDTypesToC(List) [function]
+     rule convertDTypesToC(.List) => .List
+     rule convertDTypesToC(ListItem(T::CPPDType) L::List) => ListItem(convertDTypeToC(T)) convertDTypesToC(L)
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, void::CPPSimpleVoidType)) => t(Q, Mods, void::SimpleVoidType)
 
@@ -1123,7 +1127,14 @@ module C-CPP-TYPING
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, unionType(tag(X::CId, _, global)))) => t(Q, Mods, classType(GlobalNamespace() :: Class(Union(), X, .TemplateArgs)))
 
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, functionType(Ret::UType, Args::List)))
-          => t(Q, Mods, functionType(convertTypeToCPP(type(Ret)), toCPPTypes(mapList(Args, #klabel(`convertTypeToCPP`))), noMethod, CLinkage, noexcept(false)))
+          => t(Q, Mods, functionType(convertTypeToCPP(type(Ret)), toCPPTypes(convertDTypesToCPP(Args)), noMethod, CLinkage, noexcept(false)))
+
+     syntax List ::= convertDTypesToCPP(List) [function]
+     rule convertDTypesToCPP(.List) => .List
+     rule convertDTypesToCPP(ListItem(T::ParamDecl) L::List) => ListItem(convertDTypeToCPP(T)) convertDTypesToCPP(L)
+
+     rule convertDTypeToCPP(variadic::Variadic) => variadic::CPPVariadic
+     rule convertDTypeToCPP(t(...) #as T::Type) => convertTypeToCPP(T)
 
      rule utype(T:CPPType)::UType => utype(convertTypeToC(T))
 

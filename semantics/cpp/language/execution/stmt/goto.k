@@ -19,14 +19,6 @@ module CPP-EXECUTION-STMT-GOTO
 
      rule preprocessGoto(GotoInfo:KItem, _) => processGoto(GotoInfo) [owise]
 
-     syntax Bool ::= isGotoKLabel(K) [function, klabelPredicate, klabel(isGotoKLabelCpp)]
-
-     rule isGotoKLabel(#klabel(`processGotoCpp`)) => true
-
-     rule isGotoKLabel(#klabel(`processGotoDownCpp`)) => true
-
-     rule isGotoKLabel(_) => false [owise]
-
      syntax KItem ::= processGoto(KItem) [klabel(processGotoCpp)]
                     | processGotoDown(KItem) [klabel(processGotoDownCpp)]
 

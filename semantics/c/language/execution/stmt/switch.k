@@ -60,15 +60,15 @@ module C-STMT-SWITCH
      rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN, Exp:RValue), M:Map)
           => tryCase(Exp, V, caseLabel(SN, Exp))
           ~> #handleSwitch-aux(SN, V, nextCaseLabel, M)
-          requires Exp =/=K #klabel(`Default`) andBool notBool (isUnknown(value(V))  orBool isIntPtr(value(V)))
+          requires notBool (isUnknown(value(V))  orBool isIntPtr(value(V)))
           [structural]
 
      rule #handleSwitch-aux(_, tv((I:IntPtr => unknown(maxIntPtrValue(I))), T::UType), caseLabel(_, Exp:K), _)
-          requires Exp =/=K #klabel(`Default`)
+          requires Exp =/=K defaultCase
 
      rule (.K => UNSPEC("ESS1", "Switching on an unspecified controlling expression."))
           ~> #handleSwitch-aux(_, tv(unknown(_), _), caseLabel(_, Exp:K), _)
-          requires Exp =/=K #klabel(`Default`)
+          requires Exp =/=K defaultCase
 
      //  if all that's left is a default, do it
      rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN:Int, defaultCase), M:Map)
@@ -81,7 +81,7 @@ module C-STMT-SWITCH
           [structural]
 
      rule #handleSwitch-aux(_:Int, _:RValue, X::CId => nextCaseLabel, _)
-          requires getKLabel(X) =/=K #klabel(`caseLabel`)
+          requires caseLabel(...) :/=K X
                andBool X =/=K nextCaseLabel
           [structural]
 

@@ -11,10 +11,6 @@ module CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
 
      syntax CatExpr ::= Expr | ValueCategory | Typed
 
-     syntax Val ::= makeVal(ValueCategory, CPPType, CPPValue, Trace) [function]
-
-     syntax Val ::= makeExpr(ValueCategory, CPPType, Expr, Trace) [function]
-
      syntax StrictList ::= cats(StrictList)
 
      syntax ValueCategory ::= unnamedCat(CPPType) [function]
@@ -74,18 +70,6 @@ module CPP-TRANSLATION-VALUE-CATEGORY
 
      // --------------------------------
 
-     rule makeVal(lvalue, T::CPPType, V::SymLoc, Tr::Trace) => lv(V, Tr, T)
-
-     rule makeVal(xvalue, T::CPPType, V::SymLoc, Tr::Trace) => xv(V, Tr, T)
-
-     rule makeVal(prvalue, T::CPPType, V::CPPValue, Tr::Trace) => prv(V, Tr, T)
-
-     rule makeExpr(lvalue, T::CPPType, V::Expr, Tr::Trace) => le(V, Tr, T)
-
-     rule makeExpr(xvalue, T::CPPType, V::Expr, Tr::Trace) => xe(V, Tr, T)
-
-     rule makeExpr(prvalue, T::CPPType, V::Expr, Tr::Trace) => pre(V, Tr, T)
-
      rule catof(ExprLoc(_, E::Expr) => E)
 
      rule catof(StringLiteral(_, _) => lvalue)
@@ -101,9 +85,9 @@ module CPP-TRANSLATION-VALUE-CATEGORY
      rule catof(NullPointerLiteral() => prvalue)
 
      context catof(HOLE:CatExpr)
-             requires getKLabel(HOLE) ==K #klabel(`Name`)
-                  orBool getKLabel(HOLE) ==K #klabel(`CallExpr`) //[result(Val)]
-                  orBool getKLabel(HOLE) ==K #klabel(`_.___CPP-SYNTAX`)
+             requires Name(_, _) :=K HOLE
+                  orBool CallExpr(_, _, _) :=K HOLE
+                  orBool _ . _ _ :=K HOLE
 
      rule catof(L:LVal => lvalue)
 
