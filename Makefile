@@ -135,9 +135,7 @@ dist/profiles/$(PROFILE): dist/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) 
 
 
 $(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,%)
-# the % sign matches to '$(NAME)-kompiled/$(NAME)',
-# e.g. to 'c-cpp-kompiled/c-cpp'
-# dist/profiles/$(PROFILE)/c-cpp-kompiled/c-cpp-kompiled/timestamp
+
 dist/profiles/$(PROFILE)/%-kompiled/timestamp: dist/profiles/$(PROFILE) \
                                                $(notdir %)-semantics
 	$(eval NAME := $(notdir $*))
