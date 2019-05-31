@@ -9,7 +9,7 @@ EXECUTION_KOMPILE_FLAGS := \
 KDEP_DEFAULT_FLAGS :=
 
 define timestamp_of
-    .build/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
+    .build/$(PROFILE)/$(1)-kompiled/timestamp
 endef
 
 .PHONY: default
@@ -70,8 +70,8 @@ fast-cpp: $(addsuffix -semantics,c-translation c-cpp c-cpp-linking cpp-translati
 
 XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
 .PHONY: $(XYZ_SEMANTICS)
-.SECONDEXPANSION:
-$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
+#.SECONDEXPANSION:
+$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,%)
 
 .PHONY: nd
 nd: $(call timestamp_of,c-nd)
