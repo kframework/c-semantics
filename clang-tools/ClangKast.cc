@@ -2389,10 +2389,10 @@ public:
   bool VisitAtomicExpr(AtomicExpr *E) {
     AddKApplyNode("GnuAtomicExpr", 2);
     switch(E->getOp()) {
-			#define ATOMIC_BUILTIN(Name, Spelling)           \
-				case AtomicExpr::AO##Name:                     \
-					AddKTokenNode("\"" Spelling "\"", "String"); \
-					break;
+      #define ATOMIC_BUILTIN(Name, Spelling)           \
+        case AtomicExpr::AO##Name:                     \
+          AddKTokenNode("\"" Spelling "\"", "String"); \
+          break;
       ATOMIC_BUILTIN(__c11_atomic_init, "__c11_atomic_init")
       ATOMIC_BUILTIN(__c11_atomic_load, "__c11_atomic_load")
       ATOMIC_BUILTIN(__c11_atomic_store, "__c11_atomic_store")
@@ -2424,8 +2424,7 @@ public:
       ATOMIC_BUILTIN(__atomic_or_fetch, "__atomic_or_fetch")
       ATOMIC_BUILTIN(__atomic_xor_fetch, "__atomic_xor_fetch")
       ATOMIC_BUILTIN(__atomic_nand_fetch, "__atomic_nand_fetch")
-			#undef ATOMIC_BUILTIN
-      default: break;
+      #undef ATOMIC_BUILTIN
     }
     AddKSequenceNode(E->getNumSubExprs());
     return false;
