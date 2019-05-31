@@ -54,7 +54,7 @@ LIBC_SO := dist/profiles/$(PROFILE)/lib/libc.so
 LIBSTDCXX_SO := dist/profiles/$(PROFILE)/lib/libstdc++.so
 
 define timestamp_of
-    dist/profiles/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
+    dist/profiles/$(PROFILE)/$(1)-kompiled/timestamp
 endef
 
 .PHONY: default
