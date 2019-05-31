@@ -134,13 +134,12 @@ dist/profiles/$(PROFILE): dist/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) 
 		cp -RLp dist/profiles/$(PROFILE)/native/* dist/profiles/$(shell basename $(d))/native;)
 
 
-.SECONDEXPANSION:
-$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
+$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,%)
 # the % sign matches to '$(NAME)-kompiled/$(NAME)',
 # e.g. to 'c-cpp-kompiled/c-cpp'
 # dist/profiles/$(PROFILE)/c-cpp-kompiled/c-cpp-kompiled/timestamp
 dist/profiles/$(PROFILE)/%-kompiled/timestamp: dist/profiles/$(PROFILE) \
-                                               $$(notdir $$*)-semantics
+                                               $(notdir %)-semantics
 	$(eval NAME := $(notdir $*))
 	@echo "Distributing $(NAME)"
 	@cp -p -RL semantics/.build/$(PROFILE)/$(NAME)-kompiled dist/profiles/$(PROFILE)
