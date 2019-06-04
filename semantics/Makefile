@@ -94,8 +94,12 @@ GENERATED_MAKEFILE_DIR := $(OUTPUT_DIR)/make.d
 GENERATED_MAKEFILE_DIR: ;@mkdir -p $@
 
 
-BASIC_DEPENDS := $(addsuffix .dep.mk,$(addprefix $(GENERATED_MAKEFILE_DIR)/basic-,c-translation cpp-translation c-cpp-linking c-cpp))
-SPECIAL_DEPENDS := $(addsuffix .dep.mk,$(addprefix $(GENERATED_MAKEFILE_DIR)/,nd nd-thread))
+BASIC_DEPENDS := $(addsuffix .dep.mk, \
+                   $(addprefix $(GENERATED_MAKEFILE_DIR)/basic-, \
+                      c-translation cpp-translation c-cpp-linking c-cpp))
+SPECIAL_DEPENDS := $(addsuffix .dep.mk, \
+                     $(addprefix $(GENERATED_MAKEFILE_DIR)/, \
+                        nd nd-thread))
 
 DEPENDS := $(BASIC_DEPENDS) $(SPECIAL_DEPENDS)
 
