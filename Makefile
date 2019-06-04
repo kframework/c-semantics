@@ -131,9 +131,11 @@ dist/profiles/$(PROFILE): dist/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) 
 		mkdir -p dist/profiles/$(shell basename $(d))/lib;)
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
 			$(foreach f, $(PROFILE_FILES), \
-				cp -RLp $(d)/$(f) dist/profiles/$(shell basename $(d))/$(f);))
+				cp -RLp $(d)/$(f) \
+				dist/profiles/$(shell basename $(d))/$(f);))
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
-		cp -RLp dist/profiles/$(PROFILE)/native/* dist/profiles/$(shell basename $(d))/native;)
+				cp -RLp dist/profiles/$(PROFILE)/native/* \
+				dist/profiles/$(shell basename $(d))/native;)
 
 
 $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
