@@ -1,9 +1,5 @@
 ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
-.PHONY: default
-default: test-build
-
-
 export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
 
 export K_OPTS := -Xmx8g -Xss32m
@@ -51,15 +47,12 @@ FILES_TO_DIST := \
 
 PROFILE_FILES := include src compiler-src native pp cpp-pp cc cxx
 PROFILE_FILE_DEPS := $(foreach f, $(PROFILE_FILES), $(PROFILE_DIR)/$(f))
-SUBPROFILE_FILE_DEPS := $(foreach d, $(SUBPROFILE_DIRS), $(foreach f, $(PROFILE_FILES), $(d)/$(f)))
+SUBPROFILE_FILE_DEPS := $(foreach d, $(SUBPROFILE_DIRS), \
+                          $(foreach f, $(PROFILE_FILES), $(d)/$(f)))
 CC := $(PROFILE_DIR)/cc
 
 PERL_MODULES_DIR := scripts/RV_Kcc
-
-PERL_MODULES := \
-	$(PERL_MODULES_DIR)/Opts.pm \
-	$(PERL_MODULES_DIR)/Files.pm \
-	$(PERL_MODULES_DIR)/Shell.pm
+PERL_MODULES := $(wildcard $(PERL_MODULES_DIR)/*.pm)
 
 LIBC_SO := $(OUTPUT_DIR)/profiles/$(PROFILE)/lib/libc.so
 LIBSTDCXX_SO := $(OUTPUT_DIR)/profiles/$(PROFILE)/lib/libstdc++.so
@@ -67,6 +60,10 @@ LIBSTDCXX_SO := $(OUTPUT_DIR)/profiles/$(PROFILE)/lib/libstdc++.so
 define timestamp_of
     $(OUTPUT_DIR)/profiles/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
+
+
+.PHONY: default
+default: test-build
 
 .PHONY: check-deps
 check-deps: | check-ocaml check-cc check-perl check-k
@@ -110,8 +107,7 @@ $(OUTPUT_DIR)/extract-references: scripts/extract-references.cpp
 $(OUTPUT_DIR)/kcc: scripts/getopt.pl $(PERL_MODULES) $(OUTPUT_DIR)/writelong $(FILES_TO_DIST)
 	mkdir -p $(OUTPUT_DIR)/RV_Kcc
 	cp -RLp $(FILES_TO_DIST) $(OUTPUT_DIR)
-	find $(PERL_MODULES_DIR) -type f -name '*.pm' ! -name 'Opts.pm' \
-		-exec cp -RLp "{}" $(OUTPUT_DIR)/RV_Kcc \;
+	cp -RLp $(PERL_MODULES) $(OUTPUT_DIR)/RV_Kcc
 	cat scripts/RV_Kcc/Opts.pm | perl scripts/getopt.pl > $(OUTPUT_DIR)/RV_Kcc/Opts.pm
 	ln -s $(realpath $(OUTPUT_DIR))/kcc $(realpath $(OUTPUT_DIR))/kclang
 
