@@ -127,7 +127,6 @@ $(OUTPUT_DIR)/kcc: scripts/getopt.pl $(PERL_MODULES) $(OUTPUT_DIR)/writelong $(F
 pack: $(OUTPUT_DIR)/kcc
 	cd $(OUTPUT_DIR) && fatpack trace kcc
 	cd $(OUTPUT_DIR) && fatpack packlists-for `cat fatpacker.trace` >packlists
-	cat $(OUTPUT_DIR)/packlists
 	cd $(OUTPUT_DIR) && fatpack tree `cat packlists`
 	ln -s $(realpath $(OUTPUT_DIR))/RV_Kcc $(realpath $(OUTPUT_DIR)/fatlib)/RV_Kcc
 	cd $(OUTPUT_DIR) && fatpack file kcc > kcc.packed
