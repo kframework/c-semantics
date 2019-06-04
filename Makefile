@@ -208,17 +208,6 @@ $(OUTPUT_DIR)/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c \
 test-build: $(LIBC_SO) \
             $(LIBSTDCXX_SO) \
             $(call timestamp_of,c-cpp)
-	$(info Testing kcc...)
-	printf "#include <stdio.h>\nint main(void) { printf(\"x\"); return 42; }" \
-		| $(OUTPUT_DIR)/kcc --use-profile $(PROFILE) -x c - -o $(OUTPUT_DIR)/testProgram.compiled
-	$(OUTPUT_DIR)/testProgram.compiled 2> /dev/null > $(OUTPUT_DIR)/testProgram.out; \
-		test $$? -eq 42
-	grep x $(OUTPUT_DIR)/testProgram.out > /dev/null 2>&1
-	$(info Done.)
-	$(info Cleaning up...)
-	@rm -f $(OUTPUT_DIR)/testProgram.compiled
-	@rm -f $(OUTPUT_DIR)/testProgram.out
-	$(info Done.)
 
 .PHONY: parser/cparser
 parser/cparser:
@@ -265,6 +254,26 @@ fail:	| test-build
 .PHONY: fail-compile
 fail-compile:	| test-build
 	@$(MAKE) -C tests/unit-fail-compilation comparison
+
+
+# Intended as a simple test to verify the build.  If you invoke from the
+# command line, do not forget to pass `OUTPUT_DIR=<dir>` if you specified one
+# during the build.
+.PHONY: simple-build-test
+simple-build-test:
+	$(info Testing kcc...)
+	printf "#include <stdio.h>\nint main(void) { printf(\"x\"); return 42; }" \
+		| $(OUTPUT_DIR)/kcc --use-profile $(PROFILE) -x c - -o $(OUTPUT_DIR)/testProgram.compiled
+	$(OUTPUT_DIR)/testProgram.compiled 2> /dev/null > $(OUTPUT_DIR)/testProgram.out; \
+		test $$? -eq 42
+	grep x $(OUTPUT_DIR)/testProgram.out > /dev/null 2>&1
+	$(info Done.)
+	$(info Cleaning up...)
+	@rm -f $(OUTPUT_DIR)/testProgram.compiled
+	@rm -f $(OUTPUT_DIR)/testProgram.out
+	$(info Done.)
+
+
 
 .PHONY: clean
 clean:
