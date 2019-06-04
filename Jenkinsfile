@@ -27,6 +27,14 @@ pipeline {
         '''
       }
     }
+    stage('Re-Build with timeout') { steps {
+      timeout(time: 30, unit: 'SECONDS') {
+        sh '''
+          eval $(opam config env)
+          make
+        '''
+      }
+    } }
     stage('Test') {
       steps {
         sh '''
