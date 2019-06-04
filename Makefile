@@ -111,7 +111,7 @@ $(OUTPUT_DIR)/kcc: scripts/getopt.pl $(PERL_MODULES) $(OUTPUT_DIR)/writelong $(F
 	cp -RLp $(PERL_MODULES) $(OUTPUT_DIR)/RV_Kcc
 	rm -f $(OUTPUT_DIR)/RV_Kcc/Opts.pm
 	cat scripts/RV_Kcc/Opts.pm | perl scripts/getopt.pl > $(OUTPUT_DIR)/RV_Kcc/Opts.pm
-	cp -p $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
+	ln -s $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
 
 .PHONY: pack
 pack: $(OUTPUT_DIR)/kcc
