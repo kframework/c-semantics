@@ -100,7 +100,6 @@ GENERATED_MAKEFILE_DIR := $(OUTPUT_DIR)/make.d
 
 GENERATED_MAKEFILE_DIR: ;@mkdir -p $@
 
-
 BASIC_DEPENDS := $(addsuffix .dep.mk, \
                    $(addprefix $(GENERATED_MAKEFILE_DIR)/basic-, \
                       c-translation cpp-translation c-cpp-linking c-cpp))
@@ -110,7 +109,7 @@ SPECIAL_DEPENDS := $(addsuffix .dep.mk, \
 
 DEPENDS := $(BASIC_DEPENDS) $(SPECIAL_DEPENDS)
 
-.PHONY: $(DEPENDS)
+Makefile: $(DEPENDS)
 
 # See https://stackoverflow.com/a/4270649/6209703
 ifneq ($(MAKECMDGOALS),clean)
