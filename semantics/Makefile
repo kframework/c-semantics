@@ -6,9 +6,13 @@ OUTPUT_DIR := build
 KOMPILE_FLAGS ?=
 KDEP_FLAGS ?=
 
-# This is what is used in this Makefile.
-KOMPILE_DEFAULT_FLAGS := $(KOMPILE_FLAGS) --backend ocaml --non-strict --smt none
-KDEP_DEFAULT_FLAGS := $(KDEP_FLAGS)
+# These are used in this Makefile.
+KOMPILE_FLAGS += --backend ocaml --non-strict --smt none
+KDEP_FLAGS += -I $(PROFILE_DIR)/semantics
+KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/c
+KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/cpp
+
+
 
 CPP_KOMPILE_FLAGS := --opaque-klabels c-translation.k
 EXECUTION_KOMPILE_FLAGS := \
@@ -27,28 +31,28 @@ default: fast
 
 $(call timestamp_of,c-translation):
 	$(info Kompiling the static C semantics...)
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) c-translation.k \
+	$(KOMPILE) $(KOMPILE_FLAGS) c-translation.k \
 		-d "$(OUTPUT_DIR)/c-translation-kompiled" \
 		--no-prelude -w all -v --debug \
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,cpp-translation):
 	$(info Kompiling the static C++ semantics...)
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(CPP_KOMPILE_FLAGS) cpp-translation.k \
+	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) cpp-translation.k \
 		-d "$(OUTPUT_DIR)/cpp-translation-kompiled" \
 		--no-prelude -w all -v --debug \
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,c-cpp-linking):
 	$(info Kompiling the C and C++ linking semantics...)
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(CPP_KOMPILE_FLAGS) c-cpp-linking.k \
+	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) c-cpp-linking.k \
 		-d "$(OUTPUT_DIR)/c-cpp-linking-kompiled" \
 		--no-prelude -w all -v --debug \
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,c-cpp):
 	$(info Kompiling the dynamic C and C++ semantics...)
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
+	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-cpp-kompiled" \
 		--no-prelude -w all -v --transition "interpRule" \
 		--debug \
@@ -56,7 +60,7 @@ $(call timestamp_of,c-cpp):
 
 $(call timestamp_of,c-nd):
 	$(info Kompiling the dynamic C and C++ semantics with expression sequencing non-determinism...)
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
+	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-nd-kompiled" \
 		--no-prelude --transition "observable ndtrans" \
 		--superheat "ndheat" --supercool "ndlocal" \
@@ -64,7 +68,7 @@ $(call timestamp_of,c-nd):
 
 $(call timestamp_of,c-nd-thread):
 	$(info Kompiling the dynamic C and C++ semantics with thread-interleaving non-determinism...)
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
+	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-nd-thread-kompiled" \
 		--no-prelude --transition "observable ndtrans ndthread" \
 		-I $(PROFILE_DIR)/semantics
@@ -115,11 +119,6 @@ Makefile: $(DEPENDS)
 ifneq ($(MAKECMDGOALS),clean)
   -include $(DEPENDS)
 endif
-
-KDEP_FLAGS := $(KDEP_DEFAULT_FlAGS)
-KDEP_FLAGS += -I $(PROFILE_DIR)/semantics
-KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/c
-KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/cpp
 
 $(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: | $(GENERATED_MAKEFILE_DIR)
 	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k > $@
