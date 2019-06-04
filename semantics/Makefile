@@ -19,28 +19,28 @@ define timestamp_of
 endef
 
 $(call timestamp_of,c-translation):
-	@echo "Kompiling the static C semantics..."
+	$(info Kompiling the static C semantics...)
 	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) c-translation.k \
 		-d "$(OUTPUT_DIR)/c-translation-kompiled" \
 		--no-prelude -w all -v --debug \
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,cpp-translation):
-	@echo "Kompiling the static C++ semantics..."
+	$(info Kompiling the static C++ semantics...)
 	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(CPP_KOMPILE_FLAGS) cpp-translation.k \
 		-d "$(OUTPUT_DIR)/cpp-translation-kompiled" \
 		--no-prelude -w all -v --debug \
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,c-cpp-linking):
-	@echo "Kompiling the C and C++ linking semantics..."
+	$(info Kompiling the C and C++ linking semantics...)
 	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(CPP_KOMPILE_FLAGS) c-cpp-linking.k \
 		-d "$(OUTPUT_DIR)/c-cpp-linking-kompiled" \
 		--no-prelude -w all -v --debug \
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,c-cpp):
-	@echo "Kompiling the dynamic C and C++ semantics..."
+	$(info Kompiling the dynamic C and C++ semantics...)
 	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-cpp-kompiled" \
 		--no-prelude -w all -v --transition "interpRule" \
@@ -48,7 +48,7 @@ $(call timestamp_of,c-cpp):
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,c-nd):
-	@echo "Kompiling the dynamic C and C++ semantics with expression sequencing non-determinism..."
+	$(info Kompiling the dynamic C and C++ semantics with expression sequencing non-determinism...)
 	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-nd-kompiled" \
 		--no-prelude --transition "observable ndtrans" \
@@ -56,7 +56,7 @@ $(call timestamp_of,c-nd):
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,c-nd-thread):
-	@echo "Kompiling the dynamic C and C++ semantics with thread-interleaving non-determinism..."
+	$(info Kompiling the dynamic C and C++ semantics with thread-interleaving non-determinism...)
 	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-nd-thread-kompiled" \
 		--no-prelude --transition "observable ndtrans ndthread" \
