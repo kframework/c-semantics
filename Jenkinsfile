@@ -28,7 +28,7 @@ pipeline {
       }
     }
     stage('Re-Build with timeout') { steps {
-      timeout(time: 30, unit: 'SECONDS') {
+      timeout(time: 8, unit: 'SECONDS') {
         sh '''
           eval $(opam config env)
           make
