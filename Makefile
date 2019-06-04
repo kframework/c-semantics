@@ -213,7 +213,7 @@ $(PROFILE_OUTPUT_DIR)/native/server.c: native-server/server.c
 	cp -RLp $< $@
 
 $(PROFILE_OUTPUT_DIR)/native/%.o: $(PROFILE_DIR)/native/%.c \
-                                              $(wildcard native-server/*.h)
+                                  $(wildcard native-server/*.h)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@ -I native-server
 
