@@ -68,13 +68,10 @@ all: fast nd thread
 .PHONY: fast
 fast: $(addsuffix -semantics,c-translation c-cpp c-cpp)
 
-.PHONY: fast-cpp
-fast-cpp: $(addsuffix -semantics,c-translation c-cpp c-cpp-linking cpp-translation)
-
 XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
-.PHONY: $(XYZ_SEMANTICS)
-.SECONDEXPANSION:
-$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
+
+.PHONY: fast-cpp
+fast-cpp: $(XYZ_SEMANTICS)
 
 .PHONY: nd
 nd: $(call timestamp_of,c-nd)
@@ -114,3 +111,10 @@ $(BASIC_DEPENDS): $(OUTPUT_DIR)/make.d/depend-basic-%:
 
 $(SPECIAL_DEPENDS): $(OUTPUT_DIR)/make.d/depend-%:
 	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k > $@
+
+
+# Move this to the end so that .SECONDEXPANSION
+# does not affect any other rules.
+.PHONY: $(XYZ_SEMANTICS)
+.SECONDEXPANSION:
+$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
