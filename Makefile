@@ -77,11 +77,10 @@ check-ocaml:
 
 .PHONY: check-cc
 check-cc:
-	@$(CC) -v > /dev/null 2>&1 || \
-		clang -v > /dev/null 2>&1 || { \
-			echo "ERROR: Missing GCC/Clang installation. Please see INSTALL.md for more information." \
-			&& false; \
-		}
+	@$(CC) -v > /dev/null 2>&1 || { \
+		echo "ERROR: Missing GCC/Clang installation. Please see INSTALL.md for more information." \
+		&& false; \
+	}
 
 .PHONY: check-perl
 check-perl:
