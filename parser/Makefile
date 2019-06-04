@@ -1,7 +1,8 @@
 .PHONY: default
 default: cparser
 
-# Do not try any implicit rules to re-make this.
+# This makefile does not need to be re-built.
+# See https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html
 Makefile: ;
 
 # no warnings

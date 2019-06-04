@@ -5,6 +5,11 @@ export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
 export KOMPILE := $(K_BIN)/kompile
 export KDEP := $(K_BIN)/kdep
 
+# We export these so they are available for the
+# `clang-tools` target.
+export CC := $(PROFILE_DIR)/cc
+export CXX := $(PROFILE_DIR)/cxx
+
 export K_OPTS := -Xmx8g -Xss32m
 export KOMPILE_FLAGS := -O2
 
@@ -53,9 +58,6 @@ PROFILE_FILE_DEPS := $(foreach f, $(PROFILE_FILES), $(PROFILE_DIR)/$(f))
 SUBPROFILE_FILE_DEPS := $(foreach d, $(SUBPROFILE_DIRS), \
                           $(foreach f, $(PROFILE_FILES), $(d)/$(f)))
 
-CC := $(PROFILE_DIR)/cc
-CXX := $(PROFILE_DIR)/cxx
-
 PERL_MODULES_DIR := scripts/RV_Kcc
 PERL_MODULES := $(wildcard $(PERL_MODULES_DIR)/*.pm)
 
@@ -70,8 +72,10 @@ endef
 .PHONY: default
 default: test-build
 
-# Targets to be invoked by the user to check dependency installation.
-# No targets depend on them.
+# Targets intended for direct invocation by the user,
+# to check the installation of dependencies.
+#
+# No subsequent targets depend on these.
 
 .PHONY: check-deps
 check-deps: | check-ocaml check-cc check-cxx check-perl check-k
