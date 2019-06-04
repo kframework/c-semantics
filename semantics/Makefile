@@ -87,11 +87,16 @@ clean:
 					 */c-nd-kompiled \
 					 */c-nd-thread-kompiled \
 					 .kompile-* \
-					 .depend-* \
 					 $(OUTPUT_DIR)
 
-BASIC_DEPENDS := $(addprefix $(OUTPUT_DIR)/make.d/depend-basic-,c-translation cpp-translation c-cpp-linking c-cpp)
-SPECIAL_DEPENDS := $(OUTPUT_DIR)/make.d/depend-nd $(OUTPUT_DIR)/make.d/depend-nd-thread
+GENERATED_MAKEFILE_DIR := $(OUTPUT_DIR)/make.d
+
+GENERATED_MAKEFILE_DIR: ;@mkdir -p $@
+
+
+BASIC_DEPENDS := $(addsuffix .dep.mk,$(addprefix $(GENERATED_MAKEFILE_DIR)/basic-,c-translation cpp-translation c-cpp-linking c-cpp))
+SPECIAL_DEPENDS := $(addsuffix .dep.mk,$(GENERATED_MAKEFILE_DIR)/nd $(GENERATED_MAKEFILE_DIR)/nd-thread)
+
 DEPENDS := $(BASIC_DEPENDS) $(SPECIAL_DEPENDS)
 
 .PHONY: $(DEPENDS)
@@ -106,15 +111,12 @@ KDEP_FLAGS += -I $(PROFILE_DIR)/semantics
 KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/c
 KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/cpp
 
-$(BASIC_DEPENDS): $(OUTPUT_DIR)/make.d/depend-basic-%: | make-depends-dir
+$(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: | $(GENERATED_MAKEFILE_DIR)
 	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k > $@
 
-$(SPECIAL_DEPENDS): $(OUTPUT_DIR)/make.d/depend-%: | make-depends-dir
+$(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: | $(GENERATED_MAKEFILE_DIR)
 	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k > $@
 
-.PHONY: make-depends-dir
-make-depends-dir:
-	@mkdir -p $(OUTPUT_DIR)/make.d
 
 # Move this to the end so that .SECONDEXPANSION
 # does not affect any other rules.
