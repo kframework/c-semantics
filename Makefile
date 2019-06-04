@@ -49,7 +49,9 @@ PROFILE_FILES := include src compiler-src native pp cpp-pp cc cxx
 PROFILE_FILE_DEPS := $(foreach f, $(PROFILE_FILES), $(PROFILE_DIR)/$(f))
 SUBPROFILE_FILE_DEPS := $(foreach d, $(SUBPROFILE_DIRS), \
                           $(foreach f, $(PROFILE_FILES), $(d)/$(f)))
+
 CC := $(PROFILE_DIR)/cc
+CXX := $(PROFILE_DIR)/cxx
 
 PERL_MODULES_DIR := scripts/RV_Kcc
 PERL_MODULES := $(wildcard $(PERL_MODULES_DIR)/*.pm)
