@@ -115,6 +115,7 @@ SPECIAL_DEPENDS := $(addsuffix .dep.mk, \
 
 DEPENDS := $(BASIC_DEPENDS) $(SPECIAL_DEPENDS)
 
+# See https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html
 Makefile: $(DEPENDS)
 
 # See https://stackoverflow.com/a/4270649/6209703

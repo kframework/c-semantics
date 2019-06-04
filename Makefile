@@ -288,6 +288,8 @@ simple-build-test:
 	$(info Done.)
 
 
+# This makefile does not need to be re-built.
+# See https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html
 Makefile: ;
 
 .PHONY: clean
