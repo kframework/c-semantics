@@ -1,33 +1,17 @@
-# CIL_BASE = ../cil
-# CIL_PLATFORM ?= $(firstword $(shell ls $(CIL_BASE)/obj))
+.PHONY: default
+default: cparser
+
+# Do not try any implicit rules to re-make this.
+Makefile: ;
+
 # no warnings
-OCAMLOPT_FLAGS = -w a -warn-error a 
-# all warnings
-#OCAMLOPT_FLAGS = -w A -warn-error A
+OCAMLOPT_FLAGS := -w a -warn-error a 
 
-# CIL = $(CIL_BASE)/obj/$(CIL_PLATFORM)
+OCAML_COMPILE := ocamlfind ocamlopt -package camomile $(OCAMLOPT_FLAGS) -c
 
-OCAML_COMPILE = ocamlfind ocamlopt -package camomile $(OCAMLOPT_FLAGS) -c
-
-OCAML_LEX = ocamllex
-OCAML_YACC = ocamlyacc
-OCAML_LINK = ocamlfind ocamlopt -package camomile -linkpkg $(OCAMLOPT_FLAGS)
-
-# these are partially ordered by inclusion.  don't know how to avoid manually ordering these
-MODULES = errormsg.cmx longarray.cmx growArray.cmx escape.cmx cabshelper.cmx whitetrack.cmx cprint.cmx lexerhack.cmx cabs.cmx clexer.cmx cparser.cmx frontc.cmx xmlPrinter.cmx cabsDriver.cmx
-
-#IOXML = ioxml/ioXML.cmx ioxml/pa_ioXML.cmo
-.PHONY: all cleanOnMakefileChange clean 
-#ioxml
-all: cparser$(EXEEXT)
-
-# $(IOXML): ioxml/ioXML.ml ioxml/ioXML.mli ioxml/pa_ioXML.ml
-# make -C ioxml all
-
-# xmlPrinter.ml: cabs.ml $(IOXML)
-# camlp5o ioxml/pa_ioXML.cmo pr_o.cmo -sep "\n\n" cabs.ml > xmlPrinter.tmp
-# sed -i '2 i open Cabs' xmlPrinter.tmp
-# mv xmlPrinter.tmp xmlPrinter.ml
+OCAML_LEX := ocamllex
+OCAML_YACC := ocamlyacc
+OCAML_LINK := ocamlfind ocamlopt -package camomile -linkpkg $(OCAMLOPT_FLAGS)
 
 clexer.ml: clexer.mll
 	@$(OCAML_LEX) clexer.mll
@@ -47,6 +31,7 @@ cabsDriver.cmx cabsDriver.cmi: cparser.cmx frontc.cmx clexer.cmx xmlPrinter.cmx
 frontc.cmx frontc.cmi: errormsg.cmx whitetrack.cmx cprint.cmx clexer.cmx
 clexer.cmx clexer.cmi: lexerhack.cmx cparser.cmx cprint.cmx cabshelper.cmx
 xmlPrinter.cmx xmlPrinter.cmi: cabs.cmx escape.cmx
+
 %.cmx: %.ml 
 	@$(OCAML_COMPILE) $*.ml
 	
@@ -55,13 +40,24 @@ cparser.cmi: cparser.mli cabs.cmx clexer.ml
 	
 cabsDriver.cmx cabsDriver.cmi: xmlPrinter.cmx
 
-EXEEXT=
-
-cparser$(EXEEXT): $(MODULES)
+# these are partially ordered by inclusion.  don't know how to avoid manually ordering these
+cparser: errormsg.cmx \
+         longarray.cmx \
+         growArray.cmx \
+         escape.cmx \
+         cabshelper.cmx \
+         whitetrack.cmx \
+         cprint.cmx \
+         lexerhack.cmx \
+         cabs.cmx \
+         clexer.cmx \
+         cparser.cmx \
+         frontc.cmx \
+         xmlPrinter.cmx \
+         cabsDriver.cmx
 	$(OCAML_LINK) -o $@ str.cmxa $^
 	@-strip cparser
-#ioXML.cmx 
 
+.PHONY: clean
 clean:
-	rm -f *.cmi *.cmx *.o *.mli *.cil cparser.ml clexer.ml *.preprocessed cparser.exe cparser *.stackdump
-#make -C ioxml clean
+	-rm -f *.cmi *.cmx *.o *.mli *.cil cparser.ml clexer.ml *.preprocessed cparser *.stackdump
