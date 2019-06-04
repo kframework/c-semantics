@@ -1,3 +1,7 @@
+.PHONY: default
+default: fast
+
+
 KOMPILE_DEFAULT_FLAGS := --backend ocaml --non-strict --smt none
 CPP_KOMPILE_FLAGS := --opaque-klabels c-translation.k
 EXECUTION_KOMPILE_FLAGS := \
@@ -11,9 +15,6 @@ KDEP_DEFAULT_FLAGS :=
 define timestamp_of
     .build/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
-
-.PHONY: default
-default: fast
 
 $(call timestamp_of,c-translation):
 	@echo "Kompiling the static C semantics..."

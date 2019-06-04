@@ -1,5 +1,9 @@
 ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
+.PHONY: default
+default: test-build
+
+
 export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
 
 export K_OPTS := -Xmx8g -Xss32m
@@ -56,9 +60,6 @@ LIBSTDCXX_SO := dist/profiles/$(PROFILE)/lib/libstdc++.so
 define timestamp_of
     dist/profiles/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
-
-.PHONY: default
-default: test-build
 
 .PHONY: check-deps
 check-deps: | check-ocaml check-cc check-perl check-k
