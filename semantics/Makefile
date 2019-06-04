@@ -1,12 +1,12 @@
 # NOTE: PROFILE_DIR is required to be passed from above.
 
+# Overridden in the top-level makefile.
 OUTPUT_DIR := build
 
 # Intended to be passed from above.
 KOMPILE_FLAGS ?=
 KDEP_FLAGS ?=
 
-# These are used in this Makefile.
 KOMPILE_FLAGS += --backend ocaml --non-strict --smt none
 KDEP_FLAGS += $(addprefix -I ,$(KDEP_INCLUDE_DIRS))
 
@@ -120,6 +120,7 @@ ifneq ($(MAKECMDGOALS),clean)
   -include $(DEPENDS)
 endif
 
+# The included makefiles depend on these.
 K_FILE_DEPS := $(wildcard *.k)
 K_FILE_DEPS += $(shell find $(OUTPUT_DIR) -type f -name '*.k')
 K_FILE_DEPS += $(foreach d,$(KDEP_INCLUDE_DIRS),$(shell find $(d) -type f -name '*.k'))
