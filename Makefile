@@ -66,7 +66,7 @@ endef
 default: test-build
 
 .PHONY: check-deps
-check-deps: | check-ocaml check-cc check-perl check-k
+check-deps: | check-ocaml check-cc check-cxx check-perl check-k
 
 .PHONY: check-ocaml
 check-ocaml:
@@ -78,7 +78,14 @@ check-ocaml:
 .PHONY: check-cc
 check-cc:
 	@$(CC) -v > /dev/null 2>&1 || { \
-		echo "ERROR: Missing GCC/Clang installation. Please see INSTALL.md for more information." \
+		echo "ERROR: Missing C compiler installation. Please see INSTALL.md for more information." \
+		&& false; \
+	}
+
+.PHONY: check-cxx
+check-cxx:
+	@$(CXX) -v > /dev/null 2>&1 || { \
+		echo "ERROR: Missing C++ compiler installation. Please see INSTALL.md for more information." \
 		&& false; \
 	}
 
