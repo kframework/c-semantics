@@ -65,6 +65,9 @@ endef
 .PHONY: default
 default: test-build
 
+# Targets to be invoked by the user to check dependency installation.
+# No targets depend on them.
+
 .PHONY: check-deps
 check-deps: | check-ocaml check-cc check-cxx check-perl check-k
 
@@ -101,6 +104,9 @@ check-k:
 		&& false; \
 	}
 
+
+# Real targets.
+
 $(OUTPUT_DIR)/writelong: scripts/writelong.c
 	@mkdir -p $(OUTPUT_DIR)
 	@$(CC) $(CFLAGS) scripts/writelong.c -o $(OUTPUT_DIR)/writelong
@@ -123,11 +129,11 @@ pack: $(OUTPUT_DIR)/kcc
 	cd $(OUTPUT_DIR) && fatpack packlists-for `cat fatpacker.trace` >packlists
 	cat $(OUTPUT_DIR)/packlists
 	cd $(OUTPUT_DIR) && fatpack tree `cat packlists`
-	cp -rf $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/fatlib
+	ln -s $(realpath $(OUTPUT_DIR))/RV_Kcc $(realpath $(OUTPUT_DIR)/fatlib)/RV_Kcc
 	cd $(OUTPUT_DIR) && fatpack file kcc > kcc.packed
 	chmod --reference=$(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kcc.packed
 	mv -f $(OUTPUT_DIR)/kcc.packed $(OUTPUT_DIR)/kcc
-	cp -pf $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
+	ln -s $(realpath $(OUTPUT_DIR))/kcc $(realpath $(OUTPUT_DIR))/kclang
 	rm -rf $(OUTPUT_DIR)/fatlib $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/packlists $(OUTPUT_DIR)/fatpacker.trace
 
 $(OUTPUT_DIR)/profiles/$(PROFILE): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native
