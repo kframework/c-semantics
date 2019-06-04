@@ -121,18 +121,18 @@ $(OUTPUT_DIR)/kcc: scripts/getopt.pl $(PERL_MODULES) $(OUTPUT_DIR)/writelong $(F
 	cp -RLp $(FILES_TO_DIST) $(OUTPUT_DIR)
 	cp -RLp $(PERL_MODULES) $(OUTPUT_DIR)/RV_Kcc
 	cat scripts/RV_Kcc/Opts.pm | perl scripts/getopt.pl > $(OUTPUT_DIR)/RV_Kcc/Opts.pm
-	ln -s $(realpath $(OUTPUT_DIR))/kcc $(realpath $(OUTPUT_DIR))/kclang
+	ln -sf $(realpath $(OUTPUT_DIR))/kcc $(realpath $(OUTPUT_DIR))/kclang
 
 .PHONY: pack
 pack: $(OUTPUT_DIR)/kcc
 	cd $(OUTPUT_DIR) && fatpack trace kcc
 	cd $(OUTPUT_DIR) && fatpack packlists-for `cat fatpacker.trace` > packlists
 	cd $(OUTPUT_DIR) && fatpack tree `cat packlists`
-	ln -s $(realpath $(OUTPUT_DIR))/RV_Kcc $(realpath $(OUTPUT_DIR)/fatlib)/RV_Kcc
+	ln -sf $(realpath $(OUTPUT_DIR))/RV_Kcc $(realpath $(OUTPUT_DIR)/fatlib)/RV_Kcc
 	cd $(OUTPUT_DIR) && fatpack file kcc > kcc.packed
 	chmod --reference=$(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kcc.packed
 	mv -f $(OUTPUT_DIR)/kcc.packed $(OUTPUT_DIR)/kcc
-	ln -s $(realpath $(OUTPUT_DIR))/kcc $(realpath $(OUTPUT_DIR))/kclang
+	ln -sf $(realpath $(OUTPUT_DIR))/kcc $(realpath $(OUTPUT_DIR))/kclang
 	rm -rf $(OUTPUT_DIR)/fatlib $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/packlists $(OUTPUT_DIR)/fatpacker.trace
 
 $(OUTPUT_DIR)/profiles/$(PROFILE): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native
