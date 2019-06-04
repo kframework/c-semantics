@@ -15,7 +15,9 @@ export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
 PROFILE := $(shell basename $(PROFILE_DIR))
 SUBPROFILE_DIRS :=
 
-SEMANTICS_OUTPUT_DIR := $(ROOT)/semantics/build/$(PROFILE)
+# Absolute paths.
+OUTPUT_DIR := $(ROOT)/build
+SEMANTICS_OUTPUT_DIR := $(OUTPUT_DIR)/semantics/$(PROFILE)
 
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
@@ -57,11 +59,11 @@ PERL_MODULES := \
 	scripts/RV_Kcc/Files.pm \
 	scripts/RV_Kcc/Shell.pm
 
-LIBC_SO := dist/profiles/$(PROFILE)/lib/libc.so
-LIBSTDCXX_SO := dist/profiles/$(PROFILE)/lib/libstdc++.so
+LIBC_SO := $(OUTPUT_DIR)/profiles/$(PROFILE)/lib/libc.so
+LIBSTDCXX_SO := $(OUTPUT_DIR)/profiles/$(PROFILE)/lib/libstdc++.so
 
 define timestamp_of
-    dist/profiles/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
+    $(OUTPUT_DIR)/profiles/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
 .PHONY: check-deps
@@ -94,67 +96,67 @@ check-k:
 		&& false; \
 	}
 
-dist/writelong: scripts/writelong.c
-	@mkdir -p dist
-	@$(CC) $(CFLAGS) scripts/writelong.c -o dist/writelong
+$(OUTPUT_DIR)/writelong: scripts/writelong.c
+	@mkdir -p $(OUTPUT_DIR)
+	@$(CC) $(CFLAGS) scripts/writelong.c -o $(OUTPUT_DIR)/writelong
 
-dist/extract-references: scripts/extract-references.cpp
-	@mkdir -p dist
+$(OUTPUT_DIR)/extract-references: scripts/extract-references.cpp
+	@mkdir -p $(OUTPUT_DIR)
 	$(info Building $@)
 	@$(CXX) $(CXXFLAGS) $< -lstdc++fs -o $@
 
-dist/kcc: scripts/getopt.pl $(PERL_MODULES) dist/writelong $(FILES_TO_DIST)
-	mkdir -p dist/RV_Kcc
-	cp -RLp $(FILES_TO_DIST) dist
-	cp -RLp $(PERL_MODULES) dist/RV_Kcc
-	rm -f dist/RV_Kcc/Opts.pm
-	cat scripts/RV_Kcc/Opts.pm | perl scripts/getopt.pl > dist/RV_Kcc/Opts.pm
-	cp -p dist/kcc dist/kclang
+$(OUTPUT_DIR)/kcc: scripts/getopt.pl $(PERL_MODULES) $(OUTPUT_DIR)/writelong $(FILES_TO_DIST)
+	mkdir -p $(OUTPUT_DIR)/RV_Kcc
+	cp -RLp $(FILES_TO_DIST) $(OUTPUT_DIR)
+	cp -RLp $(PERL_MODULES) $(OUTPUT_DIR)/RV_Kcc
+	rm -f $(OUTPUT_DIR)/RV_Kcc/Opts.pm
+	cat scripts/RV_Kcc/Opts.pm | perl scripts/getopt.pl > $(OUTPUT_DIR)/RV_Kcc/Opts.pm
+	cp -p $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
 
 .PHONY: pack
-pack: dist/kcc
-	cd dist && fatpack trace kcc
-	cd dist && fatpack packlists-for `cat fatpacker.trace` >packlists
-	cat dist/packlists
-	cd dist && fatpack tree `cat packlists`
-	cp -rf dist/RV_Kcc dist/fatlib
-	cd dist && fatpack file kcc > kcc.packed
-	chmod --reference=dist/kcc dist/kcc.packed
-	mv -f dist/kcc.packed dist/kcc
-	cp -pf dist/kcc dist/kclang
-	rm -rf dist/fatlib dist/RV_Kcc dist/packlists dist/fatpacker.trace
+pack: $(OUTPUT_DIR)/kcc
+	cd $(OUTPUT_DIR) && fatpack trace kcc
+	cd $(OUTPUT_DIR) && fatpack packlists-for `cat fatpacker.trace` >packlists
+	cat $(OUTPUT_DIR)/packlists
+	cd $(OUTPUT_DIR) && fatpack tree `cat packlists`
+	cp -rf $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/fatlib
+	cd $(OUTPUT_DIR) && fatpack file kcc > kcc.packed
+	chmod --reference=$(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kcc.packed
+	mv -f $(OUTPUT_DIR)/kcc.packed $(OUTPUT_DIR)/kcc
+	cp -pf $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
+	rm -rf $(OUTPUT_DIR)/fatlib $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/packlists $(OUTPUT_DIR)/fatpacker.trace
 
-dist/profiles/$(PROFILE): dist/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native | check-deps
-	@mkdir -p dist/profiles/$(PROFILE)/lib
-	@printf "%s" $(PROFILE) > dist/current-profile
-	@printf "%s" $(PROFILE) > dist/default-profile
+$(OUTPUT_DIR)/profiles/$(PROFILE): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native | check-deps
+	@mkdir -p $(OUTPUT_DIR)/profiles/$(PROFILE)/lib
+	@printf "%s" $(PROFILE) > $(OUTPUT_DIR)/current-profile
+	@printf "%s" $(PROFILE) > $(OUTPUT_DIR)/default-profile
 	@-$(foreach f, $(PROFILE_FILE_DEPS), \
-		cp -RLp $(f) dist/profiles/$(PROFILE);)
+		cp -RLp $(f) $(OUTPUT_DIR)/profiles/$(PROFILE);)
 	@$(foreach d, $(SUBPROFILE_DIRS), \
-		mkdir -p dist/profiles/$(shell basename $(d))/lib;)
+		mkdir -p $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib;)
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
 			$(foreach f, $(PROFILE_FILES), \
 				cp -RLp $(d)/$(f) \
-				dist/profiles/$(shell basename $(d))/$(f);))
+				$(OUTPUT_DIR)/profiles/$(shell basename $(d))/$(f);))
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
-				cp -RLp dist/profiles/$(PROFILE)/native/* \
-				dist/profiles/$(shell basename $(d))/native;)
+				cp -RLp $(OUTPUT_DIR)/profiles/$(PROFILE)/native/* \
+				$(OUTPUT_DIR)/profiles/$(shell basename $(d))/native;)
 
 
 $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
                  $(call timestamp_of,cpp-translation) \
                  $(wildcard $(PROFILE_DIR)/compiler-src/*.C) \
                  $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) \
-                 dist/profiles/$(PROFILE)
+                 $(OUTPUT_DIR)/profiles/$(PROFILE)
 	$(info $(PROFILE): Translating the C++ standard library...)
 	@cd $(PROFILE_DIR)/compiler-src && \
-		$(ROOT)/dist/kcc --use-profile $(PROFILE) \
-				-shared -o $(ROOT)/$@ *.C \
+		$(OUTPUT_DIR)/kcc --use-profile $(PROFILE) \
+				-shared -o $@ *.C \
 				$(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/compiler-src && \
-			$(ROOT)/dist/kcc --use-profile $(shell basename $(d)) \
-				-shared -o $(ROOT)/dist/profiles/$(shell basename $(d))/lib/libstdc++.so \
+			$(OUTPUT_DIR)/kcc --use-profile $(shell basename $(d)) \
+				-shared -o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libstdc++.so \
 				*.C $(KCCFLAGS) -I .;)
 	$(info $(PROFILE): Done translating the C++ standard library.)
 
@@ -163,40 +165,40 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 	          $(call timestamp_of,c-translation) \
 	          $(wildcard $(PROFILE_DIR)/src/*.c) \
 	          $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) \
-            dist/profiles/$(PROFILE)
+            $(OUTPUT_DIR)/profiles/$(PROFILE)
 	$(info $(PROFILE): Translating the C standard library...)
 	@cd $(PROFILE_DIR)/src && \
-		$(ROOT)/dist/kcc --use-profile $(PROFILE) -shared -o $(ROOT)/$@ *.c $(KCCFLAGS) -I .
+		$(OUTPUT_DIR)/kcc --use-profile $(PROFILE) -shared -o $@ *.c $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/src && \
-			$(ROOT)/dist/kcc --use-profile $(shell basename $(d)) \
-				-shared -o $(ROOT)/dist/profiles/$(shell basename $(d))/lib/libc.so \
+			$(OUTPUT_DIR)/kcc --use-profile $(shell basename $(d)) \
+				-shared -o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libc.so \
 				*.c $(KCCFLAGS) -I .)
 	$(info $(PROFILE): Done translating the C standard library.)
 
 
 .PHONY: $(PROFILE)-native
-$(PROFILE)-native: dist/profiles/$(PROFILE)/native/main.o \
-                   dist/profiles/$(PROFILE)/native/server.c \
-                   dist/profiles/$(PROFILE)/native/builtins.o \
-                   dist/profiles/$(PROFILE)/native/platform.o \
-                   dist/profiles/$(PROFILE)/native/platform.h \
-                   dist/profiles/$(PROFILE)/native/server.h
+$(PROFILE)-native: $(OUTPUT_DIR)/profiles/$(PROFILE)/native/main.o \
+                   $(OUTPUT_DIR)/profiles/$(PROFILE)/native/server.c \
+                   $(OUTPUT_DIR)/profiles/$(PROFILE)/native/builtins.o \
+                   $(OUTPUT_DIR)/profiles/$(PROFILE)/native/platform.o \
+                   $(OUTPUT_DIR)/profiles/$(PROFILE)/native/platform.h \
+                   $(OUTPUT_DIR)/profiles/$(PROFILE)/native/server.h
 
 
-dist/profiles/$(PROFILE)/native/main.o: native-server/main.c native-server/server.h
+$(OUTPUT_DIR)/profiles/$(PROFILE)/native/main.o: native-server/main.c native-server/server.h
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@  -g
 
-dist/profiles/$(PROFILE)/native/%.h: native-server/%.h
+$(OUTPUT_DIR)/profiles/$(PROFILE)/native/%.h: native-server/%.h
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
 
-dist/profiles/$(PROFILE)/native/server.c: native-server/server.c
+$(OUTPUT_DIR)/profiles/$(PROFILE)/native/server.c: native-server/server.c
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
 
-dist/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c \
+$(OUTPUT_DIR)/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c \
                                      $(wildcard native-server/*.h)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@ -I native-server
@@ -208,14 +210,14 @@ test-build: $(LIBC_SO) \
             $(call timestamp_of,c-cpp)
 	$(info Testing kcc...)
 	printf "#include <stdio.h>\nint main(void) { printf(\"x\"); return 42; }" \
-		| dist/kcc --use-profile $(PROFILE) -x c - -o dist/testProgram.compiled
-	dist/testProgram.compiled 2> /dev/null > dist/testProgram.out; \
+		| $(OUTPUT_DIR)/kcc --use-profile $(PROFILE) -x c - -o $(OUTPUT_DIR)/testProgram.compiled
+	$(OUTPUT_DIR)/testProgram.compiled 2> /dev/null > $(OUTPUT_DIR)/testProgram.out; \
 		test $$? -eq 42
-	grep x dist/testProgram.out > /dev/null 2>&1
+	grep x $(OUTPUT_DIR)/testProgram.out > /dev/null 2>&1
 	$(info Done.)
 	$(info Cleaning up...)
-	@rm -f dist/testProgram.compiled
-	@rm -f dist/testProgram.out
+	@rm -f $(OUTPUT_DIR)/testProgram.compiled
+	@rm -f $(OUTPUT_DIR)/testProgram.out
 	$(info Done.)
 
 .PHONY: parser/cparser
@@ -273,7 +275,7 @@ clean:
 	-$(MAKE) -C tests/unit-pass clean
 	-$(MAKE) -C tests/unit-fail clean
 	-$(MAKE) -C tests/unit-fail-compilation clean
-	-rm -rf dist \
+	-rm -rf $(OUTPUT_DIR) \
 					./*.tmp ./*.log ./*.cil ./*-gen.maude \
 					./*.gen.maude ./*.pre.gen ./*.prepre.gen \
 					./a.out ./*.kdump ./*.pre.pre 
@@ -290,10 +292,10 @@ $(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*) | check-deps
 
 # the % sign matches '$(NAME)-kompiled/$(NAME)',
 # e.g., c-cpp-kompiled/c-cpp'
-dist/profiles/$(PROFILE)/%-kompiled/timestamp: dist/profiles/$(PROFILE) \
-                                               $$(notdir $$*)-semantics
+$(OUTPUT_DIR)/profiles/$(PROFILE)/%-kompiled/timestamp: $(OUTPUT_DIR)/profiles/$(PROFILE) \
+                                                        $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
 	$(info Distributing $(NAME))
-	@cp -p -RL $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled dist/profiles/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled dist/profiles/$(shell basename $(d));)
+		cp -RLp $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(shell basename $(d));)
