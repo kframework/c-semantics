@@ -124,7 +124,7 @@ pack: $(OUTPUT_DIR)/kcc
 	cp -pf $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
 	rm -rf $(OUTPUT_DIR)/fatlib $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/packlists $(OUTPUT_DIR)/fatpacker.trace
 
-$(OUTPUT_DIR)/profiles/$(PROFILE): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native | check-deps
+$(OUTPUT_DIR)/profiles/$(PROFILE): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native
 	@mkdir -p $(OUTPUT_DIR)/profiles/$(PROFILE)/lib
 	@printf "%s" $(PROFILE) > $(OUTPUT_DIR)/current-profile
 	@printf "%s" $(PROFILE) > $(OUTPUT_DIR)/default-profile
@@ -235,7 +235,7 @@ linking-semantics: c-cpp-linking-semantics
 execution-semantics: c-cpp-semantics
 
 .PHONY: semantics
-semantics: | check-deps
+semantics:
 	@$(MAKE) -C semantics all
 
 .PHONY: check
@@ -294,7 +294,7 @@ XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-link
 # Move this to the end so that .SECONDEXPANSION does not
 # affect the rest of the rules.
 .SECONDEXPANSION:
-$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*) | check-deps
+$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
 	@$(MAKE) -C semantics $@ OUTPUT_DIR=$(SEMANTICS_OUTPUT_DIR)
 
 # the % sign matches '$(NAME)-kompiled/$(NAME)',
