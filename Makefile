@@ -15,6 +15,7 @@ SUBPROFILE_DIRS :=
 
 # Absolute paths.
 OUTPUT_DIR := $(ROOT)/build
+PROFILE_OUTPUT_DIR := $(OUTPUT_DIR)/profiles/$(PROFILE)
 SEMANTICS_OUTPUT_DIR := $(OUTPUT_DIR)/semantics/$(PROFILE)
 
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
@@ -58,11 +59,11 @@ CXX := $(PROFILE_DIR)/cxx
 PERL_MODULES_DIR := scripts/RV_Kcc
 PERL_MODULES := $(wildcard $(PERL_MODULES_DIR)/*.pm)
 
-LIBC_SO := $(OUTPUT_DIR)/profiles/$(PROFILE)/lib/libc.so
-LIBSTDCXX_SO := $(OUTPUT_DIR)/profiles/$(PROFILE)/lib/libstdc++.so
+LIBC_SO := $(PROFILE_OUTPUT_DIR)/lib/libc.so
+LIBSTDCXX_SO := $(PROFILE_OUTPUT_DIR)/lib/libstdc++.so
 
 define timestamp_of
-    $(OUTPUT_DIR)/profiles/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
+    $(PROFILE_OUTPUT_DIR)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
 
@@ -139,12 +140,12 @@ pack: $(OUTPUT_DIR)/kcc
 	ln -sf $(realpath $(OUTPUT_DIR))/kcc $(realpath $(OUTPUT_DIR))/kclang
 	rm -rf $(OUTPUT_DIR)/fatlib $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/packlists $(OUTPUT_DIR)/fatpacker.trace
 
-$(OUTPUT_DIR)/profiles/$(PROFILE): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native
-	@mkdir -p $(OUTPUT_DIR)/profiles/$(PROFILE)/lib
+$(PROFILE_OUTPUT_DIR): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native
+	@mkdir -p $(PROFILE_OUTPUT_DIR)/lib
 	@printf "%s" $(PROFILE) > $(OUTPUT_DIR)/current-profile
 	@printf "%s" $(PROFILE) > $(OUTPUT_DIR)/default-profile
 	@-$(foreach f, $(PROFILE_FILE_DEPS), \
-		cp -RLp $(f) $(OUTPUT_DIR)/profiles/$(PROFILE);)
+		cp -RLp $(f) $(PROFILE_OUTPUT_DIR);)
 	@$(foreach d, $(SUBPROFILE_DIRS), \
 		mkdir -p $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib;)
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
@@ -152,7 +153,7 @@ $(OUTPUT_DIR)/profiles/$(PROFILE): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBP
 				cp -RLp $(d)/$(f) \
 				$(OUTPUT_DIR)/profiles/$(shell basename $(d))/$(f);))
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
-				cp -RLp $(OUTPUT_DIR)/profiles/$(PROFILE)/native/* \
+				cp -RLp $(PROFILE_OUTPUT_DIR)/native/* \
 				$(OUTPUT_DIR)/profiles/$(shell basename $(d))/native;)
 
 
@@ -160,7 +161,7 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
                  $(call timestamp_of,cpp-translation) \
                  $(wildcard $(PROFILE_DIR)/compiler-src/*.C) \
                  $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) \
-                 $(OUTPUT_DIR)/profiles/$(PROFILE)
+                 $(PROFILE_OUTPUT_DIR)
 	$(info $(PROFILE): Translating the C++ standard library...)
 	@cd $(PROFILE_DIR)/compiler-src && \
 		$(OUTPUT_DIR)/kcc --use-profile $(PROFILE) \
@@ -178,7 +179,7 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 	          $(call timestamp_of,c-translation) \
 	          $(wildcard $(PROFILE_DIR)/src/*.c) \
 	          $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) \
-            $(OUTPUT_DIR)/profiles/$(PROFILE)
+            $(PROFILE_OUTPUT_DIR)
 	$(info $(PROFILE): Translating the C standard library...)
 	@cd $(PROFILE_DIR)/src && \
 		$(OUTPUT_DIR)/kcc --use-profile $(PROFILE) -shared -o $@ *.c $(KCCFLAGS) -I .
@@ -191,27 +192,27 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 
 
 .PHONY: $(PROFILE)-native
-$(PROFILE)-native: $(OUTPUT_DIR)/profiles/$(PROFILE)/native/main.o \
-                   $(OUTPUT_DIR)/profiles/$(PROFILE)/native/server.c \
-                   $(OUTPUT_DIR)/profiles/$(PROFILE)/native/builtins.o \
-                   $(OUTPUT_DIR)/profiles/$(PROFILE)/native/platform.o \
-                   $(OUTPUT_DIR)/profiles/$(PROFILE)/native/platform.h \
-                   $(OUTPUT_DIR)/profiles/$(PROFILE)/native/server.h
+$(PROFILE)-native: $(PROFILE_OUTPUT_DIR)/native/main.o \
+                   $(PROFILE_OUTPUT_DIR)/native/server.c \
+                   $(PROFILE_OUTPUT_DIR)/native/builtins.o \
+                   $(PROFILE_OUTPUT_DIR)/native/platform.o \
+                   $(PROFILE_OUTPUT_DIR)/native/platform.h \
+                   $(PROFILE_OUTPUT_DIR)/native/server.h
 
 
-$(OUTPUT_DIR)/profiles/$(PROFILE)/native/main.o: native-server/main.c native-server/server.h
+$(PROFILE_OUTPUT_DIR)/native/main.o: native-server/main.c native-server/server.h
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@  -g
 
-$(OUTPUT_DIR)/profiles/$(PROFILE)/native/%.h: native-server/%.h
+$(PROFILE_OUTPUT_DIR)/native/%.h: native-server/%.h
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
 
-$(OUTPUT_DIR)/profiles/$(PROFILE)/native/server.c: native-server/server.c
+$(PROFILE_OUTPUT_DIR)/native/server.c: native-server/server.c
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
 
-$(OUTPUT_DIR)/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c \
+$(PROFILE_OUTPUT_DIR)/native/%.o: $(PROFILE_DIR)/native/%.c \
                                               $(wildcard native-server/*.h)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@ -I native-server
@@ -315,10 +316,10 @@ $(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
 
 # the % sign matches '$(NAME)-kompiled/$(NAME)',
 # e.g., c-cpp-kompiled/c-cpp'
-$(OUTPUT_DIR)/profiles/$(PROFILE)/%-kompiled/timestamp: $(OUTPUT_DIR)/profiles/$(PROFILE) \
-                                                        $$(notdir $$*)-semantics
+$(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: $(PROFILE_OUTPUT_DIR) \
+                                            $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
 	$(info Distributing $(NAME))
-	@cp -p -RL $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(PROFILE_OUTPUT_DIR)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(shell basename $(d));)
