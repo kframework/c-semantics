@@ -6,6 +6,7 @@ OUTPUT_DIR := build
 # Intended to be passed from above.
 KOMPILE_FLAGS ?=
 KDEP_FLAGS ?=
+PROFILE_DIR ?= $(realpath $(CURDIR)/../profiles/x86-gcc-limited-libc)
 
 KOMPILE_FLAGS += --backend ocaml --non-strict --smt none
 KDEP_FLAGS += $(addprefix -I ,$(KDEP_INCLUDE_DIRS))
