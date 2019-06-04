@@ -5,11 +5,6 @@ export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
 export KOMPILE := $(K_BIN)/kompile
 export KDEP := $(K_BIN)/kdep
 
-# We export these so they are available for the
-# `clang-tools` target.
-export CC := $(PROFILE_DIR)/cc
-export CXX := $(PROFILE_DIR)/cxx
-
 export K_OPTS := -Xmx8g -Xss32m
 export KOMPILE_FLAGS := -O2
 
@@ -26,6 +21,12 @@ SEMANTICS_OUTPUT_DIR := $(OUTPUT_DIR)/semantics/$(PROFILE)
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
 CXXFLAGS := -std=c++17
+
+# We export these so they are available for the
+# `clang-tools` target.
+export CC := $(PROFILE_DIR)/cc
+export CXX := $(PROFILE_DIR)/cxx
+
 
 K_DIST := $(realpath $(K_BIN)/..)
 
