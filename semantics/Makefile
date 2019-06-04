@@ -106,12 +106,15 @@ KDEP_FLAGS += -I $(PROFILE_DIR)/semantics
 KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/c
 KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/cpp
 
-$(BASIC_DEPENDS): $(OUTPUT_DIR)/make.d/depend-basic-%:
+$(BASIC_DEPENDS): $(OUTPUT_DIR)/make.d/depend-basic-%: | make-depends-dir
 	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k > $@
 
-$(SPECIAL_DEPENDS): $(OUTPUT_DIR)/make.d/depend-%:
+$(SPECIAL_DEPENDS): $(OUTPUT_DIR)/make.d/depend-%: | make-depends-dir
 	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k > $@
 
+.PHONY: make-depends-dir
+make-depends-dir:
+	@mkdir -p $(OUTPUT_DIR)/make.d
 
 # Move this to the end so that .SECONDEXPANSION
 # does not affect any other rules.
