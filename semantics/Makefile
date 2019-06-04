@@ -120,10 +120,16 @@ ifneq ($(MAKECMDGOALS),clean)
   -include $(DEPENDS)
 endif
 
-$(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: | $(GENERATED_MAKEFILE_DIR)
+K_FILE_DEPS := $(wildcard *.k)
+K_FILE_DEPS += $(shell find $(OUTPUT_DIR) -type f -name '*.k')
+K_FILE_DEPS += $(shell find $(PROFILE_DIR)/semantics -type f -name '*.k')
+
+$(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: $(K_FILE_DEPS) \
+                                                            | $(GENERATED_MAKEFILE_DIR)
 	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k > $@
 
-$(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: | $(GENERATED_MAKEFILE_DIR)
+$(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: $(K_FILE_DEPS) \
+                                                        | $(GENERATED_MAKEFILE_DIR)
 	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k > $@
 
 
