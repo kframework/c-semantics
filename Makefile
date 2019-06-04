@@ -287,6 +287,7 @@ simple-build-test:
 	$(info Done.)
 
 
+Makefile: ;
 
 .PHONY: clean
 clean:
