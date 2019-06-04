@@ -2,9 +2,11 @@ ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
 
-export K_OPTS := -Xmx8g -Xss32m
-export KOMPILE := $(K_BIN)/kompile -O2
+export KOMPILE := $(K_BIN)/kompile
 export KDEP := $(K_BIN)/kdep
+
+export K_OPTS := -Xmx8g -Xss32m
+export KOMPILE_FLAGS := -O2
 
 export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
 
@@ -101,7 +103,7 @@ check-perl:
 
 .PHONY: check-k
 check-k:
-	@$(K_BIN)/kompile --version > /dev/null 2>&1 || { \
+	@$(KOMPILE) --version > /dev/null 2>&1 || { \
 		echo "ERROR: Missing K installation. Please see INSTALL.md for more information." \
 		&& false; \
 	}

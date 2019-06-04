@@ -2,7 +2,14 @@
 
 OUTPUT_DIR := build
 
-KOMPILE_DEFAULT_FLAGS := --backend ocaml --non-strict --smt none
+# Intended to be passed from above.
+KOMPILE_FLAGS ?=
+KDEP_FLAGS ?=
+
+# This is what is used in this Makefile.
+KOMPILE_DEFAULT_FLAGS := $(KOMPILE_FLAGS) --backend ocaml --non-strict --smt none
+KDEP_DEFAULT_FLAGS := $(KDEP_FLAGS)
+
 CPP_KOMPILE_FLAGS := --opaque-klabels c-translation.k
 EXECUTION_KOMPILE_FLAGS := \
 	--opaque-klabels \
@@ -10,7 +17,6 @@ EXECUTION_KOMPILE_FLAGS := \
 	--no-expand-macros \
 	--ocaml-serialize-config '$$PGM' \
 	--ocaml-dump-exit-code 139
-KDEP_DEFAULT_FLAGS :=
 
 define timestamp_of
     $(OUTPUT_DIR)/$(1)-kompiled/$(1)-kompiled/timestamp
