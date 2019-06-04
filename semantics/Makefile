@@ -11,6 +11,8 @@ KOMPILE_FLAGS += --backend ocaml --non-strict --smt none
 KDEP_FLAGS += $(addprefix -I ,$(KDEP_INCLUDE_DIRS))
 
 KDEP_INCLUDE_DIRS := $(PROFILE_DIR)/semantics
+KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/c
+KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/cpp
 
 
 # Used specifically in the timestamp_of rules.
