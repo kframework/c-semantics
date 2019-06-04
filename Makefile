@@ -100,7 +100,7 @@ dist/writelong: scripts/writelong.c
 
 dist/extract-references: scripts/extract-references.cpp
 	@mkdir -p dist
-	@echo Building $@
+	$(info Building $@)
 	@$(CXX) $(CXXFLAGS) $< -lstdc++fs -o $@
 
 dist/kcc: scripts/getopt.pl $(PERL_MODULES) dist/writelong $(FILES_TO_DIST)
@@ -146,7 +146,7 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
                  $(wildcard $(PROFILE_DIR)/compiler-src/*.C) \
                  $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) \
                  dist/profiles/$(PROFILE)
-	@echo "$(PROFILE): Translating the C++ standard library..."
+	$(info $(PROFILE): Translating the C++ standard library...)
 	@cd $(PROFILE_DIR)/compiler-src && \
 		$(ROOT)/dist/kcc --use-profile $(PROFILE) \
 				-shared -o $(ROOT)/$@ *.C \
@@ -156,7 +156,7 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
 			$(ROOT)/dist/kcc --use-profile $(shell basename $(d)) \
 				-shared -o $(ROOT)/dist/profiles/$(shell basename $(d))/lib/libstdc++.so \
 				*.C $(KCCFLAGS) -I .;)
-	@echo "$(PROFILE): Done translating the C++ standard library."
+	$(info $(PROFILE): Done translating the C++ standard library.)
 
 
 $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
@@ -164,7 +164,7 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 	          $(wildcard $(PROFILE_DIR)/src/*.c) \
 	          $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) \
             dist/profiles/$(PROFILE)
-	@echo "$(PROFILE): Translating the C standard library..."
+	$(info $(PROFILE): Translating the C standard library...)
 	@cd $(PROFILE_DIR)/src && \
 		$(ROOT)/dist/kcc --use-profile $(PROFILE) -shared -o $(ROOT)/$@ *.c $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
@@ -172,7 +172,7 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 			$(ROOT)/dist/kcc --use-profile $(shell basename $(d)) \
 				-shared -o $(ROOT)/dist/profiles/$(shell basename $(d))/lib/libc.so \
 				*.c $(KCCFLAGS) -I .)
-	@echo "$(PROFILE): Done translating the C standard library."
+	$(info $(PROFILE): Done translating the C standard library.)
 
 
 .PHONY: $(PROFILE)-native
@@ -206,21 +206,21 @@ dist/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c \
 test-build: $(LIBC_SO) \
             $(LIBSTDCXX_SO) \
             $(call timestamp_of,c-cpp)
-	@echo "Testing kcc..."
+	$(info Testing kcc...)
 	printf "#include <stdio.h>\nint main(void) { printf(\"x\"); return 42; }" \
 		| dist/kcc --use-profile $(PROFILE) -x c - -o dist/testProgram.compiled
 	dist/testProgram.compiled 2> /dev/null > dist/testProgram.out; \
 		test $$? -eq 42
 	grep x dist/testProgram.out > /dev/null 2>&1
-	@echo "Done."
-	@echo "Cleaning up..."
+	$(info Done.)
+	$(info Cleaning up...)
 	@rm -f dist/testProgram.compiled
 	@rm -f dist/testProgram.out
-	@echo "Done."
+	$(info Done.)
 
 .PHONY: parser/cparser
 parser/cparser:
-	@echo "Building the C parser..."
+	$(info Building the C parser...)
 	@$(MAKE) -C parser
 
 $(CLANG_TOOLS_BIN)/%: $(CLANG_TOOLS_BUILD_DIR)/Makefile
@@ -293,7 +293,7 @@ $(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*) | check-deps
 dist/profiles/$(PROFILE)/%-kompiled/timestamp: dist/profiles/$(PROFILE) \
                                                $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
-	@echo "Distributing $(NAME)"
+	$(info Distributing $(NAME))
 	@cp -p -RL $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled dist/profiles/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled dist/profiles/$(shell basename $(d));)
