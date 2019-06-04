@@ -93,8 +93,8 @@ clean:
 					 .depend-* \
 					 $(OUTPUT_DIR)
 
-BASIC_DEPENDS := $(addprefix $(OUTPUT_DIR)/depend-basic-,c-translation cpp-translation c-cpp-linking c-cpp)
-SPECIAL_DEPENDS := $(OUTPUT_DIR)/depend-nd $(OUTPUT_DIR)/depend-nd-thread
+BASIC_DEPENDS := $(addprefix $(OUTPUT_DIR)/make.d/depend-basic-,c-translation cpp-translation c-cpp-linking c-cpp)
+SPECIAL_DEPENDS := $(OUTPUT_DIR)/make.d/depend-nd $(OUTPUT_DIR)/make.d/depend-nd-thread
 DEPENDS := $(BASIC_DEPENDS) $(SPECIAL_DEPENDS)
 
 .PHONY: $(DEPENDS)
@@ -109,11 +109,8 @@ KDEP_FLAGS += -I $(PROFILE_DIR)/semantics
 KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/c
 KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/cpp
 
-$(BASIC_DEPENDS): .depend-basic-%:
+$(BASIC_DEPENDS): $(OUTPUT_DIR)/make.d/depend-basic-%:
 	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k > $@
 
-.depend-nd:
-	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-nd-kompiled" -- c-cpp.k > $@
-
-.depend-nd-thread:
-	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-nd-thread-kompiled" -- c-cpp.k > $@
+$(SPECIAL_DEPENDS): $(OUTPUT_DIR)/make.d/depend-%:
+	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k > $@
