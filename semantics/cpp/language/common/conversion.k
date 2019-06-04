@@ -45,7 +45,7 @@ module CPP-CONVERSION-SYNTAX
                    | arithInterpretHold(CPPType, CPPValue, Trace) [klabel(arithInterpretHoldCpp)]
 
      syntax Bool ::= isNullPointerConstant(PRVal) [function, klabel(isNullPointerConstantCpp)]
-                   | isNullPointerConstant(PRExpr) [function, klabel(isNullPointerConstantCpp)]
+                   | isNullPointerConstant(PRExpr) [function, klabel(isNullPointerConstantCpp2)]
 
      syntax Bool ::= canConvertWithStandardConversion(CPPType, CPPType, ValueCategory) [function]
 
@@ -423,11 +423,14 @@ module CPP-CONVERSION
      // 5:10.5.5
      rule #usualArithmeticConversions2(_, Signed::CPPType) => correspondingUnsignedType(Signed)
 
-     rule isNullPointerConstant(prv(_, _, t(... st: nullptr_t))) => true
-
-     rule isNullPointerConstant(pre(_, _, t(... st: nullptr_t))) => true
+     rule isNullPointerConstant(V::PRVal) => true
+          requires isCPPNullPtrTType(type(V))
+     rule isNullPointerConstant(V::PRExpr) => true
+          requires isCPPNullPtrTType(type(V))
 
      rule isNullPointerConstant(V::PRVal) => false
+          requires trace(V) =/=K noTrace [owise]
+     rule isNullPointerConstant(V::PRExpr) => false
           requires trace(V) =/=K noTrace [owise]
 
      rule isCompositePointerType(T::CPPType) => isCPPPointerType(T) orBool isCPPMemberPointerType(T) orBool isCPPNullPtrTType(T)
