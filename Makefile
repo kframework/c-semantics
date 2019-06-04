@@ -110,9 +110,10 @@ $(OUTPUT_DIR)/extract-references: scripts/extract-references.cpp
 $(OUTPUT_DIR)/kcc: scripts/getopt.pl $(PERL_MODULES) $(OUTPUT_DIR)/writelong $(FILES_TO_DIST)
 	mkdir -p $(OUTPUT_DIR)/RV_Kcc
 	cp -RLp $(FILES_TO_DIST) $(OUTPUT_DIR)
-	find $(PERL_MODULES_DIR) -type f -name '*.pm' ! -name 'Opts.pm' -exec cp -RLp "{}" $(OUTPUT_DIR)/RV_Kcc \;
+	find $(PERL_MODULES_DIR) -type f -name '*.pm' ! -name 'Opts.pm' \
+		-exec cp -RLp "{}" $(OUTPUT_DIR)/RV_Kcc \;
 	cat scripts/RV_Kcc/Opts.pm | perl scripts/getopt.pl > $(OUTPUT_DIR)/RV_Kcc/Opts.pm
-	ln -s $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
+	ln -s $(realpath $(OUTPUT_DIR))/kcc $(realpath $(OUTPUT_DIR))/kclang
 
 .PHONY: pack
 pack: $(OUTPUT_DIR)/kcc
@@ -200,7 +201,7 @@ $(OUTPUT_DIR)/profiles/$(PROFILE)/native/server.c: native-server/server.c
 	cp -RLp $< $@
 
 $(OUTPUT_DIR)/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c \
-                                     $(wildcard native-server/*.h)
+                                              $(wildcard native-server/*.h)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@ -I native-server
 
