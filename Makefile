@@ -25,7 +25,7 @@ CXXFLAGS := -std=c++17
 
 K_DIST := $(realpath $(K_BIN)/..)
 
-CLANG_TOOLS_BUILD_DIR := clang-tools/build
+CLANG_TOOLS_BUILD_DIR := $(OUTPUT_DIR)/clang-tools/
 CLANG_TOOLS_BIN := $(CLANG_TOOLS_BUILD_DIR)/bin
 
 FILES_TO_DIST := \
@@ -222,7 +222,7 @@ $(CLANG_TOOLS_BIN)/%: $(CLANG_TOOLS_BUILD_DIR)/Makefile
 $(CLANG_TOOLS_BUILD_DIR)/Makefile: clang-tools/CMakeLists.txt
 	@mkdir -p $(CLANG_TOOLS_BUILD_DIR)
 	@cd $(CLANG_TOOLS_BUILD_DIR) \
-		&& test -f Makefile || cmake ..
+		&& test -f Makefile || cmake $(ROOT)/clang-tools
 
 scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 	flock -w 120 $< sh -c 'cd scripts && tar xvf cdecl-$*.tar.gz && cd cdecl-$* && ./configure --without-readline && $(MAKE)' || true
