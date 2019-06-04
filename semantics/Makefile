@@ -8,9 +8,9 @@ KDEP_FLAGS ?=
 
 # These are used in this Makefile.
 KOMPILE_FLAGS += --backend ocaml --non-strict --smt none
-KDEP_FLAGS += -I $(PROFILE_DIR)/semantics
-KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/c
-KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/cpp
+KDEP_FLAGS += $(addprefix -I ,$(KDEP_INCLUDE_DIRS))
+
+KDEP_INCLUDE_DIRS := $(PROFILE_DIR)/semantics
 
 
 # Used specifically in the timestamp_of rules.
@@ -122,7 +122,7 @@ endif
 
 K_FILE_DEPS := $(wildcard *.k)
 K_FILE_DEPS += $(shell find $(OUTPUT_DIR) -type f -name '*.k')
-K_FILE_DEPS += $(shell find $(PROFILE_DIR)/semantics -type f -name '*.k')
+K_FILE_DEPS += $(foreach d,$(KDEP_INCLUDE_DIRS),$(shell find $(d) -type f -name '*.k'))
 
 $(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: $(K_FILE_DEPS) \
                                                             | $(GENERATED_MAKEFILE_DIR)
