@@ -9,7 +9,6 @@ export K_OPTS := -Xmx8g -Xss32m
 export KOMPILE_FLAGS := -O2
 
 export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
-
 PROFILE := $(shell basename $(PROFILE_DIR))
 SUBPROFILE_DIRS :=
 
