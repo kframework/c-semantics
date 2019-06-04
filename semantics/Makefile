@@ -108,16 +108,10 @@ KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/c
 KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/cpp
 
 $(BASIC_DEPENDS): .depend-$(PROFILE)-basic-%:
-	$(eval TMP := $(shell mktemp))
-	$(KDEP) $(KDEP_FLAGS) -d ".build/$(PROFILE)/$*-kompiled" -- $*.k > $(TMP)
-	mv $(TMP) $@
+	$(KDEP) $(KDEP_FLAGS) -d ".build/$(PROFILE)/$*-kompiled" -- $*.k > $@
 
 .depend-$(PROFILE)-nd:
-	$(eval TMP := $(shell mktemp))
-	$(KDEP) $(KDEP_FLAGS) -d ".build/$(PROFILE)/c-nd-kompiled" -- c-cpp.k > $(TMP)
-	mv $(TMP) $@
+	$(KDEP) $(KDEP_FLAGS) -d ".build/$(PROFILE)/c-nd-kompiled" -- c-cpp.k > $@
 
 .depend-$(PROFILE)-nd-thread:
-	$(eval TMP := $(shell mktemp))
-	$(KDEP) $(KDEP_FLAGS) -d ".build/$(PROFILE)/c-nd-thread-kompiled" -- c-cpp.k > $(TMP)
-	mv $(TMP) $@
+	$(KDEP) $(KDEP_FLAGS) -d ".build/$(PROFILE)/c-nd-thread-kompiled" -- c-cpp.k > $@
