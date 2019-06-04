@@ -129,8 +129,9 @@ dist/profiles/$(PROFILE): dist/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) 
 		cp -RLp $(f) dist/profiles/$(PROFILE);)
 	@$(foreach d, $(SUBPROFILE_DIRS), \
 		mkdir -p dist/profiles/$(shell basename $(d))/lib;)
-	@-$(foreach d, $(SUBPROFILE_DIRS), $(foreach f, $(PROFILE_FILES), \
-		cp -RLp $(d)/$(f) dist/profiles/$(shell basename $(d))/$(f);))
+	@-$(foreach d, $(SUBPROFILE_DIRS), \
+			$(foreach f, $(PROFILE_FILES), \
+				cp -RLp $(d)/$(f) dist/profiles/$(shell basename $(d))/$(f);))
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
 		cp -RLp dist/profiles/$(PROFILE)/native/* dist/profiles/$(shell basename $(d))/native;)
 
