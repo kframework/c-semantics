@@ -1,8 +1,6 @@
-.PHONY: default
-default: fast
+# NOTE: PROFILE_DIR is required to be passed from above.
 
 OUTPUT_DIR := build
-
 
 KOMPILE_DEFAULT_FLAGS := --backend ocaml --non-strict --smt none
 CPP_KOMPILE_FLAGS := --opaque-klabels c-translation.k
@@ -17,6 +15,9 @@ KDEP_DEFAULT_FLAGS :=
 define timestamp_of
     $(OUTPUT_DIR)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
+
+.PHONY: default
+default: fast
 
 $(call timestamp_of,c-translation):
 	$(info Kompiling the static C semantics...)
