@@ -25,7 +25,7 @@ CXXFLAGS := -std=c++17
 
 K_DIST := $(realpath $(K_BIN)/..)
 
-CLANG_TOOLS_BUILD_DIR := $(OUTPUT_DIR)/clang-tools/
+CLANG_TOOLS_BUILD_DIR := $(OUTPUT_DIR)/clang-tools
 CLANG_TOOLS_BIN := $(CLANG_TOOLS_BUILD_DIR)/bin
 
 FILES_TO_DIST := \
