@@ -11,8 +11,11 @@ export KOMPILE := $(K_BIN)/kompile -O2
 export KDEP := $(K_BIN)/kdep
 
 export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
-export PROFILE := $(shell basename $(PROFILE_DIR))
-export SUBPROFILE_DIRS :=
+
+PROFILE := $(shell basename $(PROFILE_DIR))
+SUBPROFILE_DIRS :=
+
+SEMANTICS_OUTPUT_DIR := $(ROOT)/semantics/build/$(PROFILE)
 
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
@@ -283,7 +286,7 @@ XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-link
 # affect the rest of the rules.
 .SECONDEXPANSION:
 $(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*) | check-deps
-	@$(MAKE) -C semantics $@
+	@$(MAKE) -C semantics $@ OUTPUT_DIR=$(SEMANTICS_OUTPUT_DIR)
 
 # the % sign matches '$(NAME)-kompiled/$(NAME)',
 # e.g., c-cpp-kompiled/c-cpp'
@@ -291,6 +294,6 @@ dist/profiles/$(PROFILE)/%-kompiled/timestamp: dist/profiles/$(PROFILE) \
                                                $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
 	@echo "Distributing $(NAME)"
-	@cp -p -RL semantics/.build/$(PROFILE)/$(NAME)-kompiled dist/profiles/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled dist/profiles/$(PROFILE)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp semantics/.build/$(PROFILE)/$(NAME)-kompiled dist/profiles/$(shell basename $(d));)
+		cp -RLp $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled dist/profiles/$(shell basename $(d));)
