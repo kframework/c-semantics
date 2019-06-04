@@ -239,11 +239,6 @@ linking-semantics: c-cpp-linking-semantics
 .PHONY: execution-semantics
 execution-semantics: c-cpp-semantics
 
-XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
-.PHONY: $(XYZ_SEMANTICS)
-$(XYZ_SEMANTICS): | check-deps
-	@$(MAKE) -C semantics $@
-
 .PHONY: semantics
 semantics: | check-deps
 	@$(MAKE) -C semantics all
@@ -277,10 +272,15 @@ clean:
 					./*.gen.maude ./*.pre.gen ./*.prepre.gen \
 					./a.out ./*.kdump ./*.pre.pre 
 
+
+XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
+.PHONY: $(XYZ_SEMANTICS)
+
 # Move this to the end so that .SECONDEXPANSION does not
 # affect the rest of the rules.
 .SECONDEXPANSION:
-$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
+$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*) | check-deps
+	@$(MAKE) -C semantics $@
 
 # the % sign matches '$(NAME)-kompiled/$(NAME)',
 # e.g., c-cpp-kompiled/c-cpp'
