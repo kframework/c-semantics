@@ -125,7 +125,7 @@ endif
 # The included makefiles depend on these.
 K_FILE_DEPS := $(wildcard *.k)
 K_FILE_DEPS += $(shell find $(OUTPUT_DIR) -type f -name '*.k')
-K_FILE_DEPS += $(foreach d,$(KDEP_INCLUDE_DIRS),$(shell find $(d) -type f -name '*.k'))
+K_FILE_DEPS += $(shell find $(PROFILE_DIR)/semantics -type f -name '*.k')
 
 $(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: $(K_FILE_DEPS) \
                                                             | $(GENERATED_MAKEFILE_DIR)
