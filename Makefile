@@ -10,7 +10,7 @@ export KOMPILE_FLAGS := -O2
 
 export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
 
-PROFILE := $(shell basename $(PROFILE_DIR))
+PROFILE := $(notdir $(PROFILE_DIR))
 SUBPROFILE_DIRS :=
 
 # Absolute paths.
@@ -147,14 +147,14 @@ $(PROFILE_OUTPUT_DIR): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_
 	@-$(foreach f, $(PROFILE_FILE_DEPS), \
 		cp -RLp $(f) $(PROFILE_OUTPUT_DIR);)
 	@$(foreach d, $(SUBPROFILE_DIRS), \
-		mkdir -p $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib;)
+		mkdir -p $(OUTPUT_DIR)/profiles/$(notdir $(d))/lib;)
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
 			$(foreach f, $(PROFILE_FILES), \
 				cp -RLp $(d)/$(f) \
-				$(OUTPUT_DIR)/profiles/$(shell basename $(d))/$(f);))
+				$(OUTPUT_DIR)/profiles/$(notdir $(d))/$(f);))
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
-				cp -RLp $(PROFILE_OUTPUT_DIR)/native/* \
-				$(OUTPUT_DIR)/profiles/$(shell basename $(d))/native;)
+			cp -RLp $(PROFILE_OUTPUT_DIR)/native/* \
+			$(OUTPUT_DIR)/profiles/$(notdir $(d))/native;)
 
 
 $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
@@ -169,8 +169,8 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
 				$(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/compiler-src && \
-			$(OUTPUT_DIR)/kcc --use-profile $(shell basename $(d)) \
-				-shared -o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libstdc++.so \
+			$(OUTPUT_DIR)/kcc --use-profile $(notdir $(d)) \
+				-shared -o $(OUTPUT_DIR)/profiles/$(notdir $(d))/lib/libstdc++.so \
 				*.C $(KCCFLAGS) -I .;)
 	$(info $(PROFILE): Done translating the C++ standard library.)
 
@@ -185,8 +185,8 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 		$(OUTPUT_DIR)/kcc --use-profile $(PROFILE) -shared -o $@ *.c $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/src && \
-			$(OUTPUT_DIR)/kcc --use-profile $(shell basename $(d)) \
-				-shared -o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libc.so \
+			$(OUTPUT_DIR)/kcc --use-profile $(notdir $(d)) \
+				-shared -o $(OUTPUT_DIR)/profiles/$(notdir $(d))/lib/libc.so \
 				*.c $(KCCFLAGS) -I .)
 	$(info $(PROFILE): Done translating the C standard library.)
 
@@ -320,6 +320,5 @@ $(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: $(PROFILE_OUTPUT_DIR) \
                                             $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
 	$(info Distributing $(NAME))
-	@cp -p -RL $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(PROFILE_OUTPUT_DIR)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(shell basename $(d));)
+		cp -RLp $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(notdir $(d));)
