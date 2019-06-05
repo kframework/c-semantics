@@ -12,10 +12,12 @@ export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
 PROFILE := $(shell basename $(PROFILE_DIR))
 SUBPROFILE_DIRS :=
 
-# Absolute paths.
+# Default build directory.
 OUTPUT_DIR := $(ROOT)/build
-PROFILE_OUTPUT_DIR := $(OUTPUT_DIR)/profiles/$(PROFILE)
-SEMANTICS_OUTPUT_DIR := $(OUTPUT_DIR)/semantics/$(PROFILE)
+
+# `abspath` because these directories do not exist yet.
+PROFILE_OUTPUT_DIR := $(abspath $(OUTPUT_DIR)/profiles/$(PROFILE))
+SEMANTICS_OUTPUT_DIR := $(abspath $(OUTPUT_DIR)/semantics/$(PROFILE))
 
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
