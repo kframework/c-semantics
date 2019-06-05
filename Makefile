@@ -305,16 +305,12 @@ Makefile: ;
 .PHONY: clean
 clean:
 	-$(MAKE) -C parser clean
-	-rm -rf $(CLANG_TOOLS_BUILD_DIR)
 	-$(MAKE) -C semantics clean
 	-$(MAKE) -C tests clean
 	-$(MAKE) -C tests/unit-pass clean
 	-$(MAKE) -C tests/unit-fail clean
 	-$(MAKE) -C tests/unit-fail-compilation clean
-	-rm -rf $(OUTPUT_DIR) \
-					./*.tmp ./*.log ./*.cil ./*-gen.maude \
-					./*.gen.maude ./*.pre.gen ./*.prepre.gen \
-					./a.out ./*.kdump ./*.pre.pre 
+	-rm -rf $(OUTPUT_DIR)
 
 
 XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
