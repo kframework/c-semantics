@@ -6,7 +6,10 @@ export KOMPILE := $(K_BIN)/kompile
 export KDEP := $(K_BIN)/kdep
 
 export K_OPTS := -Xmx8g -Xss32m
-export KOMPILE_FLAGS := -O2
+
+KOMPILE_FLAGS ?=
+KOMPILE_FLAGS += -O2
+export KOMPILE_FLAGS
 
 export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
 PROFILE := $(shell basename $(PROFILE_DIR))
