@@ -1,7 +1,7 @@
 # NOTE: PROFILE_DIR is required to be passed from above.
 
 # Overridden in the top-level makefile.
-BUILD_DIR := build
+BUILD_DIR := $(CURDIR)/../build/semantics
 
 # Used internally.
 OUTPUT_DIR := $(abspath $(BUILD_DIR))
