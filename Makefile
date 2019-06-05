@@ -310,6 +310,7 @@ clean:
 	-$(MAKE) -C tests/unit-pass clean
 	-$(MAKE) -C tests/unit-fail clean
 	-$(MAKE) -C tests/unit-fail-compilation clean
+	-rm -rf scripts/cdecl-3.6/
 	-rm -rf $(OUTPUT_DIR)
 
 
