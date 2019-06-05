@@ -29,9 +29,8 @@ define timestamp_of
     $(OUTPUT_DIR)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
-.PHONY: default
-default: fast
-
+# Prerequisites for the timestamp rules are added
+# by the `include`d makefiles.
 $(call timestamp_of,c-translation):
 	$(info Kompiling the static C semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) c-translation.k \
@@ -76,6 +75,10 @@ $(call timestamp_of,c-nd-thread):
 		--no-prelude --transition "observable ndtrans ndthread" \
 		-I $(PROFILE_DIR)/semantics
 
+
+.PHONY: default
+default: fast
+
 .PHONY: all
 all: fast nd thread
 
@@ -88,10 +91,10 @@ XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-link
 fast-cpp: $(XYZ_SEMANTICS)
 
 .PHONY: nd
-nd: $(call timestamp_of,c-nd)
+nd: c-nd-semantics
 
 .PHONY: thread
-thread: $(call timestamp_of,c-nd-thread)
+thread: c-nd-thread-semantics
 
 .PHONY: clean
 clean:
