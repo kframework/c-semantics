@@ -139,7 +139,7 @@ pack: $(OUTPUT_DIR)/kcc
 	cd $(OUTPUT_DIR) && fatpack trace kcc
 	cd $(OUTPUT_DIR) && fatpack packlists-for `cat fatpacker.trace` > packlists
 	cd $(OUTPUT_DIR) && fatpack tree `cat packlists`
-	ln -sf $(realpath $(OUTPUT_DIR))/RV_Kcc $(realpath $(OUTPUT_DIR)/fatlib)/RV_Kcc
+	ln -sf $(realpath $(OUTPUT_DIR))/RV_Kcc $(realpath $(OUTPUT_DIR))/fatlib/RV_Kcc
 	cd $(OUTPUT_DIR) && fatpack file kcc > kcc.packed
 	chmod --reference=$(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kcc.packed
 	mv -f $(OUTPUT_DIR)/kcc.packed $(OUTPUT_DIR)/kcc
