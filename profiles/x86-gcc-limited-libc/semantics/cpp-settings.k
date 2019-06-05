@@ -10,6 +10,7 @@ module CPP-SETTINGS
      rule size_t => unsigned
      rule ptrdiff_t => int
 
+     rule cfg:refsize => 4
      rule cfg:memberDataPtrSize => 4
      rule cfg:memberFunctionPtrSize => 8
      rule cfg:memberDataPtrAlign => 4
