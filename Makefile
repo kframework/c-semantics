@@ -13,11 +13,15 @@ PROFILE := $(shell basename $(PROFILE_DIR))
 SUBPROFILE_DIRS :=
 
 # Default build directory.
-OUTPUT_DIR := $(ROOT)/build
+# Intended for overriding by the user, see below.
+BUILD_DIR := $(ROOT)/build
 
-# `abspath` because these directories do not exist yet.
-PROFILE_OUTPUT_DIR := $(abspath $(OUTPUT_DIR)/profiles/$(PROFILE))
-SEMANTICS_OUTPUT_DIR := $(abspath $(OUTPUT_DIR)/semantics/$(PROFILE))
+# Build directory used internallly.
+# `abspath` because the directory does not exist yet.
+OUTPUT_DIR := $(abspath $(BUILD_DIR))
+
+PROFILE_OUTPUT_DIR := $(OUTPUT_DIR)/profiles/$(PROFILE)
+SEMANTICS_OUTPUT_DIR := $(OUTPUT_DIR)/semantics/$(PROFILE)
 
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
@@ -132,18 +136,18 @@ $(OUTPUT_DIR)/kcc: scripts/getopt.pl $(PERL_MODULES) $(OUTPUT_DIR)/writelong $(F
 	cp -RLp $(FILES_TO_DIST) $(OUTPUT_DIR)
 	cp -RLp $(PERL_MODULES) $(OUTPUT_DIR)/RV_Kcc
 	cat scripts/RV_Kcc/Opts.pm | perl scripts/getopt.pl > $(OUTPUT_DIR)/RV_Kcc/Opts.pm
-	ln -sf $(abspath $(OUTPUT_DIR)/kcc) $(abspath $(OUTPUT_DIR)/kclang)
+	ln -sf $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
 
 .PHONY: pack
 pack: $(OUTPUT_DIR)/kcc
 	cd $(OUTPUT_DIR) && fatpack trace kcc
 	cd $(OUTPUT_DIR) && fatpack packlists-for `cat fatpacker.trace` > packlists
 	cd $(OUTPUT_DIR) && fatpack tree `cat packlists`
-	ln -sf $(abspath $(OUTPUT_DIR)/RV_Kcc) $(abspath $(OUTPUT_DIR)/fatlib/RV_Kcc)
+	ln -sf $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/fatlib/RV_Kcc
 	cd $(OUTPUT_DIR) && fatpack file kcc > kcc.packed
 	chmod --reference=$(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kcc.packed
 	mv -f $(OUTPUT_DIR)/kcc.packed $(OUTPUT_DIR)/kcc
-	ln -sf $(abspath $(OUTPUT_DIR)/kcc) $(abspath $(OUTPUT_DIR)/kclang)
+	ln -sf $(OUTPUT_DIR)/kcc) $(OUTPUT_DIR)/kclang
 	rm -rf $(OUTPUT_DIR)/fatlib $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/packlists $(OUTPUT_DIR)/fatpacker.trace
 
 $(PROFILE_OUTPUT_DIR): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native
