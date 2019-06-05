@@ -127,7 +127,7 @@ ifneq ($(MAKECMDGOALS),clean)
 endif
 
 # See https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html
-Makefile: $(DEPENDS)
+Makefile: $(DEPENDS) ;
 
 
 # The included makefiles depend on these.
