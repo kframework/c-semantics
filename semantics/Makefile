@@ -1,7 +1,10 @@
 # NOTE: PROFILE_DIR is required to be passed from above.
 
 # Overridden in the top-level makefile.
-OUTPUT_DIR := build
+BUILD_DIR := build
+
+# Used internally.
+OUTPUT_DIR := $(abspath $(BUILD_DIR))
 
 # Intended to be passed from above.
 KOMPILE_FLAGS ?=

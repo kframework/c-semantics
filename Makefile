@@ -14,7 +14,7 @@ SUBPROFILE_DIRS :=
 
 # Default build directory.
 # Intended for overriding by the user, see below.
-BUILD_DIR := $(ROOT)/build
+BUILD_DIR := build
 
 # Build directory used internallly.
 # `abspath` because the directory does not exist yet.
@@ -281,7 +281,7 @@ fail-compile:	| test-build
 
 
 # Intended as a simple test to verify the build.  If you invoke from the
-# command line, do not forget to pass `OUTPUT_DIR=<dir>` if you specified one
+# command line, do not forget to pass `BUILD_DIR=<dir>` if you specified one
 # during the build.
 .PHONY: simple-build-test
 simple-build-test:
@@ -324,7 +324,7 @@ XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-link
 # affect the rest of the rules.
 .SECONDEXPANSION:
 $(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
-	@$(MAKE) -C semantics $@ OUTPUT_DIR=$(SEMANTICS_OUTPUT_DIR)
+	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR)
 
 # the % sign matches '$(NAME)-kompiled/$(NAME)',
 # e.g., c-cpp-kompiled/c-cpp'
