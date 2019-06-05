@@ -48,5 +48,9 @@ pipeline {
         }
       }
     }
+    stage('Test clean target') { steps {
+      sh 'make clean'
+      sh '! { git status --ignore-submodules=none --untracked-files=all | grep -i --quiet untracked; }'
+    } }
   }
 }
