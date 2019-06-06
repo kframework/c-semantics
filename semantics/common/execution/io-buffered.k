@@ -5,7 +5,7 @@ module COMMON-IO-BUFFERED-SYNTAX
      syntax KItem ::= writeBytesBuffered(SymLoc, List)
      syntax KItem ::= bwrite(SymLoc, List) // jan.tusil: Really? I think that the K sort would be enough
      syntax Set ::= locations(List) [function]
-     syntax List ::= writeNativeByte(SymLoc, K) [function, impure]
+     syntax List ::= writeNativeByte(SymLoc, K) [function]
 
 endmodule
 
