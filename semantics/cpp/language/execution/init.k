@@ -70,7 +70,7 @@ module CPP-EXECUTION-INIT
                ...</thread> => .Bag)
           ...</exec>
           <status> _ => terminated </status>
-          <result-value> _ => V </result-value>
+          <result-value> _ => V </result-value> [priority(75)]
 
      rule hasTrace(_) => noTrace [anywhere]
 
