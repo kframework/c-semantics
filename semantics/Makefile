@@ -1,4 +1,5 @@
-# NOTE: PROFILE_DIR is required to be passed from above.
+# Environment interface variables:
+# K_BIN, KOMPILE_FLAGS, KDEP_FLAGS, K_OPTS
 
 # Overridden in the top-level makefile.
 BUILD_DIR := $(CURDIR)/../dist/semantics
@@ -6,17 +7,26 @@ BUILD_DIR := $(CURDIR)/../dist/semantics
 # Used internally.
 OUTPUT_DIR := $(abspath $(BUILD_DIR))
 
-# Intended to be passed from above.
-KOMPILE_FLAGS ?=
-KDEP_FLAGS ?=
-PROFILE_DIR ?= $(realpath $(CURDIR)/../profiles/x86-gcc-limited-libc)
+PROFILE_DIR := $(realpath $(CURDIR)/../profiles/x86-gcc-limited-libc)
 
-KOMPILE_FLAGS += --backend ocaml --non-strict --smt none
+KOMPILE_FLAGS ?=
+KOMPILE_FLAGS += --backend ocaml
+KOMPILE_FLAGS += --non-strict
+KOMPILE_FLAGS += --smt none
+
+KDEP_FLAGS ?=
 KDEP_FLAGS += $(addprefix -I ,$(KDEP_INCLUDE_DIRS))
 
-KDEP_INCLUDE_DIRS := $(PROFILE_DIR)/semantics
+# Used internally.
+KDEP_INCLUDE_DIRS :=
+KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics
 KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/c
 KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/cpp
+
+K_BIN ?= $(CURDIR)/../.build/k/k-distribution/target/release/k/bin
+
+KOMPILE := $(K_BIN)/kompile
+KDEP := $(K_BIN)/kdep
 
 
 # Used specifically in the timestamp_of rules.

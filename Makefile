@@ -1,17 +1,28 @@
+# Environment interface variables:
+# K_BIN, KOMPILE_FLAGS, KDEP_FLAGS, K_OPTS
+
 ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
 
-export KOMPILE := $(K_BIN)/kompile
-export KDEP := $(K_BIN)/kdep
+KOMPILE := $(K_BIN)/kompile
+KDEP := $(K_BIN)/kdep
 
-export K_OPTS := -Xmx8g -Xss32m
-
+# Intended to be passed from above.
 KOMPILE_FLAGS ?=
 KOMPILE_FLAGS += -O2
 export KOMPILE_FLAGS
 
-export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
+KDEP_FLAGS ?=
+export KDEP_FLAGS
+
+K_OPTS ?=
+K_OPTS += -Xmx8g
+K_OPTS += -Xss32m
+export K_OPTS
+
+
+PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
 PROFILE := $(shell basename $(PROFILE_DIR))
 SUBPROFILE_DIRS :=
 
@@ -266,7 +277,7 @@ execution-semantics: c-cpp-semantics
 
 .PHONY: semantics
 semantics:
-	@$(MAKE) -C semantics all
+	@$(MAKE) -C semantics all BUILD_DIR=$(SEMANTICS_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 .PHONY: check
 check: | pass fail fail-compile
@@ -325,7 +336,7 @@ XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-link
 # affect the rest of the rules.
 .SECONDEXPANSION:
 $(XYZ_SEMANTICS): %-semantics:
-	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR)
+	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 # the % sign matches '$(NAME)-kompiled/$(NAME)',
 # e.g., c-cpp-kompiled/c-cpp'
