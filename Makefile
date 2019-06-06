@@ -9,14 +9,9 @@ KOMPILE := $(K_BIN)/kompile
 KDEP := $(K_BIN)/kdep
 
 # Intended to be passed from above.
-KOMPILE_FLAGS ?=
 KOMPILE_FLAGS += -O2
 export KOMPILE_FLAGS
 
-KDEP_FLAGS ?=
-export KDEP_FLAGS
-
-K_OPTS ?=
 K_OPTS += -Xmx8g
 K_OPTS += -Xss32m
 export K_OPTS

@@ -11,13 +11,11 @@ PROFILE_DIR := $(realpath $(CURDIR)/../profiles/x86-gcc-limited-libc)
 
 K_BIN ?= $(CURDIR)/../.build/k/k-distribution/target/release/k/bin
 
-KOMPILE_FLAGS ?=
 KOMPILE_FLAGS += --backend ocaml
 KOMPILE_FLAGS += --non-strict
 KOMPILE_FLAGS += --smt none
 KOMPILE_FLAGS += -I $(PROFILE_DIR)/semantics
 
-KDEP_FLAGS ?=
 KDEP_FLAGS += $(addprefix -I ,$(KDEP_INCLUDE_DIRS))
 
 # Used internally.
