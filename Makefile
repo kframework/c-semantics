@@ -19,7 +19,7 @@ SUBPROFILE_DIRS :=
 # Intended for overriding by the user, see below.
 BUILD_DIR := dist
 
-# Build directory used internallly.
+# Build directory used internally.
 # `abspath` because the directory does not exist yet.
 OUTPUT_DIR := $(abspath $(BUILD_DIR))
 
@@ -312,6 +312,25 @@ simple-build-test:
 	@rm -f $(OUTPUT_DIR)/testProgram.compiled
 	@rm -f $(OUTPUT_DIR)/testProgram.out
 	$(info Done.)
+
+
+# Builds with `KOMPILE_FLAGS=--profile-rule-parsing`.
+# Intended for direct user invocation.
+# Produces a `timelogs.d` directory.
+.PHONY: profile-rule-parsing
+profile-rule-parsing:
+	KOMPILE_FLAGS=--profile-rule-parsing $(MAKE) test-build
+	cd $(OUTPUT_DIR)/profiles && \
+	find . \
+		! -path "*.build*" \
+		! -path "*.git*" \
+		-type f \
+		-name "timing*.log" \
+		-print | \
+	while IFS= read f; do \
+		mkdir -p $(OUTPUT_DIR)/timelogs.d/"$$(dirname $$f)"; \
+		mv $$f $(OUTPUT_DIR)/timelogs.d/"$$(dirname $$f)"; \
+	done
 
 
 # This makefile does not need to be re-built.
