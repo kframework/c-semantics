@@ -151,7 +151,7 @@ pack: $(OUTPUT_DIR)/kcc
 	cd $(OUTPUT_DIR) && fatpack file kcc > kcc.packed
 	chmod --reference=$(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kcc.packed
 	mv -f $(OUTPUT_DIR)/kcc.packed $(OUTPUT_DIR)/kcc
-	ln -rsf $(OUTPUT_DIR)/kcc) $(OUTPUT_DIR)/kclang
+	ln -rsf $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
 	rm -rf $(OUTPUT_DIR)/fatlib $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/packlists $(OUTPUT_DIR)/fatpacker.trace
 
 $(PROFILE_OUTPUT_DIR): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native
