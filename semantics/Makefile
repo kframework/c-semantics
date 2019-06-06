@@ -9,6 +9,8 @@ OUTPUT_DIR := $(abspath $(BUILD_DIR))
 
 PROFILE_DIR := $(realpath $(CURDIR)/../profiles/x86-gcc-limited-libc)
 
+K_BIN ?= $(CURDIR)/../.build/k/k-distribution/target/release/k/bin
+
 KOMPILE_FLAGS ?=
 KOMPILE_FLAGS += --backend ocaml
 KOMPILE_FLAGS += --non-strict
@@ -23,8 +25,6 @@ KDEP_INCLUDE_DIRS :=
 KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics
 KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/c
 KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/cpp
-
-K_BIN ?= $(CURDIR)/../.build/k/k-distribution/target/release/k/bin
 
 KOMPILE := $(K_BIN)/kompile
 KDEP := $(K_BIN)/kdep
