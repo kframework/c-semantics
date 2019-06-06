@@ -14,7 +14,7 @@ SUBPROFILE_DIRS :=
 
 # Default build directory.
 # Intended for overriding by the user, see below.
-BUILD_DIR := build
+BUILD_DIR := dist
 
 # Build directory used internallly.
 # `abspath` because the directory does not exist yet.
