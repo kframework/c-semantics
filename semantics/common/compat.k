@@ -1,6 +1,7 @@
 module COMPAT-SORTS
      syntax StrictList
      syntax StrictListResult
+     syntax Predicate
 endmodule
 
 module COMPAT-SYNTAX
@@ -22,8 +23,8 @@ module COMPAT-SYNTAX
 
      syntax String ::= toUpperCase(String) [function]
 
-     syntax Bool ::= all(List, K) [function]
-     syntax Bool ::= some(List, K) [function]
+     syntax Bool ::= all(List, Predicate) [function]
+     syntax Bool ::= some(List, Predicate) [function]
 
      syntax List ::= removeListItem(List, K) [function]
 
@@ -49,12 +50,14 @@ module COMPAT-SYNTAX
 
      syntax List ::= times(Int, K) [function]
 
-     syntax Set ::= filterSet(Set, K) [function]
-     syntax List ::= filterList(List, K) [function]
+     syntax Set ::= filterSet(Set, Predicate) [function]
+     syntax List ::= filterList(List, Predicate) [function]
+
+     syntax Bool ::= Predicate "(" K ")" [function]
 
      syntax Set ::= listToSet(List) [function]
 
-     syntax Bool ::= some(Set, K) [function]
+     syntax Bool ::= some(Set, Predicate) [function]
                    | some(Map, K) [function]
 
      syntax Int ::= ceilDiv(Int, Int) [function]
@@ -87,63 +90,6 @@ module COMPAT-KAST [kast]
      imports BOOL
      imports K-EQUAL
 
-     rule all(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel))
-          => Lbl(K) andBool all(L, #klabel(Lbl))
-     rule all(.List, _) => true
-
-     rule some(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel))
-          => Lbl(K) orBool some(L, #klabel(Lbl))
-     rule some(.List, _) => false
-
-     rule filterSet(SetItem(K:KItem) S:Set, #klabel(Pred:KLabel))
-          => #filterSet(K, S, #klabel(Pred))
-     rule filterSet(.Set, _)
-          => .Set
-
-     syntax Set ::= #filterSet(K, Set, K) [function]
-     rule #filterSet(K:KItem, .Set, #klabel(Pred:KLabel))
-          => SetItem(K)
-          requires Pred(K) ==K true
-     rule #filterSet(K:K, .Set, #klabel(Pred:KLabel))
-          => .Set
-          requires Pred(K) =/=K true
-     rule #filterSet(K:KItem, SetItem(K':KItem) S:Set, #klabel(Pred:KLabel))
-          => SetItem(K) #filterSet(K', S, #klabel(Pred))
-          requires Pred(K) ==K true
-     rule #filterSet(K:K, SetItem(K':KItem) S:Set, #klabel(Pred:KLabel))
-          => #filterSet(K', S, #klabel(Pred))
-          requires Pred(K) =/=K true
-
-     rule filterList(ListItem(K:KItem) L:List, #klabel(Pred:KLabel))
-          => #filterList(K, L, #klabel(Pred))
-     rule filterList(.List, _)
-          => .List
-
-     syntax List ::= #filterList(K, List, K) [function]
-     rule #filterList(K:KItem, .List, #klabel(Pred:KLabel))
-          => ListItem(K)
-          requires Pred(K) ==K true
-     rule #filterList(K:K, .List, #klabel(Pred:KLabel))
-          => .List
-          requires Pred(K) =/=K true
-     rule #filterList(K:KItem, ListItem(K':KItem) L:List, #klabel(Pred:KLabel))
-          => ListItem(K) #filterList(K', L, #klabel(Pred))
-          requires Pred(K) ==K true
-     rule #filterList(K:K, ListItem(K':KItem) L:List, #klabel(Pred:KLabel))
-          => #filterList(K', L, #klabel(Pred))
-          requires Pred(K) =/=K true
-
-     rule some(S:Set, Lbl:K) => some'(.K, S, Lbl)
-
-     syntax Bool ::= "some'" "(" K "," Set "," K ")" [function]
-     rule some'(.K, SetItem(K:KItem) S:Set, Lbl:K) => some'(K, S, Lbl)
-     rule some'(K:K, _, #klabel(Lbl:KLabel)) => true
-          requires Lbl(K) ==K true
-     rule some'(K:K, S:Set, #klabel(Lbl:KLabel)) => some'(.K, S, #klabel(Lbl))
-          requires Lbl(K) =/=K true
-               andBool (K =/=K .K)
-     rule some'(.K, .Set, _) => false
-
      rule some(.Map::Map, Lbl:K) => false
      rule some(K1:KItem |-> K2:KItem M::Map, #klabel(Lbl:KLabel)) => Lbl(K1, K2) orBool some(M, #klabel(Lbl)) [owise]
 
@@ -162,6 +108,63 @@ module COMPAT
      imports BOOL
      imports MAP
      imports STRING
+
+     rule all(ListItem(K:KItem) L:List, P:Predicate)
+          => P(K) andBool all(L, P)
+     rule all(.List, _) => true
+
+     rule some(ListItem(K:KItem) L:List, P:Predicate)
+          => P(K) orBool some(L, P)
+     rule some(.List, _) => false
+
+     rule filterSet(SetItem(K:KItem) S:Set, Pred:Predicate)
+          => #filterSet(K, S, Pred)
+     rule filterSet(.Set, _)
+          => .Set
+
+     syntax Set ::= #filterSet(K, Set, Predicate) [function]
+     rule #filterSet(K:KItem, .Set, Pred:Predicate)
+          => SetItem(K)
+          requires Pred(K) ==K true
+     rule #filterSet(K:K, .Set, Pred:Predicate)
+          => .Set
+          requires Pred(K) =/=K true
+     rule #filterSet(K:KItem, SetItem(K':KItem) S:Set, Pred:Predicate)
+          => SetItem(K) #filterSet(K', S, Pred)
+          requires Pred(K) ==K true
+     rule #filterSet(K:K, SetItem(K':KItem) S:Set, Pred:Predicate)
+          => #filterSet(K', S, Pred)
+          requires Pred(K) =/=K true
+
+     rule filterList(ListItem(K:KItem) L:List, Pred:Predicate)
+          => #filterList(K, L, Pred)
+     rule filterList(.List, _)
+          => .List
+
+     syntax List ::= #filterList(K, List, Predicate) [function]
+     rule #filterList(K:KItem, .List, Pred:Predicate)
+          => ListItem(K)
+          requires Pred(K) ==K true
+     rule #filterList(K:K, .List, Pred:Predicate)
+          => .List
+          requires Pred(K) =/=K true
+     rule #filterList(K:KItem, ListItem(K':KItem) L:List, Pred:Predicate)
+          => ListItem(K) #filterList(K', L, Pred)
+          requires Pred(K) ==K true
+     rule #filterList(K:K, ListItem(K':KItem) L:List, Pred:Predicate)
+          => #filterList(K', L, Pred)
+          requires Pred(K) =/=K true
+
+     rule some(S:Set, P:Predicate) => some'(.K, S, P)
+
+     syntax Bool ::= "some'" "(" K "," Set "," Predicate ")" [function]
+     rule some'(.K, SetItem(K:KItem) S:Set, P:Predicate) => some'(K, S, P)
+     rule some'(K:K, _, P:Predicate) => true
+          requires P(K) ==K true
+     rule some'(K:K, S:Set, P:Predicate) => some'(.K, S, P)
+          requires P(K) =/=K true
+               andBool (K =/=K .K)
+     rule some'(.K, .Set, _) => false
 
      rule stringToList("") => .List
      rule stringToList(S:String)

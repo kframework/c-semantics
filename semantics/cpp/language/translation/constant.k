@@ -2,6 +2,7 @@ module CPP-TRANSLATION-CONSTANT-SYNTAX
      imports BASIC-K
      imports CPP-SORTS
      imports CPP-DYNAMIC-OTHER-SORTS
+     imports COMPAT-SORTS
 
      syntax Expr ::= compileTimeEval(K)
 

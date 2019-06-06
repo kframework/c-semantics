@@ -28,11 +28,32 @@ module CPP-EXECUTION-EXPR-ASSIGNMENT
           => fillLHoles(L, fillRHoles(L, R))
           requires Execution()
 
-     context compoundOp(Lbl:KLabel(_, HOLE:KItem))
-          requires Execution()
+     syntax ResolvedExpr ::= compoundExprs(Expr, Expr)
+     rule compoundExprs(L::Expr, R::Expr)
+         => ((L + R)
+        #Or ((L - R)
+        #Or ((L * R)
+        #Or ((L / R)
+        #Or ((L % R)
+        #Or ((L & R)
+        #Or ((L ^ R)
+        #Or ((L | R)
+        #Or ((L << R)
+        #Or ((L >> R))))))))))) [macro]
 
-     rule compoundOp(Lbl:KLabel(L:K, R:KResult)) => Lbl(L, R)
-          requires Execution()
+     context compoundOp(_ + HOLE:Expr) requires Execution()
+     context compoundOp(_ - HOLE:Expr) requires Execution()
+     context compoundOp(_ * HOLE:Expr) requires Execution()
+     context compoundOp(_ / HOLE:Expr) requires Execution()
+     context compoundOp(_ % HOLE:Expr) requires Execution()
+     context compoundOp(_ & HOLE:Expr) requires Execution()
+     context compoundOp(_ ^ HOLE:Expr) requires Execution()
+     context compoundOp(_ | HOLE:Expr) requires Execution()
+     context compoundOp(_ << HOLE:Expr) requires Execution()
+     context compoundOp(_ >> HOLE:Expr) requires Execution()
+
+     rule compoundOp(compoundExprs(_, R::Expr) #as E:ResolvedExpr) => E
+          requires isKResult(R) andBool Execution()
 
      rule fillRHoles(V::PRVal, pre(L::Expr := E::Expr, Tr::Trace, T::CPPType)) => pre(L := fillRHoles(V, E), Tr, T)
      rule fillRHoles(V::PRVal, V':PRV) => V'
