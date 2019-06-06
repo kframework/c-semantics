@@ -80,18 +80,10 @@ $(call timestamp_of,c-nd-thread):
 
 
 .PHONY: default
-default: fast
+default: all
 
 .PHONY: all
-all: fast nd thread
-
-.PHONY: fast
-fast: $(addsuffix -semantics,c-translation c-cpp c-cpp)
-
-XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
-
-.PHONY: fast-cpp
-fast-cpp: $(XYZ_SEMANTICS)
+all: nd thread
 
 .PHONY: nd
 nd: c-nd-semantics
@@ -146,6 +138,7 @@ $(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: $(K_FILE_DEPS) \
 
 # Move this to the end so that .SECONDEXPANSION
 # does not affect any other rules.
+XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
 .PHONY: $(XYZ_SEMANTICS)
 .SECONDEXPANSION:
 $(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
