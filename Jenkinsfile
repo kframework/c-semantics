@@ -50,7 +50,7 @@ pipeline {
     }
     stage('Test clean target') { steps {
       sh 'make clean'
-      sh '! { git status --ignore-submodules=none --untracked-files=all | grep -i --quiet untracked; }'
+      sh '[ $(git clean -xfd 2>&1 | wc -l) -eq 0 ]'
     } }
   }
 }
