@@ -3,12 +3,9 @@
 
 ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
+# Intended to have a value from the environment.
 export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
 
-KOMPILE := $(K_BIN)/kompile
-KDEP := $(K_BIN)/kdep
-
-# Intended to be passed from above.
 KOMPILE_FLAGS += -O2
 export KOMPILE_FLAGS
 
@@ -16,6 +13,9 @@ K_OPTS += -Xmx8g
 K_OPTS += -Xss32m
 export K_OPTS
 
+# Used internally.
+KOMPILE := $(K_BIN)/kompile
+KDEP := $(K_BIN)/kdep
 
 PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
 PROFILE := $(shell basename $(PROFILE_DIR))

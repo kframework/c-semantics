@@ -9,6 +9,7 @@ OUTPUT_DIR := $(abspath $(BUILD_DIR))
 
 PROFILE_DIR := $(realpath $(CURDIR)/../profiles/x86-gcc-limited-libc)
 
+# Intended to have a value from the environment.
 K_BIN ?= $(CURDIR)/../.build/k/k-distribution/target/release/k/bin
 
 KOMPILE_FLAGS += --backend ocaml
@@ -16,13 +17,14 @@ KOMPILE_FLAGS += --non-strict
 KOMPILE_FLAGS += --smt none
 KOMPILE_FLAGS += -I $(PROFILE_DIR)/semantics
 
-KDEP_FLAGS += $(addprefix -I ,$(KDEP_INCLUDE_DIRS))
-
 # Used internally.
 KDEP_INCLUDE_DIRS :=
 KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics
 KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/c
 KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/cpp
+
+# Intended to have a value from the environment.
+KDEP_FLAGS += $(addprefix -I ,$(KDEP_INCLUDE_DIRS))
 
 KOMPILE := $(K_BIN)/kompile
 KDEP := $(K_BIN)/kdep
