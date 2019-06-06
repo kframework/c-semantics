@@ -2,21 +2,40 @@ ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
 
-export K_OPTS := -Xmx8g -Xss32m
-export KOMPILE := $(K_BIN)/kompile -O2
+export KOMPILE := $(K_BIN)/kompile
 export KDEP := $(K_BIN)/kdep
 
+export K_OPTS := -Xmx8g -Xss32m
+export KOMPILE_FLAGS := -O2
+
 export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
-export PROFILE := $(shell basename $(PROFILE_DIR))
-export SUBPROFILE_DIRS :=
+PROFILE := $(shell basename $(PROFILE_DIR))
+SUBPROFILE_DIRS :=
+
+# Default build directory.
+# Intended for overriding by the user, see below.
+BUILD_DIR := dist
+
+# Build directory used internallly.
+# `abspath` because the directory does not exist yet.
+OUTPUT_DIR := $(abspath $(BUILD_DIR))
+
+PROFILE_OUTPUT_DIR := $(OUTPUT_DIR)/profiles/$(PROFILE)
+SEMANTICS_OUTPUT_DIR := $(OUTPUT_DIR)/semantics/$(PROFILE)
 
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
 CXXFLAGS := -std=c++17
 
+# We export these so they are available for the
+# `clang-tools` target.
+export CC := $(PROFILE_DIR)/cc
+export CXX := $(PROFILE_DIR)/cxx
+
+
 K_DIST := $(realpath $(K_BIN)/..)
 
-CLANG_TOOLS_BUILD_DIR := clang-tools/build
+CLANG_TOOLS_BUILD_DIR := $(OUTPUT_DIR)/clang-tools
 CLANG_TOOLS_BIN := $(CLANG_TOOLS_BUILD_DIR)/bin
 
 FILES_TO_DIST := \
@@ -42,26 +61,30 @@ FILES_TO_DIST := \
 
 PROFILE_FILES := include src compiler-src native pp cpp-pp cc cxx
 PROFILE_FILE_DEPS := $(foreach f, $(PROFILE_FILES), $(PROFILE_DIR)/$(f))
-SUBPROFILE_FILE_DEPS := $(foreach d, $(SUBPROFILE_DIRS), $(foreach f, $(PROFILE_FILES), $(d)/$(f)))
-CC := $(PROFILE_DIR)/cc
+SUBPROFILE_FILE_DEPS := $(foreach d, $(SUBPROFILE_DIRS), \
+                        $(foreach f, $(PROFILE_FILES), $(d)/$(f)))
 
-PERL_MODULES := \
-	scripts/RV_Kcc/Opts.pm \
-	scripts/RV_Kcc/Files.pm \
-	scripts/RV_Kcc/Shell.pm
+PERL_MODULES_DIR := scripts/RV_Kcc
+PERL_MODULES := $(wildcard $(PERL_MODULES_DIR)/*.pm)
 
-LIBC_SO := dist/profiles/$(PROFILE)/lib/libc.so
-LIBSTDCXX_SO := dist/profiles/$(PROFILE)/lib/libstdc++.so
+LIBC_SO := $(PROFILE_OUTPUT_DIR)/lib/libc.so
+LIBSTDCXX_SO := $(PROFILE_OUTPUT_DIR)/lib/libstdc++.so
 
 define timestamp_of
-    dist/profiles/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
+    $(PROFILE_OUTPUT_DIR)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
+
 
 .PHONY: default
 default: test-build
 
+# Targets intended for direct invocation by the user,
+# to check the installation of dependencies.
+#
+# No subsequent targets depend on these.
+
 .PHONY: check-deps
-check-deps: | check-ocaml check-cc check-perl check-k
+check-deps: | check-ocaml check-cc check-cxx check-perl check-k
 
 .PHONY: check-ocaml
 check-ocaml:
@@ -72,11 +95,17 @@ check-ocaml:
 
 .PHONY: check-cc
 check-cc:
-	@$(CC) -v > /dev/null 2>&1 || \
-		clang -v > /dev/null 2>&1 || { \
-			echo "ERROR: Missing GCC/Clang installation. Please see INSTALL.md for more information." \
-			&& false; \
-		}
+	@$(CC) -v > /dev/null 2>&1 || { \
+		echo "ERROR: Missing C compiler installation. Please see INSTALL.md for more information." \
+		&& false; \
+	}
+
+.PHONY: check-cxx
+check-cxx:
+	@$(CXX) -v > /dev/null 2>&1 || { \
+		echo "ERROR: Missing C++ compiler installation. Please see INSTALL.md for more information." \
+		&& false; \
+	}
 
 .PHONY: check-perl
 check-perl:
@@ -85,126 +114,117 @@ check-perl:
 
 .PHONY: check-k
 check-k:
-	@$(K_BIN)/kompile --version > /dev/null 2>&1 || { \
+	@$(KOMPILE) --version > /dev/null 2>&1 || { \
 		echo "ERROR: Missing K installation. Please see INSTALL.md for more information." \
 		&& false; \
 	}
 
-dist/writelong: scripts/writelong.c
-	@mkdir -p dist
-	@$(CC) $(CFLAGS) scripts/writelong.c -o dist/writelong
 
-dist/extract-references: scripts/extract-references.cpp
-	@mkdir -p dist
-	@echo Building $@
+# Real targets.
+
+$(OUTPUT_DIR)/writelong: scripts/writelong.c
+	@mkdir -p $(OUTPUT_DIR)
+	@$(CC) $(CFLAGS) scripts/writelong.c -o $(OUTPUT_DIR)/writelong
+
+$(OUTPUT_DIR)/extract-references: scripts/extract-references.cpp
+	@mkdir -p $(OUTPUT_DIR)
+	$(info Building $@)
 	@$(CXX) $(CXXFLAGS) $< -lstdc++fs -o $@
 
-dist/kcc: scripts/getopt.pl $(PERL_MODULES) dist/writelong $(FILES_TO_DIST)
-	mkdir -p dist/RV_Kcc
-	cp -RLp $(FILES_TO_DIST) dist
-	cp -RLp $(PERL_MODULES) dist/RV_Kcc
-	rm -f dist/RV_Kcc/Opts.pm
-	cat scripts/RV_Kcc/Opts.pm | perl scripts/getopt.pl > dist/RV_Kcc/Opts.pm
-	cp -p dist/kcc dist/kclang
+$(OUTPUT_DIR)/kcc: scripts/getopt.pl $(PERL_MODULES) $(OUTPUT_DIR)/writelong $(FILES_TO_DIST)
+	mkdir -p $(OUTPUT_DIR)/RV_Kcc
+	cp -RLp $(FILES_TO_DIST) $(OUTPUT_DIR)
+	cp -RLp $(PERL_MODULES) $(OUTPUT_DIR)/RV_Kcc
+	cat scripts/RV_Kcc/Opts.pm | perl scripts/getopt.pl > $(OUTPUT_DIR)/RV_Kcc/Opts.pm
+	ln -rsf $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
 
 .PHONY: pack
-pack: dist/kcc
-	cd dist && fatpack trace kcc
-	cd dist && fatpack packlists-for `cat fatpacker.trace` >packlists
+pack: $(OUTPUT_DIR)/kcc
+	cd $(OUTPUT_DIR) && fatpack trace kcc
+	cd $(OUTPUT_DIR) && fatpack packlists-for `cat fatpacker.trace` > packlists
 	cat dist/packlists
-	cd dist && fatpack tree `cat packlists`
-	cp -rf dist/RV_Kcc dist/fatlib
-	cd dist && fatpack file kcc > kcc.packed
-	chmod --reference=dist/kcc dist/kcc.packed
-	mv -f dist/kcc.packed dist/kcc
-	cp -pf dist/kcc dist/kclang
-	rm -rf dist/fatlib dist/RV_Kcc dist/packlists dist/fatpacker.trace
+	cd $(OUTPUT_DIR) && fatpack tree `cat packlists`
+	ln -rsf $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/fatlib/RV_Kcc
+	cd $(OUTPUT_DIR) && fatpack file kcc > kcc.packed
+	chmod --reference=$(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kcc.packed
+	mv -f $(OUTPUT_DIR)/kcc.packed $(OUTPUT_DIR)/kcc
+	ln -rsf $(OUTPUT_DIR)/kcc) $(OUTPUT_DIR)/kclang
+	rm -rf $(OUTPUT_DIR)/fatlib $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/packlists $(OUTPUT_DIR)/fatpacker.trace
 
-dist/profiles/$(PROFILE): dist/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native | check-deps
-	@mkdir -p dist/profiles/$(PROFILE)/lib
-	@printf "%s" $(PROFILE) > dist/current-profile
-	@printf "%s" $(PROFILE) > dist/default-profile
+$(PROFILE_OUTPUT_DIR): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native
+	@mkdir -p $(PROFILE_OUTPUT_DIR)/lib
+	@printf "%s" $(PROFILE) > $(OUTPUT_DIR)/current-profile
+	@printf "%s" $(PROFILE) > $(OUTPUT_DIR)/default-profile
 	@-$(foreach f, $(PROFILE_FILE_DEPS), \
-		cp -RLp $(f) dist/profiles/$(PROFILE);)
+		cp -RLp $(f) $(PROFILE_OUTPUT_DIR);)
 	@$(foreach d, $(SUBPROFILE_DIRS), \
-		mkdir -p dist/profiles/$(shell basename $(d))/lib;)
-	@-$(foreach d, $(SUBPROFILE_DIRS), $(foreach f, $(PROFILE_FILES), \
-		cp -RLp $(d)/$(f) dist/profiles/$(shell basename $(d))/$(f);))
+		mkdir -p $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib;)
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
-		cp -RLp dist/profiles/$(PROFILE)/native/* dist/profiles/$(shell basename $(d))/native;)
-
-
-.SECONDEXPANSION:
-$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
-# the % sign matches to '$(NAME)-kompiled/$(NAME)',
-# e.g. to 'c-cpp-kompiled/c-cpp'
-# dist/profiles/$(PROFILE)/c-cpp-kompiled/c-cpp-kompiled/timestamp
-dist/profiles/$(PROFILE)/%-kompiled/timestamp: dist/profiles/$(PROFILE) \
-                                               $$(notdir $$*)-semantics
-	$(eval NAME := $(notdir $*))
-	@echo "Distributing $(NAME)"
-	@cp -p -RL semantics/.build/$(PROFILE)/$(NAME)-kompiled dist/profiles/$(PROFILE)
-	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp semantics/.build/$(PROFILE)/$(NAME)-kompiled dist/profiles/$(shell basename $(d));)
+			$(foreach f, $(PROFILE_FILES), \
+				cp -RLp $(d)/$(f) \
+				$(OUTPUT_DIR)/profiles/$(shell basename $(d))/$(f);))
+	@-$(foreach d, $(SUBPROFILE_DIRS), \
+				cp -RLp $(PROFILE_OUTPUT_DIR)/native/* \
+				$(OUTPUT_DIR)/profiles/$(shell basename $(d))/native;)
 
 
 $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
                  $(call timestamp_of,cpp-translation) \
                  $(wildcard $(PROFILE_DIR)/compiler-src/*.C) \
                  $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) \
-                 dist/profiles/$(PROFILE)
-	@echo "$(PROFILE): Translating the C++ standard library..."
+                 $(PROFILE_OUTPUT_DIR)
+	$(info $(PROFILE): Translating the C++ standard library...)
 	@cd $(PROFILE_DIR)/compiler-src && \
-		$(ROOT)/dist/kcc --use-profile $(PROFILE) \
-				-shared -o $(ROOT)/$@ *.C \
+		$(OUTPUT_DIR)/kcc --use-profile $(PROFILE) \
+				-shared -o $@ *.C \
 				$(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/compiler-src && \
-			$(ROOT)/dist/kcc --use-profile $(shell basename $(d)) \
-				-shared -o $(ROOT)/dist/profiles/$(shell basename $(d))/lib/libstdc++.so \
+			$(OUTPUT_DIR)/kcc --use-profile $(shell basename $(d)) \
+				-shared -o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libstdc++.so \
 				*.C $(KCCFLAGS) -I .;)
-	@echo "$(PROFILE): Done translating the C++ standard library."
+	$(info $(PROFILE): Done translating the C++ standard library.)
 
 
 $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 	          $(call timestamp_of,c-translation) \
 	          $(wildcard $(PROFILE_DIR)/src/*.c) \
 	          $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) \
-            dist/profiles/$(PROFILE)
-	@echo "$(PROFILE): Translating the C standard library..."
+            $(PROFILE_OUTPUT_DIR)
+	$(info $(PROFILE): Translating the C standard library...)
 	@cd $(PROFILE_DIR)/src && \
-		$(ROOT)/dist/kcc --use-profile $(PROFILE) -shared -o $(ROOT)/$@ *.c $(KCCFLAGS) -I .
+		$(OUTPUT_DIR)/kcc --use-profile $(PROFILE) -shared -o $@ *.c $(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/src && \
-			$(ROOT)/dist/kcc --use-profile $(shell basename $(d)) \
-				-shared -o $(ROOT)/dist/profiles/$(shell basename $(d))/lib/libc.so \
+			$(OUTPUT_DIR)/kcc --use-profile $(shell basename $(d)) \
+				-shared -o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libc.so \
 				*.c $(KCCFLAGS) -I .)
-	@echo "$(PROFILE): Done translating the C standard library."
+	$(info $(PROFILE): Done translating the C standard library.)
 
 
 .PHONY: $(PROFILE)-native
-$(PROFILE)-native: dist/profiles/$(PROFILE)/native/main.o \
-                   dist/profiles/$(PROFILE)/native/server.c \
-                   dist/profiles/$(PROFILE)/native/builtins.o \
-                   dist/profiles/$(PROFILE)/native/platform.o \
-                   dist/profiles/$(PROFILE)/native/platform.h \
-                   dist/profiles/$(PROFILE)/native/server.h
+$(PROFILE)-native: $(PROFILE_OUTPUT_DIR)/native/main.o \
+                   $(PROFILE_OUTPUT_DIR)/native/server.c \
+                   $(PROFILE_OUTPUT_DIR)/native/builtins.o \
+                   $(PROFILE_OUTPUT_DIR)/native/platform.o \
+                   $(PROFILE_OUTPUT_DIR)/native/platform.h \
+                   $(PROFILE_OUTPUT_DIR)/native/server.h
 
 
-dist/profiles/$(PROFILE)/native/main.o: native-server/main.c native-server/server.h
+$(PROFILE_OUTPUT_DIR)/native/main.o: native-server/main.c native-server/server.h
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@  -g
 
-dist/profiles/$(PROFILE)/native/%.h: native-server/%.h
+$(PROFILE_OUTPUT_DIR)/native/%.h: native-server/%.h
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
 
-dist/profiles/$(PROFILE)/native/server.c: native-server/server.c
+$(PROFILE_OUTPUT_DIR)/native/server.c: native-server/server.c
 	mkdir -p $(dir $@)
 	cp -RLp $< $@
 
-dist/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c \
-                                     $(wildcard native-server/*.h)
+$(PROFILE_OUTPUT_DIR)/native/%.o: $(PROFILE_DIR)/native/%.c \
+                                  $(wildcard native-server/*.h)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@ -I native-server
 
@@ -213,21 +233,10 @@ dist/profiles/$(PROFILE)/native/%.o: $(PROFILE_DIR)/native/%.c \
 test-build: $(LIBC_SO) \
             $(LIBSTDCXX_SO) \
             $(call timestamp_of,c-cpp)
-	@echo "Testing kcc..."
-	printf "#include <stdio.h>\nint main(void) { printf(\"x\"); return 42; }" \
-		| dist/kcc --use-profile $(PROFILE) -x c - -o dist/testProgram.compiled
-	dist/testProgram.compiled 2> /dev/null > dist/testProgram.out; \
-		test $$? -eq 42
-	grep x dist/testProgram.out > /dev/null 2>&1
-	@echo "Done."
-	@echo "Cleaning up..."
-	@rm -f dist/testProgram.compiled
-	@rm -f dist/testProgram.out
-	@echo "Done."
 
 .PHONY: parser/cparser
 parser/cparser:
-	@echo "Building the C parser..."
+	$(info Building the C parser...)
 	@$(MAKE) -C parser
 
 $(CLANG_TOOLS_BIN)/%: $(CLANG_TOOLS_BUILD_DIR)/Makefile
@@ -236,7 +245,7 @@ $(CLANG_TOOLS_BIN)/%: $(CLANG_TOOLS_BUILD_DIR)/Makefile
 $(CLANG_TOOLS_BUILD_DIR)/Makefile: clang-tools/CMakeLists.txt
 	@mkdir -p $(CLANG_TOOLS_BUILD_DIR)
 	@cd $(CLANG_TOOLS_BUILD_DIR) \
-		&& test -f Makefile || cmake ..
+		&& test -f Makefile || cmake $(ROOT)/clang-tools
 
 scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 	flock -w 120 $< sh -c 'cd scripts && tar xvf cdecl-$*.tar.gz && cd cdecl-$* && ./configure --without-readline && $(MAKE)' || true
@@ -252,13 +261,8 @@ linking-semantics: c-cpp-linking-semantics
 .PHONY: execution-semantics
 execution-semantics: c-cpp-semantics
 
-XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
-.PHONY: $(XYZ_SEMANTICS)
-$(XYZ_SEMANTICS): | check-deps
-	@$(MAKE) -C semantics $@
-
 .PHONY: semantics
-semantics: | check-deps
+semantics:
 	@$(MAKE) -C semantics all
 
 .PHONY: check
@@ -276,16 +280,56 @@ fail:	| test-build
 fail-compile:	| test-build
 	@$(MAKE) -C tests/unit-fail-compilation comparison
 
+
+# Intended as a simple test to verify the build.  If you invoke from the
+# command line, do not forget to pass `BUILD_DIR=<dir>` if you specified one
+# during the build.
+.PHONY: simple-build-test
+simple-build-test:
+	$(info Testing kcc...)
+	printf "#include <stdio.h>\nint main(void) { printf(\"x\"); return 42; }" \
+		| $(OUTPUT_DIR)/kcc --use-profile $(PROFILE) -x c - -o $(OUTPUT_DIR)/testProgram.compiled
+	$(OUTPUT_DIR)/testProgram.compiled 2> /dev/null > $(OUTPUT_DIR)/testProgram.out; \
+		test $$? -eq 42
+	grep x $(OUTPUT_DIR)/testProgram.out > /dev/null 2>&1
+	$(info Done.)
+	$(info Cleaning up...)
+	@rm -f $(OUTPUT_DIR)/testProgram.compiled
+	@rm -f $(OUTPUT_DIR)/testProgram.out
+	$(info Done.)
+
+
+# This makefile does not need to be re-built.
+# See https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html
+Makefile: ;
+
 .PHONY: clean
 clean:
 	-$(MAKE) -C parser clean
-	-rm -rf $(CLANG_TOOLS_BUILD_DIR)
 	-$(MAKE) -C semantics clean
 	-$(MAKE) -C tests clean
 	-$(MAKE) -C tests/unit-pass clean
 	-$(MAKE) -C tests/unit-fail clean
 	-$(MAKE) -C tests/unit-fail-compilation clean
-	-rm -rf dist \
-					./*.tmp ./*.log ./*.cil ./*-gen.maude \
-					./*.gen.maude ./*.pre.gen ./*.prepre.gen \
-					./a.out ./*.kdump ./*.pre.pre 
+	-rm -rf scripts/cdecl-3.6/
+	-rm -rf $(OUTPUT_DIR)
+
+
+XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
+.PHONY: $(XYZ_SEMANTICS)
+
+# Move this to the end so that .SECONDEXPANSION does not
+# affect the rest of the rules.
+.SECONDEXPANSION:
+$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
+	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR)
+
+# the % sign matches '$(NAME)-kompiled/$(NAME)',
+# e.g., c-cpp-kompiled/c-cpp'
+$(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: $(PROFILE_OUTPUT_DIR) \
+                                            $$(notdir $$*)-semantics
+	$(eval NAME := $(notdir $*))
+	$(info Distributing $(NAME))
+	@cp -p -RL $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(PROFILE_OUTPUT_DIR)
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -RLp $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(shell basename $(d));)
