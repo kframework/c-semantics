@@ -36,7 +36,7 @@ KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
 CXXFLAGS := -std=c++17
 
-# We export these so they are available for the
+# We export these so they are available to the
 # `clang-tools` target.
 export CC := $(PROFILE_DIR)/cc
 export CXX := $(PROFILE_DIR)/cxx
