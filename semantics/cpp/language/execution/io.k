@@ -55,7 +55,7 @@ module CPP-EXECUTION-IO
                Base |-> object(_, Len::Int, M::Array)
           ...</mem>
           <buffer> .List </buffer>
-          requires Execution() andBool Size >Int 0 andBool Offset in_keys(M)
+          requires Execution() andBool Size >Int 0 andBool Offset in_keys(M) andBool M[Offset] =/=K uninit
 
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::CPPType)
               => assertInBounds(Offset, Len)
@@ -65,7 +65,7 @@ module CPP-EXECUTION-IO
                Base |-> object(_, Len::Int, M::Array)
           ...</mem>
           <buffer> Mem::List </buffer>
-          requires Execution() andBool Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M)
+          requires Execution() andBool Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M) andBool M[Offset] =/=K uninit
 
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::CPPType)
               => assertInBounds(Offset, Len)
@@ -74,6 +74,6 @@ module CPP-EXECUTION-IO
                Base |-> object(ObjT::CPPType, Len::Int, M::Array => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)])
           ...</mem>
           <buffer> Mem::List </buffer>
-          requires Execution() andBool Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool notBool (Offset in_keys(M))
+          requires Execution() andBool Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool (notBool (Offset in_keys(M)) orBool M[Offset] ==K uninit)
 
 endmodule

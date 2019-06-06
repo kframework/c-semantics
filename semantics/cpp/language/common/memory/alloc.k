@@ -16,7 +16,7 @@ module CPP-MEMORY-ALLOC
 
      rule <k> allocObject(Base:DirectBase, T::CPPType, Len::Int) => .K ...</k>
           <mem>...
-               .Map => Base |-> object(T, Len, makeEmptyArray(Len))
+               .Map => Base |-> object(T, Len, makeArray(Len, uninit))
           ...</mem>
 
 endmodule

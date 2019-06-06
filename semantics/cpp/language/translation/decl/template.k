@@ -49,7 +49,6 @@ module CPP-TRANSLATION-DECL-TEMPLATE
      rule TemplateWithInstantiations(D::Decl, L::List, ExplicitInstantiations::List)
           => Template(D, L)
           ~> listToK(ExplicitInstantiations)
-          [anywhere]
 
      rule Template(D::Decl, L::List) => declareTemplate(getTemplateName(D), D, listToK(L))
 

@@ -69,7 +69,7 @@ module LINKING-C-BUILTIN
                     | declareBuiltinConstant(CId, Type, SymBase, String)
 
      rule <k> declareBuiltinFunction(B:CId, T::Type, Base:SymBase, Tu::String) => .K ...</k>
-          <mem> Mem::Map => Mem[Base <- object(T, 1, makeEmptyArray(1))] </mem>
+          <mem> Mem::Map => Mem[Base <- object(T, 1, makeArray(1, uninit))] </mem>
           <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List, .Map)] </functions>
           <external-decls> Decls::Map => Decls[B += Tu] </external-decls>
           <external-decls-loc> DeclLocs::Map => DeclLocs[B <- UnknownCabsLoc] </external-decls-loc>
