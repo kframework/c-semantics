@@ -1,4 +1,25 @@
-KOMPILE_DEFAULT_FLAGS := --backend ocaml --non-strict --smt none
+# NOTE: PROFILE_DIR is required to be passed from above.
+
+# Overridden in the top-level makefile.
+BUILD_DIR := $(CURDIR)/../dist/semantics
+
+# Used internally.
+OUTPUT_DIR := $(abspath $(BUILD_DIR))
+
+# Intended to be passed from above.
+KOMPILE_FLAGS ?=
+KDEP_FLAGS ?=
+PROFILE_DIR ?= $(realpath $(CURDIR)/../profiles/x86-gcc-limited-libc)
+
+KOMPILE_FLAGS += --backend ocaml --non-strict --smt none
+KDEP_FLAGS += $(addprefix -I ,$(KDEP_INCLUDE_DIRS))
+
+KDEP_INCLUDE_DIRS := $(PROFILE_DIR)/semantics
+KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/c
+KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/cpp
+
+
+# Used specifically in the timestamp_of rules.
 CPP_KOMPILE_FLAGS := --opaque-klabels c-translation.k
 EXECUTION_KOMPILE_FLAGS := \
 	--opaque-klabels \
@@ -6,78 +27,71 @@ EXECUTION_KOMPILE_FLAGS := \
 	--no-expand-macros \
 	--ocaml-serialize-config '$$PGM' \
 	--ocaml-dump-exit-code 139
-KDEP_DEFAULT_FLAGS :=
 
 define timestamp_of
-    .build/$(PROFILE)/$(1)-kompiled/$(1)-kompiled/timestamp
+    $(OUTPUT_DIR)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
-.PHONY: default
-default: fast
-
+# Prerequisites for the timestamp rules are added
+# by the `include`d makefiles.
 $(call timestamp_of,c-translation):
-	@echo "Kompiling the static C semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) c-translation.k \
-		-d ".build/$(PROFILE)/c-translation-kompiled" \
+	$(info Kompiling the static C semantics...)
+	$(KOMPILE) $(KOMPILE_FLAGS) c-translation.k \
+		-d "$(OUTPUT_DIR)/c-translation-kompiled" \
 		--no-prelude -w all -v --debug \
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,cpp-translation):
-	@echo "Kompiling the static C++ semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(CPP_KOMPILE_FLAGS) cpp-translation.k \
-		-d ".build/$(PROFILE)/cpp-translation-kompiled" \
+	$(info Kompiling the static C++ semantics...)
+	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) cpp-translation.k \
+		-d "$(OUTPUT_DIR)/cpp-translation-kompiled" \
 		--no-prelude -w all -v --debug \
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,c-cpp-linking):
-	@echo "Kompiling the C and C++ linking semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(CPP_KOMPILE_FLAGS) c-cpp-linking.k \
-		-d ".build/$(PROFILE)/c-cpp-linking-kompiled" \
+	$(info Kompiling the C and C++ linking semantics...)
+	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) c-cpp-linking.k \
+		-d "$(OUTPUT_DIR)/c-cpp-linking-kompiled" \
 		--no-prelude -w all -v --debug \
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,c-cpp):
-	@echo "Kompiling the dynamic C and C++ semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
-		-d ".build/$(PROFILE)/c-cpp-kompiled" \
+	$(info Kompiling the dynamic C and C++ semantics...)
+	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
+		-d "$(OUTPUT_DIR)/c-cpp-kompiled" \
 		--no-prelude -w all -v --transition "interpRule" \
 		--debug \
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,c-nd):
-	@echo "Kompiling the dynamic C and C++ semantics with expression sequencing non-determinism..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
-		-d ".build/$(PROFILE)/c-nd-kompiled" \
+	$(info Kompiling the dynamic C and C++ semantics with expression sequencing non-determinism...)
+	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
+		-d "$(OUTPUT_DIR)/c-nd-kompiled" \
 		--no-prelude --transition "observable ndtrans" \
 		--superheat "ndheat" --supercool "ndlocal" \
 		-I $(PROFILE_DIR)/semantics
 
 $(call timestamp_of,c-nd-thread):
-	@echo "Kompiling the dynamic C and C++ semantics with thread-interleaving non-determinism..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
-		-d ".build/$(PROFILE)/c-nd-thread-kompiled" \
+	$(info Kompiling the dynamic C and C++ semantics with thread-interleaving non-determinism...)
+	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
+		-d "$(OUTPUT_DIR)/c-nd-thread-kompiled" \
 		--no-prelude --transition "observable ndtrans ndthread" \
 		-I $(PROFILE_DIR)/semantics
 
-.PHONY: all
-all: fast nd thread
 
-.PHONY: fast
-fast: $(addsuffix -semantics,c-translation c-cpp c-cpp)
-
-.PHONY: fast-cpp
-fast-cpp: $(addsuffix -semantics,c-translation c-cpp c-cpp-linking cpp-translation)
+.PHONY: default
+default: $(XYZ_SEMANTICS)
 
 XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
-.PHONY: $(XYZ_SEMANTICS)
-.SECONDEXPANSION:
-$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
+
+.PHONY: all
+all: nd thread
 
 .PHONY: nd
-nd: $(call timestamp_of,c-nd)
+nd: c-nd-semantics
 
 .PHONY: thread
-thread: $(call timestamp_of,c-nd-thread)
+thread: c-nd-thread-semantics
 
 .PHONY: clean
 clean:
@@ -87,36 +101,45 @@ clean:
 					 */c-nd-kompiled \
 					 */c-nd-thread-kompiled \
 					 .kompile-* \
-					 .depend-* \
-					 .build/*
+					 $(OUTPUT_DIR)
 
-BASIC_DEPENDS := $(addprefix .depend-$(PROFILE)-basic-,c-translation cpp-translation c-cpp-linking c-cpp)
-SPECIAL_DEPENDS := .depend-$(PROFILE)-nd .depend-$(PROFILE)-nd-thread
-DEPENDS := $(BASIC_DEPENDS) $(SPECIAL_DEPENDS)
+GENERATED_MAKEFILE_DIR := $(OUTPUT_DIR)/make.d
 
-.PHONY: $(DEPENDS)
+$(GENERATED_MAKEFILE_DIR): ;@mkdir -p $@
+
+BASIC_DEPENDS := $(addsuffix .dep.mk, \
+                   $(addprefix $(GENERATED_MAKEFILE_DIR)/basic-, \
+                      c-translation cpp-translation c-cpp-linking c-cpp))
+SPECIAL_DEPENDS := $(addsuffix .dep.mk, \
+                     $(addprefix $(GENERATED_MAKEFILE_DIR)/, \
+                        nd nd-thread))
 
 # See https://stackoverflow.com/a/4270649/6209703
 ifneq ($(MAKECMDGOALS),clean)
+  DEPENDS := $(BASIC_DEPENDS) $(SPECIAL_DEPENDS)
   -include $(DEPENDS)
 endif
 
-KDEP_FLAGS := $(KDEP_DEFAULT_FlAGS)
-KDEP_FLAGS += -I $(PROFILE_DIR)/semantics
-KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/c
-KDEP_FLAGS += -I $(PROFILE_DIR)/semantics/cpp
+# See https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html
+Makefile: $(DEPENDS) ;
 
-$(BASIC_DEPENDS): .depend-$(PROFILE)-basic-%:
-	$(eval TMP := $(shell mktemp))
-	$(KDEP) $(KDEP_FLAGS) -d ".build/$(PROFILE)/$*-kompiled" -- $*.k > $(TMP)
-	mv $(TMP) $@
 
-.depend-$(PROFILE)-nd:
-	$(eval TMP := $(shell mktemp))
-	$(KDEP) $(KDEP_FLAGS) -d ".build/$(PROFILE)/c-nd-kompiled" -- c-cpp.k > $(TMP)
-	mv $(TMP) $@
+# The included makefiles depend on these.
+K_FILE_DEPS := $(wildcard *.k)
+K_FILE_DEPS += $(shell find $(OUTPUT_DIR) -type f -name '*.k')
+K_FILE_DEPS += $(shell find $(PROFILE_DIR)/semantics -type f -name '*.k')
 
-.depend-$(PROFILE)-nd-thread:
-	$(eval TMP := $(shell mktemp))
-	$(KDEP) $(KDEP_FLAGS) -d ".build/$(PROFILE)/c-nd-thread-kompiled" -- c-cpp.k > $(TMP)
-	mv $(TMP) $@
+$(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: $(K_FILE_DEPS) \
+                                                            | $(GENERATED_MAKEFILE_DIR)
+	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k > $@
+
+$(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: $(K_FILE_DEPS) \
+                                                        | $(GENERATED_MAKEFILE_DIR)
+	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k > $@
+
+
+# Move this to the end so that .SECONDEXPANSION
+# does not affect any other rules.
+.SECONDEXPANSION:
+.PHONY: $(XYZ_SEMANTICS)
+$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)

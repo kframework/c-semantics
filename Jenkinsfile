@@ -27,6 +27,14 @@ pipeline {
         '''
       }
     }
+    stage('Re-Build with timeout') { steps {
+      timeout(time: 8, unit: 'SECONDS') {
+        sh '''
+          eval $(opam config env)
+          make
+        '''
+      }
+    } }
     stage('Test') {
       steps {
         sh '''
@@ -40,5 +48,9 @@ pipeline {
         }
       }
     }
+    stage('Test clean target') { steps {
+      sh 'make clean'
+      sh '[ $(git clean -xfd 2>&1 | wc -l) -eq 0 ]'
+    } }
   }
 }
