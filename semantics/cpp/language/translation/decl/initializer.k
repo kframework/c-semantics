@@ -195,7 +195,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      // @ref n4296 8.5:17.2 (reference destination type)
      rule #figureInit(Base:LVal, cppRefType #as DestT::CPPType, _, E:Expr, _, _, _)
-          => bindReference(le(Base, trace(Base), DestT), E)
+          => bindReference(Base, E)
 
      // @ref n4296 8.5:17.3 (string literal)
      rule #figureInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as DestT::CPPType, _, StringLiteral(Kind::CharKind, S::String), _, _, _)
