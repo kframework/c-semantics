@@ -26,6 +26,7 @@ EXECUTION_KOMPILE_FLAGS := \
 	cpp-translation.k \
 	--no-expand-macros \
 	--ocaml-serialize-config '$$PGM' \
+	--reverse-rules \
 	--ocaml-dump-exit-code 139
 
 define timestamp_of
