@@ -241,19 +241,19 @@ module C-EXECUTION-INIT
           ...</exec>
           <status> _ => terminated </status>
           <result-value> _ => I </result-value>
-          [ndtrans]
+          [ndtrans, priority(75)]
 
      rule <thread>...
                <thread-id> 0 </thread-id>
                <k> reval(tv(V::CValue => unknown(V), _)) </k>
           ...</thread>
-          requires notBool isInt(V) andBool notBool isUnknown(V)
+          requires notBool isInt(V) andBool notBool isUnknown(V) [priority(75)]
      rule <thread>...
                <thread-id> 0 </thread-id>
                <k> (.K => UNSPEC("CEER6", "Unspecified value returned from main function."))
                     ~> reval(tv(unknown(_), _))
                </k>
-          ...</thread>
+          ...</thread> [priority(75)]
 
      rule <k> CabsLoc(File'::String, File::String, Line::Int, Col::Int, Sys::Bool) => breakpoint ...</k>
           <curr-program-loc> _ => CabsLoc(File', File, Line, Col, Sys) </curr-program-loc>
