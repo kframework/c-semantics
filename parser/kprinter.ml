@@ -107,13 +107,15 @@ let printNewList f l =
         kapply "list" (List.fold_right (fun k l -> wrap [(wrap [k] "ListItem"); l] "_List_") (List.map f l) (kapply ".List" nil))
 
 (* this is where the recursive printer starts *)
-	
-let rec cabs_to_k ((filename, defs) : file) (myRealFilename : string) : string = 
-(* encoding="utf-8"  *)
+
+let rec cabs_to_kast ((filename, defs) : file) (myRealFilename : string) : string =
 	realFilename := myRealFilename;
         buffer := Buffer.create 100;
 	(printTranslationUnit filename defs buffer) ();
         Buffer.contents !buffer
+
+and cabs_to_kore ((filename, defs) : file) (myRealFilename : string) : string =
+      "KORE"
 
 and printTranslationUnit (filename : string) defs buffer =
 	let filenameCell = (* (printRawString filename) *)

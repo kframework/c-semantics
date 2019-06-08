@@ -51,7 +51,6 @@ open Kprinter
 type outfile = 
     { fname: string;
       fchan: out_channel } 
-(* let outChannel : outfile option ref = ref None *)
 
 let replace input output =
     Str.global_replace (Str.regexp_string input) output
@@ -59,7 +58,6 @@ let replace input output =
 let fileNames : string list ref = ref []
 let recordFile fname = 
   fileNames := fname :: (!fileNames)
-let isXML = ref false
 	
 let noscores s = 
 	(replace "_" "-" s)
@@ -75,14 +73,17 @@ let parseOneFile (fname: string) =
   let cabs = parse_helper fname in
   cabs
 let trueFilename : string ref = ref ""
-  
+
+(* True to output kore instead of kast. *)
+let kore : bool ref = ref false
+
 let rec processOneFile (cabs: Cabs.file) =
 	begin (
 		let (inputFilename, _) = cabs in
 		let ic = open_in inputFilename in
 		let inputFilename = 
 			if (compare !trueFilename "" == 0) then inputFilename else !trueFilename in
-		let data = cabs_to_k cabs inputFilename in
+		let data = (if !kore then cabs_to_kore else cabs_to_kast) cabs inputFilename in
 			
 		printf "%s\n" data; 
 	(* )) *)
@@ -114,16 +115,13 @@ let theMain () =
   let blankLine = ("", Arg.Unit (fun _ -> ()), "") in
   
   let argDescr =
-        [ 
-          (* "--out", Arg.String (openFile "output" 
-                                 (fun oc -> outChannel := Some oc)),
-              " the name of the output AST."; *)
-		  (* "--xml", Arg.Set isXML,
-              " output should be in XML format"; *)
-		"--trueName", Arg.String (fun x -> trueFilename := x),
-			"filename The original name of the file"
+        [
+            ("--trueName", Arg.String (fun x -> trueFilename := x),
+                  "filename The original name of the file");
+            ("--kore", Arg.Set kore,
+                  " Output kore instead of kast")
         ] in
-	begin
+      begin
 		(* this point in the code is the program entry point *)
 
 		(* Stats.reset Stats.HardwareIfAvail; *)
@@ -155,8 +153,6 @@ let cleanup () =
     Stats.print stderr "Timings:\n"; *)
   if !E.logChannel != stderr then 
     close_out (! E.logChannel);  
-  (* (match ! outChannel with Some c -> close_out c.fchan | _ -> ()) *)
-
 
 (* Without this handler, cilly.asm.exe will quit silently with return code 0
    when a segfault happens. *)
