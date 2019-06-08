@@ -23,14 +23,13 @@ cparser.ml cparser.mli: cparser.mly cabs.cmx cabshelper.cmx
 lexerhack.cmx lexerhack.cmi: errormsg.cmx
 whitetrack.cmx whitetrack.cmi: cabs.cmx cabshelper.cmx
 escape.cmx escape.cmi: whitetrack.cmx
-cprint.cmx cprint.cmi: escape.cmx cabs.cmx
 longarray.cmx longarray.cmi: errormsg.cmx
 growArray.cmx growArray.cmi: errormsg.cmx longarray.cmx
 cabshelper.cmx cabshelper.cmi: errormsg.cmx growArray.cmx cabs.cmx
-cparser.cmx: cabs.cmx cabshelper.cmx lexerhack.cmx cprint.cmx cparser.cmi
+cparser.cmx: cabs.cmx cabshelper.cmx lexerhack.cmx cparser.cmi
 cabsDriver.cmx cabsDriver.cmi: cparser.cmx frontc.cmx clexer.cmx xmlPrinter.cmx
-frontc.cmx frontc.cmi: errormsg.cmx whitetrack.cmx cprint.cmx clexer.cmx
-clexer.cmx clexer.cmi: lexerhack.cmx cparser.cmx cprint.cmx cabshelper.cmx
+frontc.cmx frontc.cmi: errormsg.cmx whitetrack.cmx clexer.cmx
+clexer.cmx clexer.cmi: lexerhack.cmx cparser.cmx cabshelper.cmx
 xmlPrinter.cmx xmlPrinter.cmi: cabs.cmx escape.cmx
 
 %.cmx: %.ml 
@@ -48,7 +47,6 @@ cparser: errormsg.cmx \
          escape.cmx \
          cabshelper.cmx \
          whitetrack.cmx \
-         cprint.cmx \
          lexerhack.cmx \
          cabs.cmx \
          clexer.cmx \
