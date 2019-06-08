@@ -27,10 +27,10 @@ longarray.cmx longarray.cmi: errormsg.cmx
 growArray.cmx growArray.cmi: errormsg.cmx longarray.cmx
 cabshelper.cmx cabshelper.cmi: errormsg.cmx growArray.cmx cabs.cmx
 cparser.cmx: cabs.cmx cabshelper.cmx lexerhack.cmx cparser.cmi
-cabsDriver.cmx cabsDriver.cmi: cparser.cmx frontc.cmx clexer.cmx xmlPrinter.cmx
+cabsDriver.cmx cabsDriver.cmi: cparser.cmx frontc.cmx clexer.cmx kprinter.cmx
 frontc.cmx frontc.cmi: errormsg.cmx whitetrack.cmx clexer.cmx
 clexer.cmx clexer.cmi: lexerhack.cmx cparser.cmx cabshelper.cmx
-xmlPrinter.cmx xmlPrinter.cmi: cabs.cmx escape.cmx
+kprinter.cmx kprinter.cmi: cabs.cmx escape.cmx
 
 %.cmx: %.ml 
 	@$(OCAML_COMPILE) $*.ml
@@ -38,7 +38,7 @@ xmlPrinter.cmx xmlPrinter.cmi: cabs.cmx escape.cmx
 cparser.cmi: cparser.mli cabs.cmx clexer.ml
 	@$(OCAML_COMPILE) cparser.mli
 	
-cabsDriver.cmx cabsDriver.cmi: xmlPrinter.cmx
+cabsDriver.cmx cabsDriver.cmi: kprinter.cmx
 
 # these are partially ordered by inclusion.  don't know how to avoid manually ordering these
 cparser: errormsg.cmx \
@@ -52,7 +52,7 @@ cparser: errormsg.cmx \
          clexer.cmx \
          cparser.cmx \
          frontc.cmx \
-         xmlPrinter.cmx \
+         kprinter.cmx \
          cabsDriver.cmx
 	$(OCAML_LINK) -o $@ str.cmxa $^
 	@-strip cparser

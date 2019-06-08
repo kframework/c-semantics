@@ -108,7 +108,7 @@ let printNewList f l =
 
 (* this is where the recursive printer starts *)
 	
-let rec cabsToXML ((filename, defs) : file) (myRealFilename : string) : string = 
+let rec cabs_to_k ((filename, defs) : file) (myRealFilename : string) : string = 
 (* encoding="utf-8"  *)
 	realFilename := myRealFilename;
         buffer := Buffer.create 100;
