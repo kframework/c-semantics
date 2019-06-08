@@ -324,7 +324,7 @@ XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-link
 # Move this to the end so that .SECONDEXPANSION does not
 # affect the rest of the rules.
 .SECONDEXPANSION:
-$(XYZ_SEMANTICS): %-semantics: $(call timestamp_of,$$*)
+$(XYZ_SEMANTICS): %-semantics:
 	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR)
 
 # the % sign matches '$(NAME)-kompiled/$(NAME)',
