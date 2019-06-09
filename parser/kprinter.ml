@@ -5,20 +5,8 @@ let counter = ref 0
 let currentSwitchId = ref 0
 let switchStack = ref [0]
 let realFilename = ref ""
-let defsPrinted = ref 0
-let ast = ref ""
-
 let stringLiterals = ref []
-
-let rec trim s =
-  let l = String.length s in
-  if l=0 then s
-  else if s.[0]=' ' || s.[0]='\t' || s.[0]='\n' || s.[0]='\r' then
-    trim (String.sub s 1 (l-1))
-  else if s.[l-1]=' ' || s.[l-1]='\t' || s.[l-1]='\n' || s.[l-1]='\r' then
-    trim (String.sub s 0 (l-1))
-  else
-    s
+let kore : bool ref = ref false
 
 (* this is from cil *)
 let escape_char = function
@@ -80,26 +68,31 @@ and interpret_wcharacter_constant char_list =
   let value = reduce_multichar char_list in
   Int64.to_int value
 
-let replace input output =
-  Str.global_replace (Str.regexp_string input) output
-
 type attribute =
   Attrib of string * string
 
 let buffer = ref (Buffer.create 1)
-let printString s = (fun () -> Buffer.add_string !buffer s)
+let printString (s : string) : unit -> unit = fun () -> Buffer.add_string !buffer s
 
-let ktoken (str: string) (sort: string) =
-  fun () -> Buffer.add_string !buffer "#token(\""; Buffer.add_string !buffer (k_string_escape str); Buffer.add_string !buffer "\", \""; Buffer.add_string !buffer sort; Buffer.add_string !buffer "\")"
+let ksort (sort : string) : string =
+  if !kore then ( "Sort" ^ sort ^ "{}" ) else sort
 
-let rec concatN n s =
-  if (n = 0) then "" else s ^ (concatN (n-1) s)
+let rec print_ktoken (str : string) (sort : string) : unit -> unit = printString (ktoken str sort)
 
-let kapply (label: string) (contents: unit -> unit) : unit -> unit =
-  fun () -> Buffer.add_string !buffer "`"; Buffer.add_string !buffer label; Buffer.add_string !buffer "`("; contents (); Buffer.add_string !buffer ")"
+and ktoken (str : string) (sort : string) : string =
+  if !kore then ("\dv{" ^ ksort sort ^ "}(\"" ^ k_string_escape str ^ "\")")
+  else ("#token(\"" ^ k_string_escape str ^ "\", \"" ^ ksort sort ^ "\")")
+
+let klabel (label : string) : string =
+  let left = if !kore then "Lbl" else "`" in
+  let right = if !kore then "{}" else "`" in
+  (left ^ label ^ right)
+
+let kapply (label : string) (contents : unit -> unit) : unit -> unit =
+  fun () -> printString (klabel label) (); printString "(" (); contents (); printString ")" ()
 
 let wrap (children : (unit -> unit) list) (name) : unit -> unit =
-  kapply name (fun () -> List.iteri (fun i a -> if i = (List.length children) - 1 then a () else (a (); Buffer.add_string !buffer ", ")) children)
+  kapply name (fun () -> List.iteri (fun i a -> if i = (List.length children) - 1 then a () else (a (); printString ", " ())) children)
 
 let nil = fun () -> Buffer.add_string !buffer ".KList"
 
@@ -108,14 +101,20 @@ let printNewList f l =
 
 (* this is where the recursive printer starts *)
 
-let rec cabs_to_kast ((filename, defs) : file) (myRealFilename : string) : string =
-  realFilename := myRealFilename;
+let rec cabs_to_kast (f : file) (real_name : string) : string =
+  kore := false;
+  realFilename := real_name;
+  cabs_to_k f
+
+and cabs_to_kore (f : file) (real_name : string) : string =
+  kore := true;
+  realFilename := real_name;
+  cabs_to_k f
+
+and cabs_to_k ((filename, defs) : file) : string =
   buffer := Buffer.create 100;
   (printTranslationUnit filename defs buffer) ();
   Buffer.contents !buffer
-
-and cabs_to_kore ((filename, defs) : file) (myRealFilename : string) : string =
-  "KORE"
 
 and printTranslationUnit (filename : string) defs buffer =
   let filenameCell = (* (printRawString filename) *)
@@ -248,11 +247,11 @@ and printPointerType a b =
   (wrap ((printSpecifier a) :: (printDeclType b) :: []) "PointerType")
 and printProtoType a b c =
   let variadicName = if c then "true" else "false" in
-  let variadicCell = ktoken variadicName "Bool" in
+  let variadicCell = print_ktoken variadicName "Bool" in
   wrap ((printDeclType a) :: (printSingleNameList b) :: variadicCell :: []) "Prototype"
 and printNoProtoType a b c =
   let variadicName = if c then "true" else "false" in
-  let variadicCell = ktoken variadicName "Bool" in
+  let variadicCell = print_ktoken variadicName "Bool" in
   wrap ((printDeclType a) :: (printSingleNameList b) :: variadicCell :: []) "NoPrototype"
 and printNop =
   kapply "Nop"  nil
@@ -261,7 +260,7 @@ and printComputation exp =
 and printExpressionList defs =
   printNewList printExpression defs
 and printBuiltin (sort : string) (data : string) =
-  ktoken data sort
+  print_ktoken data sort
 and printRawString s =
   printBuiltin "String" ("\"" ^ (k_string_escape s) ^ "\"")
 
@@ -417,7 +416,6 @@ and printExpression exp =
   | NOTHING -> kapply "NothingExpression"  nil
   | UNSPECIFIED -> kapply "UnspecifiedSizeExpression"  nil
   | PAREN (exp1) -> (printExpression exp1)
-  | LABELADDR (s) -> wrap ((printString s) :: []) "GCCLabelOperator"
   | QUESTION (exp1, exp2, exp3) -> wrap ((printExpression exp1) :: (printExpression exp2) :: (printExpression exp3) :: []) "Conditional"
   (* Special case below for the compound literals. I don't know why this isn't in the ast... *)
   | CAST ((spec, declType), initExp) ->
@@ -614,7 +612,7 @@ and printSpecElem a =
     | CV_VOLATILE -> kapply "Volatile"  nil
     | CV_ATOMIC -> kapply "Atomic"  nil
     | CV_RESTRICT -> kapply "Restrict"  nil
-    | CV_RESTRICT_RESERVED (kwd,loc) -> wrap (ktoken kwd "String"::printCabsLoc loc::[]) "RestrictReserved")
+    | CV_RESTRICT_RESERVED (kwd,loc) -> wrap (print_ktoken kwd "String"::printCabsLoc loc::[]) "RestrictReserved")
   | SpecAttr al -> printAttribute al
   | SpecStorage sto ->
     (match sto with
