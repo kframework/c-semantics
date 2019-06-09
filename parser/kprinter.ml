@@ -41,7 +41,10 @@ let k_char_escape (buf: Buffer.t) (c: char) : unit = match c with
 | _ when let code = Char.code c in code >= 32 && code < 127 -> Buffer.add_char buf c
 | _ -> Buffer.add_string buf (Printf.sprintf "\\x%02x" (Char.code c))
 
-let k_string_escape str =
+let kstring (s : string) : string =
+  if !kore then s else "\"" ^ s ^ "\""
+
+and k_string_escape str =
   let buf = Buffer.create (String.length str) in
   String.iter (k_char_escape buf) str; Buffer.contents buf
 
@@ -72,32 +75,52 @@ type attribute =
   Attrib of string * string
 
 let buffer = ref (Buffer.create 1)
+
+type 'a writer = 'a * (unit -> unit)
+
 let printString (s : string) : unit -> unit = fun () -> Buffer.add_string !buffer s
+
+let (^^) (a : string) (b : string) : unit -> unit = fun () -> (printString a (); printString b ())
 
 let ksort (sort : string) : string =
   if !kore then ( "Sort" ^ sort ^ "{}" ) else sort
 
-let rec print_ktoken (str : string) (sort : string) : unit -> unit = printString (ktoken str sort)
+let ktoken (s : string) (sort : string) : string =
+  if !kore then ("\dv{" ^ ksort sort ^ "}(\"" ^ k_string_escape s ^ "\")")
+  else ("#token(\"" ^ k_string_escape s ^ "\", \"" ^ ksort sort ^ "\")")
 
-and ktoken (str : string) (sort : string) : string =
-  if !kore then ("\dv{" ^ ksort sort ^ "}(\"" ^ k_string_escape str ^ "\")")
-  else ("#token(\"" ^ k_string_escape str ^ "\", \"" ^ ksort sort ^ "\")")
+let ktoken_string (s : string) : string = ktoken (kstring s) "String"
+let ktoken_int (v : int) : string = ktoken (string_of_int v) "Int"
+let ktoken_int_of_string (v : string) : string = ktoken v "Int"
+
+let print_ktoken_string (s : string) : unit -> unit = printString (ktoken_string s)
+let print_ktoken_int (v : int) : unit -> unit = printString (ktoken_int v)
+let print_ktoken_int_of_string (v : string) : unit -> unit = printString (ktoken_int_of_string v)
+
+let print_ktoken (s : string) (sort : string) : unit -> unit = printString (ktoken s sort)
 
 let klabel (label : string) : string =
   let left = if !kore then "Lbl" else "`" in
   let right = if !kore then "{}" else "`" in
   (left ^ label ^ right)
 
-let kapply (label : string) (contents : unit -> unit) : unit -> unit =
+let kapply (label : string) (contents : string) : string = klabel label ^ "(" ^ contents  ^ ")"
+
+let print_kapply (label : string) (contents : unit -> unit) : unit -> unit =
   fun () -> printString (klabel label) (); printString "(" (); contents (); printString ")" ()
 
-let wrap (children : (unit -> unit) list) (name) : unit -> unit =
-  kapply name (fun () -> List.iteri (fun i a -> if i = (List.length children) - 1 then a () else (a (); printString ", " ())) children)
+let print_kapply2 (label : string) (contents : string) : unit -> unit =
+  printString (kapply label contents)
 
-let nil = fun () -> Buffer.add_string !buffer ".KList"
+let wrap (children : (unit -> unit) list) (name) : unit -> unit =
+  print_kapply name (fun () -> List.iteri (fun i a -> if i = (List.length children) - 1 then (a ()) else (a ();printString ", " ())) children)
+
+let dot_klist : string = ".KList"
+
+let print_dot_klist : unit -> unit = printString dot_klist
 
 let printNewList f l =
-  kapply "list" (List.fold_right (fun k l -> wrap [(wrap [k] "ListItem"); l] "_List_") (List.map f l) (kapply ".List" nil))
+  print_kapply "list" (List.fold_right (fun k l -> wrap [(wrap [k] "ListItem"); l] "_List_") (List.map f l) (print_kapply ".List" print_dot_klist))
 
 (* this is where the recursive printer starts *)
 
@@ -117,9 +140,7 @@ and cabs_to_k ((filename, defs) : file) : string =
   Buffer.contents !buffer
 
 and printTranslationUnit (filename : string) defs buffer =
-  let filenameCell = (* (printRawString filename) *)
-    (printRawString !realFilename)
-  in
+  let filenameCell = print_ktoken_string !realFilename in
   let ast = printDefs defs in
   let strings = printStrings buffer in (* the evaluation order is all messed up if this has no argument *)
   wrap (filenameCell :: strings :: ast :: []) "TranslationUnit"
@@ -141,11 +162,11 @@ and printDef def =
   | ONLYTYPEDEF (a, b) ->
       printDefinitionLoc (wrap ((printSpecifier a) :: []) "OnlyTypedef") b
   | GLOBASM (a, b) ->
-      printDefinitionLoc (wrap ((printRawString a) :: []) "GlobAsm") b
+      printDefinitionLoc (wrap ((print_ktoken_string a) :: []) "GlobAsm") b
   | PRAGMA (a, b) ->
       printDefinitionLoc (wrap ((printExpression a) :: []) "Pragma") b
   | LINKAGE (a, b, c) ->
-      printDefinitionLoc (wrap ((printRawString a) :: (printDefs c) :: []) "Linkage") b
+      printDefinitionLoc (wrap ((print_ktoken_string a) :: (printDefs c) :: []) "Linkage") b
   | TRANSFORMER (a, b, c) ->
       printDefinitionLoc (wrap ((printDef a) :: (printDefs b) :: []) "Transformer") c
   | EXPRTRANSFORMER (a, b, c) ->
@@ -174,17 +195,17 @@ and printBlock a =
   let idCell = blockNumCell in
   wrap (idCell :: (printBlockLabels a.blabels) :: (printStatementList a.bstmts) :: []) "Block3"
 and printCabsLoc a =
-        wrap ((printRawString a.filename) :: (printRawString (if Filename.is_relative a.filename then Filename.concat (Sys.getcwd ()) a.filename else a.filename)) :: (printRawInt a.lineno) :: (printRawInt a.lineOffsetStart) :: (printRawBool a.systemHeader) :: []) "CabsLoc"
+        wrap ((print_ktoken_string a.filename) :: (print_ktoken_string (if Filename.is_relative a.filename then Filename.concat (Sys.getcwd ()) a.filename else a.filename)) :: (printRawInt a.lineno) :: (printRawInt a.lineOffsetStart) :: (printRawBool a.systemHeader) :: []) "CabsLoc"
 
 and hasInformation l =
   l.lineno <> -10
 and printNameLoc s l =
   s
 and printIdentifier a =
-  kapply "ToIdentifier"  (printRawString a)
+  print_kapply2 "ToIdentifier" (ktoken_string a)
 and printName (a, b, c, d) = (* string * decl_type * attribute list * cabsloc *)
   if a = "" then
-    printNameLoc (wrap ((kapply "AnonymousName"  (nil)) :: (printDeclType b) :: (printSpecElemList c) :: []) "Name") d
+    printNameLoc (wrap ((print_kapply2 "AnonymousName" dot_klist) :: (printDeclType b) :: (printSpecElemList c) :: []) "Name") d
   else
     printNameLoc (wrap ((printIdentifier a) :: (printDeclType b) :: (printSpecElemList c) :: []) "Name") d
 
@@ -211,12 +232,12 @@ and printInitName (a, b) =
   wrap ((printName a) :: (printInitExpression b) :: []) "InitName"
 and printInitExpression a =
   match a with
-  | NO_INIT -> kapply "NoInit"  nil
+  | NO_INIT -> print_kapply2 "NoInit" dot_klist
   | SINGLE_INIT exp -> wrap ((printExpression exp) :: []) "SingleInit"
   | COMPOUND_INIT a -> wrap ((printInitFragmentList a) :: []) "CompoundInit"
 and printInitExpressionForCast a castPrinter compoundLiteralPrinter = (* this is used when we are printing an init inside a cast, i.e., possibly a compound literal *)
   match a with
-  | NO_INIT -> kapply "Error"  (printString "cast with a NO_INIT inside doesn't make sense")
+  | NO_INIT -> print_kapply2 "Error" "cast with a NO_INIT inside doesn't make sense"
   | SINGLE_INIT exp -> castPrinter (printExpression exp)
   | COMPOUND_INIT a -> compoundLiteralPrinter (wrap ((printInitFragmentList a) :: []) "CompoundInit")
 and printInitFragmentList a =
@@ -227,13 +248,13 @@ and printInitFragment (a, b) =
   wrap ((printInitWhat a) :: (printInitExpression b) :: []) "InitFragment"
 and printInitWhat a =
   match a with
-  | NEXT_INIT -> kapply "NextInit"  nil
+  | NEXT_INIT -> print_kapply2 "NextInit" dot_klist
   | INFIELD_INIT (id, what) -> wrap ((printIdentifier id) :: (printInitWhat what) :: []) "InFieldInit"
   | ATINDEX_INIT (exp, what) -> wrap ((printExpression exp) :: (printInitWhat what) :: []) "AtIndexInit"
   | ATINDEXRANGE_INIT (exp1, exp2) -> wrap ((printExpression exp1) :: (printExpression exp2) :: []) "AtIndexRangeInit"
 and printDeclType a =
   (match a with
-  | JUSTBASE -> kapply "JustBase"  nil
+  | JUSTBASE -> print_kapply2 "JustBase" dot_klist
   | PARENTYPE (a, b, c) -> printParenType a b c
   | ARRAY (a, b, c, d) -> printArrayType a b c d
   | PTR (a, b) -> printPointerType a b
@@ -254,28 +275,24 @@ and printNoProtoType a b c =
   let variadicCell = print_ktoken variadicName "Bool" in
   wrap ((printDeclType a) :: (printSingleNameList b) :: variadicCell :: []) "NoPrototype"
 and printNop =
-  kapply "Nop"  nil
+  print_kapply2 "Nop" dot_klist
 and printComputation exp =
   wrap ((printExpression exp) :: []) "Computation"
 and printExpressionList defs =
   printNewList printExpression defs
-and printBuiltin (sort : string) (data : string) =
-  print_ktoken data sort
-and printRawString s =
-  printBuiltin "String" ("\"" ^ (k_string_escape s) ^ "\"")
 
 and printRawFloat f =
   printRawFloatString (string_of_float f)
 and printRawFloatString s =
-  printBuiltin "Float" s
+  print_ktoken s "Float"
 and printRawInt i =
   printRawIntString (string_of_int i)
 and printRawIntString s =
-  printBuiltin "Int" s
+  print_ktoken s "Int"
 and printRawBool b =
   printRawBoolString (string_of_bool b)
 and printRawBoolString s =
-  printBuiltin "Bool" s
+  print_ktoken s "Bool"
 and string_of_list_of_int64 (xs : int64 list) =
   let length = List.length xs in
   let buffer = Buffer.create length in
@@ -294,7 +311,7 @@ and printConstant const =
   | CONST_STRING s -> handleStringLiteral s
   | CONST_WSTRING ws -> handleWStringLiteral ws
 and handleStringLiteral s =
-  let result = wrap [printRawString s] "StringLiteral" in
+  let result = wrap [print_ktoken_string s] "StringLiteral" in
   stringLiterals := result :: !stringLiterals;
   result
 and handleWStringLiteral ws =
@@ -334,7 +351,7 @@ and printHexFloatConstant f =
   let approx = float_of_string ("0x" ^ significand) in
   let approx = approx *. (2. ** (float_of_int exponentPart)) in
   let exponentPart = printRawInt exponentPart in
-  let significandPart = printRawString significand in
+  let significandPart = print_ktoken_string significand in
   let significandPart = significandPart in
   let exponentPart = exponentPart in
   let approxPart = printRawFloat approx in
@@ -360,7 +377,7 @@ and printDecFloatConstant f =
 
   let significand = wholePart ^ "." ^ fractionalPart in
 
-  let significandPart = printRawString significand in
+  let significandPart = print_ktoken_string significand in
   let exponentPart = printRawInt exponentPart in
   let approxPart = printRawFloatString stringRep in
   let significandPart = significandPart in
@@ -381,7 +398,7 @@ and printFloatLiteral r =
   | "L" :: [] -> wrap (num :: []) "LitL"
   | [] -> wrap (num :: []) "NoSuffix"
 and printHexConstant (i : string) =
-  wrap [printRawString i] "HexConstant"
+  wrap [print_ktoken_string i] "HexConstant"
 and printOctConstant (i : string) =
   wrap [printRawIntString i] "OctalConstant"
 and printDecConstant (i : string) =
@@ -413,8 +430,8 @@ and printExpression exp =
   | LOCEXP (exp, loc) -> printExpressionLoc (printExpression exp) loc
   | UNARY (op, exp1) -> printUnaryExpression op exp1
   | BINARY (op, exp1, exp2) -> printBinaryExpression op exp1 exp2
-  | NOTHING -> kapply "NothingExpression"  nil
-  | UNSPECIFIED -> kapply "UnspecifiedSizeExpression"  nil
+  | NOTHING -> print_kapply2 "NothingExpression" dot_klist
+  | UNSPECIFIED -> print_kapply2 "UnspecifiedSizeExpression" dot_klist
   | PAREN (exp1) -> (printExpression exp1)
   | QUESTION (exp1, exp2, exp3) -> wrap ((printExpression exp1) :: (printExpression exp2) :: (printExpression exp3) :: []) "Conditional"
   (* Special case below for the compound literals. I don't know why this isn't in the ast... *)
@@ -441,7 +458,7 @@ and printExpression exp =
   | MEMBEROFPTR (exp, fld) -> wrap ((printExpression exp) :: (printIdentifier fld) :: []) "Arrow"
   | GNU_BODY block -> wrap ((printBlock block) :: []) "GnuBody"
   | BITMEMBEROF (exp, fld) -> wrap ((printExpression exp) :: (printIdentifier fld) :: []) "DotBit"
-  | EXPR_PATTERN s -> wrap ((printRawString s) :: []) "ExpressionPattern"
+  | EXPR_PATTERN s -> wrap ((print_ktoken_string s) :: []) "ExpressionPattern"
   | LTL_ALWAYS e -> wrap ((printLTLExpression e) :: []) "LTLAlways"
   | LTL_IMPLIES (e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTLImplies"
   | LTL_EVENTUALLY e -> wrap ((printLTLExpression e) :: []) "LTLEventually"
@@ -528,9 +545,9 @@ and printForClause fc =
   | FC_EXP exp1 -> wrap ((printExpression exp1) :: []) "ForClauseExpression"
   | FC_DECL dec1 -> (printDef dec1)
 and printBreak =
-  kapply "Break"  nil
+  print_kapply2 "Break" dot_klist
 and printContinue =
-  kapply "Continue"  nil
+  print_kapply2 "Continue" dot_klist
 and printReturn exp =
   wrap ((printExpression exp) :: []) "Return"
 and printSwitch exp stat =
@@ -580,7 +597,7 @@ and printStatement a =
   | GOTO (name, loc) -> printStatementLoc (printGoto name) loc
   | COMPGOTO (exp, loc) -> printStatementLoc (printCompGoto exp) loc (* GCC's "goto *exp" *)
   | DEFINITION d -> printDef d
-  | _ -> kapply "OtherStatement"  nil
+  | _ -> print_kapply2 "OtherStatement" dot_klist
 and printStatementLoc s l =
   wrap (s :: (printCabsLoc l) :: []) "StatementLoc"
 and printStatementList a =
@@ -590,7 +607,7 @@ and printEnumItemList a =
 and printBlockLabels a =
   printNewList (fun x -> x) (List.map printString a)
 and printAttribute (a, b) =
-  wrap ((printRawString a) :: (printExpressionList b) :: []) "Attribute"
+  wrap ((print_ktoken_string a) :: (printExpressionList b) :: []) "Attribute"
 and printEnumItem (str, expression, cabsloc) =
   match expression with
   | NOTHING -> wrap ((printIdentifier str) :: []) "EnumItem"
@@ -604,28 +621,28 @@ and printSingleNameList a =
   printNewList printSingleName a
 and printSpecElem a =
   match a with
-  | SpecTypedef -> kapply "SpecTypedef"  nil
-  | SpecMissingType -> kapply "MissingType"  nil
+  | SpecTypedef -> print_kapply2 "SpecTypedef" dot_klist
+  | SpecMissingType -> print_kapply2 "MissingType" dot_klist
   | SpecCV cv ->
     (match cv with
-    | CV_CONST -> kapply "Const"  nil
-    | CV_VOLATILE -> kapply "Volatile"  nil
-    | CV_ATOMIC -> kapply "Atomic"  nil
-    | CV_RESTRICT -> kapply "Restrict"  nil
+    | CV_CONST -> print_kapply2 "Const" dot_klist
+    | CV_VOLATILE -> print_kapply2 "Volatile" dot_klist
+    | CV_ATOMIC -> print_kapply2 "Atomic" dot_klist
+    | CV_RESTRICT -> print_kapply2 "Restrict" dot_klist
     | CV_RESTRICT_RESERVED (kwd,loc) -> wrap (print_ktoken kwd "String"::printCabsLoc loc::[]) "RestrictReserved")
   | SpecAttr al -> printAttribute al
   | SpecStorage sto ->
     (match sto with
-    | NO_STORAGE -> kapply "NoStorage"  nil
-    | THREAD_LOCAL -> kapply "ThreadLocal"  nil
-    | AUTO -> kapply "Auto"  nil
-    | STATIC -> kapply "Static"  nil
-    | EXTERN -> kapply "Extern"  nil
-    | REGISTER -> kapply "Register"  nil)
+    | NO_STORAGE -> print_kapply2 "NoStorage" dot_klist
+    | THREAD_LOCAL -> print_kapply2 "ThreadLocal" dot_klist
+    | AUTO -> print_kapply2 "Auto" dot_klist
+    | STATIC -> print_kapply2 "Static" dot_klist
+    | EXTERN -> print_kapply2 "Extern" dot_klist
+    | REGISTER -> print_kapply2 "Register" dot_klist)
   | SpecInline ->
-    kapply "Inline"  nil
+    print_kapply2 "Inline" dot_klist
   | SpecNoReturn ->
-    kapply "Noreturn"  nil
+    print_kapply2 "Noreturn" dot_klist
   | SpecAlignment a ->
     (match a with
     | EXPR_ALIGNAS e -> printAlignasExpression e
@@ -638,27 +655,27 @@ and printAlignasType s d =
   wrap ((printSpecifier s) :: (printDeclType d) :: []) "AlignasType"
 
 and printTypeSpec = function
-  Tvoid -> kapply "Void"  nil
-  | Tchar -> kapply "Char"  nil
-  | Tbool -> kapply "Bool"  nil
-  | Tshort -> kapply "Short"  nil
-  | Tint -> kapply "Int"  nil
-  | Tlong -> kapply "Long"  nil
-  | ToversizedInt -> kapply "OversizedInt"  nil
-  | Tfloat -> kapply "Float"  nil
-  | Tdouble -> kapply "Double"  nil
-  | ToversizedFloat -> kapply "OversizedFloat"  nil
-  | Tsigned -> kapply "Signed"  nil
-  | Tunsigned -> kapply "Unsigned"  nil
+  Tvoid -> print_kapply2 "Void" dot_klist
+  | Tchar -> print_kapply2 "Char" dot_klist
+  | Tbool -> print_kapply2 "Bool" dot_klist
+  | Tshort -> print_kapply2 "Short" dot_klist
+  | Tint -> print_kapply2 "Int" dot_klist
+  | Tlong -> print_kapply2 "Long" dot_klist
+  | ToversizedInt -> print_kapply2 "OversizedInt" dot_klist
+  | Tfloat -> print_kapply2 "Float" dot_klist
+  | Tdouble -> print_kapply2 "Double" dot_klist
+  | ToversizedFloat -> print_kapply2 "OversizedFloat" dot_klist
+  | Tsigned -> print_kapply2 "Signed" dot_klist
+  | Tunsigned -> print_kapply2 "Unsigned" dot_klist
   | Tnamed s -> wrap ((printIdentifier s) :: []) "Named"
   | Tstruct (a, b, c) -> printStructType a b c
   | Tunion (a, b, c) -> printUnionType a b c
   | Tenum (a, b, c) -> printEnumType a b c
   | TtypeofE e -> wrap ((printExpression e) :: []) "TypeofExpression"
   | TtypeofT (s, d) -> wrap ((printSpecifier s) :: (printDeclType d) :: []) "TypeofType"
-  | TautoType -> kapply "AutoType" nil
-  | Tcomplex -> kapply "Complex"  nil
-  | Timaginary ->  kapply "Imaginary"  nil
+  | TautoType -> print_kapply2 "AutoType"dot_klist
+  | Tcomplex -> print_kapply2 "Complex" dot_klist
+  | Timaginary ->  print_kapply2 "Imaginary" dot_klist
   | Tatomic (s, d) ->  wrap ((printSpecifier s) :: (printDeclType d) :: []) "TAtomic"
 and printStructType a b c =
   match b with
