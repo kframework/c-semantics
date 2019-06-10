@@ -185,8 +185,11 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
 				$(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/compiler-src && \
-			$(OUTPUT_DIR)/kcc -Wfatal-errors --use-profile $(shell basename $(d)) \
-				-shared -o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libstdc++.so \
+			$(OUTPUT_DIR)/kcc \
+				-Wfatal-errors \
+				--use-profile $(shell basename $(d)) \
+				-shared \
+				-o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libstdc++.so \
 				*.C $(KCCFLAGS) -I .;)
 	$(info $(PROFILE): Done translating the C++ standard library.)
 
@@ -205,8 +208,11 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 				$(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/src && \
-			$(OUTPUT_DIR)/kcc -Wfatal-errors --use-profile $(shell basename $(d)) \
-				-shared -o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libc.so \
+			$(OUTPUT_DIR)/kcc \
+				-Wfatal-errors \
+				--use-profile $(shell basename $(d)) \
+				-shared \
+				-o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libc.so \
 				*.c $(KCCFLAGS) -I .)
 	$(info $(PROFILE): Done translating the C standard library.)
 
