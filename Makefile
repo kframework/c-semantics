@@ -321,13 +321,14 @@ clean:
 XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
 .PHONY: $(XYZ_SEMANTICS)
 
-# Move this to the end so that .SECONDEXPANSION does not
-# affect the rest of the rules.
 $(XYZ_SEMANTICS):
 	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR)
 
-# the % sign matches '$(NAME)-kompiled/$(NAME)',
-# e.g., c-cpp-kompiled/c-cpp'
+
+# A) Move this to the end so that .SECONDEXPANSION does not
+#    affect the rest of the rules.
+# B) The % sign matches '$(NAME)-kompiled/$(NAME)',
+#    e.g., c-cpp-kompiled/c-cpp'.
 .SECONDEXPANSION:
 $(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: $(PROFILE_OUTPUT_DIR) \
                                             $$(notdir $$*)-semantics
