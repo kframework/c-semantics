@@ -160,13 +160,13 @@ let list_of f l =
 
 (* This is where the recursive printer starts. *)
 
-let rec cabs_to_kast ((_, defs) : file) (filename : string) : string =
+let rec cabs_to_kast (defs : definition list) (filename : string) : Buffer.t =
   let (_, final_state) = printTranslationUnit filename defs init_state in
-  Buffer.contents !(final_state.buffer)
+  Buffer.add_char !(final_state.buffer) '\n'; !(final_state.buffer)
 
-and cabs_to_kore ((_, defs) : file) (filename : string) : string =
+and cabs_to_kore (defs : definition list) (filename : string) : Buffer.t =
   let (_, final_state) = printTranslationUnit filename defs {init_state with kore = true} in
-  Buffer.contents !(final_state.buffer)
+  Buffer.add_char !(final_state.buffer) '\n'; !(final_state.buffer)
 
 and printTranslationUnit (filename : string) defs s =
   (* Finangling here to extract string literals. *)

@@ -46,7 +46,7 @@ module F = Frontc
 (* module CK = Check *)
 module E = Errormsg
 open Printf
-open Kprinter
+open KPrinter
 
 type outfile = 
     { fname: string;
@@ -78,19 +78,16 @@ let trueFilename : string ref = ref ""
 let kore : bool ref = ref false
 
 let rec processOneFile (cabs: Cabs.file) =
-	begin (
-		let (inputFilename, _) = cabs in
-		let ic = open_in inputFilename in
-		let inputFilename = 
-			if (compare !trueFilename "" == 0) then inputFilename else !trueFilename in
-		let data = (if !kore then cabs_to_kore else cabs_to_kast) cabs inputFilename in
-			
-		printf "%s\n" data; 
-	(* )) *)
-	);
-		if !E.hadErrors then E.s ("Error: Error while processing file; see above for details.");
-	end
-        
+  begin (
+    let (inputFilename, defs) = cabs in
+    let ic = open_in inputFilename in
+    let inputFilename = if compare !trueFilename "" == 0 then inputFilename else !trueFilename in
+    let data = (if !kore then cabs_to_kore else cabs_to_kast) defs inputFilename in
+    Buffer.output_buffer stdout data
+  );
+    if !E.hadErrors then E.s "Error: Error while processing file; see above for details.";
+  end
+
 (***** MAIN *****)  
 let theMain () =
   let usageMsg = "Usage: cparser [options] source-files" in
@@ -153,22 +150,6 @@ let cleanup () =
     Stats.print stderr "Timings:\n"; *)
   if !E.logChannel != stderr then 
     close_out (! E.logChannel);  
-
-(* Without this handler, cilly.asm.exe will quit silently with return code 0
-   when a segfault happens. *)
-   (*
-let handleSEGV code =
-  if !Cil.currentLoc == Cil.locUnknown then
-    E.log  "**** Segmentation fault (possibly a stack overflow)\n"
-  else begin
-    E.log ("**** Segmentation fault (possibly a stack overflow) "^^
-           "while processing %a\n")
-      Cil.d_loc !Cil.currentLoc
-  end;
-  exit code
-
-let _ = Sys.set_signal Sys.sigsegv (Sys.Signal_handle handleSEGV);
-*)
 ;;
 
 begin 
