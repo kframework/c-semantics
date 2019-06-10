@@ -14,7 +14,10 @@ module CPP-TRANSLATION-EXPR-FUNCTION-CALL
      rule CallExpr((lv(_, Tr::Trace, t(... st: functionType(...)) #as T::CPPType) #Or le(_, Tr::Trace, t(... st: functionType(...)) #as T::CPPType)) #as V::Val, list(A::List), krlist(DArgs::List))
           => elabCall(V, isVirtualCall(Tr, T), A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
 
-     rule CallExpr(_:KLabel(_::K, _::K, t(... st: pointerType(t(... st: functionType(...)) #as T::CPPType))) #as V:Val, list(A::List), krlist(DArgs::List))
+     syntax Val ::= valWithType(CPPType)
+     rule valWithType(T::CPPType) => lv(?_, ?_, T) #Or le(?_, ?_, T) #Or xv(?_, ?_, T) #Or xe(?_, ?_, T) #Or prv(?_, ?_, T) #Or pre(?_, ?_, T) [macro]
+
+     rule CallExpr(valWithType(t(... st: pointerType(t(... st: functionType(...)) #as T::CPPType))) #as V:Val, list(A::List), krlist(DArgs::List))
           => elabCall(V, false, A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
 
      syntax KItem ::= elabCall(Val, Bool, List, CPPType, StrictList) [strict(5)]
