@@ -57,10 +57,10 @@ let current_switch : int printer = fun s -> (s.current_switch_id, s)
 
 let kore : bool printer = fun s -> (s.kore, s)
 
-let if_kore2 (kore_true : 'a printer) (kore_false : 'a printer) : 'a printer = kore >>= fun k ->
+let if_kore_lazy (kore_true : 'a printer) (kore_false : 'a printer) : 'a printer = kore >>= fun k ->
   if k then kore_true else kore_false
 
-let if_kore (kore_true : 'a) (kore_false : 'a) : 'a printer = if_kore2 (return kore_true) (return kore_false)
+let if_kore (kore_true : 'a) (kore_false : 'a) : 'a printer = if_kore_lazy (return kore_true) (return kore_false)
 
 (* Generic helpers. *)
 let fold_right1 (f : 'a -> 'b -> 'a) (l : 'b list) : 'a = match List.rev l with
@@ -69,31 +69,8 @@ let fold_right1 (f : 'a -> 'b -> 'a) (l : 'b list) : 'a = match List.rev l with
 let fold_left1 (f : 'a -> 'b -> 'a) (l : 'b list) : 'a = match l with
   | x :: xs -> List.fold_left f x xs
 
-(* This is from CIL. *)
-let escape_char = function
-  | '\007' -> "\\a"
-  | '\b'   -> "\\b"
-  | '\t'   -> "\\t"
-  | '\n'   -> "\\n"
-  | '\011' -> "\\v"
-  | '\012' -> "\\f"
-  | '\r'   -> "\\r"
-  | '"'    -> "\\\""
-  | '\''   -> "\\'"
-  | '\\'   -> "\\\\"
-  | ' ' .. '~' as printable
-           -> String.make 1 printable
-  | unprintable -> Printf.sprintf "\\%03o" (Char.code unprintable)
-
-let k_char_escape (buf: Buffer.t) (c: char) : unit = match c with
-| '"'  -> Buffer.add_string buf "\\\""
-| '\\' -> Buffer.add_string buf "\\\\"
-| '\n' -> Buffer.add_string buf "\\n"
-| '\t' -> Buffer.add_string buf "\\t"
-| '\r' -> Buffer.add_string buf "\\r"
-| _ when let code = Char.code c in code >= 32 && code < 127
-       -> Buffer.add_char buf c
-| _    -> Buffer.add_string buf (Printf.sprintf "\\x%02x" (Char.code c))
+(* Function composition. *)
+let (%) (g : 'b -> 'c) (f : 'a -> 'b) : 'a -> 'c = fun a -> g (f a)
 
 (* Given a character constant (like 'a' or 'abc') as a list of 64-bit
  * values, turn it into a CIL constant.  Multi-character constants are
@@ -109,22 +86,49 @@ let interpret_character_constant char_list =
 let interpret_wcharacter_constant char_list =
   Int64.to_int (reduce_multichar 32 char_list)
 
-(* Atomic output. *)
-let kstring (s : string) : string printer = if_kore s ("\"" ^ s ^ "\"")
+(* Escaping. *)
+let k_char_escape (buf: Buffer.t) : char -> unit = Buffer.add_string buf % function
+| '"'  -> "\\\""
+| '\\' -> "\\\\"
+| '\n' -> "\\n"
+| '\t' -> "\\t"
+| '\r' -> "\\r"
+| c when let code = Char.code c in code >= 32 && code < 127
+       -> Printf.sprintf "%c" c
+| c    -> Printf.sprintf "\\x%02x" (Char.code c)
 
 let k_string_escape (str : string) : string =
   let buf = Buffer.create (String.length str) in
   String.iter (k_char_escape buf) str; Buffer.contents buf
 
+let klabel_char_escape_kore (buf: Buffer.t) : char -> unit =
+  let opt_apost s =
+    if (Buffer.length buf > 0) && (Buffer.nth buf (Buffer.length buf - 1) = '\'')
+    then (Buffer.truncate buf (Buffer.length buf - 1); s) else ("'" ^ s)
+  in
+  Buffer.add_string buf % function
+  | '_' -> opt_apost "Unds'"
+  | '.' -> opt_apost "Stop'"
+  | '(' -> opt_apost "LPar'"
+  | ')' -> opt_apost "RPar'"
+  | c   -> Printf.sprintf "%c" c
+
+let klabel_escape (str : string) : string printer =
+  let buf = Buffer.create (String.length str) in
+  if_kore (String.iter (klabel_char_escape_kore buf) str; Buffer.contents buf) str
+
+(* Atomic output. *)
+let kstring (s : string) : string printer = if_kore s ("\"" ^ s ^ "\"")
+
 let dot_klist : unit printer = puts ".KList"
 
 let ksort (sort : string) : unit printer =
-  if_kore2 (puts "Sort" >> puts sort >> puts "{}") (puts sort)
+  if_kore_lazy (puts "Sort" >> puts sort >> puts "{}") (puts sort)
 
 let ktoken (sort : string) (s : string) : unit printer =
-  if_kore2
+  if_kore_lazy
     (puts "\dv{"      >> ksort sort               >> puts "}(\""   >> puts (k_string_escape s) >> puts "\")")
-    (puts "#token(\"" >> puts (k_string_escape s) >> puts "\", \"" >> ksort sort         >> puts "\")")
+    (puts "#token(\"" >> puts (k_string_escape s) >> puts "\", \"" >> ksort sort               >> puts "\")")
 
 let ktoken_string (s : string) : unit printer          = kstring s >>= ktoken "String"
 let ktoken_bool (v : bool) : unit printer              = ktoken "Bool" (if v then "true" else "false")
@@ -139,17 +143,20 @@ let klabel (label : string) : unit printer =
 let kapply (label : string) (children : (unit printer) list) : unit printer =
   klabel label >> puts "(" >> fold_left1 (fun a b -> (a >> (puts ", ") >> b)) children >> puts ")"
 
-let kapply1 (label : string) (contents : unit printer) : unit printer =
-  kapply label [contents]
-
 let kapply0 (label : string) : unit printer =
   kapply label [dot_klist]
 
-(* TODO *)
-let printNewList_TODO l =
-  kapply1 "list" (List.fold_right (fun k l -> kapply "_List_" [kapply1 "ListItem" k; l]) l (kapply0 ".List"))
+let kapply1 (label : string) (contents : unit printer) : unit printer =
+  kapply label [contents]
 
-let printNewList f l = printNewList_TODO (List.map f l)
+(* TODO *)
+
+let dot_list : unit printer = kapply0 ".List"
+
+let list_of f l =
+  let elems = List.map f l in
+  let op = fun k l -> kapply "_List_" [kapply1 "ListItem" k; l] in
+  kapply1 "list" (List.fold_right op elems dot_list)
 
 (* This is where the recursive printer starts. *)
 
@@ -165,11 +172,11 @@ and printTranslationUnit (filename : string) defs s =
   (* Finangling here to extract string literals. *)
   let (_, s_intr)   = printDefs defs s in
   let fn            = ktoken_string filename in
-  let print_strings = get_string_literals >>= fun strings -> printNewList (kapply1 "Constant") strings in
+  let print_strings = get_string_literals >>= fun strings -> list_of (kapply1 "Constant") strings in
   let ast           = fun s -> (Buffer.add_buffer !(s.buffer) !(s_intr.buffer); ((), s)) in
   kapply "TranslationUnit" [fn; print_strings; ast] {s_intr with buffer = ref (Buffer.create 100)}
 
-and printDefs defs = printNewList printDef defs
+and printDefs defs = list_of printDef defs
 
 and printDef = function
   | FUNDEF (a, b, c, d)       -> printDefinitionLocRange (kapply "FunctionDefinition" [printSingleName a; printBlock b]) c d
@@ -204,12 +211,12 @@ and printName (a, b, c, d) =
   printNameLoc (kapply "Name" [name; printDeclType b; printSpecElemList c]) d
 and printInitNameGroup (a, b) = kapply "InitNameGroup" [printSpecifier a; printInitNameList b]
 and printNameGroup (a, b) = kapply "NameGroup" [printSpecifier a; printNameList b]
-and printNameList a = printNewList printName a
-and printInitNameList a = printNewList printInitName a
-and printFieldGroupList a = printNewList printFieldGroup a
+and printNameList a = list_of printName a
+and printInitNameList a = list_of printInitName a
+and printFieldGroupList a = list_of printFieldGroup a
 and printFieldGroup (spec, fields) =
   kapply "FieldGroup" [printSpecifier spec; printFieldList fields]
-and printFieldList a = printNewList printField a
+and printFieldList a = list_of printField a
 and printField (name, expOpt) = match expOpt with
   | None     -> kapply "FieldName" [printName name]
   | Some exp -> kapply "BitFieldName" [printName name; printExpression exp]
@@ -224,8 +231,8 @@ and printInitExpressionForCast a castPrinter compoundLiteralPrinter = match a wi
   | NO_INIT         -> kapply1 "Error" (puts "cast with a NO_INIT inside doesn't make sense")
   | SINGLE_INIT exp -> castPrinter (printExpression exp)
   | COMPOUND_INIT a -> compoundLiteralPrinter (kapply "CompoundInit" [printInitFragmentList a])
-and printInitFragmentList a = printNewList printInitFragment a
-and printGenericAssocs assocs = printNewList printGenericAssoc assocs
+and printInitFragmentList a = list_of printInitFragment a
+and printGenericAssocs assocs = list_of printGenericAssoc assocs
 and printInitFragment (a, b) = kapply "InitFragment" [printInitWhat a; printInitExpression b]
 and printInitWhat = function
   | NEXT_INIT                      -> kapply0 "NextInit"
@@ -253,7 +260,7 @@ and printNoProtoType a b c =
   kapply "NoPrototype" [printDeclType a; printSingleNameList b; variadicCell]
 and printNop = kapply0 "Nop"
 and printComputation exp = kapply "Computation" [printExpression exp]
-and printExpressionList defs = printNewList printExpression defs
+and printExpressionList defs = list_of printExpression defs
 
 and string_of_list_of_int64 (xs : int64 list) =
   let length = List.length xs in
@@ -273,7 +280,7 @@ and printConstant const =
   | CONST_STRING s   -> save_string_literal (printStringLiteral s)
   | CONST_WSTRING ws -> save_string_literal (printWStringLiteral ws)
 and printStringLiteral s = kapply1 "StringLiteral" (ktoken_string s)
-and printWStringLiteral ws = kapply1 "WStringLiteral" (printNewList (fun i -> ktoken_int (Int64.to_int i)) ws)
+and printWStringLiteral ws = kapply1 "WStringLiteral" (list_of (fun i -> ktoken_int (Int64.to_int i)) ws)
 and splitFloat (xs, i) =
   let lastOne = if String.length i > 1 then String.uppercase (Str.last_chars i 1) else "x" in
   let newi    = Str.string_before i (String.length i - 1) in
@@ -371,7 +378,7 @@ and printExpression = function
   | BINARY (op, exp1, exp2)                                    -> printBinaryExpression op exp1 exp2
   | NOTHING                                                    -> kapply0 "NothingExpression"
   | UNSPECIFIED                                                -> kapply0 "UnspecifiedSizeExpression"
-  | PAREN (exp1)                                               -> (printExpression exp1)
+  | PAREN (exp1)                                               -> printExpression exp1
   | QUESTION (exp1, exp2, exp3)                                -> kapply "Conditional" [printExpression exp1; printExpression exp2; printExpression exp3]
   (* Special case below for the compound literals. I don't know why this isn't in the ast... *)
   | CAST ((spec, declType), initExp)                           -> new_counter >>= (fun id ->
@@ -471,7 +478,7 @@ and printReturn exp = kapply "Return" [printExpression exp]
 and printSwitch exp stat = push_switch >>= fun newSwitchId ->
   let idCell = ktoken_int newSwitchId in
   let retval = kapply "Switch" [idCell; printExpression exp; newBlockStatement stat] in
-  (retval >> pop_switch)
+  retval >> pop_switch
 and printCase exp stat = current_switch >>= fun currentSwitchId -> new_counter >>= fun counter ->
   let switchIdCell = ktoken_int currentSwitchId in
   let caseIdCell = ktoken_int counter in
@@ -505,17 +512,17 @@ and printStatement = function
   | DEFINITION d                      -> printDef d
   | _                                 -> kapply0 "OtherStatement"
 and printStatementLoc s l = kapply "StatementLoc" [s; printCabsLoc l]
-and printStatementList a = printNewList printStatement a
-and printEnumItemList a = printNewList printEnumItem a
-and printBlockLabels a = printNewList (fun x -> x) (List.map puts a)
+and printStatementList a = list_of printStatement a
+and printEnumItemList a = list_of printEnumItem a
+and printBlockLabels a = list_of puts a
 and printAttribute (a, b) = kapply "Attribute" [ktoken_string a; printExpressionList b]
 and printEnumItem (str, exp, cabsloc) = match exp with
   | NOTHING -> kapply "EnumItem" [printIdentifier str]
   | exp     -> kapply "EnumItemInit" [printIdentifier str; printExpression exp]
 
 and printSpecifier a = kapply "Specifier" [printSpecElemList a]
-and printSpecElemList a = printNewList printSpecElem a
-and printSingleNameList a = printNewList printSingleName a
+and printSpecElemList a = list_of printSpecElem a
+and printSingleNameList a = list_of printSingleName a
 and printSpecElem = function
   | SpecTypedef      -> kapply0 "SpecTypedef"
   | SpecMissingType  -> kapply0 "MissingType"
