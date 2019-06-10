@@ -403,7 +403,7 @@ module CPP-TRANSLATION-NAME
 
      rule (cSet(_, C:Class :: _) => .K) ~> _ . no-template Name(NoNNS() => C, _)
 
-     syntax Bool ::= isQualifiedName(Expr)
+     syntax Bool ::= isQualifiedName(Expr) [function]
 
      rule isQualifiedName(Name(N::NNS, _)) => true
           requires N =/=K NoNNS()
