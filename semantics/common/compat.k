@@ -53,7 +53,7 @@ module COMPAT-SYNTAX
      syntax Set ::= filterSet(Set, Predicate) [function]
      syntax List ::= filterList(List, Predicate) [function]
 
-     syntax Bool ::= Predicate "(" K ")" [function]
+     syntax Bool ::= Predicate "(" K ")" [function, avoid]
 
      syntax Set ::= listToSet(List) [function]
 
