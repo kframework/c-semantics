@@ -6,7 +6,7 @@ module C-NATIVE-BRIDGE-SYNTAX
      syntax KItem ::= nativeCall(Int, List, List)
 endmodule
 
-module C-NATIVE-BRIDGE
+module C-NATIVE-BRIDGE [kast]
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports C-NATIVE-BRIDGE-SYNTAX
