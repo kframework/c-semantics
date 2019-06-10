@@ -1,11 +1,9 @@
 open Escape
 open Cabs
 
-(*let undef = raise (Failure "undefined") *)
+(* Types. *)
 
-let iskore : bool ref = ref false
-
-(* Printer state *)
+(* Printer state. *)
 type printer_state =
   {
     kore : bool;
@@ -15,8 +13,11 @@ type printer_state =
     string_literals : (unit printer) list;
     buffer : Buffer.t ref;
   }
-(* State monad *)
+
+(* State monad. *)
 and 'a printer = printer_state -> ('a * printer_state)
+
+type attribute = Attrib of string * string
 
 let init_state : printer_state =
   {
@@ -28,13 +29,14 @@ let init_state : printer_state =
     buffer = ref (Buffer.create 100);
   }
 
+(* Monad morphisms. *)
 let return (a : 'a) : 'a printer = fun s -> (a, s)
 
 let (>>=) (m : 'a printer) (f : 'a -> 'b printer) : 'b printer = fun s ->
   let (a_intr, s_intr) = m s in
   (f a_intr) s_intr
 
-let (>>) (a : 'a printer) (b : 'b printer) : 'b printer = a >>= (fun _ -> b)
+let (>>) (ma : 'a printer) (mb : 'b printer) : 'b printer = ma >>= fun _ -> mb
 
 let puts (str : string) : unit printer = fun s -> (Buffer.add_string !(s.buffer) str, s)
 
@@ -45,8 +47,8 @@ let get_string_literals : ((unit printer) list) printer = fun s -> (s.string_lit
 
 let new_counter : int printer = fun s -> (s.counter + 1, {s with counter = s.counter + 1})
 
-let push_switch : int printer = new_counter >>= (fun counter s ->
-  (counter, {s with switch_stack = counter :: s.switch_stack; current_switch_id = counter}))
+let push_switch : int printer = new_counter >>= fun counter s ->
+  (counter, {s with switch_stack = counter :: s.switch_stack; current_switch_id = counter})
 
 let pop_switch : unit printer = fun s ->
   ((), {s with switch_stack = List.tl s.switch_stack; current_switch_id = List.hd s.switch_stack})
@@ -55,10 +57,19 @@ let current_switch : int printer = fun s -> (s.current_switch_id, s)
 
 let kore : bool printer = fun s -> (s.kore, s)
 
-let if_kore (kore_true : 'a printer) (kore_false : 'a printer) : 'a printer = kore >>= (fun k ->
-  if k then kore_true else kore_false)
+let if_kore2 (kore_true : 'a printer) (kore_false : 'a printer) : 'a printer = kore >>= fun k ->
+  if k then kore_true else kore_false
 
-(* this is from cil *)
+let if_kore (kore_true : 'a) (kore_false : 'a) : 'a printer = if_kore2 (return kore_true) (return kore_false)
+
+(* Generic helpers. *)
+let fold_right1 (f : 'a -> 'b -> 'a) (l : 'b list) : 'a = match List.rev l with
+  | x :: xs -> List.fold_right f xs x
+
+let fold_left1 (f : 'a -> 'b -> 'a) (l : 'b list) : 'a = match l with
+  | x :: xs -> List.fold_left f x xs
+
+(* This is from CIL. *)
 let escape_char = function
   | '\007' -> "\\a"
   | '\b'   -> "\\b"
@@ -84,13 +95,6 @@ let k_char_escape (buf: Buffer.t) (c: char) : unit = match c with
        -> Buffer.add_char buf c
 | _    -> Buffer.add_string buf (Printf.sprintf "\\x%02x" (Char.code c))
 
-let kstring (s : string) : string =
-  if !iskore then s else "\"" ^ s ^ "\""
-
-let k_string_escape str =
-  let buf = Buffer.create (String.length str) in
-  String.iter (k_char_escape buf) str; Buffer.contents buf
-
 (* Given a character constant (like 'a' or 'abc') as a list of 64-bit
  * values, turn it into a CIL constant.  Multi-character constants are
  * treated as multi-digit numbers with radix given by the bit width of
@@ -105,175 +109,150 @@ let interpret_character_constant char_list =
 let interpret_wcharacter_constant char_list =
   Int64.to_int (reduce_multichar 32 char_list)
 
-type attribute = Attrib of string * string
+(* Atomic output. *)
+let kstring (s : string) : string printer = if_kore s ("\"" ^ s ^ "\"")
 
-let dot_klist : string = ".KList"
+let k_string_escape (str : string) : string =
+  let buf = Buffer.create (String.length str) in
+  String.iter (k_char_escape buf) str; Buffer.contents buf
 
-let ksort (sort : string) : string =
-  if !iskore then ( "Sort" ^ sort ^ "{}" ) else sort
+let dot_klist : unit printer = puts ".KList"
 
-let ktoken (sort : string) (s : string) : string =
-  if !iskore then "\dv{" ^ ksort sort ^ "}(\"" ^ k_string_escape s ^ "\")"
-  else "#token(\"" ^ k_string_escape s ^ "\", \"" ^ ksort sort ^ "\")"
+let ksort (sort : string) : unit printer =
+  if_kore2 (puts "Sort" >> puts sort >> puts "{}") (puts sort)
 
-let ktoken_string (s : string) : string = ktoken "String" (kstring s)
-let ktoken_bool (v : bool) : string = ktoken "Bool" (if v then "true" else "false")
-let ktoken_int (v : int) : string = ktoken "Int" (string_of_int v)
-let ktoken_int_of_string (v : string) : string = ktoken "Int" v
-let ktoken_float (v : float) : string = ktoken "Float" (string_of_float v)
-let ktoken_float_of_string (v : string) : string = ktoken "Float" v
+let ktoken (sort : string) (s : string) : unit printer =
+  if_kore2
+    (puts "\dv{"      >> ksort sort               >> puts "}(\""   >> puts (k_string_escape s) >> puts "\")")
+    (puts "#token(\"" >> puts (k_string_escape s) >> puts "\", \"" >> ksort sort         >> puts "\")")
 
-let print_ktoken_string (s : string) : unit printer = puts (ktoken_string s)
-let print_ktoken_bool (v : bool) : unit printer = puts (ktoken_bool v)
-let print_ktoken_int (v : int) : unit printer = puts (ktoken_int v)
-let print_ktoken_int_of_string (v : string) : unit printer = puts (ktoken_int_of_string v)
-let print_ktoken_float (v : float) : unit printer = puts (ktoken_float v)
-let print_ktoken_float_of_string (v : string) : unit printer = puts (ktoken_float_of_string v)
+let ktoken_string (s : string) : unit printer          = kstring s >>= ktoken "String"
+let ktoken_bool (v : bool) : unit printer              = ktoken "Bool" (if v then "true" else "false")
+let ktoken_int (v : int) : unit printer                = ktoken "Int" (string_of_int v)
+let ktoken_int_of_string (v : string) : unit printer   = ktoken "Int" v
+let ktoken_float (v : float) : unit printer            = ktoken "Float" (string_of_float v)
+let ktoken_float_of_string (v : string) : unit printer = ktoken "Float" v
 
-let print_ktoken (sort : string) (s : string) : unit printer = puts (ktoken sort s)
+let klabel (label : string) : unit printer =
+  (if_kore "Lbl" "`" >>= puts) >> puts label >> (if_kore "{}" "`" >>= puts)
 
-let klabel (label : string) : string =
-  let left  = if !iskore then "Lbl" else "`" in
-  let right = if !iskore then "{}" else "`" in
-  left ^ label ^ right
+let kapply (label : string) (children : (unit printer) list) : unit printer =
+  klabel label >> puts "(" >> fold_left1 (fun a b -> (a >> (puts ", ") >> b)) children >> puts ")"
 
-let kapply (label : string) (contents : string) : string = klabel label ^ "(" ^ contents  ^ ")"
+let kapply1 (label : string) (contents : unit printer) : unit printer =
+  kapply label [contents]
 
-let kapply0 (label : string) : string = klabel label ^ "(" ^ dot_klist  ^ ")"
-
-let print_kapply (label : string) (contents : unit printer) : unit printer =
-  puts (klabel label) >> puts "(" >>  contents >> puts ")"
-
-(* TODO *)
-let print_kapply1 (label : string) (contents : string) : unit printer =
-  puts (kapply label contents)
-
-let print_kapply0 (label : string) : unit printer =
-  puts (kapply0 label)
-
-let fold_right1 (f : 'a -> 'b -> 'a) (l : 'b list) : 'a = match List.rev l with
-  | x :: xs -> List.fold_right f xs x
-
-let fold_left1 (f : 'a -> 'b -> 'a) (l : 'b list) : 'a = match l with
-  | x :: xs -> List.fold_left f x xs
-
-let wrap (children : (unit printer) list) (name : string) : unit printer =
-  print_kapply name (fold_left1 (fun a b -> (a >> (puts ", ") >> b)) children)
-
-let print_dot_klist : unit printer = puts dot_klist
+let kapply0 (label : string) : unit printer =
+  kapply label [dot_klist]
 
 (* TODO *)
 let printNewList_TODO l =
-  print_kapply "list" (List.fold_right (fun k l -> wrap [print_kapply "ListItem" k; l] "_List_") l (print_kapply0 ".List"))
+  kapply1 "list" (List.fold_right (fun k l -> kapply "_List_" [kapply1 "ListItem" k; l]) l (kapply0 ".List"))
 
 let printNewList f l = printNewList_TODO (List.map f l)
 
 (* This is where the recursive printer starts. *)
 
-let rec cabs_to_kast (f : file) (real_name : string) : string =
-  iskore := false;
-  cabs_to_k f real_name
-
-and cabs_to_kore (f : file) (real_name : string) : string =
-  iskore := true;
-  cabs_to_k f real_name
-
-and cabs_to_k ((_, defs) : file) (filename : string) : string =
+let rec cabs_to_kast ((_, defs) : file) (filename : string) : string =
   let (_, final_state) = printTranslationUnit filename defs init_state in
+  Buffer.contents !(final_state.buffer)
+
+and cabs_to_kore ((_, defs) : file) (filename : string) : string =
+  let (_, final_state) = printTranslationUnit filename defs {init_state with kore = true} in
   Buffer.contents !(final_state.buffer)
 
 and printTranslationUnit (filename : string) defs s =
   (* Finangling here to extract string literals. *)
   let (_, s_intr)   = printDefs defs s in
-  let fn            = print_ktoken_string filename in
-  let print_strings = get_string_literals >>= fun strings -> printNewList (print_kapply "Constant") strings in
+  let fn            = ktoken_string filename in
+  let print_strings = get_string_literals >>= fun strings -> printNewList (kapply1 "Constant") strings in
   let ast           = fun s -> (Buffer.add_buffer !(s.buffer) !(s_intr.buffer); ((), s)) in
-  wrap [fn; print_strings; ast] "TranslationUnit" {s_intr with buffer = ref (Buffer.create 100)}
+  kapply "TranslationUnit" [fn; print_strings; ast] {s_intr with buffer = ref (Buffer.create 100)}
 
 and printDefs defs = printNewList printDef defs
 
 and printDef = function
-  | FUNDEF (a, b, c, d)       -> printDefinitionLocRange (wrap [printSingleName a; printBlock b] "FunctionDefinition") c d
-  | DECDEF (a, b)             -> printDefinitionLoc (wrap [printInitNameGroup a] "DeclarationDefinition") b
-  | TYPEDEF (a, b)            -> printDefinitionLoc (wrap [printNameGroup a] "Typedef") b
-  | ONLYTYPEDEF (a, b)        -> printDefinitionLoc (wrap [printSpecifier a] "OnlyTypedef") b
-  | GLOBASM (a, b)            -> printDefinitionLoc (wrap [print_ktoken_string a] "GlobAsm") b
-  | PRAGMA (a, b)             -> printDefinitionLoc (wrap [printExpression a] "Pragma") b
-  | LINKAGE (a, b, c)         -> printDefinitionLoc (wrap [print_ktoken_string a; printDefs c] "Linkage") b
-  | TRANSFORMER (a, b, c)     -> printDefinitionLoc (wrap [printDef a; printDefs b] "Transformer") c
-  | EXPRTRANSFORMER (a, b, c) -> printDefinitionLoc (wrap [printExpression a; printExpression b] "ExprTransformer") c
-  | LTL_ANNOTATION (a, b, c)  -> printDefinitionLoc (wrap [printIdentifier a; printExpression b] "LTLAnnotation") c
-  | STATIC_ASSERT (a, b, c)   -> printDefinitionLoc (wrap [printExpression a; printConstant b] "StaticAssert") c
+  | FUNDEF (a, b, c, d)       -> printDefinitionLocRange (kapply "FunctionDefinition" [printSingleName a; printBlock b]) c d
+  | DECDEF (a, b)             -> printDefinitionLoc (kapply "DeclarationDefinition" [printInitNameGroup a]) b
+  | TYPEDEF (a, b)            -> printDefinitionLoc (kapply "Typedef" [printNameGroup a]) b
+  | ONLYTYPEDEF (a, b)        -> printDefinitionLoc (kapply "OnlyTypedef" [printSpecifier a]) b
+  | GLOBASM (a, b)            -> printDefinitionLoc (kapply "GlobAsm" [ktoken_string a]) b
+  | PRAGMA (a, b)             -> printDefinitionLoc (kapply "Pragma" [printExpression a]) b
+  | LINKAGE (a, b, c)         -> printDefinitionLoc (kapply "Linkage" [ktoken_string a; printDefs c]) b
+  | TRANSFORMER (a, b, c)     -> printDefinitionLoc (kapply "Transformer" [printDef a; printDefs b]) c
+  | EXPRTRANSFORMER (a, b, c) -> printDefinitionLoc (kapply "ExprTransformer" [printExpression a; printExpression b]) c
+  | LTL_ANNOTATION (a, b, c)  -> printDefinitionLoc (kapply "LTLAnnotation" [printIdentifier a; printExpression b]) c
+  | STATIC_ASSERT (a, b, c)   -> printDefinitionLoc (kapply "StaticAssert" [printExpression a; printConstant b]) c
 
-and printDefinitionLoc a l = if hasInformation l then wrap [a; printCabsLoc l] "DefinitionLoc" else a
-and printDefinitionLocRange a b c = wrap [a; printCabsLoc b; printCabsLoc c] "DefinitionLocRange"
-and printSingleName (a, b) = wrap [printSpecifier a; printName b] "SingleName"
-and printAttr a b = wrap [a; printSpecElemList b] "AttributeWrapper"
+and printDefinitionLoc a l = if hasInformation l then kapply "DefinitionLoc" [a; printCabsLoc l] else a
+and printDefinitionLocRange a b c = kapply "DefinitionLocRange" [a; printCabsLoc b; printCabsLoc c]
+and printSingleName (a, b) = kapply "SingleName" [printSpecifier a; printName b]
+and printAttr a b = kapply "Attributekapplyper" [a; printSpecElemList b]
 and printBlock a = new_counter >>= fun blockNum ->
-  wrap [print_ktoken_int blockNum; printBlockLabels a.blabels; printStatementList a.bstmts] "Block3"
+  kapply "Block3" [ktoken_int blockNum; printBlockLabels a.blabels; printStatementList a.bstmts]
 and printCabsLoc a =
   let filename = if Filename.is_relative a.filename then Filename.concat (Sys.getcwd ()) a.filename else a.filename in
-  wrap [print_ktoken_string a.filename; print_ktoken_string filename; print_ktoken_int a.lineno; print_ktoken_int a.lineOffsetStart; print_ktoken_bool a.systemHeader] "CabsLoc"
+  kapply "CabsLoc" [ktoken_string a.filename; ktoken_string filename; ktoken_int a.lineno; ktoken_int a.lineOffsetStart; ktoken_bool a.systemHeader]
 
 and hasInformation l = l.lineno <> -10
 and printNameLoc s _ = s
 and printIdentifier a =
-  print_kapply1 "ToIdentifier" (ktoken_string a)
+  kapply1 "ToIdentifier" (ktoken_string a)
 (* string * decl_type * attribute list * cabsloc *)
 and printName (a, b, c, d) =
-  let name = if a = "" then print_kapply0 "AnonymousName" else printIdentifier a in
-  printNameLoc (wrap [name; printDeclType b; printSpecElemList c] "Name") d
-and printInitNameGroup (a, b) = wrap [printSpecifier a; printInitNameList b] "InitNameGroup"
-and printNameGroup (a, b) = wrap [printSpecifier a; printNameList b] "NameGroup"
+  let name = if a = "" then kapply0 "AnonymousName" else printIdentifier a in
+  printNameLoc (kapply "Name" [name; printDeclType b; printSpecElemList c]) d
+and printInitNameGroup (a, b) = kapply "InitNameGroup" [printSpecifier a; printInitNameList b]
+and printNameGroup (a, b) = kapply "NameGroup" [printSpecifier a; printNameList b]
 and printNameList a = printNewList printName a
 and printInitNameList a = printNewList printInitName a
 and printFieldGroupList a = printNewList printFieldGroup a
 and printFieldGroup (spec, fields) =
-  wrap [printSpecifier spec; printFieldList fields] "FieldGroup"
+  kapply "FieldGroup" [printSpecifier spec; printFieldList fields]
 and printFieldList a = printNewList printField a
 and printField (name, expOpt) = match expOpt with
-  | None     -> wrap [printName name] "FieldName"
-  | Some exp -> wrap [printName name; printExpression exp] "BitFieldName"
+  | None     -> kapply "FieldName" [printName name]
+  | Some exp -> kapply "BitFieldName" [printName name; printExpression exp]
 and printInitName (a, b) =
-  wrap [printName a; printInitExpression b] "InitName"
+  kapply "InitName" [printName a; printInitExpression b]
 and printInitExpression = function
-  | NO_INIT         -> print_kapply0 "NoInit"
-  | SINGLE_INIT exp -> wrap [printExpression exp] "SingleInit"
-  | COMPOUND_INIT a -> wrap [printInitFragmentList a] "CompoundInit"
+  | NO_INIT         -> kapply0 "NoInit"
+  | SINGLE_INIT exp -> kapply "SingleInit" [printExpression exp]
+  | COMPOUND_INIT a -> kapply "CompoundInit" [printInitFragmentList a]
 (* This is used when we are printing an init inside a cast, i.e., possibly a compound literal. *)
 and printInitExpressionForCast a castPrinter compoundLiteralPrinter = match a with
-  | NO_INIT         -> print_kapply1 "Error" "cast with a NO_INIT inside doesn't make sense"
+  | NO_INIT         -> kapply1 "Error" (puts "cast with a NO_INIT inside doesn't make sense")
   | SINGLE_INIT exp -> castPrinter (printExpression exp)
-  | COMPOUND_INIT a -> compoundLiteralPrinter (wrap [printInitFragmentList a] "CompoundInit")
+  | COMPOUND_INIT a -> compoundLiteralPrinter (kapply "CompoundInit" [printInitFragmentList a])
 and printInitFragmentList a = printNewList printInitFragment a
 and printGenericAssocs assocs = printNewList printGenericAssoc assocs
-and printInitFragment (a, b) = wrap [printInitWhat a; printInitExpression b] "InitFragment"
+and printInitFragment (a, b) = kapply "InitFragment" [printInitWhat a; printInitExpression b]
 and printInitWhat = function
-  | NEXT_INIT                      -> print_kapply0 "NextInit"
-  | INFIELD_INIT (id, what)        -> wrap [printIdentifier id; printInitWhat what] "InFieldInit"
-  | ATINDEX_INIT (exp, what)       -> wrap [printExpression exp; printInitWhat what] "AtIndexInit"
-  | ATINDEXRANGE_INIT (exp1, exp2) -> wrap [printExpression exp1; printExpression exp2] "AtIndexRangeInit"
+  | NEXT_INIT                      -> kapply0 "NextInit"
+  | INFIELD_INIT (id, what)        -> kapply "InFieldInit" [printIdentifier id; printInitWhat what]
+  | ATINDEX_INIT (exp, what)       -> kapply "AtIndexInit" [printExpression exp; printInitWhat what]
+  | ATINDEXRANGE_INIT (exp1, exp2) -> kapply "AtIndexRangeInit" [printExpression exp1; printExpression exp2]
 and printDeclType = function
-  | JUSTBASE            -> print_kapply0 "JustBase"
+  | JUSTBASE            -> kapply0 "JustBase"
   | PARENTYPE (a, b, c) -> printParenType a b c
   | ARRAY (a, b, c, d)  -> printArrayType a b c d
   | PTR (a, b)          -> printPointerType a b
   | PROTO (a, b, c)     -> printProtoType a b c
   | NOPROTO (a, b, c)   -> printNoProtoType a b c
 and printParenType a b c =
-  wrap [printDeclType b] "FunctionType"
+  kapply "FunctionType" [printDeclType b]
 and printArrayType a b c d =
-  wrap [printDeclType a; printExpression c; printSpecifier (b@d)] "ArrayType"
+  kapply "ArrayType" [printDeclType a; printExpression c; printSpecifier (b@d)]
 and printPointerType a b =
-  wrap [printSpecifier a; printDeclType b] "PointerType"
+  kapply "PointerType" [printSpecifier a; printDeclType b]
 and printProtoType a b c =
-  let variadicCell = print_ktoken_bool c in
-  wrap [printDeclType a; printSingleNameList b; variadicCell] "Prototype"
+  let variadicCell = ktoken_bool c in
+  kapply "Prototype" [printDeclType a; printSingleNameList b; variadicCell]
 and printNoProtoType a b c =
-  let variadicCell = print_ktoken_bool c in
-  wrap [printDeclType a; printSingleNameList b; variadicCell] "NoPrototype"
-and printNop = print_kapply0 "Nop"
-and printComputation exp = wrap [printExpression exp] "Computation"
+  let variadicCell = ktoken_bool c in
+  kapply "NoPrototype" [printDeclType a; printSingleNameList b; variadicCell]
+and printNop = kapply0 "Nop"
+and printComputation exp = kapply "Computation" [printExpression exp]
 and printExpressionList defs = printNewList printExpression defs
 
 and string_of_list_of_int64 (xs : int64 list) =
@@ -289,12 +268,12 @@ and printConstant const =
   match const with
   | CONST_INT i      -> printIntLiteral i
   | CONST_FLOAT r    -> printFloatLiteral r
-  | CONST_CHAR c     -> wrap [print_ktoken_int (interpret_character_constant c)] "CharLiteral"
-  | CONST_WCHAR c    -> wrap [print_ktoken_int (interpret_wcharacter_constant c)] "WCharLiteral"
+  | CONST_CHAR c     -> kapply "CharLiteral" [ktoken_int (interpret_character_constant c)]
+  | CONST_WCHAR c    -> kapply "WCharLiteral" [ktoken_int (interpret_wcharacter_constant c)]
   | CONST_STRING s   -> save_string_literal (printStringLiteral s)
   | CONST_WSTRING ws -> save_string_literal (printWStringLiteral ws)
-and printStringLiteral s = print_kapply "StringLiteral" (print_ktoken_string s)
-and printWStringLiteral ws = print_kapply "WStringLiteral" (printNewList (fun i -> print_ktoken_int (Int64.to_int i)) ws)
+and printStringLiteral s = kapply1 "StringLiteral" (ktoken_string s)
+and printWStringLiteral ws = kapply1 "WStringLiteral" (printNewList (fun i -> ktoken_int (Int64.to_int i)) ws)
 and splitFloat (xs, i) =
   let lastOne = if String.length i > 1 then String.uppercase (Str.last_chars i 1) else "x" in
   let newi    = Str.string_before i (String.length i - 1) in
@@ -325,10 +304,10 @@ and printHexFloatConstant f =
   let significand                 = wholePart ^ "." ^ fractionalPart in
   let approx                      = float_of_string ("0x" ^ significand) in
   let approx                      = approx *. (2. ** (float_of_int exponentPart)) in
-  let exponentPart                = print_ktoken_int exponentPart in
-  let significandPart             = print_ktoken_string significand in
-  let approxPart                  = print_ktoken_float approx in
-  wrap [significandPart; exponentPart; approxPart] "HexFloatConstant"
+  let exponentPart                = ktoken_int exponentPart in
+  let significandPart             = ktoken_string significand in
+  let approxPart                  = ktoken_float approx in
+  kapply "HexFloatConstant" [significandPart; exponentPart; approxPart]
 and printDecFloatConstant f =
   let f                           = Str.split (Str.regexp "[eE]") f in
   let (significand, exponentPart) = (match f with
@@ -346,10 +325,10 @@ and printDecFloatConstant f =
   let [exponentPart]              = Str.split (Str.regexp "[+]") exponentPart in
   let exponentPart                = int_of_string exponentPart in
   let significand                 = wholePart ^ "." ^ fractionalPart in
-  let significandPart             = print_ktoken_string significand in
-  let exponentPart                = print_ktoken_int exponentPart in
-  let approxPart                  = print_ktoken_float_of_string stringRep in
-  wrap [significandPart; exponentPart; approxPart] "DecimalFloatConstant"
+  let significandPart             = ktoken_string significand in
+  let exponentPart                = ktoken_int exponentPart in
+  let approxPart                  = ktoken_float_of_string stringRep in
+  kapply "DecimalFloatConstant" [significandPart; exponentPart; approxPart]
 
 and printFloatLiteral r =
   let (tag, r) = splitFloat ([], r) in
@@ -358,78 +337,78 @@ and printFloatLiteral r =
       if (firstTwo = "0x" or firstTwo = "0X") then
         let nonPrefix = Str.string_after r 2 in
           printHexFloatConstant nonPrefix
-      else ( printDecFloatConstant r)
-  ) in
+      else printDecFloatConstant r)
+  in
   match tag with
-  | ["F"] -> wrap [num] "LitF"
-  | ["L"] -> wrap [num] "LitL"
-  | []    -> wrap [num] "NoSuffix"
-and printHexConstant (i : string) = wrap [print_ktoken_string i] "HexConstant"
-and printOctConstant (i : string) = wrap [print_ktoken_int_of_string i] "OctalConstant"
-and printDecConstant (i : string) = wrap [print_ktoken_int_of_string i] "DecimalConstant"
+  | ["F"] -> kapply "LitF" [num]
+  | ["L"] -> kapply "LitL" [num]
+  | []    -> kapply "NoSuffix" [num]
+and printHexConstant (i : string) = kapply "HexConstant" [ktoken_string i]
+and printOctConstant (i : string) = kapply "OctalConstant" [ktoken_int_of_string i]
+and printDecConstant (i : string) = kapply "DecimalConstant" [ktoken_int_of_string i]
 and printIntLiteral i =
   let (tag, i) = splitInt ([], i) in
   let num = (
     let firstTwo = if String.length i > 2 then Str.first_chars i 2 else "xx" in
     let firstOne = if String.length i > 1 then Str.first_chars i 1 else "x" in
       if firstTwo = "0x" or firstTwo = "0X" then printHexConstant (Str.string_after i 2)
-      else (if firstOne = "0" then printOctConstant (Str.string_after i 1) else (printDecConstant i))
-  ) in
+      else (if firstOne = "0" then printOctConstant (Str.string_after i 1) else (printDecConstant i)))
+  in
   match tag with
-  | ["U"; "L"; "L"] | ["L"; "L"; "U"] -> wrap [num] "LitULL"
-  | ["L"; "L"]                        -> wrap [num] "LitLL"
-  | ["U"; "L"] | ["L"; "U"]           -> wrap [num] "LitUL"
-  | ["U"]                             -> wrap [num] "LitU"
-  | ["L"]                             -> wrap [num] "LitL"
-  | []                                -> wrap [num] "NoSuffix"
+  | ["U"; "L"; "L"] | ["L"; "L"; "U"] -> kapply1 "LitULL" num
+  | ["L"; "L"]                        -> kapply1 "LitLL" num
+  | ["U"; "L"] | ["L"; "U"]           -> kapply1 "LitUL" num
+  | ["U"]                             -> kapply1 "LitU" num
+  | ["L"]                             -> kapply1 "LitL" num
+  | []                                -> kapply1 "NoSuffix" num
 
 and printExpression = function
-  | OFFSETOF ((spec, declType), exp, loc)                      -> wrap [printSpecifier spec; printDeclType declType; printExpression exp] "OffsetOf"
-  | TYPES_COMPAT ((spec1, declType1), (spec2, declType2), loc) -> wrap [printSpecifier spec1; printDeclType declType1; printSpecifier spec2; printDeclType declType2] "TypesCompat"
-  | GENERIC (exp, assocs)                                      -> wrap [printExpression exp; printGenericAssocs assocs] "Generic"
+  | OFFSETOF ((spec, declType), exp, loc)                      -> kapply "OffsetOf" [printSpecifier spec; printDeclType declType; printExpression exp]
+  | TYPES_COMPAT ((spec1, declType1), (spec2, declType2), loc) -> kapply "TypesCompat" [printSpecifier spec1; printDeclType declType1; printSpecifier spec2; printDeclType declType2]
+  | GENERIC (exp, assocs)                                      -> kapply "Generic" [printExpression exp; printGenericAssocs assocs]
   | LOCEXP (exp, loc)                                          -> printExpression exp
   | UNARY (op, exp1)                                           -> printUnaryExpression op exp1
   | BINARY (op, exp1, exp2)                                    -> printBinaryExpression op exp1 exp2
-  | NOTHING                                                    -> print_kapply0 "NothingExpression"
-  | UNSPECIFIED                                                -> print_kapply0 "UnspecifiedSizeExpression"
+  | NOTHING                                                    -> kapply0 "NothingExpression"
+  | UNSPECIFIED                                                -> kapply0 "UnspecifiedSizeExpression"
   | PAREN (exp1)                                               -> (printExpression exp1)
-  | QUESTION (exp1, exp2, exp3)                                -> wrap [printExpression exp1; printExpression exp2; printExpression exp3] "Conditional"
+  | QUESTION (exp1, exp2, exp3)                                -> kapply "Conditional" [printExpression exp1; printExpression exp2; printExpression exp3]
   (* Special case below for the compound literals. I don't know why this isn't in the ast... *)
   | CAST ((spec, declType), initExp)                           -> new_counter >>= (fun id ->
-    let castPrinter x            = wrap [printSpecifier spec; printDeclType declType; x] "Cast" in
-    let compoundLiteralIdCell    = print_ktoken_int id in
-    let compoundLiteralPrinter x = wrap [compoundLiteralIdCell; printSpecifier spec; printDeclType declType; x] "CompoundLiteral"
+    let castPrinter x            = kapply "Cast" [printSpecifier spec; printDeclType declType; x] in
+    let compoundLiteralIdCell    = ktoken_int id in
+    let compoundLiteralPrinter x = kapply "CompoundLiteral" [compoundLiteralIdCell; printSpecifier spec; printDeclType declType; x]
     in printInitExpressionForCast initExp castPrinter compoundLiteralPrinter)
     (* A CAST can actually be a constructor expression *)
-  | CALL (exp1, expList)                                       -> wrap [printExpression exp1; printExpressionList expList] "Call"
-  | COMMA expList                                              -> wrap [printExpressionList expList] "Comma"
-  | CONSTANT (const)                                           -> wrap [printConstant const] "Constant"
+  | CALL (exp1, expList)                                       -> kapply "Call" [printExpression exp1; printExpressionList expList]
+  | COMMA expList                                              -> kapply "Comma" [printExpressionList expList]
+  | CONSTANT (const)                                           -> kapply "Constant" [printConstant const]
   | VARIABLE name                                              -> printIdentifier name
-  | EXPR_SIZEOF exp1                                           -> wrap [printExpression exp1] "SizeofExpression"
-  | TYPE_SIZEOF (spec, declType)                               -> wrap [printSpecifier spec; printDeclType declType] "SizeofType"
-  | EXPR_ALIGNOF exp                                           -> wrap [printExpression exp] "AlignofExpression"
-  | TYPE_ALIGNOF (spec, declType)                              -> wrap [printSpecifier spec; printDeclType declType] "AlignofType"
-  | INDEX (exp, idx)                                           -> wrap [printExpression exp; printExpression idx] "ArrayIndex"
-  | MEMBEROF (exp, fld)                                        -> wrap [printExpression exp; printIdentifier fld] "Dot"
-  | MEMBEROFPTR (exp, fld)                                     -> wrap [printExpression exp; printIdentifier fld] "Arrow"
-  | GNU_BODY block                                             -> wrap [printBlock block] "GnuBody"
-  | BITMEMBEROF (exp, fld)                                     -> wrap [printExpression exp; printIdentifier fld] "DotBit"
-  | EXPR_PATTERN s                                             -> wrap [print_ktoken_string s] "ExpressionPattern"
-  | LTL_ALWAYS e                                               -> wrap [printExpression e] "LTLAlways"
-  | LTL_IMPLIES (e1, e2)                                       -> wrap [printExpression e1; printExpression e2] "LTLImplies"
-  | LTL_EVENTUALLY e                                           -> wrap [printExpression e] "LTLEventually"
-  | LTL_NOT e                                                  -> wrap [printExpression e] "LTLNot"
-  | LTL_ATOM e                                                 -> wrap [printExpression e] "LTLAtom"
-  | LTL_BUILTIN e                                              -> wrap [printIdentifier e] "LTLBuiltin"
-  | LTL_AND (e1, e2)                                           -> wrap [printExpression e1; printExpression e2] "LTLAnd"
-  | LTL_OR (e1, e2)                                            -> wrap [printExpression e1; printExpression e2] "LTLOr"
-  | LTL_URW ("U", e1, e2)                                      -> wrap [printExpression e1; printExpression e2] "LTLUntil"
-  | LTL_URW ("R", e1, e2)                                      -> wrap [printExpression e1; printExpression e2] "LTLRelease"
-  | LTL_URW ("W", e1, e2)                                      -> wrap [printExpression e1; printExpression e2] "LTLWeakUntil"
-  | LTL_O ("O", e)                                             -> wrap [printExpression e] "LTLNext"
+  | EXPR_SIZEOF exp1                                           -> kapply "SizeofExpression" [printExpression exp1]
+  | TYPE_SIZEOF (spec, declType)                               -> kapply "SizeofType" [printSpecifier spec; printDeclType declType]
+  | EXPR_ALIGNOF exp                                           -> kapply "AlignofExpression" [printExpression exp]
+  | TYPE_ALIGNOF (spec, declType)                              -> kapply "AlignofType" [printSpecifier spec; printDeclType declType]
+  | INDEX (exp, idx)                                           -> kapply "ArrayIndex" [printExpression exp; printExpression idx]
+  | MEMBEROF (exp, fld)                                        -> kapply "Dot" [printExpression exp; printIdentifier fld]
+  | MEMBEROFPTR (exp, fld)                                     -> kapply "Arrow" [printExpression exp; printIdentifier fld]
+  | GNU_BODY block                                             -> kapply "GnuBody" [printBlock block]
+  | BITMEMBEROF (exp, fld)                                     -> kapply "DotBit" [printExpression exp; printIdentifier fld]
+  | EXPR_PATTERN s                                             -> kapply "ExpressionPattern" [ktoken_string s]
+  | LTL_ALWAYS e                                               -> kapply "LTLAlways" [printExpression e]
+  | LTL_IMPLIES (e1, e2)                                       -> kapply "LTLImplies" [printExpression e1; printExpression e2]
+  | LTL_EVENTUALLY e                                           -> kapply "LTLEventually" [printExpression e]
+  | LTL_NOT e                                                  -> kapply "LTLNot" [printExpression e]
+  | LTL_ATOM e                                                 -> kapply "LTLAtom" [printExpression e]
+  | LTL_BUILTIN e                                              -> kapply "LTLBuiltin" [printIdentifier e]
+  | LTL_AND (e1, e2)                                           -> kapply "LTLAnd" [printExpression e1; printExpression e2]
+  | LTL_OR (e1, e2)                                            -> kapply "LTLOr" [printExpression e1; printExpression e2]
+  | LTL_URW ("U", e1, e2)                                      -> kapply "LTLUntil" [printExpression e1; printExpression e2]
+  | LTL_URW ("R", e1, e2)                                      -> kapply "LTLRelease" [printExpression e1; printExpression e2]
+  | LTL_URW ("W", e1, e2)                                      -> kapply "LTLWeakUntil" [printExpression e1; printExpression e2]
+  | LTL_O ("O", e)                                             -> kapply "LTLNext" [printExpression e]
 and printGenericAssoc = function
-  | GENERIC_PAIR ((spec, declType), exp) -> wrap [printSpecifier spec; printDeclType declType; printExpression exp] "GenericPair"
-  | GENERIC_DEFAULT exp                -> wrap [printExpression exp] "GenericDefault"
+  | GENERIC_PAIR ((spec, declType), exp) -> kapply "GenericPair" [printSpecifier spec; printDeclType declType; printExpression exp]
+  | GENERIC_DEFAULT exp                  -> kapply "GenericDefault" [printExpression exp]
 and getUnaryOperator = function
   | MINUS   -> "Negative"
   | PLUS    -> "Positive"
@@ -441,8 +420,8 @@ and getUnaryOperator = function
   | PREDECR -> "PreDecrement"
   | POSINCR -> "PostIncrement"
   | POSDECR -> "PostDecrement"
-and printUnaryExpression op exp = wrap [printExpression exp] (getUnaryOperator op)
-and printBinaryExpression op exp1 exp2 = wrap [printExpression exp1; printExpression exp2] (getBinaryOperator op)
+and printUnaryExpression op exp = kapply (getUnaryOperator op) [printExpression exp]
+and printBinaryExpression op exp1 exp2 = kapply (getBinaryOperator op) [printExpression exp1; printExpression exp2]
 and getBinaryOperator = function
   | MUL         -> "Multiply"
   | DIV         -> "Divide"
@@ -473,44 +452,42 @@ and getBinaryOperator = function
   | XOR_ASSIGN  -> "AssignBitwiseXor"
   | SHL_ASSIGN  -> "AssignLeftShift"
   | SHR_ASSIGN  -> "AssignRightShift"
-and printSeq _ _ = puts "Seq"
-and printIf exp s1 s2 = wrap [printExpression exp; newBlockStatement s1; newBlockStatement s2] "IfThenElse"
+and printIf exp s1 s2 = kapply "IfThenElse" [printExpression exp; newBlockStatement s1; newBlockStatement s2]
 
 and makeBlockStatement stat = { blabels = []; battrs = []; bstmts = [stat]}
 and newBlockStatement s = printBlockStatement (makeBlockStatement s)
-and printWhile exp stat = wrap [printExpression exp; newBlockStatement stat] "While"
-and printDoWhile exp stat wloc = wrap [printExpression exp; newBlockStatement stat; printCabsLoc wloc] "DoWhile3"
+and printWhile exp stat = kapply "While" [printExpression exp; newBlockStatement stat]
+and printDoWhile exp stat wloc = kapply "DoWhile3" [printExpression exp; newBlockStatement stat; printCabsLoc wloc]
 and printFor fc1 exp2 exp3 stat = new_counter >>= (fun counter ->
-  let newForIdCell = print_ktoken_int counter in
-  wrap [newForIdCell; printForClause fc1; printExpression exp2; printExpression exp3; newBlockStatement stat] "For5")
+  let newForIdCell = ktoken_int counter in
+  kapply "For5" [newForIdCell; printForClause fc1; printExpression exp2; printExpression exp3; newBlockStatement stat])
 and printForClause fc =
   match fc with
-  | FC_EXP exp1  -> wrap [printExpression exp1] "ForClauseExpression"
+  | FC_EXP exp1  -> kapply "ForClauseExpression" [printExpression exp1]
   | FC_DECL dec1 -> printDef dec1
-and printBreak = print_kapply0 "Break"
-and printContinue = print_kapply0 "Continue"
-and printReturn exp = wrap [printExpression exp] "Return"
+and printBreak = kapply0 "Break"
+and printContinue = kapply0 "Continue"
+and printReturn exp = kapply "Return" [printExpression exp]
 and printSwitch exp stat = push_switch >>= fun newSwitchId ->
-  let idCell = print_ktoken_int newSwitchId in
-  let retval = wrap [idCell; printExpression exp; newBlockStatement stat] "Switch" in
+  let idCell = ktoken_int newSwitchId in
+  let retval = kapply "Switch" [idCell; printExpression exp; newBlockStatement stat] in
   (retval >> pop_switch)
 and printCase exp stat = current_switch >>= fun currentSwitchId -> new_counter >>= fun counter ->
-  let switchIdCell = print_ktoken_int currentSwitchId in
-  let caseIdCell = print_ktoken_int counter in
-  wrap [switchIdCell; caseIdCell; printExpression exp; printStatement stat] "Case"
-and printCaseRange exp1 exp2 stat = wrap [printExpression exp1; printExpression exp2; printStatement stat] "CaseRange"
+  let switchIdCell = ktoken_int currentSwitchId in
+  let caseIdCell = ktoken_int counter in
+  kapply "Case" [switchIdCell; caseIdCell; printExpression exp; printStatement stat]
+and printCaseRange exp1 exp2 stat = kapply "CaseRange" [printExpression exp1; printExpression exp2; printStatement stat]
 and printDefault stat = current_switch >>= fun currentSwitchId ->
-  let switchIdCell = print_ktoken_int currentSwitchId in
-  wrap [switchIdCell; printStatement stat] "Default"
-and printLabel str stat = wrap [printIdentifier str; printStatement stat] "Label"
-and printGoto name = wrap [printIdentifier name] "Goto"
-and printCompGoto exp = wrap [printExpression exp] "CompGoto"
-and printBlockStatement block = wrap [printBlock block] "BlockStatement"
+  let switchIdCell = ktoken_int currentSwitchId in
+  kapply "Default" [switchIdCell; printStatement stat]
+and printLabel str stat = kapply "Label" [printIdentifier str; printStatement stat]
+and printGoto name = kapply "Goto" [printIdentifier name]
+and printCompGoto exp = kapply "CompGoto" [printExpression exp]
+and printBlockStatement block = kapply "BlockStatement" [printBlock block]
 and printStatement = function
   | NOP loc                           -> printStatementLoc (printNop) loc
   | COMPUTATION (exp, loc)            -> printStatementLoc (printComputation exp) loc
   | BLOCK (blk, loc)                  -> printStatementLoc (printBlockStatement blk) loc
-  | SEQUENCE (s1, s2, loc)            -> printStatementLoc (printSeq s1 s2) loc
   | IF (exp, s1, s2, loc)             -> printStatementLoc (printIf exp s1 s2) loc
   | WHILE (exp, stat, loc)            -> printStatementLoc (printWhile exp stat) loc
   | DOWHILE (exp, stat, loc, wloc)    -> printStatementLoc (printDoWhile exp stat wloc) loc
@@ -526,75 +503,75 @@ and printStatement = function
   | GOTO (name, loc)                  -> printStatementLoc (printGoto name) loc
   | COMPGOTO (exp, loc)               -> printStatementLoc (printCompGoto exp) loc (* GCC's "goto *exp" *)
   | DEFINITION d                      -> printDef d
-  | _                                 -> print_kapply0 "OtherStatement"
-and printStatementLoc s l = wrap [s; printCabsLoc l] "StatementLoc"
+  | _                                 -> kapply0 "OtherStatement"
+and printStatementLoc s l = kapply "StatementLoc" [s; printCabsLoc l]
 and printStatementList a = printNewList printStatement a
 and printEnumItemList a = printNewList printEnumItem a
 and printBlockLabels a = printNewList (fun x -> x) (List.map puts a)
-and printAttribute (a, b) = wrap [print_ktoken_string a; printExpressionList b] "Attribute"
+and printAttribute (a, b) = kapply "Attribute" [ktoken_string a; printExpressionList b]
 and printEnumItem (str, exp, cabsloc) = match exp with
-  | NOTHING -> wrap [printIdentifier str] "EnumItem"
-  | exp     -> wrap [printIdentifier str; printExpression exp] "EnumItemInit"
+  | NOTHING -> kapply "EnumItem" [printIdentifier str]
+  | exp     -> kapply "EnumItemInit" [printIdentifier str; printExpression exp]
 
-and printSpecifier a = wrap [printSpecElemList a] "Specifier"
+and printSpecifier a = kapply "Specifier" [printSpecElemList a]
 and printSpecElemList a = printNewList printSpecElem a
 and printSingleNameList a = printNewList printSingleName a
 and printSpecElem = function
-  | SpecTypedef      -> print_kapply0 "SpecTypedef"
-  | SpecMissingType  -> print_kapply0 "MissingType"
+  | SpecTypedef      -> kapply0 "SpecTypedef"
+  | SpecMissingType  -> kapply0 "MissingType"
   | SpecCV cv        -> (match cv with
-    | CV_CONST                       -> print_kapply0 "Const"
-    | CV_VOLATILE                    -> print_kapply0 "Volatile"
-    | CV_ATOMIC                      -> print_kapply0 "Atomic"
-    | CV_RESTRICT                    -> print_kapply0 "Restrict"
-    | CV_RESTRICT_RESERVED (kwd,loc) -> wrap [print_ktoken_string kwd; printCabsLoc loc] "RestrictReserved")
+    | CV_CONST                       -> kapply0 "Const"
+    | CV_VOLATILE                    -> kapply0 "Volatile"
+    | CV_ATOMIC                      -> kapply0 "Atomic"
+    | CV_RESTRICT                    -> kapply0 "Restrict"
+    | CV_RESTRICT_RESERVED (kwd,loc) -> kapply "RestrictReserved" [ktoken_string kwd; printCabsLoc loc])
   | SpecAttr al      -> printAttribute al
   | SpecStorage sto  -> (match sto with
-    | NO_STORAGE                     -> print_kapply0 "NoStorage"
-    | THREAD_LOCAL                   -> print_kapply0 "ThreadLocal"
-    | AUTO                           -> print_kapply0 "Auto"
-    | STATIC                         -> print_kapply0 "Static"
-    | EXTERN                         -> print_kapply0 "Extern"
-    | REGISTER                       -> print_kapply0 "Register")
-  | SpecInline       -> print_kapply0 "Inline"
-  | SpecNoReturn     -> print_kapply0 "Noreturn"
+    | NO_STORAGE                     -> kapply0 "NoStorage"
+    | THREAD_LOCAL                   -> kapply0 "ThreadLocal"
+    | AUTO                           -> kapply0 "Auto"
+    | STATIC                         -> kapply0 "Static"
+    | EXTERN                         -> kapply0 "Extern"
+    | REGISTER                       -> kapply0 "Register")
+  | SpecInline       -> kapply0 "Inline"
+  | SpecNoReturn     -> kapply0 "Noreturn"
   | SpecAlignment a  -> (match a with
     | EXPR_ALIGNAS e                 -> printAlignasExpression e
     | TYPE_ALIGNAS (s, d)            -> printAlignasType s d)
   | SpecType bt      -> printTypeSpec bt
-  | SpecPattern name -> wrap [printIdentifier name] "SpecPattern"
-and printAlignasExpression e = wrap [printExpression e] "AlignasExpression"
-and printAlignasType s d = wrap [printSpecifier s; printDeclType d] "AlignasType"
+  | SpecPattern name -> kapply "SpecPattern" [printIdentifier name]
+and printAlignasExpression e = kapply "AlignasExpression" [printExpression e]
+and printAlignasType s d = kapply "AlignasType" [printSpecifier s; printDeclType d]
 
 and printTypeSpec = function
-  | Tvoid             -> print_kapply0 "Void"
-  | Tchar             -> print_kapply0 "Char"
-  | Tbool             -> print_kapply0 "Bool"
-  | Tshort            -> print_kapply0 "Short"
-  | Tint              -> print_kapply0 "Int"
-  | Tlong             -> print_kapply0 "Long"
-  | ToversizedInt     -> print_kapply0 "OversizedInt"
-  | Tfloat            -> print_kapply0 "Float"
-  | Tdouble           -> print_kapply0 "Double"
-  | ToversizedFloat   -> print_kapply0 "OversizedFloat"
-  | Tsigned           -> print_kapply0 "Signed"
-  | Tunsigned         -> print_kapply0 "Unsigned"
-  | Tnamed s          -> wrap [printIdentifier s] "Named"
+  | Tvoid             -> kapply0 "Void"
+  | Tchar             -> kapply0 "Char"
+  | Tbool             -> kapply0 "Bool"
+  | Tshort            -> kapply0 "Short"
+  | Tint              -> kapply0 "Int"
+  | Tlong             -> kapply0 "Long"
+  | ToversizedInt     -> kapply0 "OversizedInt"
+  | Tfloat            -> kapply0 "Float"
+  | Tdouble           -> kapply0 "Double"
+  | ToversizedFloat   -> kapply0 "OversizedFloat"
+  | Tsigned           -> kapply0 "Signed"
+  | Tunsigned         -> kapply0 "Unsigned"
+  | Tnamed s          -> kapply "Named" [printIdentifier s]
   | Tstruct (a, b, c) -> printStructType a b c
   | Tunion (a, b, c)  -> printUnionType a b c
   | Tenum (a, b, c)   -> printEnumType a b c
-  | TtypeofE e        -> wrap [printExpression e] "TypeofExpression"
-  | TtypeofT (s, d)   -> wrap [printSpecifier s; printDeclType d] "TypeofType"
-  | TautoType         -> print_kapply0 "AutoType"
-  | Tcomplex          -> print_kapply0 "Complex"
-  | Timaginary        -> print_kapply0 "Imaginary"
-  | Tatomic (s, d)    -> wrap [printSpecifier s; printDeclType d] "TAtomic"
+  | TtypeofE e        -> kapply "TypeofExpression" [printExpression e]
+  | TtypeofT (s, d)   -> kapply "TypeofType" [printSpecifier s; printDeclType d]
+  | TautoType         -> kapply0 "AutoType"
+  | Tcomplex          -> kapply0 "Complex"
+  | Timaginary        -> kapply0 "Imaginary"
+  | Tatomic (s, d)    -> kapply "TAtomic" [printSpecifier s; printDeclType d]
 and printStructType a b c = match b with
-  | None   -> wrap [printIdentifier a; printSpecElemList c] "StructRef"
-  | Some b -> wrap [printIdentifier a; printFieldGroupList b; printSpecElemList c] "StructDef"
+  | None   -> kapply "StructRef" [printIdentifier a; printSpecElemList c]
+  | Some b -> kapply "StructDef" [printIdentifier a; printFieldGroupList b; printSpecElemList c]
 and printUnionType a b c = match b with
-  | None   -> wrap [printIdentifier a; printSpecElemList c] "UnionRef"
-  | Some b -> wrap [printIdentifier a; printFieldGroupList b; printSpecElemList c] "UnionDef"
+  | None   -> kapply "UnionRef" [printIdentifier a; printSpecElemList c]
+  | Some b -> kapply "UnionDef" [printIdentifier a; printFieldGroupList b; printSpecElemList c]
 and printEnumType a b c = match b with
-  | None   -> wrap [printIdentifier a; printSpecElemList c] "EnumRef"
-  | Some b -> wrap [printIdentifier a; printEnumItemList b; printSpecElemList c] "EnumDef"
+  | None   -> kapply "EnumRef" [printIdentifier a; printSpecElemList c]
+  | Some b -> kapply "EnumDef" [printIdentifier a; printEnumItemList b; printSpecElemList c]

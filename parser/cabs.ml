@@ -224,7 +224,6 @@ and statement =
    NOP of cabsloc
  | COMPUTATION of expression * cabsloc
  | BLOCK of block * cabsloc
- | SEQUENCE of statement * statement * cabsloc
  | IF of expression * statement * statement * cabsloc
  | WHILE of expression * statement * cabsloc
  | DOWHILE of expression * statement * cabsloc * cabsloc
