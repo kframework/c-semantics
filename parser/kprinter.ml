@@ -1,12 +1,60 @@
 open Escape
 open Cabs
 
-let counter = ref 0
-let currentSwitchId = ref 0
-let switchStack = ref [0]
-let realFilename = ref ""
-let stringLiterals = ref []
-let kore : bool ref = ref false
+let iskore : bool ref = ref false
+
+(* Printer state *)
+type printer_state =
+  {
+    kore : bool;
+    counter : int;
+    current_switch_id : int;
+    switch_stack : int list;
+    string_literals : string list;
+    buffer : Buffer.t ref;
+  }
+
+let init_state : printer_state =
+  {
+    kore = false;
+    counter = 0;
+    current_switch_id = 0;
+    switch_stack = [0];
+    string_literals = [];
+    buffer = ref (Buffer.create 100);
+  }
+
+(* State monad *)
+type 'a printer = printer_state -> ('a * printer_state)
+
+let return (a : 'a) : 'a printer = fun s -> (a, s)
+
+let (>>=) (m : 'a printer) (f : 'a -> 'b printer) : 'b printer = fun s ->
+  let (a_intr, s_intr) = m s in
+  (f a_intr) s_intr
+
+let (>>) (a : 'a printer) (b : 'b printer) : 'b printer = a >>= (fun _ -> b)
+
+let puts (str : string) : unit printer = fun s -> (Buffer.add_string !(s.buffer) str, s)
+
+let put_string_literal (str : string) : unit printer = fun s -> ((), {s with string_literals = str :: s.string_literals})
+
+let get_string_literals : (string list) printer = fun s -> (s.string_literals, s)
+
+let new_counter : int printer = fun s -> (s.counter + 1, {s with counter = s.counter + 1})
+
+let push_switch : int printer = new_counter >>= (fun counter s ->
+  (counter, {s with switch_stack = counter :: s.switch_stack; current_switch_id = counter}))
+
+let pop_switch : unit printer = fun s ->
+  ((), {s with switch_stack = List.tl s.switch_stack; current_switch_id = List.hd s.switch_stack})
+
+let current_switch : int printer = fun s -> (s.current_switch_id, s)
+
+let kore : bool printer = fun s -> (s.kore, s)
+
+let if_kore (kore_true : 'a printer) (kore_false : 'a printer) : 'a printer = kore >>= (fun k ->
+  if k then kore_true else kore_false)
 
 (* this is from cil *)
 let escape_char = function
@@ -23,15 +71,6 @@ let escape_char = function
   | ' ' .. '~' as printable -> String.make 1 printable
   | unprintable -> Printf.sprintf "\\%03o" (Char.code unprintable)
 
-(* this is from cil *)
-let escape_string str =
-  let length = String.length str in
-  let buffer = Buffer.create length in
-  for index = 0 to length - 1 do
-    Buffer.add_string buffer (escape_char (String.get str index))
-  done;
-  Buffer.contents buffer
-
 let k_char_escape (buf: Buffer.t) (c: char) : unit = match c with
 | '"' -> Buffer.add_string buf "\\\""
 | '\\' -> Buffer.add_string buf "\\\\"
@@ -42,9 +81,9 @@ let k_char_escape (buf: Buffer.t) (c: char) : unit = match c with
 | _ -> Buffer.add_string buf (Printf.sprintf "\\x%02x" (Char.code c))
 
 let kstring (s : string) : string =
-  if !kore then s else "\"" ^ s ^ "\""
+  if !iskore then s else "\"" ^ s ^ "\""
 
-and k_string_escape str =
+let k_string_escape str =
   let buf = Buffer.create (String.length str) in
   String.iter (k_char_escape buf) str; Buffer.contents buf
 
@@ -53,100 +92,105 @@ and k_string_escape str =
  * treated as multi-digit numbers with radix given by the bit width of
  * the specified type (either char or wchar_t). *)
 (* CME: actually, this is based on the code in CIL *)
-let rec reduce_multichar : int64 list -> int64 =
-  let radix = 8 in
-  List.fold_left
-    (fun acc -> Int64.add (Int64.shift_left acc radix))
-    Int64.zero
-and interpret_character_constant char_list =
-  let value = reduce_multichar char_list in
-  Int64.to_int value
+let reduce_multichar (radix : int) : int64 list -> int64 =
+  List.fold_left (fun acc -> Int64.add (Int64.shift_left acc radix)) Int64.zero
 
-let rec reduce_multiwchar : int64 list -> int64 =
-  let radix = 32 in
-  List.fold_left
-    (fun acc -> Int64.add (Int64.shift_left acc radix))
-    Int64.zero
-and interpret_wcharacter_constant char_list =
-  let value = reduce_multichar char_list in
-  Int64.to_int value
+let interpret_character_constant char_list =
+  Int64.to_int (reduce_multichar 8 char_list)
+
+let interpret_wcharacter_constant char_list =
+  Int64.to_int (reduce_multichar 32 char_list)
 
 type attribute =
   Attrib of string * string
 
-let buffer = ref (Buffer.create 1)
-
-type 'a writer = 'a * (unit -> unit)
-
-let printString (s : string) : unit -> unit = fun () -> Buffer.add_string !buffer s
-
-let (^^) (a : string) (b : string) : unit -> unit = fun () -> (printString a (); printString b ())
-
 let ksort (sort : string) : string =
-  if !kore then ( "Sort" ^ sort ^ "{}" ) else sort
+  if !iskore then ( "Sort" ^ sort ^ "{}" ) else sort
 
-let ktoken (s : string) (sort : string) : string =
-  if !kore then ("\dv{" ^ ksort sort ^ "}(\"" ^ k_string_escape s ^ "\")")
+let ktoken (sort : string) (s : string) : string =
+  if !iskore then ("\dv{" ^ ksort sort ^ "}(\"" ^ k_string_escape s ^ "\")")
   else ("#token(\"" ^ k_string_escape s ^ "\", \"" ^ ksort sort ^ "\")")
 
-let ktoken_string (s : string) : string = ktoken (kstring s) "String"
-let ktoken_int (v : int) : string = ktoken (string_of_int v) "Int"
-let ktoken_int_of_string (v : string) : string = ktoken v "Int"
+let ktoken_string (s : string) : string = ktoken "String" (kstring s)
+let ktoken_bool (v : bool) : string = ktoken "Bool" (if v then "true" else "false")
+let ktoken_int (v : int) : string = ktoken "Int" (string_of_int v)
+let ktoken_int_of_string (v : string) : string = ktoken "Int" v
+let ktoken_float (v : float) : string = ktoken "Float" (string_of_float v)
+let ktoken_float_of_string (v : string) : string = ktoken "Float" v
 
-let print_ktoken_string (s : string) : unit -> unit = printString (ktoken_string s)
-let print_ktoken_int (v : int) : unit -> unit = printString (ktoken_int v)
-let print_ktoken_int_of_string (v : string) : unit -> unit = printString (ktoken_int_of_string v)
+let print_ktoken_string (s : string) : unit printer = puts (ktoken_string s)
+let print_ktoken_bool (v : bool) : unit printer = puts (ktoken_bool v)
+let print_ktoken_int (v : int) : unit printer = puts (ktoken_int v)
+let print_ktoken_int_of_string (v : string) : unit printer = puts (ktoken_int_of_string v)
+let print_ktoken_float (v : float) : unit printer = puts (ktoken_float v)
+let print_ktoken_float_of_string (v : string) : unit printer = puts (ktoken_float_of_string v)
 
-let print_ktoken (s : string) (sort : string) : unit -> unit = printString (ktoken s sort)
+let print_ktoken (sort : string) (s : string) : unit printer = puts (ktoken sort s)
 
 let klabel (label : string) : string =
-  let left = if !kore then "Lbl" else "`" in
-  let right = if !kore then "{}" else "`" in
+  let left = if !iskore then "Lbl" else "`" in
+  let right = if !iskore then "{}" else "`" in
   (left ^ label ^ right)
 
 let kapply (label : string) (contents : string) : string = klabel label ^ "(" ^ contents  ^ ")"
 
-let print_kapply (label : string) (contents : unit -> unit) : unit -> unit =
-  fun () -> printString (klabel label) (); printString "(" (); contents (); printString ")" ()
+let print_kapply (label : string) (contents : unit printer) : unit printer =
+  puts (klabel label) >> puts "(" >>  contents >> puts ")"
 
-let print_kapply2 (label : string) (contents : string) : unit -> unit =
-  printString (kapply label contents)
+(* TODO *)
+let print_kapply2 (label : string) (contents : string) : unit printer =
+  puts (kapply label contents)
 
-let wrap (children : (unit -> unit) list) (name) : unit -> unit =
-  print_kapply name (fun () -> List.iteri (fun i a -> if i = (List.length children) - 1 then (a ()) else (a ();printString ", " ())) children)
+let fold_right1 (f : 'a -> 'b -> 'a) (l : 'b list) : 'a = match List.rev l with
+  | x :: xs -> List.fold_right f xs x
+
+let fold_left1 (f : 'a -> 'b -> 'a) (l : 'b list) : 'a = match l with
+  | x :: xs -> List.fold_left f x xs
+
+let wrap (children : (unit printer) list) (name : string) : unit printer =
+  print_kapply name (fold_left1 (fun a b -> (a >> (puts ", ") >> b)) children)
+
+(*let undef = raise (Failure "undefined") *)
+
+let wrap_v3 (children : string list) (name : string) : string =
+  kapply name (fold_left1 (fun a b -> (a ^ ", " ^ b)) children)
+
+(* TODO *)
+let wrap_v2 (children : string list) (name : string) : unit printer =
+  puts (wrap_v3 children name)
 
 let dot_klist : string = ".KList"
 
-let print_dot_klist : unit -> unit = printString dot_klist
+let print_dot_klist : unit printer = puts dot_klist
 
 let printNewList f l =
   print_kapply "list" (List.fold_right (fun k l -> wrap [(wrap [k] "ListItem"); l] "_List_") (List.map f l) (print_kapply ".List" print_dot_klist))
 
+(* TODO *)
+let printNewList_v2 f l =
+  kapply "list" (List.fold_right (fun k l -> wrap_v3 [(wrap_v3 [k] "ListItem"); l] "_List_") (List.map f l) (kapply ".List" dot_klist))
+
 (* this is where the recursive printer starts *)
 
 let rec cabs_to_kast (f : file) (real_name : string) : string =
-  kore := false;
-  realFilename := real_name;
-  cabs_to_k f
+  iskore := false;
+  cabs_to_k f real_name
 
 and cabs_to_kore (f : file) (real_name : string) : string =
-  kore := true;
-  realFilename := real_name;
-  cabs_to_k f
+  iskore := true;
+  cabs_to_k f real_name
 
-and cabs_to_k ((filename, defs) : file) : string =
-  buffer := Buffer.create 100;
-  (printTranslationUnit filename defs buffer) ();
-  Buffer.contents !buffer
+and cabs_to_k ((_, defs) : file) (filename : string) : string =
+  let (_, final_state) = printTranslationUnit filename defs init_state in
+  Buffer.contents !(final_state.buffer)
 
-and printTranslationUnit (filename : string) defs buffer =
-  let filenameCell = print_ktoken_string !realFilename in
-  let ast = printDefs defs in
-  let strings = printStrings buffer in (* the evaluation order is all messed up if this has no argument *)
-  wrap (filenameCell :: strings :: ast :: []) "TranslationUnit"
-
-and printStrings buffer =
-  printNewList (fun x -> wrap (x :: []) "Constant") !stringLiterals
+and printTranslationUnit (filename : string) defs s =
+  (* Finangling here to extract string literals. *)
+  let (_, s_intr) = printDefs defs s in
+  let fn = print_ktoken_string filename in
+  let print_strings = get_string_literals >>= (fun strings -> printNewList (fun x -> wrap_v2 (x :: []) "Constant") strings) in
+  let ast = fun s -> (Buffer.add_buffer !(s.buffer) !(s_intr.buffer); ((), s)) in
+  wrap (fn :: print_strings :: ast :: []) "TranslationUnit" {s_intr with buffer = ref (Buffer.create 100)}
 
 and printDefs defs =
   printNewList (fun def -> printDef def) defs
@@ -176,7 +220,6 @@ and printDef def =
   | STATIC_ASSERT (a, b, c) ->
       printDefinitionLoc (wrap ((printExpression a) :: (printConstant b) :: []) "StaticAssert") c
 
-
 and printLTLExpression a =
   let retval = printExpression a in
   retval
@@ -189,13 +232,10 @@ and printDefinitionLocRange a b c =
 and printSingleName (a, b) =
   wrap ((printSpecifier a) :: (printName b) :: []) "SingleName"
 and printAttr a b = wrap (a :: (printSpecElemList b) :: []) "AttributeWrapper"
-and printBlock a =
-  let blockNum = ((counter := (!counter + 1); !counter)) in
-  let blockNumCell = (printRawInt blockNum) in
-  let idCell = blockNumCell in
-  wrap (idCell :: (printBlockLabels a.blabels) :: (printStatementList a.bstmts) :: []) "Block3"
+and printBlock a = new_counter >>= fun blockNum ->
+  wrap (print_ktoken_int blockNum :: (printBlockLabels a.blabels) :: (printStatementList a.bstmts) :: []) "Block3"
 and printCabsLoc a =
-        wrap ((print_ktoken_string a.filename) :: (print_ktoken_string (if Filename.is_relative a.filename then Filename.concat (Sys.getcwd ()) a.filename else a.filename)) :: (printRawInt a.lineno) :: (printRawInt a.lineOffsetStart) :: (printRawBool a.systemHeader) :: []) "CabsLoc"
+        wrap ((print_ktoken_string a.filename) :: (print_ktoken_string (if Filename.is_relative a.filename then Filename.concat (Sys.getcwd ()) a.filename else a.filename)) :: (print_ktoken_int a.lineno) :: (print_ktoken_int a.lineOffsetStart) :: (print_ktoken_bool a.systemHeader) :: []) "CabsLoc"
 
 and hasInformation l =
   l.lineno <> -10
@@ -208,7 +248,6 @@ and printName (a, b, c, d) = (* string * decl_type * attribute list * cabsloc *)
     printNameLoc (wrap ((print_kapply2 "AnonymousName" dot_klist) :: (printDeclType b) :: (printSpecElemList c) :: []) "Name") d
   else
     printNameLoc (wrap ((printIdentifier a) :: (printDeclType b) :: (printSpecElemList c) :: []) "Name") d
-
 
 and printInitNameGroup (a, b) =
   wrap ((printSpecifier a) :: (printInitNameList b) :: []) "InitNameGroup"
@@ -267,12 +306,10 @@ and printArrayType a b c d =
 and printPointerType a b =
   (wrap ((printSpecifier a) :: (printDeclType b) :: []) "PointerType")
 and printProtoType a b c =
-  let variadicName = if c then "true" else "false" in
-  let variadicCell = print_ktoken variadicName "Bool" in
+  let variadicCell = print_ktoken_bool c in
   wrap ((printDeclType a) :: (printSingleNameList b) :: variadicCell :: []) "Prototype"
 and printNoProtoType a b c =
-  let variadicName = if c then "true" else "false" in
-  let variadicCell = print_ktoken variadicName "Bool" in
+  let variadicCell = print_ktoken_bool c in
   wrap ((printDeclType a) :: (printSingleNameList b) :: variadicCell :: []) "NoPrototype"
 and printNop =
   print_kapply2 "Nop" dot_klist
@@ -281,18 +318,6 @@ and printComputation exp =
 and printExpressionList defs =
   printNewList printExpression defs
 
-and printRawFloat f =
-  printRawFloatString (string_of_float f)
-and printRawFloatString s =
-  print_ktoken s "Float"
-and printRawInt i =
-  printRawIntString (string_of_int i)
-and printRawIntString s =
-  print_ktoken s "Int"
-and printRawBool b =
-  printRawBoolString (string_of_bool b)
-and printRawBoolString s =
-  print_ktoken s "Bool"
 and string_of_list_of_int64 (xs : int64 list) =
   let length = List.length xs in
   let buffer = Buffer.create length in
@@ -306,18 +331,16 @@ and printConstant const =
   match const with
   | CONST_INT i -> printIntLiteral i
   | CONST_FLOAT r -> printFloatLiteral r
-  | CONST_CHAR c -> wrap [printRawInt (interpret_character_constant c)] "CharLiteral"
-  | CONST_WCHAR c -> wrap [printRawInt (interpret_wcharacter_constant c)] "WCharLiteral"
+  | CONST_CHAR c -> wrap [print_ktoken_int (interpret_character_constant c)] "CharLiteral"
+  | CONST_WCHAR c -> wrap [print_ktoken_int (interpret_wcharacter_constant c)] "WCharLiteral"
   | CONST_STRING s -> handleStringLiteral s
   | CONST_WSTRING ws -> handleWStringLiteral ws
 and handleStringLiteral s =
-  let result = wrap [print_ktoken_string s] "StringLiteral" in
-  stringLiterals := result :: !stringLiterals;
-  result
+  let result = wrap_v3 [ktoken_string s] "StringLiteral" in
+  (put_string_literal result >> puts result)
 and handleWStringLiteral ws =
-  let result = wrap [printNewList (fun i -> printRawInt (Int64.to_int i)) ws] "WStringLiteral" in
-  stringLiterals := result :: !stringLiterals;
-  result
+  let result = wrap_v3 [printNewList_v2 (fun i -> ktoken_int (Int64.to_int i)) ws] "WStringLiteral" in
+  (put_string_literal result >> puts result)
 and splitFloat (xs, i) =
   let lastOne = if (String.length i > 1) then String.uppercase (Str.last_chars i 1) else ("x") in
   let newi = (Str.string_before i (String.length i - 1)) in
@@ -350,11 +373,11 @@ and printHexFloatConstant f =
   let significand = wholePart ^ "." ^ fractionalPart in
   let approx = float_of_string ("0x" ^ significand) in
   let approx = approx *. (2. ** (float_of_int exponentPart)) in
-  let exponentPart = printRawInt exponentPart in
+  let exponentPart = print_ktoken_int exponentPart in
   let significandPart = print_ktoken_string significand in
   let significandPart = significandPart in
   let exponentPart = exponentPart in
-  let approxPart = printRawFloat approx in
+  let approxPart = print_ktoken_float approx in
   (wrap (significandPart :: exponentPart :: approxPart :: []) "HexFloatConstant")
 and printDecFloatConstant f =
   let f = Str.split (Str.regexp "[eE]") f in
@@ -378,8 +401,8 @@ and printDecFloatConstant f =
   let significand = wholePart ^ "." ^ fractionalPart in
 
   let significandPart = print_ktoken_string significand in
-  let exponentPart = printRawInt exponentPart in
-  let approxPart = printRawFloatString stringRep in
+  let exponentPart = print_ktoken_int exponentPart in
+  let approxPart = print_ktoken_float_of_string stringRep in
   let significandPart = significandPart in
   let exponentPart = exponentPart in
   (wrap (significandPart :: exponentPart :: approxPart :: []) "DecimalFloatConstant")
@@ -400,9 +423,9 @@ and printFloatLiteral r =
 and printHexConstant (i : string) =
   wrap [print_ktoken_string i] "HexConstant"
 and printOctConstant (i : string) =
-  wrap [printRawIntString i] "OctalConstant"
+  wrap [print_ktoken_int_of_string i] "OctalConstant"
 and printDecConstant (i : string) =
-  wrap [printRawIntString i] "DecimalConstant"
+  wrap [print_ktoken_int_of_string i] "DecimalConstant"
 and printIntLiteral i =
   let (tag, i) = splitInt ([], i) in
   let num = (
@@ -435,12 +458,11 @@ and printExpression exp =
   | PAREN (exp1) -> (printExpression exp1)
   | QUESTION (exp1, exp2, exp3) -> wrap ((printExpression exp1) :: (printExpression exp2) :: (printExpression exp3) :: []) "Conditional"
   (* Special case below for the compound literals. I don't know why this isn't in the ast... *)
-  | CAST ((spec, declType), initExp) ->
+  | CAST ((spec, declType), initExp) -> new_counter >>= (fun id ->
     let castPrinter x = wrap ((printSpecifier spec) :: (printDeclType declType) :: x :: []) "Cast" in
-    let id = (counter := (!counter + 1)); !counter in
-    let compoundLiteralIdCell = (printRawInt id) in
+    let compoundLiteralIdCell = (print_ktoken_int id) in
     let compoundLiteralPrinter x = wrap (compoundLiteralIdCell :: (printSpecifier spec) :: (printDeclType declType) :: x :: []) "CompoundLiteral"
-    in printInitExpressionForCast initExp castPrinter compoundLiteralPrinter
+    in printInitExpressionForCast initExp castPrinter compoundLiteralPrinter)
     (* A CAST can actually be a constructor expression *)
   | CALL (exp1, expList) -> wrap ((printExpression exp1) :: (printExpressionList expList) :: []) "Call"
     (* There is a special form of CALL in which the function called is
@@ -525,7 +547,7 @@ and getBinaryOperator op =
   | SHL_ASSIGN -> "AssignLeftShift"
   | SHR_ASSIGN -> "AssignRightShift"
 and printSeq _ _ =
-  (printString "Seq")
+  (puts "Seq")
 and printIf exp s1 s2 =
   wrap ((printExpression exp) :: (newBlockStatement s1) :: (newBlockStatement s2) :: []) "IfThenElse"
 
@@ -537,9 +559,9 @@ and printWhile exp stat =
   wrap ((printExpression exp) :: (newBlockStatement stat) :: []) "While"
 and printDoWhile exp stat wloc =
   wrap ((printExpression exp) :: (newBlockStatement stat) :: (printCabsLoc wloc) :: []) "DoWhile3"
-and printFor fc1 exp2 exp3 stat =
-  let newForIdCell = (printRawInt ((counter := (!counter + 1)); !counter)) in
-  wrap (newForIdCell :: (printForClause fc1) :: (printExpression exp2) :: (printExpression exp3) :: (newBlockStatement stat) :: []) "For5"
+and printFor fc1 exp2 exp3 stat = new_counter >>= (fun counter ->
+  let newForIdCell = print_ktoken_int counter in
+  wrap (newForIdCell :: (printForClause fc1) :: (printExpression exp2) :: (printExpression exp3) :: (newBlockStatement stat) :: []) "For5")
 and printForClause fc =
   match fc with
   | FC_EXP exp1 -> wrap ((printExpression exp1) :: []) "ForClauseExpression"
@@ -550,24 +572,19 @@ and printContinue =
   print_kapply2 "Continue" dot_klist
 and printReturn exp =
   wrap ((printExpression exp) :: []) "Return"
-and printSwitch exp stat =
-  let newSwitchId = ((counter := (!counter + 1)); !counter) in
-  switchStack := newSwitchId :: !switchStack;
-  currentSwitchId := newSwitchId;
-  let idCell = printRawInt newSwitchId in
+and printSwitch exp stat = push_switch >>= (fun newSwitchId ->
+  let idCell = print_ktoken_int newSwitchId in
   let retval = wrap (idCell :: (printExpression exp) :: (newBlockStatement stat) :: []) "Switch" in
-  switchStack := List.tl !switchStack;
-  currentSwitchId := List.hd !switchStack;
-  retval
-and printCase exp stat =
-  let switchIdCell = (printRawInt !currentSwitchId) in
-  let caseIdCell = (printRawInt (counter := (!counter + 1); !counter)) in
-  wrap (switchIdCell :: caseIdCell :: (printExpression exp) :: (printStatement stat) :: []) "Case"
+  (retval >> pop_switch))
+and printCase exp stat = current_switch >>= (fun currentSwitchId -> new_counter >>= (fun counter ->
+  let switchIdCell = print_ktoken_int currentSwitchId in
+  let caseIdCell = print_ktoken_int counter in
+  wrap (switchIdCell :: caseIdCell :: (printExpression exp) :: (printStatement stat) :: []) "Case"))
 and printCaseRange exp1 exp2 stat =
   wrap ((printExpression exp1) :: (printExpression exp2) :: (printStatement stat) :: []) "CaseRange"
-and printDefault stat =
-  let switchIdCell = (printRawInt !currentSwitchId) in
-  wrap (switchIdCell :: (printStatement stat) :: []) "Default"
+and printDefault stat = current_switch >>= (fun currentSwitchId ->
+  let switchIdCell = (print_ktoken_int currentSwitchId) in
+  wrap (switchIdCell :: (printStatement stat) :: []) "Default")
 and printLabel str stat =
   wrap ((printIdentifier str) :: (printStatement stat) :: []) "Label"
 and printGoto name =
@@ -605,7 +622,7 @@ and printStatementList a =
 and printEnumItemList a =
   printNewList printEnumItem a
 and printBlockLabels a =
-  printNewList (fun x -> x) (List.map printString a)
+  printNewList (fun x -> x) (List.map puts a)
 and printAttribute (a, b) =
   wrap ((print_ktoken_string a) :: (printExpressionList b) :: []) "Attribute"
 and printEnumItem (str, expression, cabsloc) =
@@ -629,7 +646,7 @@ and printSpecElem a =
     | CV_VOLATILE -> print_kapply2 "Volatile" dot_klist
     | CV_ATOMIC -> print_kapply2 "Atomic" dot_klist
     | CV_RESTRICT -> print_kapply2 "Restrict" dot_klist
-    | CV_RESTRICT_RESERVED (kwd,loc) -> wrap (print_ktoken kwd "String"::printCabsLoc loc::[]) "RestrictReserved")
+    | CV_RESTRICT_RESERVED (kwd,loc) -> wrap (print_ktoken_string kwd::printCabsLoc loc::[]) "RestrictReserved")
   | SpecAttr al -> printAttribute al
   | SpecStorage sto ->
     (match sto with
@@ -655,7 +672,7 @@ and printAlignasType s d =
   wrap ((printSpecifier s) :: (printDeclType d) :: []) "AlignasType"
 
 and printTypeSpec = function
-  Tvoid -> print_kapply2 "Void" dot_klist
+  | Tvoid -> print_kapply2 "Void" dot_klist
   | Tchar -> print_kapply2 "Char" dot_klist
   | Tbool -> print_kapply2 "Bool" dot_klist
   | Tshort -> print_kapply2 "Short" dot_klist
