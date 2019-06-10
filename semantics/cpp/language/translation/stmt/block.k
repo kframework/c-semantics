@@ -25,6 +25,7 @@ module CPP-TRANSLATION-STMT-BLOCK
           <curr-tr-scope> blockScope(F::QualId, Base::SymBase, _) </curr-tr-scope>
           <tr-block-history> (ListItem(_) => .List) </tr-block-history>
 
+     rule BlockStmt(L::List) => BlockStmt(!Tag:Int, L)
      rule BlockStmt(Tag::Int, L::List) => TpushBlock(Tag) ~> listToK(L) ~> TpopBlock
 
 endmodule
