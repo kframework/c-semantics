@@ -2,6 +2,7 @@ module CPP-EXECUTION-STMT-EXPR
      imports CPP-COMMON-STMT-EXPR-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports BOOL
+     imports COMPAT-SYNTAX
      imports CPP-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
 

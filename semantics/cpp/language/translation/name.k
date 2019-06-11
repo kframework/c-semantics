@@ -80,6 +80,10 @@ module CPP-TRANSLATION-NAME
                    | lookupEnumerator(CId, Enum, mask: Set, class: K)
 
      syntax Namespace ::= getInnermostNamespace(Scope) [function, klabel(getInnermostNamespace1)]
+     syntax List ::= getInnermostNamespaces(List) [function]
+
+     rule getInnermostNamespaces(.List) => .List
+     rule getInnermostNamespaces(ListItem(S::Scope) L::List) => ListItem(getInnermostNamespace(S)) getInnermostNamespaces(L)
 
      rule getInnermostNamespace(blockScope(N:Namespace :: _, _, _)) => N
 
@@ -562,7 +566,9 @@ module CPP-TRANSLATION-NAME
 
      rule (.K => nameLookup(X, NoTag(), defaultMask)) ~> getFunctionAddressTypes((ListItem(Name(NoNNS(), X::CId)) => .List) _)
 
-     rule (cSet(... candidates: M::TypeMap) => .K) ~> getFunctionAddressTypes(_) ~> false ~> argDependentNameLookup(_, _, krlist(_::List (.List => filterList(keys_list(M), #klabel(`isCPPFunctionType`)))), _)
+     syntax Predicate ::= "isCPPFunctionType"
+     rule isCPPFunctionType::Predicate(T:CPPType) => isCPPFunctionType(T)
+     rule (cSet(... candidates: M::TypeMap) => .K) ~> getFunctionAddressTypes(_) ~> false ~> argDependentNameLookup(_, _, krlist(_::List (.List => filterList(keys_list(M), isCPPFunctionType))), _)
 
      rule getFunctionAddressTypes((ListItem(N::Init) => .List) _)
           requires notBool isName(N) andBool notBool isAddressOfName(N)
@@ -584,7 +590,7 @@ module CPP-TRANSLATION-NAME
                    | #getAssociatedNamespaces(Set, NamespacesCell) [function]
 
      syntax List ::= getAssociatedClasses(List) [function]
-                   | #getAssociatedClasses(CPPType, ClassInfo) [function]
+                   | #getAssociatedClasses(Class, ClassInfo) [function]
                    | getTemplateArgTypes(TemplateArgs) [function]
 
      // @ref n4296 3.4.2:2.1
@@ -593,8 +599,8 @@ module CPP-TRANSLATION-NAME
      rule getAssociatedNamespaces((ListItem(t(_, _, no-type)) => .List) _, _)
 
      // @ref n4296 3.4.2:2.2
-     rule getAssociatedNamespaces(ListItem(t(... st: classType(_ :: Class(_, _, Args::TemplateArgs))) #as T::CPPType) L::List, B::NamespacesCell)
-          => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(ListItem(T)), #klabel(`getInnermostNamespace1`))), B)
+     rule getAssociatedNamespaces(ListItem(t(... st: classType((_ :: Class(_, _, Args::TemplateArgs)) #as C::Class))) L::List, B::NamespacesCell)
+          => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(getInnermostNamespaces(getAssociatedClasses(ListItem(C)))), B)
 
      // @ref n4296 3.4.2:2.3
      rule getAssociatedNamespaces(ListItem(t(_, _, scopedEnum(N::Namespace :: _, _))) L::List, B::NamespacesCell)
@@ -628,11 +634,11 @@ module CPP-TRANSLATION-NAME
      rule #getAssociatedNamespaces(S::Set, _) => S [owise]
 
      rule getAssociatedClasses(.List) => .List
-     rule getAssociatedClasses(ListItem(T::CPPType) L::List) => #getAssociatedClasses(T, getClassInfo(T)) getAssociatedClasses(L)
+     rule getAssociatedClasses(ListItem(C::Class) L::List) => #getAssociatedClasses(C, getClassInfo(C)) getAssociatedClasses(L)
 
-     rule #getAssociatedClasses(t(... st: classType(N:Namespace :: C::ClassSpecifier)), #incomplete) => ListItem(classScope(N :: C, true))
+     rule #getAssociatedClasses(N:Namespace :: C::ClassSpecifier, #incomplete) => ListItem(classScope(N :: C, true))
 
-     rule #getAssociatedClasses(t(... st: classType(N:Namespace :: C::ClassSpecifier)), <class>... <base-classes> Bases::List </base-classes> ...</class>) => ListItem(classScope(N :: C, true)) getAssociatedClasses(mapList(mapList(Bases, #klabel(`classType`)), #klabel(`cppType`)))
+     rule #getAssociatedClasses(N:Namespace :: C::ClassSpecifier, <class>... <base-classes> Bases::List </base-classes> ...</class>) => ListItem(classScope(N :: C, true)) getAssociatedClasses(Bases)
 
      rule getTemplateArgTypes(t(Q::Quals, Mods::Set, T::CPPSimpleType), Ps::TemplateArgs) => ListItem(t(Q, Mods, T)) getTemplateArgTypes(Ps)
 

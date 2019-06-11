@@ -697,8 +697,12 @@ module LIBC-STDIO
                orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
+     syntax List ::= derefList(List) [function]
+     rule derefList(.List) => .List
+     rule derefList(ListItem(X:KItem) L::List) => ListItem(* X) derefList(L)
+
      rule [vprintf]:
-          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+          <k> (.K => toHeatList(derefList(VarArgs)))
                ~> builtin("vprintf", _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
@@ -722,7 +726,7 @@ module LIBC-STDIO
      rule errorUninitVaList => UNDEF("STDIO3", "'v*printf': uninitialized va_list argument.")
 
      rule [vfprintf]:
-          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+          <k> (.K => toHeatList(derefList(VarArgs)))
                ~> builtin("vfprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
@@ -763,7 +767,7 @@ module LIBC-STDIO
           ~> sprintf(formattedResult(S), (* Dest))
           [structural]
 
-     rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+     rule <k> (.K => toHeatList(derefList(VarArgs)))
                ~> builtin("vsprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
@@ -783,7 +787,7 @@ module LIBC-STDIO
           requires isKResult(H)
           [structural]
 
-     rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+     rule <k> (.K => toHeatList(derefList(VarArgs)))
                ~> builtin("vasprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
@@ -820,7 +824,7 @@ module LIBC-STDIO
           [structural]
 
      rule [vsnprintf]:
-          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+          <k> (.K => toHeatList(derefList(VarArgs)))
                ~> builtin("vsnprintf", _, _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
@@ -852,7 +856,7 @@ module LIBC-STDIO
           [structural]
      rule builtin("__isoc99_vfscanf" => "vfscanf", _, _, _)
           [structural]
-     rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+     rule <k> (.K => toHeatList(derefList(VarArgs)))
                ~> builtin("vfscanf", _, _, tv(VaList::Int, _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
@@ -863,7 +867,7 @@ module LIBC-STDIO
           [structural]
      rule builtin("__isoc99_vscanf" => "vscanf", _, _)
           [structural]
-     rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+     rule <k> (.K => toHeatList(derefList(VarArgs)))
                ~> builtin("vscanf", _, tv(VaList::Int, _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
@@ -879,7 +883,7 @@ module LIBC-STDIO
           [structural]
      rule builtin("__isoc99_vsscanf" => "vsscanf", _, _, _)
           [structural]
-     rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+     rule <k> (.K => toHeatList(derefList(VarArgs)))
                ~> builtin("vsscanf", _, _, tv(VaList::Int, _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>

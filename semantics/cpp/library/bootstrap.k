@@ -28,16 +28,20 @@ module LIBCPP-BOOTSTRAP
 
      rule <k> callBuiltin
               => Return''(prepareBuiltin(F, variadic in getParams(T),
-                   list(filterList(mapList(P, #klabel(`makeNamesFromCIds`)), #klabel(`notVarArg`))),
-                   list(filterList(mapList(P, #klabel(`makeNamesFromCIds`)), #klabel(`isVarArg`)))))
+                   list(filterList(makeNamesFromCIds(P), notVarArg)),
+                   list(filterList(makeNamesFromCIds(P), isVarArg))))
           ...</k>
           <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(F::QualId, T::CPPType, _, _) ...</functions>
           <curr-function-params> P::List </curr-function-params>
 
-     syntax ExecName ::= makeNamesFromCIds(CId) [function]
+     syntax List ::= makeNamesFromCIds(List) [function]
+     rule makeNamesFromCIds(.List) => .List
+     rule makeNamesFromCIds(ListItem(X::CId) L::List) => ListItem(makeNameFromCId(X)) makeNamesFromCIds(L)
 
-     rule makeNamesFromCIds(X::CId) => ExecName(NoNNS(), X)
+     syntax ExecName ::= makeNameFromCId(CId) [function]
+
+     rule makeNameFromCId(X::CId) => ExecName(NoNNS(), X)
 
      rule prepareBuiltin(Q::QualId, false, krlist(.List), krlist(.List))
           => builtin(Q)

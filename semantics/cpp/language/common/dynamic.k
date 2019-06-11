@@ -352,8 +352,6 @@ module CPP-DYNAMIC-OTHER-SORTS
      syntax TemplateArg
 
      syntax CPPValue
-
-     syntax Predicate
 endmodule // CPP-DYNAMIC-OTHER-SORTS
 
 module CPP-REVAL-SYNTAX
@@ -413,7 +411,6 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax Expr ::= stripHold(Expr) [function, klabel(stripHoldCpp)]
 
-     syntax Bool ::= Predicate "(" K ")" [function]
      syntax Predicate ::= "isEvalVal"
 
      syntax FunctionDeclarationType ::= Function(List)
