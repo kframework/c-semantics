@@ -42,7 +42,7 @@ CXXFLAGS += -Wextra
 CXXFLAGS += -Werror
 CXXFLAGS += -pedantic
 
-# We export these so they are available for the
+# We export these so they are available to the
 # `clang-tools` target.
 export CC := $(PROFILE_DIR)/cc
 export CXX := $(PROFILE_DIR)/cxx
