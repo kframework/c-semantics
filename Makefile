@@ -26,8 +26,21 @@ PROFILE_OUTPUT_DIR := $(OUTPUT_DIR)/profiles/$(PROFILE)
 SEMANTICS_OUTPUT_DIR := $(OUTPUT_DIR)/semantics/$(PROFILE)
 
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
-CFLAGS := -std=gnu11 -Wall -Wextra -Werror -pedantic
-CXXFLAGS := -std=c++17
+
+# Appending to whatever the environment provided.
+CFLAGS += -std=gnu11
+CFLAGS += -Wall
+CFLAGS += -Wextra
+CFLAGS += -Werror
+CFLAGS += -pedantic
+
+# Appending to whatever the environment provided.
+# Do not export: `clang-tools` sets these things via `cmake`.
+CXXFLAGS += -std=c++17
+CXXFLAGS += -Wall
+CXXFLAGS += -Wextra
+CXXFLAGS += -Werror
+CXXFLAGS += -pedantic
 
 # We export these so they are available for the
 # `clang-tools` target.
