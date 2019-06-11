@@ -129,11 +129,11 @@ module C-IO
           ...</buffer>
           <mem> M::Map => bufferFill(M, base(Loc), M[base(Loc)], offset(Loc), N, V) </mem>
           requires notBool isNativeLoc(Loc)
-          [structural, priority(80)]
+          [structural, priority(40)]
      rule <buffer>
                ListItem(bfill(Loc::SymLoc, N::Int, V::Bits)) => #fillNativeBytes(Loc, N, V)
           ...</buffer>
-          requires isNativeLoc(Loc) [priority(80)]
+          requires isNativeLoc(Loc) [priority(40)]
 
      syntax Map ::= bufferFill(Map, SymBase, K, Int, Int, Bits) [function]
      rule bufferFill(M::Map, Base::SymBase, object(T::EffectiveType, Len::Int, Bytes::Array), Offset::Int, N::Int, V::Bits)

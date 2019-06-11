@@ -25,15 +25,15 @@ module COMMON-IO-BUFFERED
           ...</buffer>
           <mem> M::Map => bufferWrite(M, Base, M[Base], Offset, L) </mem>
           requires notBool isNativeLoc(loc(Base, Offset))
-          [structural, priority(80)]
+          [structural, priority(40)]
      rule <buffer>
                ListItem(bwrite((Loc::SymLoc => Loc +bytes 1), ((ListItem(V:KItem) => writeNativeByte(Loc, V)) _::List)))
           ...</buffer>
-          requires isNativeLoc(Loc) [priority(80)]
+          requires isNativeLoc(Loc) [priority(40)]
      rule <buffer>
                ListItem(bwrite(Loc::SymLoc, .List)) => .List
           ...</buffer>
-          requires isNativeLoc(Loc) [priority(80)]
+          requires isNativeLoc(Loc) [priority(40)]
 
      rule locations(.List) => .Set
      rule locations(ListItem(bwrite(Loc::SymLoc, Bytes::List)) L::List)

@@ -199,7 +199,8 @@ module CPP-SYNTAX
 
      syntax BraceInit ::= ExprLoc(CabsLoc, BraceInit)
 
-     syntax Block ::= BlockStmt(Int, List)
+     syntax Block ::= BlockStmt(List)
+                    | BlockStmt(Int, List)
 
      syntax Decl
 

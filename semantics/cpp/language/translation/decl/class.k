@@ -360,7 +360,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule T::CPPSimpleType && => type(rvRefType(type(T)))
 
      syntax Block ::= EmptyBlock() [function]
-     rule EmptyBlock() => BlockStmt(!N:Int, .List)
+     rule EmptyBlock() => BlockStmt(.List)
 
      syntax KItem ::= implicitDeclarationOfCopyConstructor(Class)
                     | implicitDeclarationOfCopyConstructor2(Class, Bool) [strict(2)]
@@ -523,7 +523,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <base-classes> Bases::List </base-classes>
           <non-static-data-members> NSDM::List </non-static-data-members>
 
-     rule <k> Defaulted() => Constructor(.List, BlockStmt(!N:Int, .List)) ...</k>
+     rule <k> Defaulted() => Constructor(.List, BlockStmt(.List)) ...</k>
           <curr-tr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-tr-scope>
 
      syntax Stmt ::= figureConstruct(ctors: List, processedCtors: Map, bases: List, dataMembers: List, body: Stmt, result: K, hasNonConstVariantMember: Bool)
