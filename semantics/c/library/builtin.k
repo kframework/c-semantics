@@ -35,8 +35,7 @@ endmodule
 
 module LIB-BUILTIN-SYNTAX
      imports BASIC-K
-     syntax Bool ::= isVarArg(K) [function]
-     syntax Bool ::= notVarArg(K) [function]
+     syntax Predicate ::= "isVarArg" | "notVarArg"
 endmodule
 
 module LIBC-BUILTIN
@@ -62,8 +61,8 @@ module LIBC-BUILTIN
 
      rule <k> callBuiltin
                => Return(prepareBuiltin(F, variadic in getParams(T),
-                    toHeatList(filterList(P, #klabel(`notVarArg`))),
-                    toHeatList(filterList(P, #klabel(`isVarArg`)))))
+                    toHeatList(filterList(P, notVarArg)),
+                    toHeatList(filterList(P, isVarArg))))
           ...</k>
           <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-function-params> P:List </curr-function-params>
@@ -74,8 +73,8 @@ module LIBC-BUILTIN
           [structural]
      rule <k> callBuiltin
                => Return(prepareNativeCall(F,
-                    toHeatList(filterList(P, #klabel(`notVarArg`))),
-                    toHeatList(filterList(P, #klabel(`isVarArg`)))))
+                    toHeatList(filterList(P, notVarArg)),
+                    toHeatList(filterList(P, isVarArg))))
           ...</k>
           <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-function-params> P:List </curr-function-params>
@@ -86,8 +85,8 @@ module LIBC-BUILTIN
           [structural]
      rule <k> callBuiltin
                => Return(prepareNativeCall(F,
-                    toHeatList(filterList(P, #klabel(`notVarArg`))),
-                    toHeatList(filterList(P, #klabel(`isVarArg`)))))
+                    toHeatList(filterList(P, notVarArg)),
+                    toHeatList(filterList(P, isVarArg))))
           ...</k>
           <curr-scope> blockScope(... functionId: nativeFunction(_) #as F::CId) </curr-scope>
           <curr-function-params> P:List </curr-function-params>

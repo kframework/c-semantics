@@ -3,6 +3,7 @@ module CPP-TRANSLATION-EXPR-COMMA
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      context Comma(V:Val, HOLE:Expr)
              requires Translation() andBool isTExpr(V) andBool notBool isConvertableDiscardedExpr(V)

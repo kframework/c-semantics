@@ -75,9 +75,9 @@ module CPP-TRANSLATION-STMT-TRY
 
      context CatchStmt(DeclaratorAndSpecifiers(NormalizedDecl(... type: HOLE:AType), _), _)
 
-     rule (.K => elaborate(BlockStmt(I, ListItem(processCatchDecl(D)) L))) ~> CatchStmt(NormalizedDecl(... type: _:CPPType) #as D::Decl, BlockStmt(I::Int, L::List))
+     rule (.K => elaborate(BlockStmt(ListItem(processCatchDecl(D)) L))) ~> CatchStmt(NormalizedDecl(... type: _:CPPType) #as D::Decl, BlockStmt(L::List))
 
-     rule (.K => elaborate(BlockStmt(I, ListItem(processCatchDecl(D)) L))) ~> CatchStmt(DeclaratorAndSpecifiers(NormalizedDecl(... type: _:CPPType), _) #as D::Decl, BlockStmt(I::Int, L::List))
+     rule (.K => elaborate(BlockStmt(ListItem(processCatchDecl(D)) L))) ~> CatchStmt(DeclaratorAndSpecifiers(NormalizedDecl(... type: _:CPPType), _) #as D::Decl, BlockStmt(L::List))
 
      rule <k> elaborateDone(pushBlock(I::Int)
               ~> declareNonStaticObjectExec(... t: T::CPPType) #as D:KItem ~> K:K)

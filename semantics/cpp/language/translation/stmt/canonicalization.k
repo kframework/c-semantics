@@ -4,7 +4,7 @@ module CPP-TRANSLATION-STMT-CANONICALIZATION
       imports CPP-ABSTRACT-SYNTAX
       imports CPP-SYNTAX
 
-      rule CompoundAStmt(L::List) => BlockStmt(!N:Int, canonicalizeAStmts(L)) [anywhere]
+      rule CompoundAStmt(L::List) => BlockStmt(canonicalizeAStmts(L)) [anywhere]
 
       rule LabelAStmt(X::CId, L::List) => TLabelStmt(X, canonicalizeAStmts(L)) [anywhere]
 
