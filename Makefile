@@ -35,7 +35,7 @@ CFLAGS += -Werror
 CFLAGS += -pedantic
 
 # Appending to whatever the environment provided.
-# Do not export: `clang-tools` detects these things via `cmake`.
+# Do not export: `clang-tools` sets these things via `cmake`.
 CXXFLAGS += -std=c++17
 CXXFLAGS += -Wall
 CXXFLAGS += -Wextra
