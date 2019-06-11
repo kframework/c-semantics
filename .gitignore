@@ -4,7 +4,7 @@ parser/*.cmx
 .*.swp
 semantics/.kompile-*
 semantics/*/c*-kompiled
-dist
+dist/
 parser/cparser
 parser/clexer.ml
 parser/cparser.ml

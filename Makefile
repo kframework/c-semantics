@@ -19,7 +19,7 @@ SUBPROFILE_DIRS :=
 # Intended for overriding by the user, see below.
 BUILD_DIR := dist
 
-# Build directory used internallly.
+# Build directory used internally.
 # `abspath` because the directory does not exist yet.
 OUTPUT_DIR := $(abspath $(BUILD_DIR))
 
@@ -178,13 +178,18 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
                  $(PROFILE_OUTPUT_DIR)
 	$(info $(PROFILE): Translating the C++ standard library...)
 	@cd $(PROFILE_DIR)/compiler-src && \
-		$(OUTPUT_DIR)/kcc --use-profile $(PROFILE) \
+		$(OUTPUT_DIR)/kcc \
+				-Wfatal-errors \
+				--use-profile $(PROFILE) \
 				-shared -o $@ *.C \
 				$(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/compiler-src && \
-			$(OUTPUT_DIR)/kcc --use-profile $(shell basename $(d)) \
-				-shared -o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libstdc++.so \
+			$(OUTPUT_DIR)/kcc \
+				-Wfatal-errors \
+				--use-profile $(shell basename $(d)) \
+				-shared \
+				-o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libstdc++.so \
 				*.C $(KCCFLAGS) -I .;)
 	$(info $(PROFILE): Done translating the C++ standard library.)
 
@@ -196,11 +201,18 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
             $(PROFILE_OUTPUT_DIR)
 	$(info $(PROFILE): Translating the C standard library...)
 	@cd $(PROFILE_DIR)/src && \
-		$(OUTPUT_DIR)/kcc --use-profile $(PROFILE) -shared -o $@ *.c $(KCCFLAGS) -I .
+		$(OUTPUT_DIR)/kcc \
+				-Wfatal-errors \
+				--use-profile $(PROFILE) \
+				-shared -o $@ *.c \
+				$(KCCFLAGS) -I .
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cd $(d)/src && \
-			$(OUTPUT_DIR)/kcc --use-profile $(shell basename $(d)) \
-				-shared -o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libc.so \
+			$(OUTPUT_DIR)/kcc \
+				-Wfatal-errors \
+				--use-profile $(shell basename $(d)) \
+				-shared \
+				-o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libc.so \
 				*.c $(KCCFLAGS) -I .)
 	$(info $(PROFILE): Done translating the C standard library.)
 
@@ -302,6 +314,25 @@ simple-build-test:
 	$(info Done.)
 
 
+# Builds with `KOMPILE_FLAGS=--profile-rule-parsing`.
+# Intended for direct user invocation.
+# Produces a `timelogs.d` directory.
+.PHONY: profile-rule-parsing
+profile-rule-parsing:
+	KOMPILE_FLAGS=--profile-rule-parsing $(MAKE) test-build
+	cd $(OUTPUT_DIR)/profiles && \
+	find . \
+		! -path "*.build*" \
+		! -path "*.git*" \
+		-type f \
+		-name "timing*.log" \
+		-print | \
+	while IFS= read f; do \
+		mkdir -p $(OUTPUT_DIR)/timelogs.d/"$$(dirname $$f)"; \
+		mv $$f $(OUTPUT_DIR)/timelogs.d/"$$(dirname $$f)"; \
+	done
+
+
 # This makefile does not need to be re-built.
 # See https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html
 Makefile: ;
@@ -321,14 +352,15 @@ clean:
 XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
 .PHONY: $(XYZ_SEMANTICS)
 
-# Move this to the end so that .SECONDEXPANSION does not
-# affect the rest of the rules.
-.SECONDEXPANSION:
-$(XYZ_SEMANTICS): %-semantics:
+$(XYZ_SEMANTICS):
 	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR)
 
-# the % sign matches '$(NAME)-kompiled/$(NAME)',
-# e.g., c-cpp-kompiled/c-cpp'
+
+# A) Move this to the end so that .SECONDEXPANSION does not
+#    affect the rest of the rules.
+# B) The % sign matches '$(NAME)-kompiled/$(NAME)',
+#    e.g., c-cpp-kompiled/c-cpp'.
+.SECONDEXPANSION:
 $(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: $(PROFILE_OUTPUT_DIR) \
                                             $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
