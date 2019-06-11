@@ -277,7 +277,7 @@ execution-semantics: c-cpp-semantics
 
 .PHONY: semantics
 semantics:
-	@$(MAKE) -C semantics all
+	@$(MAKE) -C semantics all BUILD_DIR=$(SEMANTICS_BUILD_DIR)
 
 .PHONY: check
 check: | pass fail fail-compile
