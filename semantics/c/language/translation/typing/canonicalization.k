@@ -48,7 +48,7 @@ module C-TYPING-CANONICALIZATION
                andBool notBool isReducibleSpecifier(S)
           [structural]
      rule (.K => DeclType(S, D))
-          ~> canonicalizeType'(_ ListItem(TAtomic(S:K, D:K)), _, _)
+          ~> canonicalizeType'(_ ListItem(TAtomic(S:KItem, D:KItem)), _, _)
           [structural]
      rule (T:Type => .K)
           ~> canonicalizeType'(_::List (ListItem(TAtomic(_, _)) => .List),
@@ -56,7 +56,7 @@ module C-TYPING-CANONICALIZATION
                _::List (.List => ListItem(atomic(T))))
           [structural]
      rule (.K => DeclType(S, D))
-          ~> canonicalizeType'(_ ListItem(AlignasType(S:K, D:K)), _, _)
+          ~> canonicalizeType'(_ ListItem(AlignasType(S:KItem, D:KItem)), _, _)
           [structural]
      rule (T:Type => .K)
           ~> canonicalizeType'(_::List (ListItem(AlignasType(_, _)) => .List),

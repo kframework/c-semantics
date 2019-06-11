@@ -14,15 +14,7 @@ module C-SYNTAX
 
      syntax KResult ::= SpecifierElem
 
-     syntax C ::= CabsLoc
-     syntax C ::= CId
-     syntax C ::= Qualifier
-     syntax C ::= Expression
-     syntax C ::= SpecifierElem
-     syntax C ::= Statement
-     syntax C ::= StorageClassSpecifier
-
-     syntax Statement ::= Block(Int, K) [avoid]
+     syntax Statement ::= Block(Int, KItem) [avoid]
 
      /*
      type cabsloc = {
@@ -104,7 +96,7 @@ module C-SYNTAX
      | CASERANGE of expression * expression * statement * cabsloc
      */
      // unique switch id
-     syntax Statement ::= Switch(K, K, K)
+     syntax Statement ::= Switch(Int, K, K)
      context Switch(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
 
      /*
@@ -278,12 +270,12 @@ module C-SYNTAX
      */
      syntax KItem ::= K "." CId [left, strict(1)]
 
-     syntax Expression ::= GnuBody(K)
+     syntax Expression ::= GnuBody(KItem)
 
      /*
      and attribute = String * expression list
      */
      // String, List
-     syntax C ::= Attribute(String, K)
+     syntax KItem ::= Attribute(String, KItem)
 
 endmodule

@@ -31,7 +31,7 @@ module C-FUNCTION-DEF
      imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule FunctionDefinition(typedDeclaration(t(... st: functionType(...)) #as T::Type, X:CId), Blk:K)
+     rule FunctionDefinition(typedDeclaration(t(... st: functionType(...)) #as T::Type, X:CId), Blk:KItem)
           => declare'(
                typedDeclaration(toPrototype(emptyToVoid(T)), X),
                initializer(initFunction(

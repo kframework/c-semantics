@@ -35,7 +35,7 @@ module C-TRANSLATION-INIT
           [structural]
 
      rule CodeLoc(K:K, L:CabsLoc) => filterCabsLoc(L) ~> K
-     rule DefinitionLocRange(K:K, L1:CabsLoc, L2:CabsLoc)
+     rule DefinitionLocRange(K:KItem, L1:CabsLoc, L2:CabsLoc)
           => filterCabsLoc(L1) ~> K ~> filterCabsLoc(L2)
 
      rule <k> L:CabsLoc => .K ...</k>
@@ -47,7 +47,7 @@ module C-TRANSLATION-INIT
           => UnknownCabsLoc
      rule filterCabsLoc(L:CabsLoc) => L [owise]
 
-     rule ExpressionLoc(K:K, _) => K
+     rule ExpressionLoc(K:KItem, _) => K
 
      /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
      A preprocessing directive of the form
@@ -63,8 +63,6 @@ module C-TRANSLATION-INIT
           [structural]
      rule PragmaKccInv(_) => .K
           [structural]
-
-     rule AttributeWrapper(K:K, _) => K
 
      rule NothingExpression() => {emptyValue}:>Expression
 
