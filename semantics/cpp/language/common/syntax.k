@@ -125,7 +125,7 @@ module CPP-SYNTAX
                    | NewOp(CPPType, Expr, K, K, Int)
                    | DeleteOp(Expr, Expr, K, Int)
                    | "*" Expr
-                   | "&" Expr [strict]
+                   | "&" Expr
 
                    // like & but applies to all objects including xvalues and class prvalues
                    | getAddress(Expr) [strict]
