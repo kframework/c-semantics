@@ -11,7 +11,7 @@ type printer_state =
     current_switch_id : int;
     switch_stack : int list;
     string_literals : (unit printer) list;
-    buffer : Buffer.t ref;
+    buffer : Buffer.t;
   }
 
 (* State monad. *)
@@ -26,8 +26,26 @@ let init_state : printer_state =
     current_switch_id = 0;
     switch_stack = [0];
     string_literals = [];
-    buffer = ref (Buffer.create 100);
+    buffer = Buffer.create 100;
   }
+
+type csort =
+  | K | KItem | TypeSpecifier | SpecifierElem
+  | Specifier | CId | CabsLoc | String
+  | Bool | Int | Float
+
+let csort_to_string : csort -> string = function
+  | K             -> "K"
+  | KItem         -> "KItem"
+  | TypeSpecifier -> "TypeSpecifier"
+  | SpecifierElem -> "SpecifierElem"
+  | Specifier     -> "Specifier"
+  | CId           -> "CId"
+  | CabsLoc       -> "CabsLoc"
+  | String        -> "String"
+  | Bool          -> "Bool"
+  | Int           -> "Int"
+  | Float         -> "Float"
 
 (* Monad morphisms. *)
 let return (a : 'a) : 'a printer = fun s -> (a, s)
@@ -38,7 +56,7 @@ let (>>=) (m : 'a printer) (f : 'a -> 'b printer) : 'b printer = fun s ->
 
 let (>>) (ma : 'a printer) (mb : 'b printer) : 'b printer = ma >>= fun _ -> mb
 
-let puts (str : string) : unit printer = fun s -> (Buffer.add_string !(s.buffer) str, s)
+let puts (str : string) : unit printer = fun s -> (Buffer.add_string s.buffer str, s)
 
 let save_string_literal (str : unit printer) : unit printer =
   str >> fun s -> ((), {s with string_literals = str :: s.string_literals})
@@ -113,43 +131,62 @@ let klabel_char_escape_kore (buf: Buffer.t) : char -> unit =
   | ')' -> opt_apost "RPar'"
   | c   -> Printf.sprintf "%c" c
 
-let klabel_escape (str : string) : string printer =
+let klabel_escape_kore (str : string) : string =
   let buf = Buffer.create (String.length str) in
-  if_kore (String.iter (klabel_char_escape_kore buf) str; Buffer.contents buf) str
+  String.iter (klabel_char_escape_kore buf) str; Buffer.contents buf
+
+let klabel_escape_kast (str : string) : string = str
 
 (* Atomic output. *)
 let kstring (s : string) : string printer = if_kore s ("\"" ^ s ^ "\"")
 
 let dot_klist : unit printer = puts ".KList"
 
-let ksort (sort : string) : unit printer =
-  if_kore_lazy (puts "Sort" >> puts sort >> puts "{}") (puts sort)
+let ksort (sort : csort) : unit printer =
+  if_kore_lazy (puts "Sort" >> puts (csort_to_string sort) >> puts "{}") (puts (csort_to_string sort))
 
-let ktoken (sort : string) (s : string) : unit printer =
+let ktoken (sort : csort) (s : string) : unit printer =
   if_kore_lazy
     (puts "\dv{"      >> ksort sort               >> puts "}(\""   >> puts (k_string_escape s) >> puts "\")")
     (puts "#token(\"" >> puts (k_string_escape s) >> puts "\", \"" >> ksort sort               >> puts "\")")
 
-let ktoken_string (s : string) : unit printer          = kstring s >>= ktoken "String"
-let ktoken_bool (v : bool) : unit printer              = ktoken "Bool" (if v then "true" else "false")
-let ktoken_int (v : int) : unit printer                = ktoken "Int" (string_of_int v)
-let ktoken_int_of_string (v : string) : unit printer   = ktoken "Int" v
-let ktoken_float (v : float) : unit printer            = ktoken "Float" (string_of_float v)
-let ktoken_float_of_string (v : string) : unit printer = ktoken "Float" v
+let ktoken_string (s : string) : unit printer          = kstring s >>= ktoken String
+let ktoken_bool (v : bool) : unit printer              = ktoken Bool (if v then "true" else "false")
+let ktoken_int (v : int) : unit printer                = ktoken Int (string_of_int v)
+let ktoken_int_of_string (v : string) : unit printer   = ktoken Int v
+let ktoken_float (v : float) : unit printer            = ktoken Float (string_of_float v)
+let ktoken_float_of_string (v : string) : unit printer = ktoken Float v
 
 let klabel (label : string) : unit printer =
-  (if_kore "Lbl" "`" >>= puts) >> puts label >> (if_kore "{}" "`" >>= puts)
+  if_kore_lazy
+    (puts "Lbl" >> puts (klabel_escape_kore label) >> puts "{}")
+    (puts "`"   >> puts (klabel_escape_kast label) >> puts "`")
 
 let kapply (label : string) (children : (unit printer) list) : unit printer =
   klabel label >> puts "(" >> fold_left1 (fun a b -> (a >> (puts ", ") >> b)) children >> puts ")"
 
 let kapply0 (label : string) : unit printer =
-  kapply label [dot_klist]
+  if_kore_lazy
+    (klabel label >> puts "()")
+    (kapply label [dot_klist])
 
 let kapply1 (label : string) (contents : unit printer) : unit printer =
   kapply label [contents]
 
-(* TODO *)
+let kseq (contents : (unit printer) list) =
+  kapply "kseq" (contents @ [kapply0 "dotk"])
+
+let inj (subsort : csort) (sort : csort) (contents : unit printer) : unit printer =
+  puts "inj{" >> ksort subsort >> puts ", " >> ksort sort >> puts "}(" >> contents >> puts ")"
+
+let inject (subsort : csort) (sort : csort) (contents : unit printer) : unit printer = match sort with
+  | K -> kseq [contents]
+  | _ -> inj subsort sort contents
+
+let inj_kapply (subsort : csort) (sort : csort) (label : string) (contents : (unit printer) list) : unit printer =
+  if_kore_lazy
+    (inject subsort sort (kapply label contents))
+    (kapply label contents)
 
 let dot_list : unit printer = kapply0 ".List"
 
@@ -162,19 +199,19 @@ let list_of f l =
 
 let rec cabs_to_kast (defs : definition list) (filename : string) : Buffer.t =
   let (_, final_state) = printTranslationUnit filename defs init_state in
-  Buffer.add_char !(final_state.buffer) '\n'; !(final_state.buffer)
+  Buffer.add_char final_state.buffer '\n'; final_state.buffer
 
 and cabs_to_kore (defs : definition list) (filename : string) : Buffer.t =
   let (_, final_state) = printTranslationUnit filename defs {init_state with kore = true} in
-  Buffer.add_char !(final_state.buffer) '\n'; !(final_state.buffer)
+  Buffer.add_char final_state.buffer '\n'; final_state.buffer
 
 and printTranslationUnit (filename : string) defs s =
   (* Finangling here to extract string literals. *)
   let (_, s_intr)   = printDefs defs s in
   let fn            = ktoken_string filename in
   let print_strings = get_string_literals >>= fun strings -> list_of (kapply1 "Constant") strings in
-  let ast           = fun s -> (Buffer.add_buffer !(s.buffer) !(s_intr.buffer); ((), s)) in
-  kapply "TranslationUnit" [fn; print_strings; ast] {s_intr with buffer = ref (Buffer.create 100)}
+  let ast           = fun s -> (Buffer.add_buffer s.buffer s_intr.buffer; ((), s)) in
+  kapply "TranslationUnit" [fn; print_strings; ast] {s_intr with buffer = Buffer.create 100}
 
 and printDefs defs = list_of printDef defs
 
@@ -194,7 +231,6 @@ and printDef = function
 and printDefinitionLoc a l = if hasInformation l then kapply "DefinitionLoc" [a; printCabsLoc l] else a
 and printDefinitionLocRange a b c = kapply "DefinitionLocRange" [a; printCabsLoc b; printCabsLoc c]
 and printSingleName (a, b) = kapply "SingleName" [printSpecifier a; printName b]
-and printAttr a b = kapply "Attributekapplyper" [a; printSpecElemList b]
 and printBlock a = new_counter >>= fun blockNum ->
   kapply "Block3" [ktoken_int blockNum; printBlockLabels a.blabels; printStatementList a.bstmts]
 and printCabsLoc a =
@@ -203,12 +239,12 @@ and printCabsLoc a =
 
 and hasInformation l = l.lineno <> -10
 and printNameLoc s _ = s
-and printIdentifier a =
-  kapply1 "ToIdentifier" (ktoken_string a)
+and printIdentifier = function
+  | "" | "___missing_field_name" -> kapply0 "AnonymousName"
+  | x                            -> kapply1 "Identifier" (ktoken_string x)
 (* string * decl_type * attribute list * cabsloc *)
 and printName (a, b, c, d) =
-  let name = if a = "" then kapply0 "AnonymousName" else printIdentifier a in
-  printNameLoc (kapply "Name" [name; printDeclType b; printSpecElemList c]) d
+  printNameLoc (kapply "Name" [printIdentifier a; printDeclType b; printSpecElemList c]) d
 and printInitNameGroup (a, b) = kapply "InitNameGroup" [printSpecifier a; printInitNameList b]
 and printNameGroup (a, b) = kapply "NameGroup" [printSpecifier a; printNameList b]
 and printNameList a = list_of printName a
