@@ -1,13 +1,11 @@
-# NOTE: PROFILE_DIR is required to be passed from above.
-
 # Overridden in the top-level makefile.
 BUILD_DIR := $(CURDIR)/../dist/semantics
 
 # Used internally.
 OUTPUT_DIR := $(abspath $(BUILD_DIR))
 
-# Intended to be passed from above.
-PROFILE_DIR ?= $(realpath $(CURDIR)/../profiles/x86-gcc-limited-libc)
+# Overridden in the top-level makefile.
+PROFILE_DIR := $(realpath $(CURDIR)/../profiles/x86-gcc-limited-libc)
 
 # Appending to whatever the environment provided.
 KOMPILE_FLAGS += --backend ocaml

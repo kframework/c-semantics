@@ -10,7 +10,7 @@ K_OPTS += -Xmx8g
 K_OPTS += -Xss32m
 export K_OPTS
 
-export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
+PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
 PROFILE := $(shell basename $(PROFILE_DIR))
 SUBPROFILE_DIRS :=
 
@@ -277,7 +277,7 @@ execution-semantics: c-cpp-semantics
 
 .PHONY: semantics
 semantics:
-	@$(MAKE) -C semantics all BUILD_DIR=$(SEMANTICS_BUILD_DIR)
+	@$(MAKE) -C semantics all BUILD_DIR=$(SEMANTICS_BUILD_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 .PHONY: check
 check: | pass fail fail-compile
@@ -352,7 +352,7 @@ XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-link
 .PHONY: $(XYZ_SEMANTICS)
 
 $(XYZ_SEMANTICS):
-	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR)
+	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 
 # A) Move this to the end so that .SECONDEXPANSION does not
