@@ -14,7 +14,8 @@ KOMPILE_FLAGS += --smt none
 
 # Generate a makefile list from a colon-separated one.
 # K_INCLUDE_PATH comes from the environment.
-K_INCLUDE_DIRS := $(shell perl -pe 's/:/ /g' <<<$(K_INCLUDE_PATH))
+# signature of `subst`: from,to,text.
+K_INCLUDE_DIRS := $(subst :, ,$(K_INCLUDE_PATH))
 
 # Append some more things.
 K_INCLUDE_DIRS += $(PROFILE_DIR)/semantics
