@@ -13,10 +13,6 @@ module C-TRANSLATION-INIT
      imports COMMON-INIT-SYNTAX
      imports COMMON-TRANSLATION-UNIT-SYNTAX
 
-     rule ToIdentifier("___missing_field_name") => #NoName
-     rule ToIdentifier(S:String) => Identifier(S)
-          requires S =/=String "___missing_field_name"
-
      rule <k> TranslationUnit(Tu:String, list(Strings:List), list(Decls:List))
                => makeTu(Tu +String Uuid)
                ~> preDeclareStrings(Strings)
@@ -64,7 +60,7 @@ module C-TRANSLATION-INIT
      rule PragmaKccInv(_) => .K
           [structural]
 
-     rule NothingExpression() => {emptyValue}:>Expression
+     rule NothingExpression() => emptyValue
 
      rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tu> Tu::String </curr-tu> ...</generatedTop>) => Tu
 

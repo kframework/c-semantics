@@ -305,7 +305,7 @@ module C-TYPING-EXPR
           ~> elaborateDone(_, _) ~> typeof(_ ? structOrUnionType #as T::Type : (structOrUnionType #as T'::Type))
           requires T =/=Type T'
 
-     syntax Expression ::= assignmentOp(K, K)
+     syntax KItem ::= assignmentOp(K, K)
      rule assignmentOp(L:K, R:K)
          => ((L := R)
         #Or ((L *= R)
