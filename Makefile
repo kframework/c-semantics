@@ -329,10 +329,15 @@ simple-build-test:
 # Builds with `KOMPILE_FLAGS=--profile-rule-parsing`.
 # Intended for direct user invocation.
 # Produces a `timelogs.d` directory.
+# Also produces a `timelogs.d/timelogs.csv` file
+# suitable for importing into an SQL database.
 .PHONY: profile-rule-parsing
-profile-rule-parsing:
-	KOMPILE_FLAGS=--profile-rule-parsing $(MAKE) test-build
-	cd $(OUTPUT_DIR)/profiles && \
+profile-rule-parsing: export KOMPILE_FLAGS += --profile-rule-parsing
+profile-rule-parsing: test-build
+	$(eval TIMELOGS_DIR := $(OUTPUT_DIR)/timelogs.d)
+	$(eval TIMELOGS_CSV := $(TIMELOGS_DIR)/timelogs.csv)
+	$(info Moving timingXX.log files into $(TIMELOGS_DIR)...)
+	@cd $(OUTPUT_DIR)/profiles && \
 	find . \
 		! -path "*.build*" \
 		! -path "*.git*" \
@@ -340,9 +345,19 @@ profile-rule-parsing:
 		-name "timing*.log" \
 		-print | \
 	while IFS= read f; do \
-		mkdir -p $(OUTPUT_DIR)/timelogs.d/"$$(dirname $$f)"; \
-		mv $$f $(OUTPUT_DIR)/timelogs.d/"$$(dirname $$f)"; \
+		mkdir -p $(TIMELOGS_DIR)/"$$(dirname $$f)"; \
+		mv $$f $(TIMELOGS_DIR)/"$$(dirname $$f)"; \
 	done
+	$(info Done.)
+	$(info Generating $(TIMELOGS_CSV)...)
+	@cd $(TIMELOGS_DIR) && \
+	find . \
+		-type f \
+		-name "timing*.log" \
+		-exec \
+			perl -ne '/Source\((.*?)\):(\d+):(\d+)\s+(.*?)$$/ && print "{},$$1,$$2,$$3,$$4\n";' {} \; \
+	> $(TIMELOGS_CSV)
+	$(info Done.)
 
 
 # This makefile does not need to be re-built.
