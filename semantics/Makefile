@@ -7,11 +7,14 @@ BUILD_DIR := $(CURDIR)/../dist/semantics
 OUTPUT_DIR := $(abspath $(BUILD_DIR))
 
 # Intended to be passed from above.
-KOMPILE_FLAGS ?=
-KDEP_FLAGS ?=
 PROFILE_DIR ?= $(realpath $(CURDIR)/../profiles/x86-gcc-limited-libc)
 
-KOMPILE_FLAGS += --backend ocaml --non-strict --smt none
+# Appending to whatever the environment provided.
+KOMPILE_FLAGS += --backend ocaml
+KOMPILE_FLAGS += --non-strict
+KOMPILE_FLAGS += --smt none
+
+# Appending to whatever the environment provided.
 KDEP_FLAGS += $(addprefix -I ,$(KDEP_INCLUDE_DIRS))
 
 KDEP_INCLUDE_DIRS := $(PROFILE_DIR)/semantics
