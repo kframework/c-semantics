@@ -12,12 +12,18 @@ KOMPILE_FLAGS += --backend ocaml
 KOMPILE_FLAGS += --non-strict
 KOMPILE_FLAGS += --smt none
 
-# Appending to whatever the environment provided.
-KDEP_FLAGS += $(addprefix -I ,$(KDEP_INCLUDE_DIRS))
+# Generate a makefile list from a colon-separated one.
+# K_INCLUDE_PATH comes from the environment.
+K_INCLUDE_DIRS := $(shell perl -pe 's/:/ /g' <<<$(K_INCLUDE_PATH))
 
-KDEP_INCLUDE_DIRS := $(PROFILE_DIR)/semantics
-KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/c
-KDEP_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/cpp
+# Append some more things.
+K_INCLUDE_DIRS += $(PROFILE_DIR)/semantics
+K_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/c
+K_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/cpp
+
+# Appending to whatever the environment provided.
+KDEP_FLAGS += $(addprefix -I ,$(K_INCLUDE_DIRS))
+KOMPILE_FLAGS += $(addprefix -I ,$(K_INCLUDE_DIRS))
 
 
 # Used specifically in the timestamp_of rules.
@@ -39,45 +45,39 @@ $(call timestamp_of,c-translation):
 	$(info Kompiling the static C semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) c-translation.k \
 		-d "$(OUTPUT_DIR)/c-translation-kompiled" \
-		--no-prelude -w all -v --debug \
-		-I $(PROFILE_DIR)/semantics
+		--no-prelude -w all -v --debug
 
 $(call timestamp_of,cpp-translation):
 	$(info Kompiling the static C++ semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) cpp-translation.k \
 		-d "$(OUTPUT_DIR)/cpp-translation-kompiled" \
-		--no-prelude -w all -v --debug \
-		-I $(PROFILE_DIR)/semantics
+		--no-prelude -w all -v --debug
 
 $(call timestamp_of,c-cpp-linking):
 	$(info Kompiling the C and C++ linking semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) c-cpp-linking.k \
 		-d "$(OUTPUT_DIR)/c-cpp-linking-kompiled" \
-		--no-prelude -w all -v --debug \
-		-I $(PROFILE_DIR)/semantics
+		--no-prelude -w all -v --debug
 
 $(call timestamp_of,c-cpp):
 	$(info Kompiling the dynamic C and C++ semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-cpp-kompiled" \
 		--no-prelude -w all -v --transition "interpRule" \
-		--debug \
-		-I $(PROFILE_DIR)/semantics
+		--debug
 
 $(call timestamp_of,c-nd):
 	$(info Kompiling the dynamic C and C++ semantics with expression sequencing non-determinism...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-nd-kompiled" \
 		--no-prelude --transition "observable ndtrans" \
-		--superheat "ndheat" --supercool "ndlocal" \
-		-I $(PROFILE_DIR)/semantics
+		--superheat "ndheat" --supercool "ndlocal"
 
 $(call timestamp_of,c-nd-thread):
 	$(info Kompiling the dynamic C and C++ semantics with thread-interleaving non-determinism...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-nd-thread-kompiled" \
-		--no-prelude --transition "observable ndtrans ndthread" \
-		-I $(PROFILE_DIR)/semantics
+		--no-prelude --transition "observable ndtrans ndthread"
 
 
 .PHONY: default
