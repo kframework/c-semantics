@@ -5,13 +5,12 @@ export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
 export KOMPILE := $(K_BIN)/kompile
 export KDEP := $(K_BIN)/kdep
 
-export K_OPTS := -Xmx8g -Xss32m
+# Appending to whatever the environment provided.
+K_OPTS += -Xmx8g
+K_OPTS += -Xss32m
+export K_OPTS
 
-KOMPILE_FLAGS ?=
-KOMPILE_FLAGS += -O2
-export KOMPILE_FLAGS
-
-export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
+PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
 PROFILE := $(shell basename $(PROFILE_DIR))
 SUBPROFILE_DIRS :=
 
@@ -278,7 +277,7 @@ execution-semantics: c-cpp-semantics
 
 .PHONY: semantics
 semantics:
-	@$(MAKE) -C semantics all
+	@$(MAKE) -C semantics all BUILD_DIR=$(SEMANTICS_BUILD_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 .PHONY: check
 check: | pass fail fail-compile
@@ -353,7 +352,7 @@ XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-link
 .PHONY: $(XYZ_SEMANTICS)
 
 $(XYZ_SEMANTICS):
-	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR)
+	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 
 # A) Move this to the end so that .SECONDEXPANSION does not
