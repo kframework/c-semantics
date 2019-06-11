@@ -5,11 +5,10 @@ export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
 export KOMPILE := $(K_BIN)/kompile
 export KDEP := $(K_BIN)/kdep
 
-export K_OPTS := -Xmx8g -Xss32m
-
-KOMPILE_FLAGS ?=
-KOMPILE_FLAGS += -O2
-export KOMPILE_FLAGS
+# Appending to whatever the environment provided.
+K_OPTS += -Xmx8g
+K_OPTS += -Xss32m
+export K_OPTS
 
 export PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
 PROFILE := $(shell basename $(PROFILE_DIR))
