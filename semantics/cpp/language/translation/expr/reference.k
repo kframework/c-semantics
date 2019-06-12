@@ -6,8 +6,9 @@ module CPP-TRANSLATION-EXPR-REFERENCE
      imports CPP-REFERENCE-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule bindReference(L:LExpr, R:Val) => le(bindReference(L, R), trace(L), type(L))
+     rule bindReference(L:LVal, R:Val) => le(bindReference(L, R), trace(L), type(L))
           requires Translation()
+          andBool (notBool isEvalVal(L) orBool notBool isEvalVal(R))
 
      // we need this result tag because lvalues of reference type aren't KResults
      context bindReference(HOLE:Expr, _) [result(LVal)]
