@@ -846,12 +846,13 @@ module CPP-TRANSLATION-OVERLOADING
      rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId), E::Expr, true)
           => dataMemberValue(memberPointer(C, X, T), hasTrace(E), T)
 
-     rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase)), E::Expr, _) => le(E, hasTrace(E), T) ...</k>
-          <references> Refs::Map </references>
-          requires isCPPRefType(T) andBool notBool loc(Base, 0) in_keys(Refs)
-
-     rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase)), E::Expr, _) => lv(lnew(Base), hasTrace(E), T) ...</k>
-          <references>... loc(Base, 0) |-> _ ...</references>
+     rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase)), E::Expr, _) =>
+          #if Base =/=K nonStatic
+          #then
+               le(lv(lnew(Base), hasTrace(E), T), hasTrace(E), innerType(T))
+          #else
+               le(E, hasTrace(E), T)
+          #fi
           requires isCPPRefType(T)
 
      rule resolveUniqueDecl(V:KResult, _, _) => V

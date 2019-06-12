@@ -13,6 +13,7 @@ module CPP-EXPR-UNARY
 
      rule (&(lv(Loc:SymLoc, Tr::Trace, T::CPPType))) #as O:Expr
           => prv(Loc, combine(Tr, O), type(pointerType(T)))
+          requires notBool isCPPRefType(T)
 
      rule getAddress(lv(Loc:SymLoc, Tr::Trace, T::CPPType) #as O:LVal)
           => prv(Loc, combine(Tr, & O), type(pointerType(T)))
