@@ -23,6 +23,7 @@ pipeline {
       steps {
         sh '''
           eval $(opam config env)
+          export KOMPILE_FLAGS=-O2
           make -j4
         '''
       }
