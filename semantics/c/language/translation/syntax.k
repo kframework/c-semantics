@@ -174,7 +174,7 @@ module C-ABSTRACT-SYNTAX
      and name = String * decl_type * attribute list * cabsloc
      */
      // first argument is id, second is basetype
-     syntax KItem ::= Name(KItem, KItem, KItem) [avoid]
+     syntax KItem ::= Name(CId, KItem, KItem) [avoid]
      /*
      (* A variable declarator ("name") with an initializer *)
      and init_name = name * init_expression
@@ -221,13 +221,9 @@ module C-ABSTRACT-SYNTAX
      syntax KItem ::= OnlyTypedef(KItem)
      syntax KItem ::= GlobAsm(String)
      syntax KItem ::= Pragma(KItem)
-     syntax KItem ::= PragmaKccInv(String) | PragmaKccRule(String)
+     syntax KItem ::= PragmaKccRule(String)
      syntax KItem ::= Linkage(String, KItem)
-     syntax KItem ::= Transformer(KItem, K )
-     syntax KItem ::= ExpressionTransformer(KItem, KItem)
-
-     // name
-     syntax KItem ::= LTLAnnotation(CId, KItem)
+     syntax KItem ::= StaticAssert(K, KItem)
 
      /*
      (* the String is a file name, and then the list of toplevel forms *)
@@ -298,7 +294,7 @@ module C-ABSTRACT-SYNTAX
      context Cast(_, _, (HOLE:KItem => reval(HOLE))) [result(RValue)]
 
      // new // comp-lit id, spec, decl, init
-     syntax KItem ::= CompoundLiteral(KItem, K, KItem, KItem) [strict(2)]
+     syntax KItem ::= CompoundLiteral(Int, K, KItem, KItem) [strict(2)]
      /*
      | COMMA of expression list
      */
@@ -354,7 +350,7 @@ module C-ABSTRACT-SYNTAX
      syntax Constant ::= LitULL(Constant) [function]
      syntax Constant ::= LitF(Constant) [function]
 
-     syntax Constant ::= NoSuffix(KItem) [function]
+     syntax Constant ::= NoSuffix(Constant) [function]
 
      syntax Constant ::= CharLiteral(Int) [function]
      syntax Constant ::= WCharLiteral(Int) [function]
@@ -391,14 +387,12 @@ module C-ABSTRACT-SYNTAX
      */
      // String, List
 
-     syntax KItem ::= AnonymousName() // new, argument is type
+     syntax CId ::= AnonymousName() [function]
 
      syntax KItem ::= DefinitionLoc(KItem, CabsLoc)
      syntax KItem ::= DefinitionLocRange(KItem, CabsLoc, CabsLoc)
      // this wraps all statements with their location in the original file
-     syntax KItem ::= StatementLoc(KItem, KItem) // new
-
-     syntax KItem ::= StaticAssert(K, KItem)
+     syntax KItem ::= StatementLoc(KItem, CabsLoc) // new
 
      /*
      and for_clause =
@@ -463,7 +457,7 @@ module C-ABSTRACT-REWRITING
      imports C-ABSTRACT-SYNTAX
      imports COMMON-SYNTAX
 
-     rule AnonymousName() => #NoName [anywhere]
+     rule AnonymousName() => #NoName
 
      rule DefinitionLoc(K:KItem, L::CabsLoc) => CodeLoc(K, L) [anywhere]
      rule StatementLoc(K:KItem, L::CabsLoc) => CodeLoc(K, L) [anywhere]

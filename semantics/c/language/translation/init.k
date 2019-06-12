@@ -57,8 +57,6 @@ module C-TRANSLATION-INIT
      }*/
      rule Pragma(_) => .K
           [structural]
-     rule PragmaKccInv(_) => .K
-          [structural]
 
      rule NothingExpression() => emptyValue
 
