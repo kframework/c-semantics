@@ -331,7 +331,7 @@ simple-build-test:
 # Produces a `timelogs.d` directory.
 .PHONY: profile-rule-parsing
 profile-rule-parsing:
-	KOMPILE_FLAGS=--profile-rule-parsing $(MAKE) test-build
+	KOMPILE_FLAGS="$(KOMPILE_FLAGS) --profile-rule-parsing" $(MAKE) test-build
 	cd $(OUTPUT_DIR)/profiles && \
 	find . \
 		! -path "*.build*" \
