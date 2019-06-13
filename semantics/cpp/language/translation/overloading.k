@@ -191,7 +191,7 @@ module CPP-TRANSLATION-OVERLOADING
      rule (.K => notViableTypes(T, Types, getDefaultArgsTypes(getDA(T, K)), Cats, getDefaultArgsCats(getDA(T, K))))
           ~> keepThisCandidate2(T::CPPType, K::KItem, _, Types::List, Cats::List)
 
-     rule (B:Bool ~> keepThisCandidate(...)) => notBool B
+     rule (B:Bool ~> keepThisCandidate2(...)) => notBool B
 
 
      //syntax Expr ::= #resolveOverload(cands: CandidateSet, args: StrictList, types: StrictList, cats: StrictList, trace: Expr, ot: OverloadType)
