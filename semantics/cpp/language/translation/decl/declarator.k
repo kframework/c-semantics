@@ -71,8 +71,12 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule Specifier(Spec::Specifier, DeclaratorAndSpecifiers(D::Declarator, S::Set)) => DeclaratorAndSpecifiers(D, S SetItem(Spec)) [anywhere]
 
+     //context NormalizedDecl(... id: TypeId(HOLE:AType))
+
      rule NormalizedDecl(N::NNSVal, X::CId, Mangled::CId, T::AType, Init::Init, Type::DeclarationType)
           => DeclaratorAndSpecifiers(NormalizedDecl(N, X, Mangled, T, Init, Type), .Set)
+          //requires TypeId(BuiltinType(...)) :/=K X
+
 
      context DeclaratorAndSpecifiers(NormalizedDecl(... nns: HOLE:NNS), _)
              requires HOLE =/=K NoNNS()

@@ -317,6 +317,31 @@ module CPP-TRANSLATION-NAME
 
      rule lookupMemberInBaseClasses(X::CId, (ListItem(B::Class) => .List) _, T::Tag, Mask::Set, E::Expr => mergeClassSet(E, #lookupMember(X, B, true, T, Mask)))
 
+/*
+     rule <k>
+          lookupConversionFunctions(C::Class, CompatWithT::CPPType)
+          =>
+          Env ~>
+          filterNonExplicitConversionFunctions() ~>
+          filterReferenceCompatibleWith(CompatWithT)
+          </k>
+          <class-id> C </class-id>
+          <cenv> Env::Map </cenv>
+
+     // TODO
+     // setMethodExplicit
+
+     syntax KItem ::= filterNonExplicitConversionFunctions()
+                    | #filterNonExplicitConversionFunctions(Map, List)
+
+     rule Env::Map ~>
+          filterNonExplicitConversionFunctions()
+          =>
+          #filterNonExplicitConversionFunctions(Env, .List)
+
+     rule #filterNonExplicitConversionFunctions(_, _)
+*/
+
      rule lookupMemberInBaseClasses(... baseClasses: .List, result: E::Expr) => E
 
      syntax Expr ::= mergeClassSet(Expr, Expr) [strict]
