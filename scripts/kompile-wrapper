@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Remove optimization flags.
+SANITIZED_ARGS="$(echo "$@" | perl -pe 's/\-O.\s*//g')"
+
+# Append optimization flags, at most once each.
+echo "$@" | grep --quiet '\-O2' && SANITIZED_ARGS="${SANITIZED_ARGS} -O2"
+echo "$@" | grep --quiet '\-O3' && SANITIZED_ARGS="${SANITIZED_ARGS} -O3"
+echo "$@" | grep --quiet '\-Og' && SANITIZED_ARGS="${SANITIZED_ARGS} -Og"
+
+"$(dirname "${0}")/k/bin/kompile" ${SANITIZED_ARGS}

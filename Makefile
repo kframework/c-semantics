@@ -2,9 +2,6 @@ ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
 
-export KOMPILE := $(K_BIN)/kompile
-export KDEP := $(K_BIN)/kdep
-
 # Appending to whatever the environment provided.
 K_OPTS += -Xmx8g
 K_OPTS += -Xss32m
@@ -47,6 +44,8 @@ CXXFLAGS += -pedantic
 export CC := $(PROFILE_DIR)/cc
 export CXX := $(PROFILE_DIR)/cxx
 
+export KOMPILE := $(OUTPUT_DIR)/kompile-wrapper
+export KDEP := $(K_BIN)/kdep
 
 K_DIST := $(realpath $(K_BIN)/..)
 
@@ -54,6 +53,7 @@ CLANG_TOOLS_BUILD_DIR := $(OUTPUT_DIR)/clang-tools
 CLANG_TOOLS_BIN := $(CLANG_TOOLS_BUILD_DIR)/bin
 
 FILES_TO_DIST := \
+	scripts/kompile-wrapper \
 	scripts/kcc \
 	scripts/k++ \
 	scripts/kranlib \
@@ -364,7 +364,7 @@ clean:
 XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
 .PHONY: $(XYZ_SEMANTICS)
 
-$(XYZ_SEMANTICS):
+$(XYZ_SEMANTICS): PROFILE_DEPS
 	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 
@@ -373,8 +373,7 @@ $(XYZ_SEMANTICS):
 # B) The % sign matches '$(NAME)-kompiled/$(NAME)',
 #    e.g., c-cpp-kompiled/c-cpp'.
 .SECONDEXPANSION:
-$(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: PROFILE_DEPS \
-                                            $$(notdir $$*)-semantics
+$(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
 	$(info Distributing $(NAME))
 	@cp -p -RL $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(PROFILE_OUTPUT_DIR)
