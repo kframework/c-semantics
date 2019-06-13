@@ -290,7 +290,7 @@ scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 
 .PHONY: all-semantics
 all-semantics:
-	@$(MAKE) -C semantics all BUILD_DIR=$(SEMANTICS_BUILD_DIR) PROFILE_DIR=$(PROFILE_DIR)
+	@$(MAKE) -C semantics all BUILD_DIR=$(SEMANTICS_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 .PHONY: check
 check: | pass fail fail-compile
