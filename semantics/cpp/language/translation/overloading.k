@@ -212,19 +212,28 @@ module CPP-TRANSLATION-OVERLOADING
      rule getDA(_, envEntry(... defaultArgs: DA::DefaultArgumentsResult)) => DA
      rule getDA(T::CPPType, _) => emptyDefaultArguments(T) [owise]
      
-     syntax Bool ::= #notViableTypes(params: List, types: List, daTypes:List, cats: List, daCats: List, isNonStaticRefNone: Bool) [function]
-                   | notViableTypes(CPPType, List, List, List, List) [function]
-                   | viableType(CPPType, CPPType, ValueCategory) [function]
-                   | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool) [function]
+     syntax KItem ::= #notViableTypes(params: List, types: List, daTypes:List, cats: List, daCats: List, isNonStaticRefNone: Bool)
+                   | notViableTypes(CPPType, List, List, List, List)
 
      rule notViableTypes(T::CPPType, Types::List, DATypes::List, Cats::List, DACats::List)
           => #notViableTypes(getParams(T), Types, DATypes, Cats, DACats, isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone())
 
-     rule #notViableTypes(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(_) DAs::List, ListItem(C::ValueCategory) Cs::List, ListItem(_) DCs::List, B::Bool)
-     => notBool viableType(P, A, C) orBool #notViableTypes(Ps, As, DAs, Cs, DCs, B)
+     //rule #notViableTypes(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(_) DAs::List, ListItem(C::ValueCategory) Cs::List, ListItem(_) DCs::List, B::Bool)
+     //=> notBool viableType(P, A, C) orBool #notViableTypes(Ps, As, DAs, Cs, DCs, B)
 
-     rule #notViableTypes(ListItem(implicitObjectParameter(P:CPPType))  Ps::List, ListItem(A::CPPType) As::List, DAs::List, ListItem(C::ValueCategory) Cs::List, DCs::List, B::Bool)
-     => notBool viableImplicitObjectParameter(P, A, C, B) orBool #notViableTypes(Ps, As, DAs, Cs, DCs, B)
+     rule (.K => viableType(P, A, C))
+          ~> #notViableTypes((ListItem(P:CPPType) => .List) _, (ListItem(A::CPPType) => .List) _, (ListItem(_) => .List) _, (ListItem(C::ValueCategory) => .List) _, (ListItem(_) => .List) _, _)
+
+
+     //rule #notViableTypes(ListItem(implicitObjectParameter(P:CPPType))  Ps::List, ListItem(A::CPPType) As::List, DAs::List, ListItem(C::ValueCategory) Cs::List, DCs::List, B::Bool)
+     //=> notBool viableImplicitObjectParameter(P, A, C, B) orBool #notViableTypes(Ps, As, DAs, Cs, DCs, B)
+
+     rule (.K => viableImplicitObjectParameter(P, A, C, B))
+          ~> #notViableTypes((ListItem(implicitObjectParameter(P:CPPType)) => .List) _, (ListItem(A::CPPType) => .List) _, _, (ListItem(C::ValueCategory) => .List) _, _, B::Bool)
+
+     rule (false ~> #notViableTypes(...)) => true
+     rule (true => .K) ~> #notViableTypes(...)
+
 
      rule #notViableTypes(... params: ListItem(variadic)) => false
 
@@ -239,10 +248,26 @@ module CPP-TRANSLATION-OVERLOADING
                toType:   ToType::CPPType
           ) => viableType(FromType, ToType, FromCat)
 
-     rule viableType(P::CPPType, A::CPPType, C::ValueCategory) => conversionSequence(P, A, C, false, false, true) =/=K cannot-convert
+     syntax Bool ::= viableType(CPPType, CPPType, ValueCategory) [function]
+                   | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool) [function]
+
+     //rule viableType(P::CPPType, A::CPPType, C::ValueCategory) => conversionSequence(P, A, C, false, false, true) =/=K cannot-convert
+
+     rule (.K => conversionSequence(P, A, C, false, false, true))
+          ~> viableType(P::CPPType, A::CPPType, C::ValueCategory)
+
+     rule (CS:ConversionSequence ~> viableType(P::CPPType, A::CPPType, C::ValueCategory))
+          => CS =/=K cannot-convert
+
 
      rule viableImplicitObjectParameter(cppRefType #as P::CPPType, A::CPPType, C::ValueCategory, B::Bool)
           => conversionSequence(P, A, C, B, true, true) =/=K cannot-convert
+
+
+     rule (.K => conversionSequence(P, A, C, B, true, true))
+          ~> viableImplicitObjectParameter(cppRefType #as P::CPPType, A::CPPType, C::ValueCategory, B::Bool)
+          =>  =/=K cannot-convert
+
 
      rule viableImplicitObjectParameter(t(... st: no-type), _, _, _) => true
 
@@ -539,8 +564,8 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule (.K => computeBestViable(M, Types, Cats, O))
           ~> #resolveOverload2(cSet(... candidates: M::TypeMap), list(Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)
-          requires allViable(M, size(Args), Types, Cats) [owise] //allViable is expensive so we evaluate this rule late in order to avoid recomputing it over and over unnecessarily
-
+     //     requires allViable(M, size(Args), Types, Cats) [owise] //allViable is expensive so we evaluate this rule late in order to avoid recomputing it over and over unnecessarily
+/*
      syntax Bool ::= allViable(cands: TypeMap, Int, List, List) [function]
 
      rule allViable(T::CPPType |-> envEntry(... defaultArgs: DA::DefaultArgumentsResult) M::TypeMap, NArgs::Int, Types::List, Cats::List)
@@ -559,7 +584,7 @@ module CPP-TRANSLATION-OVERLOADING
      rule allViable(T::CPPType |-> templateInfo(...) _, _, _, _) => false
 
      rule allViable(... cands: .Map) => true
-
+*/
      syntax KItem ::= computeBestViable(TypeMap, List, List, OverloadType) [function]
                     | #computeBestViable(CPPType, K, List, List, List, OverloadType, List) [function]
                     | checkIsBest(CPPType, K, List, List, OverloadType, List) [function]
