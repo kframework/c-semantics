@@ -48,6 +48,14 @@ export CC := $(PROFILE_DIR)/cc
 export CXX := $(PROFILE_DIR)/cxx
 
 
+# Remove some duplicate flags from KOMPILE_FLAGS.
+# This is a temporary measure.
+KOMPILE_FLAGS := $(shell $(ROOT)/scripts/kompile-options-sanitizer.sh "-O2" "$(KOMPILE_FLAGS)")
+KOMPILE_FLAGS := $(shell $(ROOT)/scripts/kompile-options-sanitizer.sh "-O3" "$(KOMPILE_FLAGS)")
+KOMPILE_FLAGS := $(shell $(ROOT)/scripts/kompile-options-sanitizer.sh "-Og" "$(KOMPILE_FLAGS)")
+export KOMPILE_FLAGS
+
+
 K_DIST := $(realpath $(K_BIN)/..)
 
 CLANG_TOOLS_BUILD_DIR := $(OUTPUT_DIR)/clang-tools
