@@ -31,10 +31,10 @@ KOMPILE_FLAGS += $(addprefix -I ,$(K_INCLUDE_DIRS))
 CPP_KOMPILE_FLAGS := --opaque-klabels c-translation.k
 EXECUTION_KOMPILE_FLAGS := \
 	--opaque-klabels \
+	cpp-translation.k \
 	--no-expand-macros \
 	--ocaml-serialize-config '$$PGM' \
-	--ocaml-dump-exit-code 139 \
-	cpp-translation.k
+	--ocaml-dump-exit-code 139
 
 define timestamp_of
     $(OUTPUT_DIR)/$(1)-kompiled/$(1)-kompiled/timestamp
