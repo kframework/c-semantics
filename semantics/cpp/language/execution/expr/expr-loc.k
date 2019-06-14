@@ -2,7 +2,7 @@ module CPP-EXECUTION-EXPR-EXPRLOC-SYNTAX
      imports CPP-SYNTAX
      imports COMMON-SORTS
 
-     syntax Expr ::= #ExecExprLoc(CabsLoc, Expr) [strict(2)]
+     syntax Expr ::= #ExecExprLoc(CabsLoc, Expr) [strict(c; 2)]
 endmodule
 
 module CPP-EXECUTION-EXPR-EXPRLOC

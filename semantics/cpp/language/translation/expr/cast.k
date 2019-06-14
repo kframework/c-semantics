@@ -62,7 +62,7 @@ module CPP-TRANSLATION-EXPR-CAST
 
      rule getStaticThenConstIntermediateType(T::CPPType) => T [owise]
 
-     syntax Expr ::= tryConvert(Expr, Expr) [strict(1)]
+     syntax Expr ::= tryConvert(Expr, Expr) [strict(c; 1)]
      syntax Expr ::= "stuck"
 
      rule tryConvert(cannot-convert, E::Expr) => E
@@ -73,7 +73,7 @@ module CPP-TRANSLATION-EXPR-CAST
      rule StaticCast(T:CPPType, V:Val)
           => convertStatic(T, V, hasTrace(StaticCast(T, V)))
 
-     syntax Expr ::= tryInit(CPPType, Val, K) [strict(3)]
+     syntax Expr ::= tryInit(CPPType, Val, K) [strict(c; 3)]
 
      // this is needed to be able to treat certain expressions as constant expressions.
      // it should be safe since the side condition guarantees that the initialization

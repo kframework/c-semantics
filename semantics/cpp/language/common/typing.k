@@ -219,7 +219,7 @@ module CPP-TYPING-SYNTAX
                    | isCPPWideCharType(CPPDType) [function]
                    | isCPPCharType(CPPDType) [function]
 
-     syntax Expr ::= setType(CPPType, Expr) [strict]
+     syntax Expr ::= setType(CPPType, Expr) [strict(c; 2)]
 
      syntax Quals ::= getQuals(CPPType) [function]
 
@@ -333,7 +333,7 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPType ::= implicitObjectParameterType(CPPType) [function]
 
-     syntax Expr ::= getBaseClassSubobject(base: LVal, baseType: CPPType) [strict]
+     syntax Expr ::= getBaseClassSubobject(base: LVal, baseType: CPPType) [strict(c; 1)]
 
      syntax Bool ::= isBaseClassOf(base: CPPType, derived: CPPType) [function]
                    | isVirtualBaseClassOf(CPPType, CPPType) [function]

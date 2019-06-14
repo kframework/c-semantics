@@ -363,7 +363,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule EmptyBlock() => BlockStmt(.List)
 
      syntax KItem ::= implicitDeclarationOfCopyConstructor(Class)
-                    | implicitDeclarationOfCopyConstructor2(Class, Bool) [strict(2)]
+                    | implicitDeclarationOfCopyConstructor2(Class, Bool)
 
      // @ref n4800 12.8:8
      rule implicitDeclarationOfCopyConstructor(C::Class)
@@ -886,7 +886,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule resolve(E:ResolvedExpr) ~> figureDestruct(.List, .List, Res:K) => Res
           requires notBool isNotFoundNameRef(E)
 
-     syntax KItem ::= TaddToConstructed(Expr, CPPType) [strict(1)]
+     syntax KItem ::= TaddToConstructed(Expr, CPPType) [strict(c; 1)]
 
      rule <k> TaddToConstructed(L:LVal, T::CPPType) => .K ...</k>
           <elab>... .K => addToConstructed(L, T) </elab>
@@ -925,9 +925,9 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule BitFieldDecl(NoNNS(), X::CId, t(Q::Quals, Mods::Set, T::CPPSimpleType), prv(N::Int, _, _)) => declareField(X, t(Q, Mods, bitfieldType(T, N)), NoInit())
 
-     rule FieldDecl(NoNNS(), X::CId, T::CPPType, Init::Init) => declareField(X, T, Init)
+     rule FieldDecl(NoNNS(), X::CId, T:CPPType, Init::Init) => declareField(X, T, Init)
 
-     syntax KItem ::= declareField(CId, CPPType, Init) [strict(2)]
+     syntax KItem ::= declareField(CId, CPPType, Init)
 
      syntax ClassOffset ::= "uninitialized"
 

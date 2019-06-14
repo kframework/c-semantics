@@ -153,6 +153,7 @@ module C-DYNAMIC
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule isKResult(.HeatList) => true
      rule isKResult(S1::HeatItem hs:: S2::HeatList) => isKResult(S1) andBool isKResult(S2)
@@ -228,5 +229,33 @@ module C-DYNAMIC
 
      rule fromOpaque(opaque(V:K, _)) => V
      rule fromOpaque(_) => .K [owise]
+
+     syntax KItem ::= "seqstrict()"
+     rule seqstrict(list(HOLE:List)) => toSSList(HOLE) ~> seqstrict() [heat]
+     rule HOLE:SSList ~> seqstrict() => seqstrict(krlist(ofSSList(HOLE))) [cool]
+
+     syntax SSList ::= K "seqstrict::" SSList [seqstrict]
+                     | ".SSList"
+     rule isKResult(.SSList) => true
+     rule isKResult(S1::SSList seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
+     rule toSSList(ListItem(K:KItem) L::List) => K seqstrict:: toSSList(L)
+     rule toSSList(.List) => .SSList
+     rule ofSSList(krlist(L1::List) seqstrict:: L2::SSList) => L1 ofSSList(L2)
+     rule ofSSList(.SSList) => .List
+     rule ofSSList(K:KItem seqstrict:: L::SSList) => ListItem(K) ofSSList(L) [owise]
+
+     syntax KItem ::= "strict()"
+     rule list(HOLE:List) => toSList(HOLE) ~> strict() [heat]
+     rule HOLE:SList ~> strict() => krlist(ofSList(HOLE)) [cool]
+
+     syntax SList ::= K "strict::" SList [strict]
+                    | ".SList"
+     rule isKResult(.SList) => true
+     rule isKResult(S1::SList strict:: S2::SList) => isKResult(S1) andBool isKResult(S2)
+     rule toSList(ListItem(K:KItem) L::List) => K strict:: toSList(L)
+     rule toSList(.List) => .SList
+     rule ofSList(krlist(L1::List) strict:: L2::SList) => L1 ofSList(L2)
+     rule ofSList(.SList) => .List
+     rule ofSList(K:KItem strict:: L::SList) => ListItem(K) ofSList(L) [owise]
 
 endmodule

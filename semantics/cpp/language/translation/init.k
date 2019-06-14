@@ -19,6 +19,9 @@ module CPP-TRANSLATION-INIT
 
      rule isKResult(le(_, _, T::CPPType) #Or xe(_, _, T::CPPType) #Or pre(_, _, T::CPPType)) => notBool isCPPRefType(T)
 
+     context alias [c]: <k> HERE ...</k> <compile-time-evaluation> false </compile-time-evaluation>
+     context alias [c]: <k> HERE ...</k> <compile-time-evaluation> true </compile-time-evaluation> [result(ExecResult)]
+
      rule <k> TranslationUnit(Tu::String, Decls::List)
                => makeTu(Tu +String Uuid)
                ~> makeNs(GlobalNamespace())
@@ -79,7 +82,7 @@ module CPP-TRANSLATION-INIT
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
           requires Translation()
 
-     syntax Expr ::= #ExprLoc(CabsLoc, Expr) [strict(2)]
+     syntax Expr ::= #ExprLoc(CabsLoc, Expr) [strict(c; 2)]
 
      rule <k> #ExprLoc(L::CabsLoc, V:Val) => V ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
