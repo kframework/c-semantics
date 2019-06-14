@@ -27,8 +27,8 @@ pipeline {
           make -j4 profile-rule-parsing
         '''
       }
-      post { always {
-        archiveArtifacts artifacts: 'dist/timelogs.d/timelogs.csv', allowEmptyArchive: false, onlyIfSuccessful: true
+      post { success {
+        archiveArtifacts artifacts: 'dist/timelogs.d/timelogs.csv'
       } }
     }
     stage('Re-Build with timeout') { steps {
