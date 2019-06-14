@@ -28,7 +28,7 @@ pipeline {
         '''
       }
       post { success {
-        archiveArtifacts artifacts: 'dist/timelogs.d/timelogs.csv'
+        archiveArtifacts 'dist/timelogs.d/timelogs.csv'
       } }
     }
     stage('Re-Build with timeout') { steps {
