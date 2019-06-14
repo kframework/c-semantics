@@ -137,17 +137,24 @@ check-k:
 
 # Real targets.
 
-$(OUTPUT_DIR)/writelong: scripts/writelong.c
-	@mkdir -p $(OUTPUT_DIR)
-	@$(CC) $(CFLAGS) scripts/writelong.c -o $(OUTPUT_DIR)/writelong
+# We rely on this rule to make
+# nonexisting directories.
+.DEFAULT: ;@mkdir -p $@
 
-$(OUTPUT_DIR)/extract-references: scripts/extract-references.cpp
-	@mkdir -p $(OUTPUT_DIR)
+
+$(OUTPUT_DIR)/writelong: scripts/writelong.c | $(OUTPUT_DIR)
+	$(info Building $@)
+	@$(CC) $(CFLAGS) $< -o $@
+
+$(OUTPUT_DIR)/extract-references: scripts/extract-references.cpp | $(OUTPUT_DIR)
 	$(info Building $@)
 	@$(CXX) $(CXXFLAGS) $< -lstdc++fs -o $@
 
-$(OUTPUT_DIR)/kcc: scripts/getopt.pl $(PERL_MODULES) $(OUTPUT_DIR)/writelong $(FILES_TO_DIST)
-	mkdir -p $(OUTPUT_DIR)/RV_Kcc
+$(OUTPUT_DIR)/kcc: scripts/getopt.pl \
+                   $(PERL_MODULES) \
+                   $(OUTPUT_DIR)/writelong \
+                   $(FILES_TO_DIST) \
+                   | $(OUTPUT_DIR)/RV_Kcc
 	cp -RLp $(FILES_TO_DIST) $(OUTPUT_DIR)
 	cp -RLp $(PERL_MODULES) $(OUTPUT_DIR)/RV_Kcc
 	cat scripts/RV_Kcc/Opts.pm | perl scripts/getopt.pl > $(OUTPUT_DIR)/RV_Kcc/Opts.pm
@@ -166,8 +173,12 @@ pack: $(OUTPUT_DIR)/kcc
 	ln -rsf $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
 	rm -rf $(OUTPUT_DIR)/fatlib $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/packlists $(OUTPUT_DIR)/fatpacker.trace
 
-$(PROFILE_OUTPUT_DIR): $(OUTPUT_DIR)/kcc $(PROFILE_FILE_DEPS) $(SUBPROFILE_FILE_DEPS) $(PROFILE)-native
-	@mkdir -p $(PROFILE_OUTPUT_DIR)/lib
+.PHONY: PROFILE_DEPS
+PROFILE_DEPS: $(OUTPUT_DIR)/kcc \
+              $(PROFILE_FILE_DEPS) \
+              $(SUBPROFILE_FILE_DEPS) \
+              $(PROFILE)-native \
+              | $(PROFILE_OUTPUT_DIR)/lib
 	@printf "%s" $(PROFILE) > $(OUTPUT_DIR)/current-profile
 	@printf "%s" $(PROFILE) > $(OUTPUT_DIR)/default-profile
 	@-$(foreach f, $(PROFILE_FILE_DEPS), \
@@ -187,7 +198,7 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
                  $(call timestamp_of,cpp-translation) \
                  $(wildcard $(PROFILE_DIR)/compiler-src/*.C) \
                  $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) \
-                 $(PROFILE_OUTPUT_DIR)
+                 PROFILE_DEPS
 	$(info $(PROFILE): Translating the C++ standard library...)
 	@cd $(PROFILE_DIR)/compiler-src && \
 		$(OUTPUT_DIR)/kcc \
@@ -207,10 +218,10 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
 
 
 $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
-	          $(call timestamp_of,c-translation) \
-	          $(wildcard $(PROFILE_DIR)/src/*.c) \
-	          $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) \
-            $(PROFILE_OUTPUT_DIR)
+            $(call timestamp_of,c-translation) \
+            $(wildcard $(PROFILE_DIR)/src/*.c) \
+            $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) \
+            PROFILE_DEPS
 	$(info $(PROFILE): Translating the C standard library...)
 	@cd $(PROFILE_DIR)/src && \
 		$(OUTPUT_DIR)/kcc \
@@ -235,24 +246,24 @@ $(PROFILE)-native: $(PROFILE_OUTPUT_DIR)/native/main.o \
                    $(PROFILE_OUTPUT_DIR)/native/builtins.o \
                    $(PROFILE_OUTPUT_DIR)/native/platform.o \
                    $(PROFILE_OUTPUT_DIR)/native/platform.h \
-                   $(PROFILE_OUTPUT_DIR)/native/server.h
+                   $(PROFILE_OUTPUT_DIR)/native/server.h \
 
-
-$(PROFILE_OUTPUT_DIR)/native/main.o: native-server/main.c native-server/server.h
-	mkdir -p $(dir $@)
+$(PROFILE_OUTPUT_DIR)/native/main.o: native-server/main.c \
+                                     native-server/server.h \
+                                     | $(PROFILE_OUTPUT_DIR)/native
 	$(CC) $(CFLAGS) -c $< -o $@  -g
 
-$(PROFILE_OUTPUT_DIR)/native/%.h: native-server/%.h
-	mkdir -p $(dir $@)
+$(PROFILE_OUTPUT_DIR)/native/%.h: native-server/%.h \
+                                  | $(PROFILE_OUTPUT_DIR)/native
 	cp -RLp $< $@
 
-$(PROFILE_OUTPUT_DIR)/native/server.c: native-server/server.c
-	mkdir -p $(dir $@)
+$(PROFILE_OUTPUT_DIR)/native/server.c: native-server/server.c \
+                                       | $(PROFILE_OUTPUT_DIR)/native
 	cp -RLp $< $@
 
 $(PROFILE_OUTPUT_DIR)/native/%.o: $(PROFILE_DIR)/native/%.c \
-                                  $(wildcard native-server/*.h)
-	mkdir -p $(dir $@)
+                                  $(wildcard native-server/*.h) \
+                                  | $(PROFILE_OUTPUT_DIR)/native
 	$(CC) $(CFLAGS) -c $< -o $@ -I native-server
 
 
@@ -269,27 +280,16 @@ parser/cparser:
 $(CLANG_TOOLS_BIN)/%: $(CLANG_TOOLS_BUILD_DIR)/Makefile
 	@$(MAKE) -C $(CLANG_TOOLS_BUILD_DIR) $*
 
-$(CLANG_TOOLS_BUILD_DIR)/Makefile: clang-tools/CMakeLists.txt
-	@mkdir -p $(CLANG_TOOLS_BUILD_DIR)
+$(CLANG_TOOLS_BUILD_DIR)/Makefile: clang-tools/CMakeLists.txt | $(CLANG_TOOLS_BUILD_DIR)
 	@cd $(CLANG_TOOLS_BUILD_DIR) \
 		&& test -f Makefile || cmake $(ROOT)/clang-tools
 
 scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 	flock -w 120 $< sh -c 'cd scripts && tar xvf cdecl-$*.tar.gz && cd cdecl-$* && ./configure --without-readline && $(MAKE)' || true
 
-# compatability targets
-# TODO: remove when not used in rv-match build
-.PHONY: c-translation-semantics
-c-translation-semantics: c-translation-semantics
-.PHONY: cpp-translation-semantics
-cpp-translation-semantics: cpp-translation-semantics
-.PHONY: linking-semantics
-linking-semantics: c-cpp-linking-semantics
-.PHONY: execution-semantics
-execution-semantics: c-cpp-semantics
 
-.PHONY: semantics
-semantics:
+.PHONY: all-semantics
+all-semantics:
 	@$(MAKE) -C semantics all BUILD_DIR=$(SEMANTICS_BUILD_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 .PHONY: check
@@ -388,7 +388,7 @@ $(XYZ_SEMANTICS):
 # B) The % sign matches '$(NAME)-kompiled/$(NAME)',
 #    e.g., c-cpp-kompiled/c-cpp'.
 .SECONDEXPANSION:
-$(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: $(PROFILE_OUTPUT_DIR) \
+$(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: PROFILE_DEPS \
                                             $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
 	$(info Distributing $(NAME))
