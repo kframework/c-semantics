@@ -232,24 +232,28 @@ module CPP-TRANSLATION-OVERLOADING
      rule viableType(P::CPPType, A::CPPType, C::ValueCategory)
           =>
           conversionSequence(P, A, C, false, false, true)
-          ~> isViable()
+          ~> canConvert()
 
      rule viableImplicitObjectParameter(cppRefType #as P::CPPType, A::CPPType, C::ValueCategory, B::Bool)
           =>
           conversionSequence(P, A, C, B, true, true)
-          ~> isViable()
+          ~> canConvert()
 
-     syntax KItem ::= isViable()
+     syntax KItem ::= canConvert()
 
-     rule (CS:ConversionSequence ~> isViable())
+     rule (CS:ConversionSequence ~> canConvert())
           => CS =/=K cannot-convert
 
      rule viableImplicitObjectParameter(t(... st: no-type), _, _, _) => true
 
      rule canConvertWithStandardConversion(P::CPPType, A::CPPType, C::ValueCategory) => computeSCS(P, A, C, false) =/=K cannot-convert
 
+     // Result: ConversionSequence
+     syntax KItem ::= conversionSequence(CPPType, CPPDType, ValueCategory, isNonStaticRefNone: Bool, isImplicit: Bool, canUserDefinedConvert: Bool)
+
+     syntax KResult ::= ConversionSequence
+
      syntax ConversionSequence ::= CannotConvert
-                                 | conversionSequence(CPPType, CPPDType, ValueCategory, isNonStaticRefNone: Bool, isImplicit: Bool, canUserDefinedConvert: Bool) [function]
                                  | computeUDC(CPPType, CPPType, ValueCategory) [function]
                                  | computeUDCFrom(CPPType, Class, ClassInfo, ValueCategory) [function]
                                  | computeUDCTo(Class, ClassInfo, CPPType, ValueCategory) [function]
@@ -260,7 +264,7 @@ module CPP-TRANSLATION-OVERLOADING
                                  | standardConversionSequence(Conversion, typeConv: Conversion, Conversion, isNonStaticRefNone: Bool, param: CPPType)
                                  | userDefinedConversionSequence(ConversionSequence, QualId, CPPType, ConversionSequence)
                                  | "ambiguousConversionSequence"
-                                 | listInitSequence(CPPType, ConversionSequence)
+                                 | listInitSequence(CPPType, ConversionSequence) [strict(2)]
                                  | "bottomConversionSequence"
 
      // @ref n4296 13.3.3.1.4:1 (identity conversion)
