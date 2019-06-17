@@ -76,7 +76,7 @@ module C-ABSTRACT-SYNTAX
      syntax TypeSpecifier ::= OversizedFloat()
      syntax TypeSpecifier ::= Signed()
      syntax TypeSpecifier ::= Unsigned()
-     syntax Float ::= "inf"
+     syntax Float ::= "inf" [function]
      syntax TypeSpecifier ::= Named(CId)
      /*
      (* each of the following three kinds of specifiers contains a field
@@ -581,5 +581,7 @@ module C-ABSTRACT-REWRITING
      }*/
      rule ArrayIndex(E1::K, E2::K) => *(E1 + E2) [anywhere]
 
+
+     rule inf => 1.0 /Float 0.0
 
 endmodule

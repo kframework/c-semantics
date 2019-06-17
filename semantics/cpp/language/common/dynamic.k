@@ -315,15 +315,15 @@ module CPP-DYNAMIC-OTHER-SORTS
 
      syntax PRVal ::= PRV
 
-     syntax GLVal ::= LVal | XVal
+     syntax GLVal ::= LVal | XVal | GLV
 
      syntax GLV ::= LV | XV
 
-     syntax RVal ::= XVal | PRVal
+     syntax RVal ::= XVal | PRVal | RV
 
      syntax RV ::= XV | PRV
 
-     syntax Val ::= GLVal | RVal
+     syntax Val ::= GLVal | RVal | V
 
      syntax V ::= GLV | RV
 
