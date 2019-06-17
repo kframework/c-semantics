@@ -9,6 +9,9 @@ TEST_RESULTS := ${TESTS:.c=.out}
 REFERENCE_TEST_RESULTS := ${TESTS:.C=.ref}
 TEST_COMPARISON := ${TESTS:.c=.cmp}
 
+KCC := ../../dist/kcc
+KXX := ../../dist/k++
+
 
 .PRECIOUS: %.kcc %.out
 
@@ -30,18 +33,18 @@ compile: ${KCC_COMPILED_TESTS}
 
 %-link1.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.kcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
-	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.kcc: %.c
 	@echo -n "Compiling $<... "
-	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.kcc: %.C
 	@echo -n "Compiling $<... "
-	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.gcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^ (reference)... "
