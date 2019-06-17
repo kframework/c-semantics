@@ -27,7 +27,7 @@ module C-STMT-SWITCH
      \cinline{default} label, no part of the switch body is executed.
      }*/
 
-     rule (.K => elaborate(K)) ~> Switch(_, _:RValue, K:K)
+     rule (.K => elaborate(K)) ~> Switch(_, _:RValue, K:KItem)
      rule <k> elaborateDone(K:K) ~> Switch(SN:Int, V:RValue, _) => .K ...</k>
           <elab>... .K => Switch(SN, cast(promote(utype(V)), V), K) </elab>
           requires isIntegerType(type(V))

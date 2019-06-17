@@ -41,7 +41,7 @@ module C-DECL-INITIALIZER
           [structural]
 
      // aggregates
-     rule figureInit(X:CId, aggregateOrUnionType #as T::Type, CompoundInit(L:K))
+     rule figureInit(X:CId, aggregateOrUnionType #as T::Type, CompoundInit(L:KItem))
           => giveType(X, T)
           ~> figureInit-aux(X, T, startInit(T, X, CompoundInit(L)))
           [structural]
@@ -90,14 +90,14 @@ module C-DECL-INITIALIZER
           [structural]
 
      // base types
-     rule figureInit(X:CId, T:Type, SingleInit(K:K))
+     rule figureInit(X:CId, T:Type, SingleInit(K:KItem))
           => figureInit-aux(X, T,
                initializer(Initializer(ncle(X, T) := K)))
           requires notBool isArrayType(T)
           [structural]
      // c1x 6.7.8:11
      rule figureInit(X:CId, T:Type,
-               CompoundInit(list(ListItem(InitFragment(NextInit(), SingleInit(K:K))))))
+               CompoundInit(list(ListItem(InitFragment(NextInit(), SingleInit(K:KItem))))))
           => figureInit-aux(X, T,
                initializer(Initializer(ncle(X, T) := K)))
           requires notBool isAggregateOrUnionType(T)
@@ -117,7 +117,7 @@ module C-DECL-INITIALIZER
 
      rule (.K => UNDEF("CDI3",
                "Invalid initializer for aggregate type."))
-          ~> figureInit(_, t(_, _, incompleteArrayType(T::Type)), SingleInit(K:K))
+          ~> figureInit(_, t(_, _, incompleteArrayType(T::Type)), SingleInit(K:KItem))
           requires (notBool isWCharType(T) orBool WStringLiteral(...) :/=K K)
                andBool (notBool isCharType(T) orBool StringLiteral(...) :/=K K)
 
@@ -168,7 +168,7 @@ module C-DECL-INITIALIZER
           <saved-init>... .K => Zero(X) </saved-init>
           [structural]
 
-     rule fillInits(ListItem(InitFragment(K:K, Exp:K)) L:List)
+     rule fillInits(ListItem(InitFragment(K:KItem, Exp:KItem)) L:List)
           => fillInit(InitFragment(K, Exp)) ~> fillInits(L)
           [structural]
      rule fillInits(.List) => .K
@@ -260,7 +260,7 @@ module C-DECL-INITIALIZER
           requires notBool isNoName(F)
      rule firstField(_, _, _) => noMoreFields [owise]
 
-     rule <k> fillInit(InitFragment(NextInit(), Exp:K)) => fillInit(Exp) ...</k>
+     rule <k> fillInit(InitFragment(NextInit(), Exp:KItem)) => fillInit(Exp) ...</k>
           <curr-subobject>
                ListItem(K:KItem)
           ...</curr-subobject>
@@ -315,7 +315,7 @@ module C-DECL-INITIALIZER
 
      // note that these clear the current subobject cell, because it will be
      // repopulated when building the designator
-     rule <k> fillInit(InitFragment(InFieldInit(F:CId, K':K), Exp:K))
+     rule <k> fillInit(InitFragment(InFieldInit(F:CId, K':KItem), Exp:KItem))
                => fillInit(InitFragment(buildDesignator(
                     InFieldInit(F, K')), Exp))
           ...</k>
@@ -325,7 +325,7 @@ module C-DECL-INITIALIZER
           <curr-object> ListItem(ncle(K:K, structOrUnionType #as T::Type)) ...</curr-object>
           [structural]
      // fixme does this need to worry about incompleteLength_
-     rule <k> fillInit(InitFragment(AtIndexInit(Index:K, K':K), Exp:K))
+     rule <k> fillInit(InitFragment(AtIndexInit(Index:KItem, K':KItem), Exp:KItem))
                => fillInit(InitFragment(
                     buildDesignator(AtIndexInit(Index, K')), Exp))
           ...</k>
@@ -336,7 +336,7 @@ module C-DECL-INITIALIZER
           [structural]
 
      syntax KItem ::= buildDesignator(K)
-     rule <k> buildDesignator(InFieldInit(F:CId, More:K))
+     rule <k> buildDesignator(InFieldInit(F:CId, More:KItem))
                => buildDesignator(More)
           ...</k>
           <curr-subobject>
@@ -351,7 +351,7 @@ module C-DECL-INITIALIZER
 
      context buildDesignator(AtIndexInit((HOLE:KItem => reval(HOLE)), _))
           [result(RValue)]
-     rule <k> buildDesignator(AtIndexInit(tv(N:Int, _), More:K))
+     rule <k> buildDesignator(AtIndexInit(tv(N:Int, _), More:KItem))
                => buildDesignator(More)
           ...</k>
           <curr-subobject>
@@ -373,7 +373,7 @@ module C-DECL-INITIALIZER
      rule trapPadding(K::InitLValue [[_]]) => trapPadding(K)
      rule trapPadding(_:LValue) => .K
 
-     syntax KItem ::= initializeSingleInit(K) [strict]
+     syntax KItem ::= initializeSingleInit(KItem) [strict]
 
      rule (.K => typeof(K)) ~> initializeSingleInit(K:KResult)
           [structural]
@@ -443,7 +443,7 @@ module C-DECL-INITIALIZER
           </saved-init>
           [structural]
 
-     rule fillInit(SingleInit(K:K)) => initializeSingleInit(K)
+     rule fillInit(SingleInit(K:KItem)) => initializeSingleInit(K)
           requires StringLiteral(...) :/=K K
                andBool WStringLiteral(...) :/=K K
           [structural]

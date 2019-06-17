@@ -15,11 +15,11 @@ module C-STMT-LABELED
           <elab>... .K => Label(L, K) </elab>
 
      context Case(_, _, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
-     rule (.K => elaborate(K)) ~> Case(_, _, _:RValue, K:K)
-     rule <k> elaborateDone(K:K) ~> Case(SN:Int, CN:Int, Exp:RValue, _) => .K ...</k>
+     rule (.K => elaborate(K)) ~> Case(_, _, _:RValue, K:KItem)
+     rule <k> elaborateDone(K:KItem) ~> Case(SN:Int, CN:Int, Exp:RValue, _) => .K ...</k>
           <elab>... .K => Case(SN, CN, Exp, K) </elab>
 
-     rule (.K => elaborate(K)) ~> Default(_, K:K)
+     rule (.K => elaborate(K)) ~> Default(_, K:KItem)
      rule <k> elaborateDone(K:K) ~> Default(SN:Int, _) => .K ...</k>
           <elab>... .K => Default(SN, K) </elab>
 

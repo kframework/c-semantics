@@ -18,30 +18,6 @@ module C-ABSTRACT-SYNTAX
 
      syntax SymBase ::= "nonStatic"
 
-     // the rest are syntactic
-     syntax K ::= AttributeWrapper(K, K) [function]
-
-     syntax Statement // defined in C-ABSTRACT-SYNTAX
-
-     syntax C ::= TypeSpecifier
-     syntax C ::= Specifier
-     syntax C ::= DeclTypeSyntax
-     syntax C ::= NameGroup
-     syntax C ::= FieldGroup
-     syntax C ::= InitNameGroup
-     syntax C ::= Name
-     syntax C ::= InitName
-     syntax C ::= SingleName
-     syntax C ::= PureEnumItem
-     syntax C ::= Constant
-     syntax C ::= InitExpression
-     syntax C ::= TranslationUnit
-     syntax C ::= IntConstant
-     syntax C ::= FloatConstant
-     syntax C ::= InitFragment
-     syntax C ::= FieldName
-     syntax C ::= PureDefinition
-
      syntax Constant ::= IntConstant
      syntax Constant ::= FloatConstant
 
@@ -76,8 +52,10 @@ module C-ABSTRACT-SYNTAX
      syntax TypeSpecifier ::= OversizedFloat()
      syntax TypeSpecifier ::= Signed()
      syntax TypeSpecifier ::= Unsigned()
-     syntax Float ::= "inf"
      syntax TypeSpecifier ::= Named(CId)
+
+     syntax Float ::= "inf"
+
      /*
      (* each of the following three kinds of specifiers contains a field
      * or item list iff it corresponds to a definition (as opposed to
@@ -92,13 +70,13 @@ module C-ABSTRACT-SYNTAX
      */
      syntax TypeSpecifier ::= StructRef(CId, K)
      // new // CId, List
-     syntax TypeSpecifier ::= StructDef(CId, K, K)
+     syntax TypeSpecifier ::= StructDef(CId, K, KItem)
      syntax TypeSpecifier ::= UnionRef(CId, K) // new
      // new // CId, List
-     syntax TypeSpecifier ::= UnionDef(CId, K, K)
+     syntax TypeSpecifier ::= UnionDef(CId, K, KItem)
      syntax TypeSpecifier ::= EnumRef(CId, K) // new
      // new // CId, List
-     syntax TypeSpecifier ::= EnumDef(CId, K, K)
+     syntax TypeSpecifier ::= EnumDef(CId, K, KItem)
 
      syntax TypeSpecifier ::= Complex()
      syntax TypeSpecifier ::= Imaginary()
@@ -108,11 +86,11 @@ module C-ABSTRACT-SYNTAX
      syntax SimpleType ::= SimpleAutoType
      syntax SimpleUType ::= SimpleAutoType
 
-     syntax SpecifierElem ::= TypeofExpression(K)
-     syntax SpecifierElem ::= TypeofType(K, K)
-     syntax SpecifierElem ::= TAtomic(K, K)
-     syntax SpecifierElem ::= AlignasExpression(K)
-     syntax SpecifierElem ::= AlignasType(K, K)
+     syntax SpecifierElem ::= TypeofExpression(KItem)
+     syntax SpecifierElem ::= TypeofType(KItem, KItem)
+     syntax SpecifierElem ::= TAtomic(KItem, KItem)
+     syntax SpecifierElem ::= AlignasExpression(KItem)
+     syntax SpecifierElem ::= AlignasType(KItem, KItem)
 
      /*
      and spec_elem =
@@ -126,11 +104,11 @@ module C-ABSTRACT-SYNTAX
      /*
      and specifier = spec_elem list
      */
-     syntax Specifier ::= Specifier(K) [avoid]
+     syntax Specifier ::= Specifier(KItem) [avoid]
 
      // Represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
-     syntax KItem ::= DeclType(K, K) [avoid, strict(1)]
+     syntax KItem ::= DeclType(KItem, KItem) [avoid, strict(1)]
 
      /*
      and decl_type =
@@ -153,14 +131,14 @@ module C-ABSTRACT-SYNTAX
                 * decl is never a PTR.*)
      */
      syntax KItem ::= JustBase()
-     syntax DeclTypeSyntax ::= FunctionType(K) [strict]
+     syntax KItem ::= FunctionType(KItem) [strict]
      // third argument should also be strict, but not doing anything with
      // [strict 5] yet
-     syntax DeclTypeSyntax ::= ArrayType(K, K, K) [strict(1)]
-     syntax DeclTypeSyntax ::= PointerType(Specifier, K) [strict(2)]
+     syntax KItem ::= ArrayType(KItem, K, KItem) [strict(1)]
+     syntax KItem ::= PointerType(Specifier, KItem) [strict(2)]
      // K, List, Bool
-     syntax DeclTypeSyntax ::= Prototype(K, K, Bool) [strict(1)]
-     syntax DeclTypeSyntax ::= NoPrototype(K, K, Bool) [strict(1, 2)]
+     syntax KItem ::= Prototype(KItem, KItem, Bool) [strict(1)]
+     syntax KItem ::= NoPrototype(KItem, KItem, Bool) [strict(1, 2)]
 
      syntax KItem ::= "NotVariadic"
      syntax KItem ::= "Variadic"
@@ -168,15 +146,15 @@ module C-ABSTRACT-SYNTAX
      /*
      and name_group = specifier * name list
      */ // K, List
-     syntax NameGroup ::= NameGroup(K, K) [strict]
+     syntax KItem ::= NameGroup(K, KItem) [strict]
 
      /*
      (* The optional expression is the bitfield *)
      and field_group = specifier * (name * expression option) list
      */ // K, List
-     syntax FieldGroup ::= FieldGroup(K, K) [strict(1)]
-     syntax FieldName ::= FieldName(K)
-     syntax FieldName ::= BitFieldName(K, K)
+     syntax KItem ::= FieldGroup(KItem, KItem) [strict(1)]
+     syntax KItem ::= FieldName(KItem)
+     syntax KItem ::= BitFieldName(KItem, KItem)
 
      /*
      (* like name_group, except the declared variables are allowed to have
@@ -185,7 +163,7 @@ module C-ABSTRACT-SYNTAX
      and init_name_group = specifier * init_name list
      */
      // K, List
-     syntax InitNameGroup ::= InitNameGroup(K, K) [strict(1)]
+     syntax KItem ::= InitNameGroup(KItem, KItem) [strict(1)]
 
      /*
      The decl_type is in the order in which they are printed. Only the name of
@@ -196,14 +174,12 @@ module C-ABSTRACT-SYNTAX
      and name = String * decl_type * attribute list * cabsloc
      */
      // first argument is id, second is basetype
-     syntax Name ::= Name(K, K, K) [avoid]
-     //might not need this
-     syntax CId ::= ToIdentifier(String) [function]
+     syntax KItem ::= Name(CId, KItem, KItem) [avoid]
      /*
      (* A variable declarator ("name") with an initializer *)
      and init_name = name * init_expression
      */
-     syntax InitName ::= InitName(K, K)
+     syntax KItem ::= InitName(KItem, K)
      context InitName(_, (HOLE:KItem => reval(HOLE))) [ndheat, result(RValue)]
 
      /*
@@ -211,16 +187,15 @@ module C-ABSTRACT-SYNTAX
       * function parameters and functions *)
      and single_name = specifier * name
      */
-     syntax SingleName ::= SingleName(K, K)
-          [strict(1)]
+     syntax KItem ::= SingleName(KItem, KItem) [strict(1)]
 
      /*
      and enum_item = String * expression * cabsloc
      */
      // this one has no init
-     syntax PureEnumItem ::= EnumItem(CId)
+     syntax KItem ::= EnumItem(CId)
      // this one has an init
-     syntax PureEnumItem ::= EnumItemInit(CId, K)
+     syntax KItem ::= EnumItemInit(CId, K)
 
      /*
      (*
@@ -240,19 +215,15 @@ module C-ABSTRACT-SYNTAX
       (* expression transformer: source and destination *)
       | EXPRTRANSFORMER of expression * expression * cabsloc
      */
-     syntax PureDefinition ::= FunctionDefinition(K, K) [strict(1)]
-     syntax PureDefinition ::= DeclarationDefinition(K)
-     syntax PureDefinition ::= Typedef(K)
-     syntax PureDefinition ::= OnlyTypedef(K)
-     syntax PureDefinition ::= GlobAsm(String)
-     syntax PureDefinition ::= Pragma(K)
-     syntax PureDefinition ::= PragmaKccInv(String) | PragmaKccRule(String)
-     syntax PureDefinition ::= Linkage(String, K)
-     syntax PureDefinition ::= Transformer(K, K )
-     syntax PureDefinition ::= ExpressionTransformer(K, K)
-
-     // name
-     syntax PureDefinition ::= LTLAnnotation(CId, K)
+     syntax KItem ::= FunctionDefinition(KItem, KItem) [strict(1)]
+     syntax KItem ::= DeclarationDefinition(KItem)
+     syntax KItem ::= Typedef(KItem)
+     syntax KItem ::= OnlyTypedef(KItem)
+     syntax KItem ::= GlobAsm(String)
+     syntax KItem ::= Pragma(KItem)
+     syntax KItem ::= PragmaKccRule(String)
+     syntax KItem ::= Linkage(String, KItem)
+     syntax KItem ::= StaticAssert(K, KItem)
 
      /*
      (* the String is a file name, and then the list of toplevel forms *)
@@ -260,7 +231,7 @@ module C-ABSTRACT-SYNTAX
      */
      // name, code, source
      // new: Filename, strings, ast, code
-     syntax TranslationUnit ::= TranslationUnit(String, K, K)
+     syntax KItem ::= TranslationUnit(String, KItem, KItem)
 
      /*
      and statement =
@@ -269,26 +240,26 @@ module C-ABSTRACT-SYNTAX
      | BLOCK of block * cabsloc
      | SEQUENCE of statement * statement * cabsloc
      */
-     syntax Statement ::= BlockStatement(K)
-     syntax Statement ::= Block(Int, K, K)  [klabel(Block3)]
-     syntax Statement ::= Sequence(K, K)
+     syntax KItem ::= BlockStatement(KItem)
+     syntax KItem ::= Block(Int, KItem, KItem)  [klabel(Block3)]
+     syntax KItem ::= Sequence(KItem, KItem)
 
      /*
      | DOWHILE of expression * statement * cabsloc * cabsloc
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
-     syntax Statement ::= DoWhile(K, K, CabsLoc)  [klabel(DoWhile3)]
-     syntax Statement ::= For(Int, K, K, K, K)  [klabel(For5)]
+     syntax KItem ::= DoWhile(K, KItem, CabsLoc)  [klabel(DoWhile3)]
+     syntax KItem ::= For(Int, KItem, K, K, K)  [klabel(For5)]
 
      // gcc extension
-     syntax Statement ::= CaseRange(K, K, K)
+     syntax KItem ::= CaseRange(KItem, KItem, KItem)
 
      /*
      | COMPGOTO of expression * cabsloc (* GCC's "goto *exp" *)
      */
-     syntax Statement ::= CompGoto(K)
+     syntax KItem ::= CompGoto(KItem)
 
-     syntax Statement ::= OtherStatement()
+     syntax KItem ::= OtherStatement()
 
      /*
      and binary_operator =
@@ -303,13 +274,13 @@ module C-ABSTRACT-SYNTAX
      and expression =
      NOTHING
      */
-     syntax Expression ::= OffsetOf(K, K, K) [strict(1)]
-     syntax Expression ::= TypesCompat(K, K, K, K) [strict(1, 3)]
-     syntax K ::= ExpressionLoc(K, K) [function]
+     syntax KItem ::= OffsetOf(KItem, KItem, KItem) [strict(1)]
+     syntax KItem ::= TypesCompat(KItem, KItem, KItem, KItem) [strict(1, 3)]
+     syntax KItem ::= ExpressionLoc(KItem, KItem) [function]
 
      //must be declared as function,
      //otherwise, if then else rule failed in for(;;) cases
-     syntax Expression ::= NothingExpression() [function]
+     syntax KItem ::= NothingExpression() [function]
 
      // For VLAs with unspecified size ([*]).
      syntax RValue ::= UnspecifiedSizeExpression()
@@ -318,41 +289,41 @@ module C-ABSTRACT-SYNTAX
      (* A CAST can actually be a constructor expression *)
      | CAST of (specifier * decl_type) * init_expression
      */
-     syntax Expression ::= Cast(K, K, K)
+     syntax KItem ::= Cast(K, KItem, K)
      context Cast(HOLE:KItem, _, _)
      context Cast(_, _, (HOLE:KItem => reval(HOLE))) [result(RValue)]
 
      // new // comp-lit id, spec, decl, init
-     syntax Expression ::= CompoundLiteral(K, K, K, K) [strict(2)]
+     syntax KItem ::= CompoundLiteral(Int, K, KItem, KItem) [strict(2)]
      /*
      | COMMA of expression list
      */
      // List
-     syntax Expression ::= Comma(K)
+     syntax KItem ::= Comma(KItem)
      /*
      | CONSTANT of constant
      | PAREN of expression
      | VARIABLE of string
      */
-     syntax K ::= Constant(K) [function]
+     syntax KItem ::= Constant(KItem) [function]
      /*
      | EXPR_SIZEOF of expression
      | TYPE_SIZEOF of specifier * decl_type
      | EXPR_ALIGNOF of expression
      | TYPE_ALIGNOF of specifier * decl_type
      */
-     syntax Expression ::= SizeofExpression(K)
-     syntax Expression ::= SizeofType(K, K) [strict(1)]
-     syntax Expression ::= AlignofExpression(K)
-     syntax Expression ::= AlignofType(K, K) [strict(1)]
-     syntax Expression ::= Generic(K, K)
-     syntax Expression ::= GenericPair(K, K, K)
-     syntax Expression ::= GenericDefault(K)
+     syntax KItem ::= SizeofExpression(K)
+     syntax KItem ::= SizeofType(KItem, K) [strict(1)]
+     syntax KItem ::= AlignofExpression(KItem)
+     syntax KItem ::= AlignofType(KItem, KItem) [strict(1)]
+     syntax KItem ::= Generic(K, KItem)
+     syntax KItem ::= GenericPair(KItem, KItem, KItem)
+     syntax KItem ::= GenericDefault(KItem)
      /*
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)
      */
-     syntax Expression ::= ExpressionPattern(String)
+     syntax KItem ::= ExpressionPattern(String)
 
      /*
      and constant =
@@ -363,16 +334,14 @@ module C-ABSTRACT-SYNTAX
      | CONST_STRING of string
      | CONST_WSTRING of int64 list
      */
-     syntax IntConstant ::= DecimalConstant(K)
-     syntax IntConstant ::= OctalConstant(K) [function]
-     syntax IntConstant ::= HexConstant(K) [function]
+     syntax IntConstant ::= DecimalConstant(KItem)
+     syntax IntConstant ::= OctalConstant(KItem) [function]
+     syntax IntConstant ::= HexConstant(KItem) [function]
 
      // significand, exponent, approx
-     syntax FloatConstant ::= DecimalFloatConstant(String, Int, Float)
-          [function]
+     syntax FloatConstant ::= DecimalFloatConstant(String, Int, Float) [function]
      // significand, exponent, approx
-     syntax FloatConstant ::= HexFloatConstant(String, Int, Float)
-          [function]
+     syntax FloatConstant ::= HexFloatConstant(String, Int, Float) [function]
 
      syntax Constant ::= LitU(Constant) [function]
      syntax Constant ::= LitL(Constant) [function]
@@ -381,13 +350,13 @@ module C-ABSTRACT-SYNTAX
      syntax Constant ::= LitULL(Constant) [function]
      syntax Constant ::= LitF(Constant) [function]
 
-     syntax Constant ::= NoSuffix(K) [function]
+     syntax Constant ::= NoSuffix(Constant) [function]
 
      syntax Constant ::= CharLiteral(Int) [function]
      syntax Constant ::= WCharLiteral(Int) [function]
      syntax Constant ::= StringLiteral
      syntax StringLiteral ::= StringLiteral(String)
-     syntax StringLiteral ::= WStringLiteral(K)
+     syntax StringLiteral ::= WStringLiteral(KItem)
 
      /*
      and init_expression =
@@ -395,11 +364,11 @@ module C-ABSTRACT-SYNTAX
      | COMPOUND_INIT of (initwhat * init_expression) list
      */
 
-     syntax InitExpression ::= SingleInit(K) [strict]
+     syntax KItem ::= SingleInit(KItem) [strict]
      // List
-     syntax InitExpression ::= CompoundInit(K) [strict]
+     syntax KItem ::= CompoundInit(KItem) [strict]
      // new; (initwhat * init_expression)
-     syntax InitFragment ::= InitFragment(K, K)
+     syntax KItem ::= InitFragment(KItem, KItem)
 
      /*
      and initwhat =
@@ -409,81 +378,77 @@ module C-ABSTRACT-SYNTAX
      | ATINDEXRANGE_INIT of expression * expression
      */
      syntax KResult ::= NextInit()
-                      | InFieldInit(CId, K)
-                      | AtIndexInit(K, K)
-                      | AtIndexRangeInit(K, K)
+                      | InFieldInit(CId, KItem)
+                      | AtIndexInit(K, KItem)
+                      | AtIndexRangeInit(KItem, KItem)
 
      /*
      and attribute = String * expression list
      */
      // String, List
 
-     syntax KItem ::= AnonymousName() // new, argument is type
+     syntax CId ::= AnonymousName() [function]
 
-     syntax C ::= Definition
-     syntax C ::= ForClause
-     syntax Location ::= DefinitionLoc(K, CabsLoc)
-     syntax Definition ::= DefinitionLocRange(K, CabsLoc, CabsLoc)
+     syntax KItem ::= DefinitionLoc(KItem, CabsLoc)
+     syntax KItem ::= DefinitionLocRange(KItem, CabsLoc, CabsLoc)
      // this wraps all statements with their location in the original file
-     syntax Location ::= StatementLoc(K, K) // new
-
-     syntax PureDefinition ::= StaticAssert(K, K)
+     syntax KItem ::= StatementLoc(KItem, CabsLoc) // new
 
      /*
      and for_clause =
      FC_EXP of expression
      | FC_DECL of definition
      */
-     syntax ForClause ::= ForClauseExpression(K)
+     syntax KItem ::= ForClauseExpression(KItem)
 
-     syntax KItem ::= Conditional(K, K, K)
+     syntax KItem ::= Conditional(KItem, KItem, KItem)
 
-     syntax KItem ::= ArrayIndex(K, K)
+     syntax KItem ::= ArrayIndex(KItem, KItem)
 
-     syntax KItem ::= Negative(K)
-     syntax KItem ::= Positive(K)
-     syntax KItem ::= LogicalNot(K)
-     syntax KItem ::= BitwiseNot(K)
-     syntax KItem ::= Dereference(K)
-     syntax KItem ::= Reference(K)
-     syntax KItem ::= PreIncrement(K)
-     syntax KItem ::= PreDecrement(K)
-     syntax KItem ::= PostIncrement(K)
-     syntax KItem ::= PostDecrement(K)
+     syntax KItem ::= Negative(KItem)
+     syntax KItem ::= Positive(KItem)
+     syntax KItem ::= LogicalNot(KItem)
+     syntax KItem ::= BitwiseNot(KItem)
+     syntax KItem ::= Dereference(KItem)
+     syntax KItem ::= Reference(KItem)
+     syntax KItem ::= PreIncrement(KItem)
+     syntax KItem ::= PreDecrement(KItem)
+     syntax KItem ::= PostIncrement(KItem)
+     syntax KItem ::= PostDecrement(KItem)
 
-     syntax KItem ::= Multiply(K, K)
-     syntax KItem ::= Divide(K, K)
-     syntax KItem ::= Modulo(K, K)
-     syntax KItem ::= Plus(K, K)
-     syntax KItem ::= Minus(K, K)
-     syntax KItem ::= LeftShift(K, K)
-     syntax KItem ::= RightShift(K, K)
-     syntax KItem ::= LessThan(K, K)
-     syntax KItem ::= LessThanOrEqual(K, K)
-     syntax KItem ::= GreaterThan(K, K)
-     syntax KItem ::= GreaterThanOrEqual(K, K)
-     syntax KItem ::= Equality(K, K)
-     syntax KItem ::= NotEquality(K, K)
-     syntax KItem ::= BitwiseAnd(K, K)
-     syntax KItem ::= BitwiseXor(K, K)
-     syntax KItem ::= BitwiseOr(K, K)
-     syntax KItem ::= LogicalAnd(K, K)
-     syntax KItem ::= LogicalOr(K, K)
+     syntax KItem ::= Multiply(KItem, KItem)
+     syntax KItem ::= Divide(KItem, KItem)
+     syntax KItem ::= Modulo(KItem, KItem)
+     syntax KItem ::= Plus(KItem, KItem)
+     syntax KItem ::= Minus(KItem, KItem)
+     syntax KItem ::= LeftShift(KItem, KItem)
+     syntax KItem ::= RightShift(KItem, KItem)
+     syntax KItem ::= LessThan(KItem, KItem)
+     syntax KItem ::= LessThanOrEqual(KItem, KItem)
+     syntax KItem ::= GreaterThan(KItem, KItem)
+     syntax KItem ::= GreaterThanOrEqual(KItem, KItem)
+     syntax KItem ::= Equality(KItem, KItem)
+     syntax KItem ::= NotEquality(KItem, KItem)
+     syntax KItem ::= BitwiseAnd(KItem, KItem)
+     syntax KItem ::= BitwiseXor(KItem, KItem)
+     syntax KItem ::= BitwiseOr(KItem, KItem)
+     syntax KItem ::= LogicalAnd(KItem, KItem)
+     syntax KItem ::= LogicalOr(KItem, KItem)
 
-     syntax KItem ::= Assign(K, K)
-     syntax KItem ::= AssignMultiply(K, K)
-     syntax KItem ::= AssignDivide(K, K)
-     syntax KItem ::= AssignModulo(K, K)
-     syntax KItem ::= AssignPlus(K, K)
-     syntax KItem ::= AssignMinus(K, K)
-     syntax KItem ::= AssignBitwiseAnd(K, K)
-     syntax KItem ::= AssignBitwiseXor(K, K)
-     syntax KItem ::= AssignBitwiseOr(K, K)
-     syntax KItem ::= AssignLeftShift(K, K)
-     syntax KItem ::= AssignRightShift(K, K)
+     syntax KItem ::= Assign(KItem, KItem)
+     syntax KItem ::= AssignMultiply(KItem, KItem)
+     syntax KItem ::= AssignDivide(KItem, KItem)
+     syntax KItem ::= AssignModulo(KItem, KItem)
+     syntax KItem ::= AssignPlus(KItem, KItem)
+     syntax KItem ::= AssignMinus(KItem, KItem)
+     syntax KItem ::= AssignBitwiseAnd(KItem, KItem)
+     syntax KItem ::= AssignBitwiseXor(KItem, KItem)
+     syntax KItem ::= AssignBitwiseOr(KItem, KItem)
+     syntax KItem ::= AssignLeftShift(KItem, KItem)
+     syntax KItem ::= AssignRightShift(KItem, KItem)
 
-     syntax KItem ::= Dot(K, CId)
-     syntax KItem ::= Arrow(K, CId)
+     syntax KItem ::= Dot(KItem, CId)
+     syntax KItem ::= Arrow(KItem, CId)
 
 endmodule
 
@@ -492,55 +457,55 @@ module C-ABSTRACT-REWRITING
      imports C-ABSTRACT-SYNTAX
      imports COMMON-SYNTAX
 
-     rule AnonymousName() => #NoName [anywhere]
+     rule AnonymousName() => #NoName
 
-     rule DefinitionLoc(K::K, L::CabsLoc) => CodeLoc(K, L) [anywhere]
-     rule StatementLoc(K::K, L::CabsLoc) => CodeLoc(K, L) [anywhere]
+     rule DefinitionLoc(K:KItem, L::CabsLoc) => CodeLoc(K, L) [anywhere]
+     rule StatementLoc(K:KItem, L::CabsLoc) => CodeLoc(K, L) [anywhere]
 
-     rule Conditional(K1::K, K2::K, K3::K) => K1 ? K2 : K3 [anywhere]
-     rule Negative(K::K) => - K [anywhere]
-     rule Positive(K::K) => + K [anywhere]
-     rule LogicalNot(K::K) => ! K [anywhere]
-     rule BitwiseNot(K::K) => ~ K [anywhere]
-     rule Dereference(K::K) => * K [anywhere]
-     rule Reference(K::K) => & K [anywhere]
-     rule PreIncrement(K::K) => ++ K [anywhere]
-     rule PreDecrement(K::K) => -- K [anywhere]
-     rule PostIncrement(K::K) => K ++ [anywhere]
-     rule PostDecrement(K::K) => K -- [anywhere]
+     rule Conditional(K1:KItem, K2:KItem, K3:KItem) => K1 ? K2 : K3 [anywhere]
+     rule Negative(K:KItem) => - K [anywhere]
+     rule Positive(K:KItem) => + K [anywhere]
+     rule LogicalNot(K:KItem) => ! K [anywhere]
+     rule BitwiseNot(K:KItem) => ~ K [anywhere]
+     rule Dereference(K:KItem) => * K [anywhere]
+     rule Reference(K:KItem) => & K [anywhere]
+     rule PreIncrement(K:KItem) => ++ K [anywhere]
+     rule PreDecrement(K:KItem) => -- K [anywhere]
+     rule PostIncrement(K:KItem) => K ++ [anywhere]
+     rule PostDecrement(K:KItem) => K -- [anywhere]
 
-     rule Multiply(K1::K, K2::K) => K1 * K2 [anywhere]
-     rule Divide(K1::K, K2::K) => K1 / K2 [anywhere]
-     rule Modulo(K1::K, K2::K) => K1 % K2 [anywhere]
-     rule Plus(K1::K, K2::K) => K1 + K2 [anywhere]
-     rule Minus(K1::K, K2::K) => K1 - K2 [anywhere]
-     rule LeftShift(K1::K, K2::K) => K1 << K2 [anywhere]
-     rule RightShift(K1::K, K2::K) => K1 >> K2 [anywhere]
-     rule LessThan(K1::K, K2::K) => K1 < K2 [anywhere]
-     rule LessThanOrEqual(K1::K, K2::K) => K1 <= K2 [anywhere]
-     rule GreaterThan(K1::K, K2::K) => K1 > K2 [anywhere]
-     rule GreaterThanOrEqual(K1::K, K2::K) => K1 >= K2 [anywhere]
-     rule Equality(K1::K, K2::K) => K1 == K2 [anywhere]
-     rule NotEquality(K1::K, K2::K) => K1 != K2 [anywhere]
-     rule BitwiseAnd(K1::K, K2::K) => K1 & K2 [anywhere]
-     rule BitwiseXor(K1::K, K2::K) => K1 ^ K2 [anywhere]
-     rule BitwiseOr(K1::K, K2::K) => K1 | K2 [anywhere]
-     rule LogicalAnd(K1::K, K2::K) => K1 && K2 [anywhere]
-     rule LogicalOr(K1::K, K2::K) => K1 || K2 [anywhere]
+     rule Multiply(K1:KItem, K2:KItem) => K1 * K2 [anywhere]
+     rule Divide(K1:KItem, K2:KItem) => K1 / K2 [anywhere]
+     rule Modulo(K1:KItem, K2:KItem) => K1 % K2 [anywhere]
+     rule Plus(K1:KItem, K2:KItem) => K1 + K2 [anywhere]
+     rule Minus(K1:KItem, K2:KItem) => K1 - K2 [anywhere]
+     rule LeftShift(K1:KItem, K2:KItem) => K1 << K2 [anywhere]
+     rule RightShift(K1:KItem, K2:KItem) => K1 >> K2 [anywhere]
+     rule LessThan(K1:KItem, K2:KItem) => K1 < K2 [anywhere]
+     rule LessThanOrEqual(K1:KItem, K2:KItem) => K1 <= K2 [anywhere]
+     rule GreaterThan(K1:KItem, K2:KItem) => K1 > K2 [anywhere]
+     rule GreaterThanOrEqual(K1:KItem, K2:KItem) => K1 >= K2 [anywhere]
+     rule Equality(K1:KItem, K2:KItem) => K1 == K2 [anywhere]
+     rule NotEquality(K1:KItem, K2:KItem) => K1 != K2 [anywhere]
+     rule BitwiseAnd(K1:KItem, K2:KItem) => K1 & K2 [anywhere]
+     rule BitwiseXor(K1:KItem, K2:KItem) => K1 ^ K2 [anywhere]
+     rule BitwiseOr(K1:KItem, K2:KItem) => K1 | K2 [anywhere]
+     rule LogicalAnd(K1:KItem, K2:KItem) => K1 && K2 [anywhere]
+     rule LogicalOr(K1:KItem, K2:KItem) => K1 || K2 [anywhere]
 
-     rule Assign(K1::K, K2::K) => K1 := K2 [anywhere]
-     rule AssignMultiply(K1::K, K2::K) => K1 *= K2 [anywhere]
-     rule AssignDivide(K1::K, K2::K) => K1 /= K2 [anywhere]
-     rule AssignModulo(K1::K, K2::K) => K1 %= K2 [anywhere]
-     rule AssignPlus(K1::K, K2::K) => K1 += K2 [anywhere]
-     rule AssignMinus(K1::K, K2::K) => K1 -= K2 [anywhere]
-     rule AssignBitwiseAnd(K1::K, K2::K) => K1 &= K2 [anywhere]
-     rule AssignBitwiseXor(K1::K, K2::K) => K1 ^= K2 [anywhere]
-     rule AssignBitwiseOr(K1::K, K2::K) => K1 |= K2 [anywhere]
-     rule AssignLeftShift(K1::K, K2::K) => K1 <<= K2 [anywhere]
-     rule AssignRightShift(K1::K, K2::K) => K1 >>= K2 [anywhere]
+     rule Assign(K1:KItem, K2:KItem) => K1 := K2 [anywhere]
+     rule AssignMultiply(K1:KItem, K2:KItem) => K1 *= K2 [anywhere]
+     rule AssignDivide(K1:KItem, K2:KItem) => K1 /= K2 [anywhere]
+     rule AssignModulo(K1:KItem, K2:KItem) => K1 %= K2 [anywhere]
+     rule AssignPlus(K1:KItem, K2:KItem) => K1 += K2 [anywhere]
+     rule AssignMinus(K1:KItem, K2:KItem) => K1 -= K2 [anywhere]
+     rule AssignBitwiseAnd(K1:KItem, K2:KItem) => K1 &= K2 [anywhere]
+     rule AssignBitwiseXor(K1:KItem, K2:KItem) => K1 ^= K2 [anywhere]
+     rule AssignBitwiseOr(K1:KItem, K2:KItem) => K1 |= K2 [anywhere]
+     rule AssignLeftShift(K1:KItem, K2:KItem) => K1 <<= K2 [anywhere]
+     rule AssignRightShift(K1:KItem, K2:KItem) => K1 >>= K2 [anywhere]
 
-     rule Dot(K::K, X::CId) => K . X [anywhere]
+     rule Dot(K:KItem, X::CId) => K . X [anywhere]
 
      /*@ This macro defines an important identity from
      \source[n1570]{\para{6.5.3.2}{3}}. As a syntactic macro, it should run
@@ -555,7 +520,7 @@ module C-ABSTRACT-REWRITING
      a qualified type, the result has the so-qualified version of the type of
      the designated member.}
      }*/
-     rule Arrow(K::K, F::CId) => (* K) . F [anywhere]
+     rule Arrow(K:KItem, F::CId) => (* K) . F [anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.1}{2--3}}}{
      A postfix expression followed by an expression in square brackets
@@ -579,7 +544,6 @@ module C-ABSTRACT-REWRITING
      other than an lvalue. It follows from this that arrays are stored in
      row-major order (last subscript varies fastest).
      }*/
-     rule ArrayIndex(E1::K, E2::K) => *(E1 + E2) [anywhere]
-
+     rule ArrayIndex(E1:KItem, E2:KItem) => *(E1 + E2) [anywhere]
 
 endmodule
