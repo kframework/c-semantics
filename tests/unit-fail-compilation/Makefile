@@ -1,12 +1,12 @@
-TUS = $(wildcard ./*.c) $(wildcard ./*.C)
-EXCLUDES=
-TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
-CPP_TESTS = $(filter-out %.c, ${TESTS})
-C_TESTS = $(filter-out %.C, ${TESTS})
-KCC_COMPILED_TESTS = ${TESTS:=.kcc.out}
-TEST_COMPARISON = ${TESTS:=.cmp}
-CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
-C_TEST_COMPARISON = ${C_TESTS:=.cmp}
+TUS := $(wildcard ./*.c) $(wildcard ./*.C)
+EXCLUDES :=
+TESTS := $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
+CPP_TESTS := $(filter-out %.c, ${TESTS})
+C_TESTS := $(filter-out %.C, ${TESTS})
+KCC_COMPILED_TESTS := ${TESTS:=.kcc.out}
+TEST_COMPARISON := ${TESTS:=.cmp}
+CPP_TEST_COMPARISON := ${CPP_TESTS:=.cmp}
+C_TEST_COMPARISON := ${C_TESTS:=.cmp}
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 1 -o $$? -eq 255 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi

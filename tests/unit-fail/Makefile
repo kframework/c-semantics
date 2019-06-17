@@ -1,15 +1,15 @@
-TUS = $(wildcard ./*.c) $(wildcard ./*.C)
-EXCLUDES=
-TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
-CPP_TESTS = $(filter-out %.c, ${TESTS})
-C_TESTS = $(filter-out %.C, ${TESTS})
-GCC_COMPILED_TESTS = ${TESTS:=.gcc}
-KCC_COMPILED_TESTS = ${TESTS:=.kcc}
-C_KCC_COMPILED_TESTS = ${C_TESTS:=.kcc}
-TEST_RESULTS = ${TESTS:=.out}
-TEST_COMPARISON = ${TESTS:=.cmp}
-CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
-C_TEST_COMPARISON = ${C_TESTS:=.cmp}
+TUS := $(wildcard ./*.c) $(wildcard ./*.C)
+EXCLUDES :=
+TESTS := $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
+CPP_TESTS := $(filter-out %.c, ${TESTS})
+C_TESTS := $(filter-out %.C, ${TESTS})
+GCC_COMPILED_TESTS := ${TESTS:=.gcc}
+KCC_COMPILED_TESTS := ${TESTS:=.kcc}
+C_KCC_COMPILED_TESTS := ${C_TESTS:=.kcc}
+TEST_RESULTS := ${TESTS:=.out}
+TEST_COMPARISON := ${TESTS:=.cmp}
+CPP_TEST_COMPARISON := ${CPP_TESTS:=.cmp}
+C_TEST_COMPARISON := ${C_TESTS:=.cmp}
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 # CHECK_RESULT_RUN = if [ $$? -eq 139 ] ; then echo "passed $<"; cat $@.tmp > $@; rm $@.tmp; else echo "failed $<"; cat $@.tmp; exit 1; fi
@@ -18,7 +18,7 @@ CHECK_RESULT_DIFF = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else
 KCC := ../../dist/kcc
 KXX := ../../dist/k++
 
-KCCFLAGS = -frecover-all-errors -fno-diagnostics-color
+KCCFLAGS := -frecover-all-errors -fno-diagnostics-color
 
 .PHONY: test clean reference comparison
 .PRECIOUS: %.kcc %.out
