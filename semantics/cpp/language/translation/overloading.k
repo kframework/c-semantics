@@ -539,6 +539,14 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule (.K => computeBestViable(M, Types, Cats, O))
           ~> #resolveOverload2(cSet(... candidates: M::TypeMap), list(Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)
+          requires allFunctionTypes(M)
+
+     syntax Bool ::= allFunctionTypes(TypeMap) [function]
+
+     rule allFunctionTypes(.Map) => true
+
+     rule allFunctionTypes((T::CPPType |-> _) M::TypeMap)
+          => isCPPFunctionType(T) andBool allFunctionTypes(M)
 
      syntax KItem ::= computeBestViable(TypeMap, List, List, OverloadType) [function]
                     | #computeBestViable(CPPType, K, List, List, List, OverloadType, List) [function]
