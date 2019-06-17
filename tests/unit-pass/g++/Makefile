@@ -9,8 +9,8 @@ TEST_RESULTS := ${TESTS:.c=.out}
 REFERENCE_TEST_RESULTS := ${TESTS:.C=.ref}
 TEST_COMPARISON := ${TESTS:.c=.cmp}
 
-KCC := ../../dist/kcc
-KXX := ../../dist/k++
+KCC := ../../../dist/kcc
+KXX := ../../../dist/k++
 
 
 .PRECIOUS: %.kcc %.out
