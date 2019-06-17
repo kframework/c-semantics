@@ -231,12 +231,12 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule viableType(P::CPPType, A::CPPType, C::ValueCategory)
           =>
-          conversionSequence(P, A, C, false, false, true)
+          computeConversionSequence(P, A, C, false, false, true)
           ~> canConvert()
 
      rule viableImplicitObjectParameter(cppRefType #as P::CPPType, A::CPPType, C::ValueCategory, B::Bool)
           =>
-          conversionSequence(P, A, C, B, true, true)
+          computeConversionSequence(P, A, C, B, true, true)
           ~> canConvert()
 
      syntax KItem ::= canConvert()
@@ -249,7 +249,7 @@ module CPP-TRANSLATION-OVERLOADING
      rule canConvertWithStandardConversion(P::CPPType, A::CPPType, C::ValueCategory) => computeSCS(P, A, C, false) =/=K cannot-convert
 
      // Result: ConversionSequence
-     syntax KItem ::= conversionSequence(CPPType, CPPDType, ValueCategory, isNonStaticRefNone: Bool, isImplicit: Bool, canUserDefinedConvert: Bool)
+     syntax KItem ::= computeConversionSequence(CPPType, CPPDType, ValueCategory, isNonStaticRefNone: Bool, isImplicit: Bool, canUserDefinedConvert: Bool)
 
      syntax KResult ::= ConversionSequence
 
@@ -265,36 +265,36 @@ module CPP-TRANSLATION-OVERLOADING
                                  | "bottomConversionSequence"
 
      // @ref n4296 13.3.3.1.4:1 (identity conversion)
-     rule conversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, B::Bool, _, _)
+     rule computeConversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, B::Bool, _, _)
           => standardConversionSequence(identity, identity, identity, B, P)
           requires bindsDirectlyToExp(P, A, C, B)
                andBool notBool (isCPPClassType(innerType(P)) andBool isCPPClassType(A)
                     andBool isBaseClassOf(innerType(P), A))
 
-     rule conversionSequence(cppRefType #as P::CPPType, t(... st: classType(...)) #as A::CPPType, C::ValueCategory, B::Bool, _, _)
+     rule computeConversionSequence(cppRefType #as P::CPPType, t(... st: classType(...)) #as A::CPPType, C::ValueCategory, B::Bool, _, _)
           => standardConversionSequence(identity, derivedToBaseConversion(P, A), identity, B, P)
           requires bindsDirectlyToExp(P, A, C, B) andBool isCPPClassType(innerType(P))
                andBool isBaseClassOf(innerType(P), A)
 
-     rule conversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC::Bool)
-          => conversionSequence(innerType(P), A, C, false, false, CanUDC)
+     rule computeConversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC::Bool)
+          => computeConversionSequence(innerType(P), A, C, false, false, CanUDC)
           requires notBool bindsDirectlyToExp(P, A, C, false)
                andBool notBool bindsDirectlyToConversion(P, A, C)
                andBool isValidReferenceType(P)
 
-     rule conversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, false, false, _)
+     rule computeConversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, false, false, _)
           => cannot-convert
           requires notBool bindsDirectlyToExp(P, A, C, false)
                andBool notBool bindsDirectlyToConversion(P, A, C)
                andBool notBool isValidReferenceType(P)
 
      // @ref n4296 13.3.1:5.1-5.2
-     rule conversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, B::Bool, true, _)
+     rule computeConversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, B::Bool, true, _)
           => cannot-convert
           requires notBool bindsDirectlyToExp(P, A, C, B)
 
-     rule conversionSequence(P::CPPType, initListType(ListItem(A::CPPType)), initListCat(ListItem(C::ValueCategory)), false, false, CanUDC::Bool)
-          => computeListInitSequence(P, conversionSequence(P, A, C, false, false, CanUDC))
+     rule computeConversionSequence(P::CPPType, initListType(ListItem(A::CPPType)), initListCat(ListItem(C::ValueCategory)), false, false, CanUDC::Bool)
+          => computeListInitSequence(P, computeConversionSequence(P, A, C, false, false, CanUDC))
           requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P) andBool notBool isCPPArrayType(P)
 
      syntax KItem ::= computeListInitSequence(CPPType, KItem) [strict(2)]
@@ -307,11 +307,11 @@ module CPP-TRANSLATION-OVERLOADING
      rule computeUserDefinedConversionSequence(CS1:ConversionSequence, Q::QualId, T::CPPType, CS2:ConversionSequence)
           => userDefinedConversionSequence(CS1, Q, T, CS2)
 
-     rule conversionSequence(P::CPPType, initListType(.List), _, false, false, _)
+     rule computeConversionSequence(P::CPPType, initListType(.List), _, false, false, _)
           => listInitSequence(P, standardConversionSequence(identity, identity, identity, false, P))
           requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P) andBool notBool isCPPArrayType(P)
 
-     rule conversionSequence(P::CPPType, initListType(L::List), _, false, false, _)
+     rule computeConversionSequence(P::CPPType, initListType(L::List), _, false, false, _)
           => cannot-convert
           requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P) andBool notBool isCPPArrayType(P)
                andBool size(L) >Int 1
@@ -344,13 +344,13 @@ module CPP-TRANSLATION-OVERLOADING
           requires notBool (isCPPClassType(T2) andBool notBool isReferenceRelated(innerType(T), T2))
                orBool bindsDirectlyToExp(T, T2, C, false)
 
-     rule conversionSequence(P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC::Bool) => adjustParamType(computeSCS(utype(P), utype(A), C, CanUDC), P)
+     rule computeConversionSequence(P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC::Bool) => adjustParamType(computeSCS(utype(P), utype(A), C, CanUDC), P)
           requires notBool isCPPRefType(P)
                andBool ((notBool isCPPClassType(P) andBool notBool isCPPClassType(A))
                     orBool utype(A) ==Type utype(P)
                     orBool (isCPPClassType(A) andBool isCPPClassType(P) andBool isBaseClassOf(P, A)))
 
-     rule conversionSequence(P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC:Bool) => #if CanUDC #then computeUDC(utype(P), utype(A), C) #else cannot-convert #fi [owise]
+     rule computeConversionSequence(P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC:Bool) => #if CanUDC #then computeUDC(utype(P), utype(A), C) #else cannot-convert #fi [owise]
 
 
      syntax KItem ::= computeUDC(CPPType, CPPType, ValueCategory)
@@ -390,17 +390,17 @@ module CPP-TRANSLATION-OVERLOADING
 
 /*
      rule #computeUDCTo(_ :: Class(_, X::CId, _) #as P::Class, ListItem(t(... st: functionType(... returnType: Ret::CPPType, paramTypes: Param::CPPType)) #as FuncT::CPPType) L::List, A::CPPType, C::ValueCategory)
-          => ListItem(userDefinedConversionSequence(conversionSequence(Param, A, C, false, false, false), P :: ConstructorId(X), FuncT, conversionSequence(type(classType(P)), type(classType(P)), unnamedCat(Ret), false, false, false))) #computeUDCTo(P, L, A, C)
+          => ListItem(userDefinedConversionSequence(computeConversionSequence(Param, A, C, false, false, false), P :: ConstructorId(X), FuncT, computeConversionSequence(type(classType(P)), type(classType(P)), unnamedCat(Ret), false, false, false))) #computeUDCTo(P, L, A, C)
 
 
      rule #computeUDCTo(_, .List, _, _) => .List
 */
 
      rule (.K => computeUserDefinedConversionSequence(
-               conversionSequence(Param, A, C, false, false, false),
+               computeConversionSequence(Param, A, C, false, false, false),
                P :: ConstructorId(X),
                FuncT,
-               conversionSequence(type(classType(P)), type(classType(P)), unnamedCat(Ret), false, false, false)
+               computeConversionSequence(type(classType(P)), type(classType(P)), unnamedCat(Ret), false, false, false)
             )
           ) ~>
           #computeUDCTo(
@@ -425,16 +425,16 @@ module CPP-TRANSLATION-OVERLOADING
 
 /*
      rule #computeUDCFrom(P::CPPType, ListItem(t(... st: functionType(... returnType: Ret::CPPType)) #as FuncT::CPPType) L::List, A::Class, C::ValueCategory)
-          => ListItem(userDefinedConversionSequence(conversionSequence(implicitObjectParameterType(FuncT), type(classType(A)), C, getRefQualifier(FuncT) ==K RefNone(), true, false), A :: ConversionId(Ret), FuncT, conversionSequence(P, Ret, unnamedCat(Ret), false, false, false))) #computeUDCFrom(P, L, A, C)
+          => ListItem(userDefinedConversionSequence(computeConversionSequence(implicitObjectParameterType(FuncT), type(classType(A)), C, getRefQualifier(FuncT) ==K RefNone(), true, false), A :: ConversionId(Ret), FuncT, computeConversionSequence(P, Ret, unnamedCat(Ret), false, false, false))) #computeUDCFrom(P, L, A, C)
 
      rule #computeUDCFrom(_, .List, _, _) => .List
 */
 
      rule (.K => computeUserDefinedConversionSequence(
-               conversionSequence(implicitObjectParameterType(FuncT), type(classType(A)), C, getRefQualifier(FuncT) ==K RefNone(), true, false),
+               computeConversionSequence(implicitObjectParameterType(FuncT), type(classType(A)), C, getRefQualifier(FuncT) ==K RefNone(), true, false),
                A :: ConversionId(Ret),
                FuncT,
-               conversionSequence(P, Ret, unnamedCat(Ret), false, false, false)
+               computeConversionSequence(P, Ret, unnamedCat(Ret), false, false, false)
             )
           )
           ~>
@@ -741,10 +741,10 @@ module CPP-TRANSLATION-OVERLOADING
           => #getConversionSequences(getParams(T), Types, Cats, isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone(), isMethodStatic(T))
 
      rule #getConversionSequences(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, B1::Bool, B2::Bool)
-          => ListItem(conversionSequence(P, A, C, false, false, true)) #getConversionSequences(Ps, As, Cs, B1, B2)
+          => ListItem(computeConversionSequence(P, A, C, false, false, true)) #getConversionSequences(Ps, As, Cs, B1, B2)
 
      rule #getConversionSequences(ListItem(implicitObjectParameter(P:CPPType)) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, IsNonStaticRefNone::Bool, false)
-          => ListItem(conversionSequence(P, A, C, IsNonStaticRefNone, true, true)) #getConversionSequences(Ps, As, Cs, IsNonStaticRefNone, false)
+          => ListItem(computeConversionSequence(P, A, C, IsNonStaticRefNone, true, true)) #getConversionSequences(Ps, As, Cs, IsNonStaticRefNone, false)
 
      rule #getConversionSequences(ListItem(implicitObjectParameter(_)) Ps::List, ListItem(_) As::List, ListItem(_) Cs::List, IsNonStaticRefNone::Bool, true)
           => ListItem(bottomConversionSequence) #getConversionSequences(Ps, As, Cs, IsNonStaticRefNone, true)
