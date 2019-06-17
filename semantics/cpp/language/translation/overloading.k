@@ -226,19 +226,22 @@ module CPP-TRANSLATION-OVERLOADING
                toType:   ToType::CPPType
           ) => viableType(FromType, ToType, FromCat)
 
-     syntax Bool ::= viableType(CPPType, CPPType, ValueCategory) [function]
-                   | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool) [function]
+     syntax Bool ::= viableType(CPPType, CPPType, ValueCategory)
+                   | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool)
 
-     rule (.K => conversionSequence(P, A, C, false, false, true))
-          ~> viableType(P::CPPType, A::CPPType, C::ValueCategory)
+     rule viableType(P::CPPType, A::CPPType, C::ValueCategory)
+          =>
+          conversionSequence(P, A, C, false, false, true)
+          ~> isViable()
 
-     rule (CS:ConversionSequence ~> viableType(...))
-          => CS =/=K cannot-convert
+     rule viableImplicitObjectParameter(cppRefType #as P::CPPType, A::CPPType, C::ValueCategory, B::Bool)
+          =>
+          conversionSequence(P, A, C, B, true, true)
+          ~> isViable()
 
-     rule (.K => conversionSequence(P, A, C, B, true, true))
-          ~> viableImplicitObjectParameter(cppRefType #as P::CPPType, A::CPPType, C::ValueCategory, B::Bool)
+     syntax KItem ::= isViable()
 
-     rule (CS:ConversionSequence ~> viableImplicitObjectParameter(...))
+     rule (CS:ConversionSequence ~> isViable())
           => CS =/=K cannot-convert
 
      rule viableImplicitObjectParameter(t(... st: no-type), _, _, _) => true
