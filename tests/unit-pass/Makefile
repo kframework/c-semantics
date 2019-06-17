@@ -70,11 +70,17 @@ reference: ${REFERENCE_TEST_RESULTS}
 
 .PHONY: comparison
 comparison: ${TEST_COMPARISON}
+
+.PHONY: os-comparison
 os-comparison: ${OS_TEST_COMPARISON}
 
+.PHONY: c-comparison
 c-comparison: ${C_TEST_COMPARISON}
+
+.PHONY: cpp-comparison
 cpp-comparison: ${CPP_TEST_COMPARISON}
 
+.PHONY: compile
 compile: ${KCC_COMPILED_TESTS}
 
 zeroinit-class-padding.C.cmp:
