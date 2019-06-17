@@ -20,17 +20,24 @@ KXX := ../../dist/k++
 
 KCCFLAGS := -frecover-all-errors -fno-diagnostics-color
 
-.PHONY: test clean reference comparison
 .PRECIOUS: %.kcc %.out
 
+.PHONY: test
 test: ${TEST_RESULTS}
 
+.PHONY: comparison
 comparison: ${TEST_COMPARISON}
 
+.PHONY: c-comparison
 c-comparison: ${C_TEST_COMPARISON}
+
+.PHONY: cpp-comparison
 cpp-comparison: ${CPP_TEST_COMPARISON}
 
+.PHONY: compile
 compile: ${KCC_COMPILED_TESTS}
+
+.PHONY: c-compile
 c-compile: ${C_KCC_COMPILED_TESTS}
 
 # some versions of GNU make define the following pattern rule using cp. We need
@@ -61,5 +68,6 @@ c-compile: ${C_KCC_COMPILED_TESTS}
 	@echo -n "Comparing $^... "
 	@diff $^ > $@.tmp 2>&1; ${CHECK_RESULT_DIFF}
 
+.PHONY: clean
 clean:
 	rm -rf *.out *.kcc *.tmp *.cmp

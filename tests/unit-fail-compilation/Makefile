@@ -16,14 +16,18 @@ KXX := ../../dist/k++
 
 KCCFLAGS = -fno-diagnostics-color -Werror -Wfatal-errors
 
-.PHONY: test clean reference comparison
 .PRECIOUS: %.kcc %.out
 
+.PHONY: test
 test: ${KCC_COMPILED_TESTS}
 
+.PHONY: comparison
 comparison: ${TEST_COMPARISON}
 
+.PHONY: c-comparison
 c-comparison: ${C_TEST_COMPARISON}
+
+.PHONY: cpp-comparison
 cpp-comparison: ${CPP_TEST_COMPARISON}
 
 %-link1.c.kcc.out: %-link1.c %-link2.c
@@ -51,5 +55,6 @@ cpp-comparison: ${CPP_TEST_COMPARISON}
 	@echo -n "Comparing $^... "
 	@diff $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
+.PHONY: clean
 clean:
 	rm -rf *.out *.kcc *.tmp *.cmp

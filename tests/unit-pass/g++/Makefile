@@ -10,15 +10,18 @@ TEST_COMPARISON := ${TESTS:.c=.cmp}
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
-.PHONY: test clean reference comparison
 .PRECIOUS: %.kcc %.out
 
+.PHONY: test
 test: ${TEST_RESULTS}
 
+.PHONY: reference
 reference: ${REFERENCE_TEST_RESULTS}
 
+.PHONY: comparison
 comparison: ${TEST_COMPARISON}
 
+.PHONY: compile
 compile: ${KCC_COMPILED_TESTS}
 
 %.out: %.kcc
@@ -63,5 +66,6 @@ compile: ${KCC_COMPILED_TESTS}
 	@echo -n "Comparing $^... "
 	@diff --strip-trailing-cr $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
+.PHONY: clean
 clean:
 	rm -rf *.out *.kcc *.tmp *.gcc *.ref *.cmp

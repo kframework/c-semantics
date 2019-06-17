@@ -62,13 +62,15 @@ CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else 
 CHECK_RESULT_RUN_VERBOSE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; env VERBOSE=1 ./$<; exit 1; fi
 
 
-.PHONY: test clean reference comparison
 .PRECIOUS: %.kcc %.out
 
+.PHONY: test
 test: ${TEST_RESULTS}
 
+.PHONY: reference
 reference: ${REFERENCE_TEST_RESULTS}
 
+.PHONY: comparison
 comparison: ${TEST_COMPARISON}
 os-comparison: ${OS_TEST_COMPARISON}
 
@@ -126,11 +128,14 @@ zeroinit-class-padding.C.cmp:
 	@echo -n "Comparing $^... "
 	@diff --strip-trailing-cr $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
+.PHONY: clean
 clean:
 	rm -rf *.out *.kcc *.tmp *.gcc *.ref *.cmp
 
+.PHONY: clean-c
 clean-c:
 	rm -f *.c.*
 
+.PHONY: clean-cpp
 clean-cpp:
 	rm -f *.C.*
