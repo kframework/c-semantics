@@ -1,3 +1,5 @@
+include ../check-results.mk
+
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
 EXCLUDES :=
 TESTS := $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
