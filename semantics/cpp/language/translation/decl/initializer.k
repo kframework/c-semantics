@@ -442,7 +442,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                     | braceElisionNo()
                     | braceElisionMaybe(Init, CPPType)
                     | braceElisionMaybe2(init: Expr, initType: TypeExpr, initCat: CatExpr, destType: CPPType)
-                    | braceElisionMaybe3(Bool) [strict]
+                    | braceElisionMaybe3(KItem) [strict]
 
      // If the initializer is neither BraceInit nor Expr, then this rule may not apply.
      rule braceElisionMaybe(E:Expr, T::CPPType) => braceElisionMaybe2(E, E, E, T)
