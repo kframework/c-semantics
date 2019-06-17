@@ -24,7 +24,7 @@ module CPP-TRANSLATION-OVERLOADING-SYNTAX
 
      syntax BuiltinOp ::= builtinOp(Expr)
 
-     syntax Bool ::= canBeImplicitlyConvertedTo(fromType: CPPType, fromCat: ValueCategory, toType: CPPType) [function]
+     syntax KItem ::= canBeImplicitlyConvertedTo(fromType: CPPType, fromCat: ValueCategory, toType: CPPType)
 endmodule
 
 module CPP-TRANSLATION-OVERLOADING
@@ -226,8 +226,8 @@ module CPP-TRANSLATION-OVERLOADING
                toType:   ToType::CPPType
           ) => viableType(FromType, ToType, FromCat)
 
-     syntax Bool ::= viableType(CPPType, CPPType, ValueCategory)
-                   | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool)
+     syntax KItem ::= viableType(CPPType, CPPType, ValueCategory)
+                    | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool)
 
      rule viableType(P::CPPType, A::CPPType, C::ValueCategory)
           =>
