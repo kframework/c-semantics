@@ -14,7 +14,7 @@ CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else 
 KCC := ../../dist/kcc
 KXX := ../../dist/k++
 
-KCCFLAGS = -fno-diagnostics-color -Werror -Wfatal-errors
+KCCFLAGS := -fno-diagnostics-color -Werror -Wfatal-errors
 
 .PRECIOUS: %.kcc %.out
 
