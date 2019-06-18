@@ -126,19 +126,17 @@ endif
 # See https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html
 Makefile: $(DEPENDS) ;
 
-
-# The included makefiles depend on these.
-K_FILE_DEPS := $(wildcard *.k)
-K_FILE_DEPS += $(shell find $(OUTPUT_DIR) -type f -name '*.k')
-K_FILE_DEPS += $(shell find $(PROFILE_DIR)/semantics -type f -name '*.k')
-
-$(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: $(K_FILE_DEPS) \
+$(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: %.k \
                                                             | $(GENERATED_MAKEFILE_DIR)
-	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k > $@
+	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k \
+		| perl -pe 's|(.*?)\s*:|\1 $@:|g' \
+	> $@
 
-$(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: $(K_FILE_DEPS) \
+$(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: c-cpp.k \
                                                         | $(GENERATED_MAKEFILE_DIR)
-	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k > $@
+	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k \
+		| perl -pe 's|(.*?)\s*:|\1 $@:|g' \
+	> $@
 
 
 # Move this to the end so that .SECONDEXPANSION
