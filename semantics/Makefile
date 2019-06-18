@@ -128,15 +128,21 @@ Makefile: $(DEPENDS) ;
 
 $(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: %.k \
                                                             | $(GENERATED_MAKEFILE_DIR)
+	set -e; \
+	TEMPFILE=$$(mktemp); \
 	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k \
 		| perl -pe 's|(.*?)\s*:|\1 $@:|g' \
-	> $@
+	> $${TEMPFILE}; \
+	mv $${TEMPFILE} $@
 
 $(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: c-cpp.k \
                                                         | $(GENERATED_MAKEFILE_DIR)
+	set -e; \
+	TEMPFILE=$$(mktemp); \
 	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k \
 		| perl -pe 's|(.*?)\s*:|\1 $@:|g' \
-	> $@
+	> $${TEMPFILE}; \
+	mv $${TEMPFILE} $@
 
 
 # Move this to the end so that .SECONDEXPANSION
