@@ -686,29 +686,54 @@ module CPP-TRANSLATION-OVERLOADING
      rule #computeBestViable(T::CPPType, K:K, .List, Types::List, Cats::List, O::OverloadType, Others::List)
           => checkIsBest(T, K, Types, Cats, O, Others)
 
-     rule checkIsBest(
+     rule (.K => isBetterFunctionThan(T1, K1, T2, K2, Types, Cats, O))
+          ~> checkIsBest(
                T1::CPPType,
                K1:K,
                Types::List,
                Cats::List,
                O::OverloadType,
+               ListItem(kpair(T2::CPPType, K2:K)) _
+          )
+
+     rule (true => .K)
+          ~> checkIsBest(
+               _,
+               _,
+               _,
+               _,
+               _,
                (ListItem(kpair(T2::CPPType, K2:K)) => .List) _
           )
-          requires isBetterFunctionThan(T1, K1, T2, K2, Types, Cats, O)
+
+     rule false ~> checkIsBest(...) => noBestViable [owise]
 
      rule checkIsBest(T::CPPType, K:K, _, _, _, .List)
           => bestViable(T, K)
 
-     rule checkIsBest(...) => noBestViable [owise]
+     syntax KItem ::= isBetterFunctionThan(CPPType, K, CPPType, K, List, List, OverloadType)
+                      #isBetterFunctionThan(KItem, KItem, CPPType, K, CPPType, K, List, List, OverloadType) [strict(1,2)]
 
-     syntax Bool ::= isBetterFunctionThan(CPPType, K, CPPType, K, List, List, OverloadType) [function]
+     rule isBetterFunctionThan(F1::CPPType, K1:K, F2::CPPType, K2:K, Types::List, Cats::List, NotConversionOverload())
+          => #isBetterFunctionThan(
+               hasWorseConversionSequenceThan(F1, F2, Types, Cats),
+               hasBetterConversionSequenceThan(F1, F2, Types, Cats),
+               F1, K1, F2, K2, Types, Cats, NotConversionOverload()
+          )
+          requires notBool (isTemplateSpecialization(K1) andBool isTemplateSpecialization(K2))
 
      // TODO(dwightguth): n4296 13.3.3:1.4,1.5,1.7
-     rule isBetterFunctionThan(F1::CPPType, K1:K, F2::CPPType, K2:K, Types::List, Cats::List, NotConversionOverload()) =>
-          notBool hasWorseConversionSequenceThan(F1, F2, Types, Cats)
-               andBool (hasBetterConversionSequenceThan(F1, F2, Types, Cats)
-                    orBool (notBool isTemplateSpecialization(K1) andBool isTemplateSpecialization(K2)))
-          requires notBool (isTemplateSpecialization(K1) andBool isTemplateSpecialization(K2))
+     rule #isBetterFunctionThan(
+               F1::CPPType,
+               K1:K,
+               F2::CPPType,
+               K2:K,
+               Types::List,
+               Cats::List,
+               NotConversionOverload()
+          )
+          => notBool HasWorseCS andBool (HasBetterCS orBool (notBool isTemplateSpecialization(K1) andBool isTemplateSpecialization(K2)))
+
 
      syntax Bool ::= hasWorseConversionSequenceThan(CPPType, CPPType, List, List) [function]
                    | hasBetterConversionSequenceThan(CPPType, CPPType, List, List) [function]
