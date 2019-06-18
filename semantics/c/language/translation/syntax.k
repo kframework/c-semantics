@@ -491,6 +491,7 @@ module C-ABSTRACT-REWRITING
      imports C-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports COMMON-SYNTAX
+     imports FLOAT
 
      rule AnonymousName() => #NoName [anywhere]
 
