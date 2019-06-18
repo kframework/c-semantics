@@ -225,7 +225,7 @@ module C-LITERAL
      rule CharLiteral(N:Int)
           => cast(utype(int), cast(utype(unsigned-char), tv(N, ut(SetItem(IntegerConstant), int))))
      rule WCharLiteral(N:Int) => tv(N, utype(cfg:wcharut))
-     rule Constant(K:K) => K
+     rule Constant(K:KItem) => K
 
 endmodule
 

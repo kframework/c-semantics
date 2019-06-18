@@ -47,7 +47,7 @@ module C-DECL-DEFINITION
                ~> DeclarationDefinition(InitNameGroup(T, list(ListItem(K') L)))
           [structural]
      rule DeclarationDefinition(
-               InitNameGroup(T:Type, list(ListItem(InitName(N:K, Exp:K)))))
+               InitNameGroup(T:Type, list(ListItem(InitName(N:KItem, Exp:KItem)))))
           => declare(SingleName(T, N), Exp)
           [structural]
 

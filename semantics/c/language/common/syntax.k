@@ -14,15 +14,7 @@ module C-SYNTAX
 
      syntax KResult ::= SpecifierElem
 
-     syntax C ::= CabsLoc
-     syntax C ::= CId
-     syntax C ::= Qualifier
-     syntax C ::= Expression
-     syntax C ::= SpecifierElem
-     syntax C ::= Statement
-     syntax C ::= StorageClassSpecifier
-
-     syntax Statement ::= Block(Int, K) [avoid]
+     syntax KItem ::= Block(Int, KItem) [avoid]
 
      /*
      type cabsloc = {
@@ -41,15 +33,15 @@ module C-SYNTAX
      | BLOCK of block * cabsloc
      | SEQUENCE of statement * statement * cabsloc
      */
-     syntax Statement ::= Nop()
-     syntax Statement ::= Computation(K) [latex({{#1}};)]
+     syntax KItem ::= Nop()
+     syntax KItem ::= Computation(K) [latex({{#1}};)]
      context Computation(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     syntax Statement ::= "Initializer" "(" K ":=" K ")" [strict(1)]
+     syntax KItem ::= "Initializer" "(" K ":=" K ")" [strict(1)]
      context Initializer(_ := (HOLE:KItem => reval(HOLE))) [result(RValue)]
 
-     syntax Statement ::= Zero(K) [strict]
-     syntax Statement ::= InitPadding(K, CId) [strict(1)]
+     syntax KItem ::= Zero(K) [strict]
+     syntax KItem ::= InitPadding(K, CId) [strict(1)]
 
 
      /*
@@ -81,22 +73,22 @@ module C-SYNTAX
      | DOWHILE of expression * statement * cabsloc
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
-     syntax Statement ::= IfThenElse(K, K, K)
+     syntax KItem ::= IfThenElse(K, K, K)
      context IfThenElse((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
 
-     syntax Statement ::= While(K, K)
-     syntax Statement ::= DoWhile(K, K)
+     syntax KItem ::= While(K, K)
+     syntax KItem ::= DoWhile(K, K)
      // Condition, post expression, body
-     syntax Statement ::= For(K, K, K)
+     syntax KItem ::= For(K, K, K)
      /*
      | BREAK of cabsloc
      | CONTINUE of cabsloc
      | RETURN of expression * cabsloc
      */
-     syntax Statement ::= Break()
-     syntax Statement ::= Continue()
+     syntax KItem ::= Break()
+     syntax KItem ::= Continue()
 
-     syntax Statement ::= Return(K)
+     syntax KItem ::= Return(K)
      context Return(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
      /*
@@ -104,7 +96,7 @@ module C-SYNTAX
      | CASERANGE of expression * expression * statement * cabsloc
      */
      // unique switch id
-     syntax Statement ::= Switch(K, K, K)
+     syntax KItem ::= Switch(Int, K, K)
      context Switch(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
 
      /*
@@ -112,20 +104,20 @@ module C-SYNTAX
      | DEFAULT of statement * cabsloc
      */
      // unique switch id, unique case id, exp, statement
-     syntax Statement ::= Case(Int, Int, K, K)
+     syntax KItem ::= Case(Int, Int, K, K)
      // unique switch id, statement
-     syntax Statement ::= Default(Int, K)
+     syntax KItem ::= Default(Int, K)
 
      /*
      | LABEL of String * statement * cabsloc
      */
-     syntax Statement ::= Label(CId, K) [avoid]
+     syntax KItem ::= Label(CId, K) [avoid]
 
 
      /*
      | GOTO of String * cabsloc
      */
-     syntax Statement ::= Goto(CId) // CId
+     syntax KItem ::= Goto(CId) // CId
 
      /*
      | UNARY of unary_operator * expression
@@ -261,7 +253,7 @@ module C-SYNTAX
      context HOLE:KItem := _ [ndheat]
      context _ := (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     syntax Expression ::= Cast(K, K) [klabel(Cast2)]
+     syntax KItem ::= Cast(K, K) [klabel(Cast2)]
      context Cast(HOLE:KItem, _)
      context Cast(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
 
@@ -271,19 +263,19 @@ module C-SYNTAX
         should be printed as just T *)
      | CALL of expression * expression list
      */
-     syntax Expression ::= Call(K, K)
+     syntax KItem ::= Call(K, K)
      context Call((HOLE:KItem => reval(HOLE)), _) [ndheat, result(RValue)]
      /*
      | MEMBEROF of expression * string
      */
      syntax KItem ::= K "." CId [left, strict(1)]
 
-     syntax Expression ::= GnuBody(K)
+     syntax KItem ::= GnuBody(KItem)
 
      /*
      and attribute = String * expression list
      */
      // String, List
-     syntax C ::= Attribute(String, K)
+     syntax KItem ::= Attribute(String, KItem)
 
 endmodule

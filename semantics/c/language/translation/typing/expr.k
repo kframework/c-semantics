@@ -105,7 +105,7 @@ module C-TYPING-EXPR
 
      context typeof(CompoundLiteral(_, (HOLE:KItem), _, _)) [result(Type)]
      syntax KItem ::= CompoundLiteralType(K)
-     rule typeof(CompoundLiteral(_, T:Type, K:K, _) => CompoundLiteralType(DeclType(T, K)))
+     rule typeof(CompoundLiteral(_, T:Type, K:KItem, _) => CompoundLiteralType(DeclType(T, K)))
      context typeof(CompoundLiteralType(HOLE:KItem))
      rule typeof(CompoundLiteralType(T:Type) => T)
 
@@ -132,7 +132,8 @@ module C-TYPING-EXPR
           requires isVariablyModifiedType(T)
      context typeof(SizeofType(HOLE:KItem, _))
 
-     rule typeof(AlignofExpression(_) => AlignofType(.K, .K))
+     rule typeof(AlignofExpression(_)
+          => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
      rule typeof(AlignofType(_, _)
           => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
      rule typeof(OffsetOf(_, _, _)
@@ -142,7 +143,7 @@ module C-TYPING-EXPR
 
      // cast expression
      context typeof(Cast((HOLE:KItem), _, _)) [result(Type)]
-     rule typeof(Cast(T:Type, K:K, V:K) => Cast(DeclType(T, K), V))
+     rule typeof(Cast(T:Type, K:KItem, V:K) => Cast(DeclType(T, K), V))
      context typeof(Cast(HOLE:KItem,_))
      rule typeof(Cast(T:Type, _) => elideDeclParams(type(rvalType(T))))
      rule typeof(cast(T:UType, _) => elideDeclParams(type(T)))
@@ -304,7 +305,7 @@ module C-TYPING-EXPR
           ~> elaborateDone(_, _) ~> typeof(_ ? structOrUnionType #as T::Type : (structOrUnionType #as T'::Type))
           requires T =/=Type T'
 
-     syntax Expression ::= assignmentOp(K, K)
+     syntax KItem ::= assignmentOp(K, K)
      rule assignmentOp(L:K, R:K)
          => ((L := R)
         #Or ((L *= R)

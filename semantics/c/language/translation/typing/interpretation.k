@@ -53,15 +53,15 @@ module C-TYPING-INTERPRETATION
      syntax KItem ::= "makeIncompleteArrayType"
 
      context ArrayType(_, (HOLE:KItem => reval(HOLE)), _) [ndheat, result(RValue)]
-     rule ArrayType(T:Type, tv(N:Int, T'::UType), Spec:K)
+     rule ArrayType(T:Type, tv(N:Int, T'::UType), Spec:KItem)
           => pushTypeDown(T, makeArrayType(tv(N, T'), Spec))
           requires N >Int 0 andBool notBool isFlexibleType(T)
           [structural]
-     rule ArrayType(T:Type, UnspecifiedSizeExpression(), Spec:K)
+     rule ArrayType(T:Type, UnspecifiedSizeExpression(), Spec:KItem)
           => pushTypeDown(T, makeArrayType(UnspecifiedSizeExpression(), Spec))
           requires notBool isFlexibleType(T)
           [structural]
-     rule ArrayType(T:Type, N:RValue, Spec:K)
+     rule ArrayType(T:Type, N:RValue, Spec:KItem)
           => pushTypeDown(T, makeArrayType(N, Spec))
           requires isHold(N) andBool notBool isFlexibleType(T) // VLAs
           [structural]
@@ -171,7 +171,7 @@ module C-TYPING-INTERPRETATION
           [structural]
 
      syntax KItem ::= "extractActualTypeFreezer"
-     rule <k> DeclType(T:Type, K:K) => K:K ~> extractActualTypeFreezer ...</k>
+     rule <k> DeclType(T:Type, K:KItem) => K ~> extractActualTypeFreezer ...</k>
           <decl-type-holder> (.K => T) ...</decl-type-holder>
           [structural]
 
@@ -180,7 +180,7 @@ module C-TYPING-INTERPRETATION
           [structural]
 
      // The K will resolve to a type, so throw it away.
-     rule OnlyTypedef(K:K) => K ~> discard
+     rule OnlyTypedef(K:KItem) => K ~> discard
           [structural]
 
      rule NameAndType(X:CId, T:Type) => typedDeclaration(T, X)
@@ -206,7 +206,7 @@ module C-TYPING-INTERPRETATION
 
      syntax KItem ::= NameAndType(CId, K) [strict(2)]
 
-     rule SingleName(T:Type, Name(X:CId, K:K, list(Attrs::List)))
+     rule SingleName(T:Type, Name(X:CId, K:KItem, list(Attrs::List)))
           => NameAndType(X, addMods(Attrs, DeclType(T, K)))
           [structural]
      rule FieldGroup(T:Type, list(ListItem(C:KItem) ListItem(C':KItem) L:List))
@@ -214,11 +214,11 @@ module C-TYPING-INTERPRETATION
                ListItem(FieldGroup(T, list(ListItem(C') L))))
           [structural]
 
-     rule FieldGroup(T:Type, list(ListItem(FieldName(Name(X:CId, K:K, list(Attrs::List))))))
+     rule FieldGroup(T:Type, list(ListItem(FieldName(Name(X:CId, K:KItem, list(Attrs::List))))))
           => NameAndType(X, addMods(Attrs, DeclType(T, K)))
           [structural]
 
-     rule FieldGroup(T:Type, list(ListItem(BitFieldName(Name(X:CId, K:K, list(Attrs::List)), Size:K))))
+     rule FieldGroup(T:Type, list(ListItem(BitFieldName(Name(X:CId, K:KItem, list(Attrs::List)), Size:KItem))))
           => NameAndType(X, addMods(Attrs, DeclType(T, BitFieldType(K, Size))))
           [structural]
 
