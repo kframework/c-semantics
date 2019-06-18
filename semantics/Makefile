@@ -25,6 +25,10 @@ K_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/cpp
 # Appending to whatever the environment provided.
 KDEP_FLAGS += $(addprefix -I ,$(K_INCLUDE_DIRS))
 KOMPILE_FLAGS += $(addprefix -I ,$(K_INCLUDE_DIRS))
+KOMPILE_FLAGS += --no-prelude
+KOMPILE_FLAGS += -w all
+KOMPILE_FLAGS += -v
+KOMPILE_FLAGS += --debug
 
 
 # Used specifically in the timestamp_of rules.
@@ -45,40 +49,37 @@ endef
 $(call timestamp_of,c-translation):
 	$(info Kompiling the static C semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) c-translation.k \
-		-d "$(OUTPUT_DIR)/c-translation-kompiled" \
-		--no-prelude -w all -v --debug
+		-d "$(OUTPUT_DIR)/c-translation-kompiled"
 
 $(call timestamp_of,cpp-translation):
 	$(info Kompiling the static C++ semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) cpp-translation.k \
-		-d "$(OUTPUT_DIR)/cpp-translation-kompiled" \
-		--no-prelude -w all -v --debug
+		-d "$(OUTPUT_DIR)/cpp-translation-kompiled"
 
 $(call timestamp_of,c-cpp-linking):
 	$(info Kompiling the C and C++ linking semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) c-cpp-linking.k \
-		-d "$(OUTPUT_DIR)/c-cpp-linking-kompiled" \
-		--no-prelude -w all -v --debug
+		-d "$(OUTPUT_DIR)/c-cpp-linking-kompiled"
 
 $(call timestamp_of,c-cpp):
 	$(info Kompiling the dynamic C and C++ semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-cpp-kompiled" \
-		--no-prelude -w all -v --transition "interpRule" \
-		--debug
+		--transition "interpRule"
 
 $(call timestamp_of,c-nd):
 	$(info Kompiling the dynamic C and C++ semantics with expression sequencing non-determinism...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-nd-kompiled" \
-		--no-prelude --transition "observable ndtrans" \
-		--superheat "ndheat" --supercool "ndlocal"
+		--transition "observable ndtrans" \
+		--superheat "ndheat" \
+		--supercool "ndlocal"
 
 $(call timestamp_of,c-nd-thread):
 	$(info Kompiling the dynamic C and C++ semantics with thread-interleaving non-determinism...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-nd-thread-kompiled" \
-		--no-prelude --transition "observable ndtrans ndthread"
+		--transition "observable ndtrans ndthread"
 
 
 .PHONY: default
