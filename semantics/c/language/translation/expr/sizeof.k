@@ -50,7 +50,7 @@ module C-EXPR-SIZEOF
                orBool isFunctionType(T)
 
 
-     rule SizeofType(T:Type, K:K) => #SizeofType(DeclType(T, K))
+     rule SizeofType(T:Type, K:KItem) => #SizeofType(DeclType(T, K))
 
      rule #SizeofType(T:Type) => sizeof(T)
           requires notBool isVariableLengthArrayType(T)

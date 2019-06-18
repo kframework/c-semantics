@@ -23,7 +23,6 @@ BUILD_DIR := dist
 OUTPUT_DIR := $(abspath $(BUILD_DIR))
 
 PROFILE_OUTPUT_DIR := $(OUTPUT_DIR)/profiles/$(PROFILE)
-SEMANTICS_OUTPUT_DIR := $(OUTPUT_DIR)/semantics/$(PROFILE)
 
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 
@@ -246,7 +245,7 @@ $(PROFILE)-native: $(PROFILE_OUTPUT_DIR)/native/main.o \
                    $(PROFILE_OUTPUT_DIR)/native/builtins.o \
                    $(PROFILE_OUTPUT_DIR)/native/platform.o \
                    $(PROFILE_OUTPUT_DIR)/native/platform.h \
-                   $(PROFILE_OUTPUT_DIR)/native/server.h \
+                   $(PROFILE_OUTPUT_DIR)/native/server.h
 
 $(PROFILE_OUTPUT_DIR)/native/main.o: native-server/main.c \
                                      native-server/server.h \
@@ -290,7 +289,7 @@ scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 
 .PHONY: all-semantics
 all-semantics:
-	@$(MAKE) -C semantics all BUILD_DIR=$(SEMANTICS_BUILD_DIR) PROFILE_DIR=$(PROFILE_DIR)
+	@$(MAKE) -C semantics all BUILD_DIR=$(PROFILE_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 .PHONY: check
 check: | pass fail fail-compile
@@ -329,10 +328,15 @@ simple-build-test:
 # Builds with `KOMPILE_FLAGS=--profile-rule-parsing`.
 # Intended for direct user invocation.
 # Produces a `timelogs.d` directory.
+# Also produces a `timelogs.d/timelogs.csv` file
+# suitable for importing into an SQL database.
 .PHONY: profile-rule-parsing
-profile-rule-parsing:
-	KOMPILE_FLAGS=--profile-rule-parsing $(MAKE) test-build
-	cd $(OUTPUT_DIR)/profiles && \
+profile-rule-parsing: export KOMPILE_FLAGS += --profile-rule-parsing
+profile-rule-parsing: test-build
+	$(eval TIMELOGS_DIR := $(OUTPUT_DIR)/timelogs.d)
+	$(eval TIMELOGS_CSV := $(TIMELOGS_DIR)/timelogs.csv)
+	$(info Moving timingXX.log files into $(TIMELOGS_DIR)...)
+	@cd $(OUTPUT_DIR)/profiles && \
 	find . \
 		! -path "*.build*" \
 		! -path "*.git*" \
@@ -340,9 +344,19 @@ profile-rule-parsing:
 		-name "timing*.log" \
 		-print | \
 	while IFS= read f; do \
-		mkdir -p $(OUTPUT_DIR)/timelogs.d/"$$(dirname $$f)"; \
-		mv $$f $(OUTPUT_DIR)/timelogs.d/"$$(dirname $$f)"; \
+		mkdir -p $(TIMELOGS_DIR)/"$$(dirname $$f)"; \
+		mv $$f $(TIMELOGS_DIR)/"$$(dirname $$f)"; \
 	done
+	$(info Done.)
+	$(info Generating $(TIMELOGS_CSV)...)
+	@cd $(TIMELOGS_DIR) && \
+	find . \
+		-type f \
+		-name "timing*.log" \
+		-exec \
+			perl -ne '/Source\((.*?)\):(\d+):(\d+)\s+(.*?)$$/ && print "{},$$1,$$2,$$3,$$4\n";' {} \; \
+	> $(TIMELOGS_CSV)
+	$(info Done.)
 
 
 # This makefile does not need to be re-built.
@@ -365,7 +379,7 @@ XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-link
 .PHONY: $(XYZ_SEMANTICS)
 
 $(XYZ_SEMANTICS):
-	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
+	@$(MAKE) -C semantics $@ BUILD_DIR=$(PROFILE_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 
 # A) Move this to the end so that .SECONDEXPANSION does not
@@ -377,6 +391,5 @@ $(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: PROFILE_DEPS \
                                             $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
 	$(info Distributing $(NAME))
-	@cp -p -RL $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(PROFILE_OUTPUT_DIR)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(shell basename $(d));)
+		cp -RLp $(PROFILE_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(shell basename $(d));)

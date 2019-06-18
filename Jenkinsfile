@@ -24,9 +24,12 @@ pipeline {
         sh '''
           eval $(opam config env)
           export KOMPILE_FLAGS=-O2
-          make -j4
+          make -j4 profile-rule-parsing
         '''
       }
+      post { success {
+        archiveArtifacts 'dist/timelogs.d/timelogs.csv'
+      } }
     }
     stage('Re-Build with timeout') { steps {
       timeout(time: 8, unit: 'SECONDS') {

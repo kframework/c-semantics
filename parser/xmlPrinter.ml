@@ -195,8 +195,9 @@ and hasInformation l =
 and printNameLoc s l =
 	(* if (hasInformation l) then (wrap (s :: (printCabsLoc l) :: []) "NameLoc") else (s) *)
 	s
-and printIdentifier a =
-	kapply "ToIdentifier"  (printRawString a)
+and printIdentifier = function
+  | "" | "___missing_field_name" -> kapply "AnonymousName" nil
+  | x                            -> kapply "Identifier" (printRawString x)
 and printName (a, b, c, d) = (* string * decl_type * attribute list * cabsloc *)
 	if a = "" then 
 		(* printAttr (printNameLoc (wrap ((printDeclType b) :: []) "AnonymousName") d) c *)

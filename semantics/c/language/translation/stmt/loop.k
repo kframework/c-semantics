@@ -13,7 +13,7 @@ module C-STMT-LOOP
           => Block(Tag, list(ListItem(E1) ListItem(For(E2, E3, B))))
 
      // This is the first child of the for if it's not a declaration.
-     rule ForClauseExpression(K:K) => Computation(K)
+     rule ForClauseExpression(K:KItem) => Computation(K)
 
      context For((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
      context For(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
@@ -56,7 +56,7 @@ module C-STMT-LOOP
           <elab>... .K => While(compoundExp(L ~> B), S) </elab>
 
      context DoWhile((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
-     rule DoWhile(B:RValue, S:K, L:CabsLoc) => #doWhile(simplifyTruth(B), S, L)
+     rule DoWhile(B:RValue, S:KItem, L:CabsLoc) => #doWhile(simplifyTruth(B), S, L)
 
      syntax KItem ::= #doWhile(K, K, CabsLoc)
      context #doWhile((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]

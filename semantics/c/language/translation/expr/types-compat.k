@@ -8,11 +8,11 @@ module C-EXPR-TYPES-COMPAT
      imports C-TYPING-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
-     rule TypesCompat(T1:KResult, D1:K, T2:KResult, D2:K)
+     rule TypesCompat(T1:KResult, D1:KItem, T2:KResult, D2:KItem)
           => typesCompat(DeclType(T1, D1), DeclType(T2, D2))
           [structural]
 
-     syntax KItem ::= typesCompat(K, K) [strict]
+     syntax KItem ::= typesCompat(KItem, KItem) [strict]
      rule typesCompat(T1:Type, T2:Type)
           => tv(1, ut(SetItem(IntegerConstant), int))
           requires stripQualifiers(T1) ==Type stripQualifiers(T2)
