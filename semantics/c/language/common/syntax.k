@@ -33,8 +33,8 @@ module C-SYNTAX
      | BLOCK of block * cabsloc
      | SEQUENCE of statement * statement * cabsloc
      */
-     syntax KItem ::= Nop()
-     syntax KItem ::= Computation(K) [latex({{#1}};)]
+     syntax KItem ::= Nop() [symbol]
+     syntax KItem ::= Computation(K) [latex({{#1}};), symbol]
      context Computation(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
      syntax KItem ::= "Initializer" "(" K ":=" K ")" [strict(1)]
@@ -57,14 +57,14 @@ module C-SYNTAX
      | SpecStorage of storage
      | SpecInline
      */
-     syntax SpecifierElem ::= SpecTypedef()
-     syntax SpecifierElem ::= MissingType()
+     syntax SpecifierElem ::= SpecTypedef() [symbol]
+     syntax SpecifierElem ::= MissingType() [symbol]
      // the following are because I flattened SpecifierElem
      syntax SpecifierElem ::= Modifier
 
      syntax StorageClassSpecifier ::= AutoSpecifier
      syntax Modifier ::= FunctionSpecifier
-     syntax FunctionSpecifier ::= Noreturn()
+     syntax FunctionSpecifier ::= Noreturn() [symbol]
                                 | SpecExtendsTuOf(CId)
 
      /*
@@ -73,10 +73,10 @@ module C-SYNTAX
      | DOWHILE of expression * statement * cabsloc
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
-     syntax KItem ::= IfThenElse(K, K, K)
+     syntax KItem ::= IfThenElse(K, K, K) [symbol]
      context IfThenElse((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
 
-     syntax KItem ::= While(K, K)
+     syntax KItem ::= While(K, K) [symbol]
      syntax KItem ::= DoWhile(K, K)
      // Condition, post expression, body
      syntax KItem ::= For(K, K, K)
@@ -85,10 +85,10 @@ module C-SYNTAX
      | CONTINUE of cabsloc
      | RETURN of expression * cabsloc
      */
-     syntax KItem ::= Break()
-     syntax KItem ::= Continue()
+     syntax KItem ::= Break() [symbol]
+     syntax KItem ::= Continue() [symbol]
 
-     syntax KItem ::= Return(K)
+     syntax KItem ::= Return(K) [symbol]
      context Return(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
      /*
@@ -96,7 +96,7 @@ module C-SYNTAX
      | CASERANGE of expression * expression * statement * cabsloc
      */
      // unique switch id
-     syntax KItem ::= Switch(Int, K, K)
+     syntax KItem ::= Switch(Int, K, K) [symbol]
      context Switch(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
 
      /*
@@ -104,20 +104,20 @@ module C-SYNTAX
      | DEFAULT of statement * cabsloc
      */
      // unique switch id, unique case id, exp, statement
-     syntax KItem ::= Case(Int, Int, K, K)
+     syntax KItem ::= Case(Int, Int, K, K) [symbol]
      // unique switch id, statement
-     syntax KItem ::= Default(Int, K)
+     syntax KItem ::= Default(Int, K) [symbol]
 
      /*
      | LABEL of String * statement * cabsloc
      */
-     syntax KItem ::= Label(CId, K) [avoid]
+     syntax KItem ::= Label(CId, K) [avoid, symbol]
 
 
      /*
      | GOTO of String * cabsloc
      */
-     syntax KItem ::= Goto(CId) // CId
+     syntax KItem ::= Goto(CId) [symbol] // CId
 
      /*
      | UNARY of unary_operator * expression
@@ -263,19 +263,19 @@ module C-SYNTAX
         should be printed as just T *)
      | CALL of expression * expression list
      */
-     syntax KItem ::= Call(K, K)
+     syntax KItem ::= Call(K, K) [symbol]
      context Call((HOLE:KItem => reval(HOLE)), _) [ndheat, result(RValue)]
      /*
      | MEMBEROF of expression * string
      */
      syntax KItem ::= K "." CId [left, strict(1)]
 
-     syntax KItem ::= GnuBody(KItem)
+     syntax KItem ::= GnuBody(KItem) [symbol]
 
      /*
      and attribute = String * expression list
      */
      // String, List
-     syntax KItem ::= Attribute(String, KItem)
+     syntax KItem ::= Attribute(String, KItem) [symbol]
 
 endmodule

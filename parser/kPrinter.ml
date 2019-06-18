@@ -198,7 +198,7 @@ let inj (subsort : csort) (sort : csort) (contents : unit printer) : unit printe
 
 let inject (subsort : csort) (sort : csort) (contents : unit printer) : unit printer =
   if subsort = sort then contents else
-    if sort = K then kseq [contents] else inj subsort sort contents
+    if sort = K then if subsort = KItem then kseq [contents] else kseq [inj subsort KItem contents] else inj subsort sort contents
 
 let kapply (subsort : csort) (label : string) (contents : (unit printer) list) (sort : csort) : unit printer =
   if_kore
@@ -548,7 +548,7 @@ let translation_unit (filename : string) (defs : definition list) (s : printer_s
   let (_, s_intr) = list_of definition defs KItem s in
   let strings s   = get_string_literals >>= fun strings -> list_of (kapply1 KItem "Constant") strings s in
   let ast         = fun s -> (Buffer.add_buffer s.buffer s_intr.buffer; ((), s)) in
-  kapply KItem "TranslationUnit" [ktoken_string filename; strings KItem; ast] K {s_intr with buffer = Buffer.create 100}
+  kapply KItem "TranslationUnit" [ktoken_string filename; strings KItem; ast] KItem {s_intr with buffer = Buffer.create 100}
 
 let cabs_to_kast (defs : definition list) (filename : string) : Buffer.t =
   let (_, final_state) = translation_unit filename defs init_state in
