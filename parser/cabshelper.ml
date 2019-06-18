@@ -37,6 +37,8 @@
  
 open Cabs
 
+let msvcMode = ref false
+
 let nextident = ref 0
 let getident () =
     nextident := !nextident + 1;

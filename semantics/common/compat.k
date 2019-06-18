@@ -34,7 +34,7 @@ module COMPAT-SYNTAX
 
      syntax List ::= reverseList(List) [function]
 
-     syntax StrictList ::= list(List)
+     syntax StrictList ::= list(List) [symbol]
      syntax KItem ::= set(Set)
 
      syntax K ::= listToK(List) [function]
