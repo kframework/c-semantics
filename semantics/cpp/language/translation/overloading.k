@@ -639,8 +639,8 @@ module CPP-TRANSLATION-OVERLOADING
      rule allFunctionTypes((T::CPPType |-> _) M::TypeMap)
           => isCPPFunctionType(T) andBool allFunctionTypes(M)
 
-     syntax KItem ::= computeBestViable(TypeMap, List, List, OverloadType) [function]
-                    | #computeBestViable(CPPType, K, List, List, List, OverloadType, List) [function]
+     syntax KItem ::= computeBestViable(TypeMap, List, List, OverloadType)
+                    | #computeBestViable(CPPType, K, List, List, List, OverloadType, List)
                     | checkIsBest(CPPType, K, List, List, OverloadType, List) [function]
                     | bestViable(CPPType, K)
                     | "noBestViable"
@@ -650,18 +650,30 @@ module CPP-TRANSLATION-OVERLOADING
      rule computeBestViable(T::CPPType |-> K:KItem M::TypeMap, Types::List, Cats::List, O::OverloadType)
           => #computeBestViable(T, K, Map2List(M), Types, Cats, O, .List)
 
-     rule #computeBestViable(
+     rule (.K => isBetterFunctionThan(T2, K2, T1, K1, Types, Cats, O))
+          ~> #computeBestViable(
                T1::CPPType,
                K1:K,
-               (ListItem(kpair(T2::CPPType, K2:K)) => .List) _,
+               ListItem(kpair(T2::CPPType, K2:K)) _,
                Types::List,
                Cats::List,
                O::OverloadType,
+               _
+          )
+
+     rule (false => .K)
+          ~> #computeBestViable(
+               _,
+               _,
+               (ListItem(kpair(T2::CPPType, K2:K)) => .List) _,
+               _,
+               _,
+               _,
                (.List => ListItem(kpair(T2, K2))) _
           )
-          requires notBool isBetterFunctionThan(T2, K2, T1, K1, Types, Cats, O)
 
-     rule #computeBestViable(
+     rule (true => .K)
+          ~> #computeBestViable(
                (T1::CPPType => T2),
                (K1:K => K2),
                (ListItem(kpair(T2::CPPType, K2:K)) => .List) _,
@@ -670,7 +682,6 @@ module CPP-TRANSLATION-OVERLOADING
                _,
                (.List => ListItem(kpair(T1, K1))) _
           )
-          [owise]
 
      rule #computeBestViable(T::CPPType, K:K, .List, Types::List, Cats::List, O::OverloadType, Others::List)
           => checkIsBest(T, K, Types, Cats, O, Others)
