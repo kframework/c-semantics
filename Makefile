@@ -23,7 +23,6 @@ BUILD_DIR := dist
 OUTPUT_DIR := $(abspath $(BUILD_DIR))
 
 PROFILE_OUTPUT_DIR := $(OUTPUT_DIR)/profiles/$(PROFILE)
-SEMANTICS_OUTPUT_DIR := $(OUTPUT_DIR)/semantics/$(PROFILE)
 
 KCCFLAGS := -D_POSIX_C_SOURCE=200809 -nodefaultlibs -fno-native-compilation
 
@@ -246,7 +245,7 @@ $(PROFILE)-native: $(PROFILE_OUTPUT_DIR)/native/main.o \
                    $(PROFILE_OUTPUT_DIR)/native/builtins.o \
                    $(PROFILE_OUTPUT_DIR)/native/platform.o \
                    $(PROFILE_OUTPUT_DIR)/native/platform.h \
-                   $(PROFILE_OUTPUT_DIR)/native/server.h \
+                   $(PROFILE_OUTPUT_DIR)/native/server.h
 
 $(PROFILE_OUTPUT_DIR)/native/main.o: native-server/main.c \
                                      native-server/server.h \
@@ -290,7 +289,7 @@ scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
 
 .PHONY: all-semantics
 all-semantics:
-	@$(MAKE) -C semantics all BUILD_DIR=$(SEMANTICS_BUILD_DIR) PROFILE_DIR=$(PROFILE_DIR)
+	@$(MAKE) -C semantics all BUILD_DIR=$(PROFILE_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 .PHONY: check
 check: | pass fail fail-compile
@@ -380,7 +379,7 @@ XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-link
 .PHONY: $(XYZ_SEMANTICS)
 
 $(XYZ_SEMANTICS):
-	@$(MAKE) -C semantics $@ BUILD_DIR=$(SEMANTICS_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
+	@$(MAKE) -C semantics $@ BUILD_DIR=$(PROFILE_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 
 # A) Move this to the end so that .SECONDEXPANSION does not
@@ -392,6 +391,5 @@ $(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: PROFILE_DEPS \
                                             $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
 	$(info Distributing $(NAME))
-	@cp -p -RL $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(PROFILE_OUTPUT_DIR)
 	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(SEMANTICS_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(shell basename $(d));)
+		cp -RLp $(PROFILE_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(shell basename $(d));)
