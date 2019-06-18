@@ -245,7 +245,7 @@ $(PROFILE)-native: $(PROFILE_OUTPUT_DIR)/native/main.o \
                    $(PROFILE_OUTPUT_DIR)/native/builtins.o \
                    $(PROFILE_OUTPUT_DIR)/native/platform.o \
                    $(PROFILE_OUTPUT_DIR)/native/platform.h \
-                   $(PROFILE_OUTPUT_DIR)/native/server.h \
+                   $(PROFILE_OUTPUT_DIR)/native/server.h
 
 $(PROFILE_OUTPUT_DIR)/native/main.o: native-server/main.c \
                                      native-server/server.h \
