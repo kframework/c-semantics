@@ -272,7 +272,7 @@ module LINKING-INIT
      rule [[ nameOfCurrentTranslationUnit() => Tu ]]
           <curr-tu> Tu::String </curr-tu>
 
-     context alias [c]: HERE
+     context alias [c]: HERE:K
 
      rule [[ currentTranslationScope() => S ]]
           <curr-scope> S::Scope </curr-scope>

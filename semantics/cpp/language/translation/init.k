@@ -19,8 +19,8 @@ module CPP-TRANSLATION-INIT
 
      rule isKResult(le(_, _, T::CPPType) #Or xe(_, _, T::CPPType) #Or pre(_, _, T::CPPType)) => notBool isCPPRefType(T)
 
-     context alias [c]: <k> HERE ...</k> <compile-time-evaluation> false </compile-time-evaluation>
-     context alias [c]: <k> HERE ...</k> <compile-time-evaluation> true </compile-time-evaluation> [result(ExecResult)]
+     context alias [c]: <k> HERE:K ...</k> <compile-time-evaluation> false </compile-time-evaluation>
+     context alias [c]: <k> HERE:K ...</k> <compile-time-evaluation> true </compile-time-evaluation> [result(ExecResult)]
 
      rule <k> TranslationUnit(Tu::String, Decls::List)
                => makeTu(Tu +String Uuid)

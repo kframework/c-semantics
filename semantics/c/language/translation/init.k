@@ -63,7 +63,7 @@ module C-TRANSLATION-INIT
      rule [[ nameOfCurrentTranslationUnit() => Tu ]]
           <curr-tu> Tu::String </curr-tu>
 
-     context alias [c]: HERE
+     context alias [c]: HERE:K
 
      rule (<T>...
                <k> cleanup </k>
