@@ -870,13 +870,13 @@ statement:
 |   TRY block EXCEPT paren_comma_expression block
                         { let b, _, _ = $2 in
                           let h, _, _ = $5 in
-                          if not !Cprint.msvcMode then
+                          if not !Cabshelper.msvcMode then
                             parse_error "try/except in GCC code";
                           TRY_EXCEPT (b, COMMA (fst $4), h, (*handleLoc*) $1) }
 |   TRY block FINALLY block
                         { let b, _, _ = $2 in
                           let h, _, _ = $4 in
-                          if not !Cprint.msvcMode then
+                          if not !Cabshelper.msvcMode then
                             parse_error "try/finally in GCC code";
                           TRY_FINALLY (b, h, (*handleLoc*) $1) }
 

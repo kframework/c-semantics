@@ -273,10 +273,10 @@ let scan_escape (char: char) : int64 =
   | '\'' -> '\''    
   | '"'-> '"'     (* '"' *)
   | '?' -> '?'
-  | '(' when not !Cprint.msvcMode -> '('
-  | '{' when not !Cprint.msvcMode -> '{'
-  | '[' when not !Cprint.msvcMode -> '['
-  | '%' when not !Cprint.msvcMode -> '%'
+  | '(' when not !Cabshelper.msvcMode -> '('
+  | '{' when not !Cabshelper.msvcMode -> '{'
+  | '[' when not !Cabshelper.msvcMode -> '['
+  | '%' when not !Cabshelper.msvcMode -> '%'
   | '\\' -> '\\' 
   | other -> error ("Unrecognized escape sequence: \\" ^ (String.make 1 other))
   in
@@ -532,10 +532,10 @@ rule initial =
 |		','				{COMMA}
 |		'.'				{DOT}
 |		"sizeof"		{SIZEOF (currentLoc ())}
-|               "__asm"                 { if !Cprint.msvcMode then 
+|               "__asm"                 { if !Cabshelper.msvcMode then 
                                              MSASM (msasm lexbuf, currentLoc ()) 
                                           else (ASM (currentLoc ())) }
-|               "__asm__"                 { if !Cprint.msvcMode then 
+|               "__asm__"                 { if !Cabshelper.msvcMode then 
                                              MSASM (msasm lexbuf, currentLoc ()) 
                                           else (ASM (currentLoc ())) }
 |		"__ltl"			{LTL}
