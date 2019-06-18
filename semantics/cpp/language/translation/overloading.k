@@ -641,7 +641,7 @@ module CPP-TRANSLATION-OVERLOADING
 
      syntax KItem ::= computeBestViable(TypeMap, List, List, OverloadType)
                     | #computeBestViable(CPPType, K, List, List, List, OverloadType, List)
-                    | checkIsBest(CPPType, K, List, List, OverloadType, List) [function]
+                    | checkIsBest(CPPType, K, List, List, OverloadType, List)
                     | bestViable(CPPType, K)
                     | "noBestViable"
 
@@ -712,7 +712,7 @@ module CPP-TRANSLATION-OVERLOADING
           => bestViable(T, K)
 
      syntax KItem ::= isBetterFunctionThan(CPPType, K, CPPType, K, List, List, OverloadType)
-                      #isBetterFunctionThan(KItem, KItem, CPPType, K, CPPType, K, List, List, OverloadType) [strict(1,2)]
+                    | #isBetterFunctionThan(KItem, KItem, CPPType, K, CPPType, K, List, List, OverloadType) [strict(1,2)]
 
      rule isBetterFunctionThan(F1::CPPType, K1:K, F2::CPPType, K2:K, Types::List, Cats::List, NotConversionOverload())
           => #isBetterFunctionThan(
@@ -724,6 +724,8 @@ module CPP-TRANSLATION-OVERLOADING
 
      // TODO(dwightguth): n4296 13.3.3:1.4,1.5,1.7
      rule #isBetterFunctionThan(
+               HasWorseCS::Bool,
+               HasBetterCS::Bool,
                F1::CPPType,
                K1:K,
                F2::CPPType,
@@ -734,14 +736,19 @@ module CPP-TRANSLATION-OVERLOADING
           )
           => notBool HasWorseCS andBool (HasBetterCS orBool (notBool isTemplateSpecialization(K1) andBool isTemplateSpecialization(K2)))
 
+     syntax KItem ::= KItem "orB" KItem [strict(1)]
+                    | KItem "andB" KItem [strict(1)]
 
-     syntax Bool ::= hasWorseConversionSequenceThan(CPPType, CPPType, List, List) [function]
-                   | hasBetterConversionSequenceThan(CPPType, CPPType, List, List) [function]
-                   | #hasWorseCSThan(List, List) [function]
-                   | #hasBetterCSThan(List, List) [function]
+     rule (true orB _) => true
+     rule (false orB K::KItem) => K
+     rule (false andB _) => false
+     rule (true andB K::KItem) => K
 
-     syntax List ::= getConversionSequences(CPPType, List, List) [function]
-                   | #getConversionSequences(List, List, List, isNonStaticRefNone: Bool, isStatic: Bool) [function]
+     syntax KItem ::= hasWorseConversionSequenceThan(CPPType, CPPType, List, List)
+                   | hasBetterConversionSequenceThan(CPPType, CPPType, List, List)
+                   | #hasWorseCSThan(List, List)
+                   | #hasBetterCSThan(List, List)
+
 
      rule hasWorseConversionSequenceThan(F1::CPPType, F2::CPPType, Types::List, Cats::List)
           => #hasWorseCSThan(getConversionSequences(F1, Types, Cats), getConversionSequences(F2, Types, Cats))
@@ -750,11 +757,11 @@ module CPP-TRANSLATION-OVERLOADING
           => #hasBetterCSThan(getConversionSequences(F1, Types, Cats), getConversionSequences(F2, Types, Cats))
 
      rule #hasWorseCSThan(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
-          => C2 >CS C1 orBool #hasWorseCSThan(L1, L2)
+          => C2 >CS C1 orB #hasWorseCSThan(L1, L2)
           requires C1 =/=K bottomConversionSequence andBool C2 =/=K bottomConversionSequence
 
      rule #hasBetterCSThan(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
-          => C1 >CS C2 orBool #hasBetterCSThan(L1, L2)
+          => C1 >CS C2 orB #hasBetterCSThan(L1, L2)
           requires C1 =/=K bottomConversionSequence andBool C2 =/=K bottomConversionSequence
 
      rule #hasBetterCSThan(ListItem(bottomConversionSequence) L1::List, ListItem(_) L2::List)
@@ -773,22 +780,62 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule #hasWorseCSThan(.List, .List) => false
 
+     syntax List ::= getConversionSequences(CPPType, List, List)
+                   | #getConversionSequences(List, List, List, isNonStaticRefNone: Bool, isStatic: Bool, result: List)
+
      rule getConversionSequences(T::CPPType, Types::List, Cats::List)
-          => #getConversionSequences(getParams(T), Types, Cats, isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone(), isMethodStatic(T))
+          =>
+          #getConversionSequences(
+               getParams(T),
+               Types,
+               Cats,
+               isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone(),
+               isMethodStatic(T),
+               .List
+          )
 
-     rule #getConversionSequences(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, B1::Bool, B2::Bool)
-          => ListItem(computeConversionSequence(P, A, C, false, false, true)) #getConversionSequences(Ps, As, Cs, B1, B2)
+     rule (.K => computeConversionSequence(P, A, C, false, false, true))
+          ~> #getConversionSequences(
+               (ListItem(P:CPPType) => .List) _,
+               (ListItem(A::CPPType) => .List) _,
+               (ListItem(C::ValueCategory) => .List) _,
+               B1::Bool,
+               B2::Bool,
+               _
+          )
 
-     rule #getConversionSequences(ListItem(implicitObjectParameter(P:CPPType)) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, IsNonStaticRefNone::Bool, false)
-          => ListItem(computeConversionSequence(P, A, C, IsNonStaticRefNone, true, true)) #getConversionSequences(Ps, As, Cs, IsNonStaticRefNone, false)
+     rule (.K => computeConversionSequence(P, A, C, IsNonStaticRefNone, true, true))
+          ~> #getConversionSequences(
+               (ListItem(implicitObjectParameter(P:CPPType)) => .List) _,
+               (ListItem(A::CPPType) => .List) _,
+               (ListItem(C::ValueCategory) => .List) _,
+               IsNonStaticRefNone::Bool,
+               false,
+               _
+          )
 
-     rule #getConversionSequences(ListItem(implicitObjectParameter(_)) Ps::List, ListItem(_) As::List, ListItem(_) Cs::List, IsNonStaticRefNone::Bool, true)
-          => ListItem(bottomConversionSequence) #getConversionSequences(Ps, As, Cs, IsNonStaticRefNone, true)
+     rule (CS:ConversionSequence => .K)
+          ~> #getConversionSequences(... result: (.List => ListItem(CS)) _)
 
-     rule #getConversionSequences(ListItem(variadic), ListItem(_) As::List, ListItem(_) Cs::List, B1::Bool, B2::Bool)
-          => ListItem(ellipsisConversionSequence) #getConversionSequences(ListItem(variadic), As, Cs, B1, B2)
+     rule #getConversionSequences(
+               ListItem(implicitObjectParameter(_)) Ps::List,
+               ListItem(_) As::List,
+               ListItem(_) Cs::List,
+               IsNonStaticRefNone::Bool,
+               true,
+               (.List => ListItem(bottomConversionSequence)) _
+          )
 
-     rule #getConversionSequences(_, .List, .List, _, _) => .List
+     rule #getConversionSequences(
+               ListItem(variadic),
+               (ListItem(_) => .List) As::List,
+               (ListItem(_) => .List) Cs::List,
+               B1::Bool,
+               B2::Bool,
+               (.List => ListItem(ellipsisConversionSequence)) _
+          )
+
+     rule #getConversionSequences(_, .List, .List, _, _, Result::List) => Result
 
      syntax Bool ::= ConversionSequence ">CS" ConversionSequence [function]
                    | Conversion ">Conv" Conversion [function]
