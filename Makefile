@@ -241,29 +241,19 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 
 .PHONY: $(PROFILE)-native
 $(PROFILE)-native: $(PROFILE_OUTPUT_DIR)/native/main.o \
-                   $(PROFILE_OUTPUT_DIR)/native/server.c \
                    $(PROFILE_OUTPUT_DIR)/native/builtins.o \
-                   $(PROFILE_OUTPUT_DIR)/native/platform.o \
-                   $(PROFILE_OUTPUT_DIR)/native/platform.h \
-                   $(PROFILE_OUTPUT_DIR)/native/server.h
+                   $(PROFILE_OUTPUT_DIR)/native/platform.o
 
 $(PROFILE_OUTPUT_DIR)/native/main.o: native-server/main.c \
                                      native-server/server.h \
                                      | $(PROFILE_OUTPUT_DIR)/native
-	$(CC) $(CFLAGS) -c $< -o $@  -g
+	$(CC) $(CFLAGS) -c $< -o $@ -I $(ROOT)/native-server
 
-$(PROFILE_OUTPUT_DIR)/native/%.h: native-server/%.h \
-                                  | $(PROFILE_OUTPUT_DIR)/native
-	cp -RLp $< $@
-
-$(PROFILE_OUTPUT_DIR)/native/server.c: native-server/server.c \
-                                       | $(PROFILE_OUTPUT_DIR)/native
-	cp -RLp $< $@
 
 $(PROFILE_OUTPUT_DIR)/native/%.o: $(PROFILE_DIR)/native/%.c \
-                                  $(wildcard native-server/*.h) \
+                                  $(wildcard $(ROOT)/native-server/*.h) \
                                   | $(PROFILE_OUTPUT_DIR)/native
-	$(CC) $(CFLAGS) -c $< -o $@ -I native-server
+	$(CC) $(CFLAGS) -c $< -o $@ -I $(ROOT)/native-server
 
 
 .PHONY: test-build
