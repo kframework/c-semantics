@@ -764,11 +764,11 @@ module CPP-TRANSLATION-OVERLOADING
           => #hasBetterCSThan2(L1, L2)
 
      rule #hasWorseCSThan2(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
-          => C2 >CS C1 orB #hasWorseCSThan(L1, L2)
+          => C2 >CS C1 orB #hasWorseCSThan2(L1, L2)
           requires C1 =/=K bottomConversionSequence andBool C2 =/=K bottomConversionSequence
 
      rule #hasBetterCSThan2(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
-          => C1 >CS C2 orB #hasBetterCSThan(L1, L2)
+          => C1 >CS C2 orB #hasBetterCSThan2(L1, L2)
           requires C1 =/=K bottomConversionSequence andBool C2 =/=K bottomConversionSequence
 
      rule #hasBetterCSThan2(ListItem(bottomConversionSequence) L1::List, ListItem(_) L2::List)
