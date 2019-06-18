@@ -724,8 +724,8 @@ module CPP-TRANSLATION-OVERLOADING
 
      // TODO(dwightguth): n4296 13.3.3:1.4,1.5,1.7
      rule #isBetterFunctionThan(
-               HasWorseCS::Bool,
-               HasBetterCS::Bool,
+               HasWorseCS:Bool,
+               HasBetterCS:Bool,
                F1::CPPType,
                K1:K,
                F2::CPPType,
@@ -746,9 +746,10 @@ module CPP-TRANSLATION-OVERLOADING
 
      syntax KItem ::= hasWorseConversionSequenceThan(CPPType, CPPType, List, List)
                    | hasBetterConversionSequenceThan(CPPType, CPPType, List, List)
-                   | #hasWorseCSThan(List, List)
-                   | #hasBetterCSThan(List, List)
-
+                   | #hasWorseCSThan(KItem, KItem) [strict]
+                   | #hasBetterCSThan(KItem, KItem) [strict]
+                   | #hasWorseCSThan2(List, List)
+                   | #hasBetterCSThan2(List, List)
 
      rule hasWorseConversionSequenceThan(F1::CPPType, F2::CPPType, Types::List, Cats::List)
           => #hasWorseCSThan(getConversionSequences(F1, Types, Cats), getConversionSequences(F2, Types, Cats))
@@ -756,31 +757,37 @@ module CPP-TRANSLATION-OVERLOADING
      rule hasBetterConversionSequenceThan(F1::CPPType, F2::CPPType, Types::List, Cats::List)
           => #hasBetterCSThan(getConversionSequences(F1, Types, Cats), getConversionSequences(F2, Types, Cats))
 
-     rule #hasWorseCSThan(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
+     rule #hasWorseCSThan(krlist(L1::List), krlist(L2::List))
+          => #hasWorseCSThan2(L1, L2)
+
+     rule #hasBetterCSThan(krlist(L1::List), krlist(L2::List))
+          => #hasBetterCSThan2(L1, L2)
+
+     rule #hasWorseCSThan2(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
           => C2 >CS C1 orB #hasWorseCSThan(L1, L2)
           requires C1 =/=K bottomConversionSequence andBool C2 =/=K bottomConversionSequence
 
-     rule #hasBetterCSThan(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
+     rule #hasBetterCSThan2(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
           => C1 >CS C2 orB #hasBetterCSThan(L1, L2)
           requires C1 =/=K bottomConversionSequence andBool C2 =/=K bottomConversionSequence
 
-     rule #hasBetterCSThan(ListItem(bottomConversionSequence) L1::List, ListItem(_) L2::List)
-          => #hasBetterCSThan(L1, L2)
+     rule #hasBetterCSThan2(ListItem(bottomConversionSequence) L1::List, ListItem(_) L2::List)
+          => #hasBetterCSThan2(L1, L2)
 
-     rule #hasWorseCSThan(ListItem(bottomConversionSequence) L1::List, ListItem(_) L2::List)
-          => #hasWorseCSThan(L1, L2)
+     rule #hasWorseCSThan2(ListItem(bottomConversionSequence) L1::List, ListItem(_) L2::List)
+          => #hasWorseCSThan2(L1, L2)
 
-     rule #hasBetterCSThan(ListItem(_) L1::List, ListItem(bottomConversionSequence) L2::List)
-          => #hasBetterCSThan(L1, L2)
+     rule #hasBetterCSThan2(ListItem(_) L1::List, ListItem(bottomConversionSequence) L2::List)
+          => #hasBetterCSThan2(L1, L2)
 
-     rule #hasWorseCSThan(ListItem(_) L1::List, ListItem(bottomConversionSequence) L2::List)
-          => #hasWorseCSThan(L1, L2)
+     rule #hasWorseCSThan2(ListItem(_) L1::List, ListItem(bottomConversionSequence) L2::List)
+          => #hasWorseCSThan2(L1, L2)
 
-     rule #hasBetterCSThan(.List, .List) => false
+     rule #hasBetterCSThan2(.List, .List) => false
 
-     rule #hasWorseCSThan(.List, .List) => false
+     rule #hasWorseCSThan2(.List, .List) => false
 
-     syntax List ::= getConversionSequences(CPPType, List, List)
+     syntax KItem ::= getConversionSequences(CPPType, List, List)
                    | #getConversionSequences(List, List, List, isNonStaticRefNone: Bool, isStatic: Bool, result: List)
 
      rule getConversionSequences(T::CPPType, Types::List, Cats::List)
@@ -835,7 +842,7 @@ module CPP-TRANSLATION-OVERLOADING
                (.List => ListItem(ellipsisConversionSequence)) _
           )
 
-     rule #getConversionSequences(_, .List, .List, _, _, Result::List) => Result
+     rule #getConversionSequences(_, .List, .List, _, _, Result::List) => krlist(Result)
 
      syntax Bool ::= ConversionSequence ">CS" ConversionSequence [function]
                    | Conversion ">Conv" Conversion [function]
