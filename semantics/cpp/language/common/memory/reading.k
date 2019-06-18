@@ -27,7 +27,7 @@ module CPP-MEMORY-READING
      rule read(Loc::SymLoc, Tr::Trace, T::CPPType)
           => concretize(readBytes(stripProv(Loc), byteSizeofType(T), T), Loc, Tr, utype(T))
 
-     syntax Expr ::= concretize(K, SymLoc, Trace, CPPType) [klabel(concretizeCpp), strict(1)]
+     syntax Expr ::= concretize(KItem, SymLoc, Trace, CPPType) [klabel(concretizeCpp), strict(1)]
 
      rule concretize(dataList(L::List), _, Tr::Trace, T::CPPType)
           => interpret(prv(joinBytes(L), Tr, prvalType(T)))

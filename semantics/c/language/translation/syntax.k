@@ -294,7 +294,7 @@ module C-ABSTRACT-SYNTAX
      context Cast(_, _, (HOLE:KItem => reval(HOLE))) [result(RValue)]
 
      // new // comp-lit id, spec, decl, init
-     syntax KItem ::= CompoundLiteral(Int, K, KItem, KItem) [strict(2), symbol]
+     syntax KItem ::= CompoundLiteral(Int, KItem, KItem, KItem) [strict(2), symbol]
      /*
      | COMMA of expression list
      */

@@ -443,7 +443,7 @@ module C-DECL-GLOBAL
      // differ in the case of declarations without initializers. A naked
      // declaration without an initializer constitutes a tentative definition,
      // but an extern declaration without an initializer does not.
-     syntax KItem ::= "declareExternalVariable'" "(" Bool "," K "," DeclState "," Linkage "," StorageClassSpecifier ")"
+     syntax KItem ::= "declareExternalVariable'" "(" Bool "," KItem "," DeclState "," Linkage "," StorageClassSpecifier ")"
           [strict(2)]
 
      // *** Incomplete ***

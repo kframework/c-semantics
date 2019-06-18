@@ -72,7 +72,7 @@ module C-COMMON-EXPR-EVAL
      rule lv(NullPointer, T::Type) => nclv(NullPointer, T)
           [structural]
 
-     syntax KItem ::= lvalConvert(SymLoc, Type, K) [strict(3)]
+     syntax KItem ::= lvalConvert(SymLoc, Type, KItem) [strict(3)]
      rule <k> lvalConvert(Loc::SymLoc, T::Type, LAT:EffectiveType)
                => checkEffectiveType(T, bitOffset(Loc), LAT)
                // The new last access type becomes a composite of the current

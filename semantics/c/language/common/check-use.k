@@ -2,7 +2,7 @@ module C-CHECK-USE-SYNTAX
      imports BASIC-K
      imports SYMLOC-SORTS
 
-     syntax KItem ::= checkUse(K) [strict]
+     syntax KItem ::= checkUse(KItem) [strict]
      syntax KItem ::= checkLoc(SymLoc)
 
 endmodule

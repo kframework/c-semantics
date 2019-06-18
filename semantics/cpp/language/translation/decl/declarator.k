@@ -11,7 +11,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      syntax Decl ::= DeclaratorAndSpecifiers(Declarator, Set)
                     | declareObject(NNSVal, NNSVal, CId, CId, CPPType, Init, DeclarationType, Linkage, Duration, Set)
                     | defineObject(NNSVal, CId, CId, CPPType, Init, DeclarationType, Set)
-                    | initializeObject(NNSVal, CId, CPPType, init: K, DeclarationType) [strict(c; 4)]
+                    | initializeObject(NNSVal, CId, CPPType, init: KItem, DeclarationType) [strict(c; 4)]
 
      syntax Declarator ::= NormalizedDecl(nns: NNS, id: CId, mangled: CId, type: AType, init: Init, dtype: DeclarationType)
 
@@ -552,7 +552,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule allocateDecl(Q::QualId, CName::CId, T::CPPType, S::Set)
           => allocateDecl2(Q, CName, T, S, findLinkBase(Q, T))
 
-     syntax Expr ::= allocateDecl2(QualId, CId, CPPType, Set, linkBase: K) [strict(5)]
+     syntax Expr ::= allocateDecl2(QualId, CId, CPPType, Set, linkBase: KItem) [strict(5)]
 
      syntax KItem ::= findLinkBase(QualId, CPPType)
 

@@ -254,7 +254,7 @@ module C-COMMON-EXPR-BITWISE
      rule bitwiseInterpret(signedIntegerUType #as T::UType, N::Int, false)
           => bitwiseInterpret(intArithInterpret(T, N))
 
-     syntax KItem ::= bitwiseInterpret(K) [strict]
+     syntax KItem ::= bitwiseInterpret(KItem) [strict]
      rule bitwiseInterpret(tv(N:Int, T::UType)) => tv(N, T)
           requires notBool isNegZero(N, T)
      rule bitwiseInterpret(tv(N::CValue, T::UType)) => tv(N, T)

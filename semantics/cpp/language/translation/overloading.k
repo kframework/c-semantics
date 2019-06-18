@@ -12,8 +12,8 @@ module CPP-TRANSLATION-OVERLOADING-SYNTAX
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, Expr)
                    | resolveConversionOverload(CandidateSet, StrictList, Expr, CPPType)
                    | resolveRefConversionOverload(CandidateSet, StrictList, Expr, CPPType)
-                   | resolveUniqueDecl(K, Expr, Bool) [strict(1)]
-                   | cSetUnion(K, K) [strict]
+                   | resolveUniqueDecl(KItem, Expr, Bool) [strict(1)]
+                   | cSetUnion(KItem, KItem) [strict]
                    | checkAccess(Expr)
 
      // not a real expression, but getArgs understands it.

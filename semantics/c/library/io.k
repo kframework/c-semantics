@@ -22,15 +22,15 @@ module LIBC-IO-SYNTAX
      syntax FauxFD ::= FD | String
 
      // getString returns the string without the null terminator
-     syntax KItem ::= getString(K) [strict]
-                    | getWString(K) [strict]
-                    | getBytes(K, Int) [strict(1)]
+     syntax KItem ::= getString(KItem) [strict]
+                    | getWString(KItem) [strict]
+                    | getBytes(KItem, Int) [strict(1)]
      syntax KItem ::= "getString'" "(" SymLoc ")" [function]
                     | "getString'" "(" SymLoc "," Int ")" [function]
                     | "getWString'" "(" SymLoc ")" [function]
                     | "getWString'" "(" SymLoc "," K ")" [function]
 
-     syntax KItem ::= newFixedObject(K) [strict]
+     syntax KItem ::= newFixedObject(KItem) [strict]
 
      syntax RValue ::= str(String)
 
@@ -462,7 +462,7 @@ module LIBC-IO
           requires isNull(V)
           [structural]
 
-     syntax KItem ::= "newFixedObject'" "(" K "," Type ")" [strict(1)]
+     syntax KItem ::= "newFixedObject'" "(" KItem "," Type ")" [strict(1)]
      rule newFixedObject'(dataList(Bytes::List), T::Type)
           => newFixedBytes(bnew(!_:Int, T, libcFixed), Bytes, T)
           [structural]

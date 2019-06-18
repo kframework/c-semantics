@@ -28,8 +28,8 @@ module C-STMT-EXPR
           <elab>... .K => Initializer(lv(Loc, T) := checkUse(tv(V, T'))) </elab>
           requires isLinkerLoc(Loc)
                andBool (utype(T) ==Type T')
-     rule <k> Initializer(ncle(L:K, T::Type) := R:RValue) => .K ...</k>
-          <elab>... .K => Initializer(L := stripHold(R)) </elab>
+     rule <k> Initializer(ncle(L:KItem, T::Type) := R:RValue) => .K ...</k>
+          <elab>... .K => Initializer(L := {stripHold(R)}:>KItem) </elab>
           requires utype(T) ==Type utype(R)
      rule Initializer(ncle(_, (t(_, _, auto-type) => type(V))) := V:RValue)
      rule (.K => CV("TSE1", "Incompatible types in initializer or function call arguments."))
@@ -76,7 +76,7 @@ module C-STMT-EXPR
           <mem> Mem::Map </mem>
           requires isLinkerLoc(Loc)
                orBool notBool (base(Loc) in_keys(Mem))
-     rule <k> Zero(ncle(L:K, T::Type)) => .K ...</k>
+     rule <k> Zero(ncle(L:KItem, T::Type)) => .K ...</k>
           <elab>... .K => Zero(L) </elab>
 
      rule <k> InitPadding(nclv(Loc::SymLoc, T::Type), F::CId)
@@ -90,6 +90,6 @@ module C-STMT-EXPR
           <mem> Mem::Map </mem>
           requires isLinkerLoc(Loc)
                orBool notBool (base(Loc) in_keys(Mem))
-     rule <k> InitPadding(ncle(L:K, T::Type), F::CId) => .K ...</k>
+     rule <k> InitPadding(ncle(L:KItem, T::Type), F::CId) => .K ...</k>
           <elab>... .K => InitPadding(L, F) </elab>
 endmodule

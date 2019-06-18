@@ -27,7 +27,7 @@ module CPP-TRANSLATION-EXPR-CONDITIONAL
      rule ConditionalOperator((V:PRVal => convertType(type(bool), V)), _, _)
           requires notBool isCPPBoolType(type(V))
 
-     syntax Expr ::= makeCondOp(PRVal, Expr, Expr, K) [strict(4)]
+     syntax Expr ::= makeCondOp(PRVal, Expr, Expr, KItem) [strict(4)]
 
      rule ConditionalOperator(V1:PRVal, E2::Expr, E3::Expr) => makeCondOp(V1, E2, E3, typeAndCatOfConditional(E2, E3))
           requires isCPPBoolType(type(V1))

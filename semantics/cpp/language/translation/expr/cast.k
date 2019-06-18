@@ -73,7 +73,7 @@ module CPP-TRANSLATION-EXPR-CAST
      rule StaticCast(T:CPPType, V:Val)
           => convertStatic(T, V, hasTrace(StaticCast(T, V)))
 
-     syntax Expr ::= tryInit(CPPType, Val, K) [strict(c; 3)]
+     syntax Expr ::= tryInit(CPPType, Val, KItem) [strict(c; 3)]
 
      // this is needed to be able to treat certain expressions as constant expressions.
      // it should be safe since the side condition guarantees that the initialization

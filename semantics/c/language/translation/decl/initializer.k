@@ -6,7 +6,7 @@ module C-DECL-INITIALIZER-SYNTAX
      syntax KResult ::= initializer(K)
 
      // CId, type, initializer.
-     syntax KItem ::= figureInit(CId, K, K) [strict(2)]
+     syntax KItem ::= figureInit(CId, KItem, K) [strict(2)]
 
      syntax Bool ::= isAutoType(Type) [function]
 
@@ -131,7 +131,7 @@ module C-DECL-INITIALIZER
      rule isCompoundStringInit(_) => false [owise]
 
      // id, type, initializer
-     syntax KItem ::= "figureInit-aux" "(" CId "," Type "," K ")" [strict(3)]
+     syntax KItem ::= "figureInit-aux" "(" CId "," Type "," KItem ")" [strict(3)]
      rule <k> figureInit-aux(_:CId, t(_, _,
                     (incompleteArrayType(T:Type)
                     => arrayType(T, N))), initializer(_))
@@ -139,7 +139,7 @@ module C-DECL-INITIALIZER
           <incomplete-length> N:Int </incomplete-length>
           [structural]
      rule (.K => typeof(Expr)) ~> figureInit-aux(_:CId, t(_, _, auto-type),
-               initializer(Initializer(_ := Expr:K)))
+               initializer(Initializer(_ := Expr:KItem)))
           [structural]
      rule (typeof(T:Type) => .K) ~> figureInit-aux(_:CId, t(_, _, auto-type) => T, _)
           [structural]
@@ -437,7 +437,7 @@ module C-DECL-INITIALIZER
 
      rule <k> T':Type ~> initializeSingleInit(K':KResult) => .K ...</k>
           <curr-subobject>
-               (.List => ListItem(next)) ListItem(ncle(K:K, T::Type))
+               (.List => ListItem(next)) ListItem(ncle(K:KItem, T::Type))
           ...</curr-subobject>
           <incomplete-length>
                N::Int => maxInt(N, getTopArrayUse(K))
@@ -481,11 +481,11 @@ module C-DECL-INITIALIZER
           [structural]
 
      // fixme unsafe, might have started to initialize other things
-     rule <k> initFromStructRHS(K':K, t(_, _, structType(S::TagId))) => .K ...</k>
+     rule <k> initFromStructRHS(K':KItem, t(_, _, structType(S::TagId))) => .K ...</k>
           <curr-subobject>
                (ListItem(findStruct(t(_, _, structType(S::TagId))))
                => ListItem(next))
-               ListItem(ncle(K:K, t(_, _, structType(S::TagId))))
+               ListItem(ncle(K:KItem, t(_, _, structType(S::TagId))))
           ...</curr-subobject>
           <incomplete-length>
                N:Int => maxInt(N, getTopArrayUse(K))

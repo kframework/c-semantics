@@ -65,7 +65,7 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
                krlist(ListItem(Arg1) Args))
 
      syntax Expr ::= virtualCall(CPPType, Expr, StrictList) [strict(c; 2)]
-                   | computeFinalOverrider(QualId, CPPType, K) [strict(3)]
+                   | computeFinalOverrider(QualId, CPPType, KItem) [strict(3)]
                    | #computeFinalOverrider(QualId, CPPType, CPPValue)
                    | getOverrides(Class, CId, CPPType, candidates: List)
 

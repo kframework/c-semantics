@@ -430,7 +430,7 @@ and expression =
     | CAST ((spec, declType), initExp)                           -> fun sort -> (new_counter >>= fun id -> match initExp with
         | NO_INIT         -> kapply1 KItem "Error" (puts "cast with a NO_INIT inside doesn't make sense") sort
         | SINGLE_INIT exp -> kapply KItem "Cast" [specifier spec K; decl_type declType KItem; expression exp K] sort
-        | COMPOUND_INIT a -> kapply KItem "CompoundLiteral" [ktoken_int id; specifier spec K; decl_type declType KItem; kapply_us "CompoundInit" [list_of init_fragment a KItem]] sort)
+        | COMPOUND_INIT a -> kapply KItem "CompoundLiteral" [ktoken_int id; specifier spec KItem; decl_type declType KItem; kapply_us "CompoundInit" [list_of init_fragment a KItem]] sort)
     | CALL (exp1, expList)                                       -> kapply KItem "Call" [expression exp1 K; list_of expression expList K]
     | COMMA expList                                              -> kapply KItem "Comma" [list_of expression expList KItem]
     | CONSTANT (const)                                           -> kapply KItem "Constant" [constant const KItem]

@@ -128,7 +128,7 @@ module C-DECL-TAGGED
      // doesn't matter.
      rule asInt(_) => 0 [owise]
 
-     syntax KItem ::= initEnum(CId, K) [strict(2)]
+     syntax KItem ::= initEnum(CId, KItem) [strict(2)]
      rule initEnum(X:CId, tv(Value:Int, integerUType #as T::UType)) => addEnum(X, Value)
           requires IntegerConstant in getModifiers(T)
                andBool intInRange(Value, ut(.Set, int))

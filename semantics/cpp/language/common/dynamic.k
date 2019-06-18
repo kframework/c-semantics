@@ -715,7 +715,7 @@ module CPP-DYNAMIC-OTHER
      rule <k> HOLE:SSList ~> seqstrict() => seqstrict(krlist(ofSSList(HOLE))) ...</k>
           <compile-time-evaluation> true </compile-time-evaluation> [cool, result(ExecResult)]
 
-     syntax SSList ::= K "seqstrict::" SSList [seqstrict(c)]
+     syntax SSList ::= KItem "seqstrict::" SSList [seqstrict(c)]
                      | ".SSList"
      rule isKResult(.SSList) => true
      rule isKResult(S1::SSList seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
@@ -734,7 +734,7 @@ module CPP-DYNAMIC-OTHER
      rule <k> HOLE:SList ~> strict() => krlist(ofSList(HOLE)) ...</k>
           <compile-time-evaluation> true </compile-time-evaluation> [cool, result(ExecResult)]
 
-     syntax SList ::= K "strict::" SList [strict(c)]
+     syntax SList ::= KItem "strict::" SList [strict(c)]
                     | ".SList"
      rule isKResult(.SList) => true
      rule isKResult(S1::SList strict:: S2::SList) => isKResult(S1) andBool isKResult(S2)

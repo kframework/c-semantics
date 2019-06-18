@@ -409,7 +409,7 @@ module LIBC-STDIO
           requires isNull(Filename)
           [structural]
 
-     syntax KItem ::= fopen(SymBase, K, K) [strict(2,3)]
+     syntax KItem ::= fopen(SymBase, KItem, KItem) [strict(2,3)]
      rule fopen(Base::SymBase, str(Filename::String), str(Mode::String))
           => fopen'(Base, Filename, Mode, #open(Filename, Mode))
           requires isReadable(Mode) orBool isWritable(Mode) orBool isReadWritable(Mode)
@@ -546,7 +546,7 @@ module LIBC-STDIO
                orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
-     syntax KItem ::= "fread'" "(" SymLoc "," Int "," K ")" [strict(3)]
+     syntax KItem ::= "fread'" "(" SymLoc "," Int "," KItem ")" [strict(3)]
      rule fread'(Loc:SymLoc, Size::Int, str(Read::String))
           => writeChars(Loc, Read)
           ~> trapBuf(Loc +bytes lengthString(Read), Size -Int (lengthString(Read) %Int Size))
@@ -649,7 +649,7 @@ module LIBC-STDIO
           => fwrite(getBytes(Ptr, Size *Int NMemb), Size, (* FDPtr))
           [structural]
 
-     syntax KItem ::= fprintf(K, K) [strict(2)]
+     syntax KItem ::= fprintf(K, KItem) [strict(2)]
      context fprintf(HOLE:KItem => reval(HOLE), _) [result(RValue)]
      rule <k> fprintf(tv(opaque(FD:Int, _), _), formattedResult(S:String))
                => writeFD(FD, S)
@@ -673,7 +673,7 @@ module LIBC-STDIO
                orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
-     syntax KItem ::= fwrite(K, Int, K) [strict(1)]
+     syntax KItem ::= fwrite(KItem, Int, K) [strict(1)]
      context fwrite(_, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
      rule <k> fwrite(str(S::String), Size::Int, tv(opaque(FD:Int, _), _))
                => writeFD(FD, S)
@@ -750,7 +750,7 @@ module LIBC-STDIO
           => sprintf(formatter(getString(Format), VarArgs), Dest)
           [structural]
 
-     syntax KItem ::= sprintf(K, K) [strict(1)]
+     syntax KItem ::= sprintf(KItem, K) [strict(1)]
      context sprintf(_, HOLE:KItem => reval(HOLE)) [result(RValue)]
      rule sprintf(formattedResult(S:String), tv(Dest::SymLoc, _))
           => writeString(Dest, S)
@@ -761,7 +761,7 @@ module LIBC-STDIO
           => asprintf(formatter(getString(Format), VarArgs), Dest)
           [structural]
 
-     syntax KItem ::= asprintf(K, RValue) [strict(1)]
+     syntax KItem ::= asprintf(KItem, RValue) [strict(1)]
      rule asprintf(formattedResult(S:String), Dest::RValue)
           => Computation((* Dest) := alignedAlloc(1, lengthString(S) +Int 1))
           ~> sprintf(formattedResult(S), (* Dest))
@@ -807,7 +807,7 @@ module LIBC-STDIO
           requires isKResult(H)
           [structural]
 
-     syntax KItem ::= snprintf(K, SymLoc, Int) [strict(1)]
+     syntax KItem ::= snprintf(KItem, SymLoc, Int) [strict(1)]
      rule [snprintf]:
           builtin*("snprintf", tv(Dest:SymLoc, _), tv(Len:Int, _), Format::RValue, VarArgs:List)
           => snprintf(formatter(getString(Format), VarArgs), Dest, Len)
@@ -893,7 +893,7 @@ module LIBC-STDIO
           requires isKResult(H)
           [structural]
 
-     syntax KItem ::= fscanf(K, K, List) [strict(2)]
+     syntax KItem ::= fscanf(K, KItem, List) [strict(2)]
      context fscanf(HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
      rule <k> fscanf(tv(opaque(FD:Int, _), _), str(S::String), VarArgs::List)
                => fscanf'(FD, VarArgs, parseFormat(stringToList(S)), 0, "", 0)
@@ -1685,7 +1685,7 @@ module LIBC-STDIO
           requires ordChar(C) >Int ordChar(End)
      rule expandRanges'(C::String, .List) => C
 
-     syntax KItem ::= formatter(K, List) [strict(1)]
+     syntax KItem ::= formatter(KItem, List) [strict(1)]
      rule [format-start]:
           <k> formatter(str(S::String), VarArgs::List)
                => formatter'(VarArgs)
@@ -2422,26 +2422,26 @@ module LIBC-STDIO
           requires W =/=String "*"
           [structural]
 
-     syntax KItem ::= "formatter-arg" "(" K "," List ")" [strict(1)]
+     syntax KItem ::= "formatter-arg" "(" KItem "," List ")" [strict(1)]
      rule <k> formatter-arg(tv(V::CValue, _), Args:List)
                => formatter'(Args)
           ...</k>
           <format-arg> _ => V </format-arg>
           [structural]
-     syntax KItem ::= "formatter-prec" "(" K "," List ")" [strict(1)]
+     syntax KItem ::= "formatter-prec" "(" KItem "," List ")" [strict(1)]
      rule <k> formatter-prec(tv(V:Int, _), Args:List)
                => formatter-next(Args)
           ...</k>
           <format-precision> _ => showInt(V) </format-precision>
           [structural]
-     syntax KItem ::= "formatter-width" "(" K "," List ")" [strict(1)]
+     syntax KItem ::= "formatter-width" "(" KItem "," List ")" [strict(1)]
      rule <k> formatter-width(tv(V:Int, _), Args:List)
                => formatter-next(Args)
           ...</k>
           <format-field-width> _ => showInt(V) </format-field-width>
           [structural]
 
-     syntax KItem ::= nextvarg(RValue, K) [strict(2)]
+     syntax KItem ::= nextvarg(RValue, KItem) [strict(2)]
      rule <k> nextvarg(tv(V:CValue, T'::UType), T:Type) => tv(V, utype(T)) ...</k>
           <format-state> State:String </format-state>
           <format-length> Length:String </format-length>
