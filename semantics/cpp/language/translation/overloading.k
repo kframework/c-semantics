@@ -364,11 +364,6 @@ module CPP-TRANSLATION-OVERLOADING
           => computeUDCFrom(P, A, getClassInfo(A), C)
           requires notBool isCPPClassType(P)
 
-     /*
-     rule computeUDC(t(... st: classType(P::Class)), t(... st: classType(A::Class)), C::ValueCategory)
-     => resolveUDC(ListItem(computeUDCFrom(type(classType(P)), A, getClassInfo(A), C)) ListItem(computeUDCTo(P, getClassInfo(P), type(classType(A)), C)))
-     */
-
      rule computeUDC(t(... st: classType(P::Class)), t(... st: classType(A::Class)), C::ValueCategory)
           =>
           #computeUDC(
@@ -386,15 +381,6 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule computeUDCTo(_ :: Class(_, X::CId, _) #as P::Class, <class>... <cenv>... ConstructorId(X) |-> M::TypeMap ...</cenv> ...</class>, A::CPPType, C::ValueCategory)
           => #computeUDCTo(P, keys_list(stripExplicit(M)), A, C, .List)
-
-
-/*
-     rule #computeUDCTo(_ :: Class(_, X::CId, _) #as P::Class, ListItem(t(... st: functionType(... returnType: Ret::CPPType, paramTypes: Param::CPPType)) #as FuncT::CPPType) L::List, A::CPPType, C::ValueCategory)
-          => ListItem(userDefinedConversionSequence(computeConversionSequence(Param, A, C, false, false, false), P :: ConstructorId(X), FuncT, computeConversionSequence(type(classType(P)), type(classType(P)), unnamedCat(Ret), false, false, false))) #computeUDCTo(P, L, A, C)
-
-
-     rule #computeUDCTo(_, .List, _, _) => .List
-*/
 
      rule (.K => computeUserDefinedConversionSequence(
                computeConversionSequence(Param, A, C, false, false, false),
@@ -422,13 +408,6 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule computeUDCFrom(P::CPPType, A::Class, <class>... <conversion-functions> L::List </conversion-functions> ...</class>, C::ValueCategory)
           => #computeUDCFrom(P, L, A, C, .List)
-
-/*
-     rule #computeUDCFrom(P::CPPType, ListItem(t(... st: functionType(... returnType: Ret::CPPType)) #as FuncT::CPPType) L::List, A::Class, C::ValueCategory)
-          => ListItem(userDefinedConversionSequence(computeConversionSequence(implicitObjectParameterType(FuncT), type(classType(A)), C, getRefQualifier(FuncT) ==K RefNone(), true, false), A :: ConversionId(Ret), FuncT, computeConversionSequence(P, Ret, unnamedCat(Ret), false, false, false))) #computeUDCFrom(P, L, A, C)
-
-     rule #computeUDCFrom(_, .List, _, _) => .List
-*/
 
      rule (.K => computeUserDefinedConversionSequence(
                computeConversionSequence(implicitObjectParameterType(FuncT), type(classType(A)), C, getRefQualifier(FuncT) ==K RefNone(), true, false),
