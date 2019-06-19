@@ -265,6 +265,7 @@ module C-DECL-INITIALIZER
                ListItem(K:KItem)
           ...</curr-subobject>
           requires K =/=K next andBool K =/=K noMoreFields
+               andBool K =/=K down
           [structural]
 
      rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member."))

@@ -74,8 +74,7 @@ module C-CONVERSION
      }*/
      rule cast(integerUType #as T'::UType, tv(V:Int, integerUType #as T::UType))
           => tv(V, castTypes(T', T))
-          requires notBool isBoolUType(T')
-               andBool intInRange(V, T')
+          requires T' =/=Type T andBool notBool isBoolUType(T') andBool intInRange(V, T')
 
      rule cast(integerUType #as T'::UType, tv(encodedPtr(L:SymLoc, N::Int, M::Int), integerUType #as T::UType))
           => tv(encodedPtr(L, N, M), T')
@@ -251,15 +250,13 @@ module C-CONVERSION
      pointer, called a null pointer, is guaranteed to compare unequal to a
      pointer to any object or function.
      }*/
-     rule cast(ut(... st: pointerType(_)) #as T'::UType, V:RValue) => tv(NullPointer, castTypes(T', utype(V)))
-          requires isNullPointerConstant(V)
-
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{4}}}{
      Conversion of a null pointer to another pointer type yields a null pointer
      of that type. Any two null pointers shall compare equal.
      }*/
-     rule cast(ut(... st: pointerType(_)) #as T'::UType, tv(NullPointer, ut(... st: pointerType(_)) #as T::UType))
-          => tv(NullPointer, castTypes(T', T))
+     rule cast(ut(... st: pointerType(_)) #as T'::UType, V:RValue) => tv(NullPointer, castTypes(T', utype(V)))
+          requires isNullPointerConstant(V)
+               orBool (value(V) ==K NullPointer andBool isPointerUType(utype(V)))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{5}}}{
      An integer may be converted to any pointer type. Except as previously
