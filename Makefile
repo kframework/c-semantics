@@ -46,6 +46,7 @@ CXXFLAGS += -pedantic
 export CC := $(PROFILE_DIR)/cc
 export CXX := $(PROFILE_DIR)/cxx
 
+export LOGGER := $(ROOT)/scripts/build-logger.sh
 
 K_DIST := $(realpath $(K_BIN)/..)
 
@@ -103,33 +104,33 @@ check-deps: | check-ocaml check-cc check-cxx check-perl check-k
 .PHONY: check-ocaml
 check-ocaml:
 	@ocaml -version > /dev/null 2>&1 || { \
-		echo "ERROR: Missing OCaml installation. Please see INSTALL.md for more information." \
+		$(LOGGER) "ERROR: Missing OCaml installation. Please see INSTALL.md for more information." \
 		&& false; \
 	}
 
 .PHONY: check-cc
 check-cc:
 	@$(CC) -v > /dev/null 2>&1 || { \
-		echo "ERROR: Missing C compiler installation. Please see INSTALL.md for more information." \
+		$(LOGGER) "ERROR: Missing C compiler installation. Please see INSTALL.md for more information." \
 		&& false; \
 	}
 
 .PHONY: check-cxx
 check-cxx:
 	@$(CXX) -v > /dev/null 2>&1 || { \
-		echo "ERROR: Missing C++ compiler installation. Please see INSTALL.md for more information." \
+		$(LOGGER) "ERROR: Missing C++ compiler installation. Please see INSTALL.md for more information." \
 		&& false; \
 	}
 
 .PHONY: check-perl
 check-perl:
-	@perl scripts/checkForModules.pl
+	@export STR="$$(perl scripts/checkForModules.pl)" && test ! -z "$${STR}" ] && $(LOGGER) "${STR}"
 
 
 .PHONY: check-k
 check-k:
 	@$(KOMPILE) --version > /dev/null 2>&1 || { \
-		echo "ERROR: Missing K installation. Please see INSTALL.md for more information." \
+		$(LOGGER) "ERROR: Missing K installation. Please see INSTALL.md for more information." \
 		&& false; \
 	}
 
@@ -142,11 +143,11 @@ check-k:
 
 
 $(OUTPUT_DIR)/writelong: scripts/writelong.c | $(OUTPUT_DIR)
-	$(info Building $@)
+	@$(LOGGER) Building $@
 	@$(CC) $(CFLAGS) $< -o $@
 
 $(OUTPUT_DIR)/extract-references: scripts/extract-references.cpp | $(OUTPUT_DIR)
-	$(info Building $@)
+	@$(LOGGER) Building $@
 	@$(CXX) $(CXXFLAGS) $< -lstdc++fs -o $@
 
 $(OUTPUT_DIR)/kcc: scripts/getopt.pl \
@@ -198,7 +199,7 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
                  $(wildcard $(PROFILE_DIR)/compiler-src/*.C) \
                  $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) \
                  PROFILE_DEPS
-	$(info $(PROFILE): Translating the C++ standard library...)
+	@$(LOGGER) "$(PROFILE): Translating the C++ standard library..."
 	@cd $(PROFILE_DIR)/compiler-src && \
 		$(OUTPUT_DIR)/kcc \
 				-Wfatal-errors \
@@ -213,7 +214,7 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
 				-shared \
 				-o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libstdc++.so \
 				*.C $(KCCFLAGS) -I .;)
-	$(info $(PROFILE): Done translating the C++ standard library.)
+	@$(LOGGER) "$(PROFILE): Done translating the C++ standard library."
 
 
 $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
@@ -221,7 +222,7 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
             $(wildcard $(PROFILE_DIR)/src/*.c) \
             $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) \
             PROFILE_DEPS
-	$(info $(PROFILE): Translating the C standard library...)
+	@$(LOGGER) "$(PROFILE): Translating the C standard library..."
 	@cd $(PROFILE_DIR)/src && \
 		$(OUTPUT_DIR)/kcc \
 				-Wfatal-errors \
@@ -236,7 +237,7 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 				-shared \
 				-o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libc.so \
 				*.c $(KCCFLAGS) -I .)
-	$(info $(PROFILE): Done translating the C standard library.)
+	@$(LOGGER) "$(PROFILE): Done translating the C standard library."
 
 
 .PHONY: $(PROFILE)-native
@@ -273,7 +274,7 @@ test-build: $(LIBC_SO) \
 
 .PHONY: parser/cparser
 parser/cparser:
-	$(info Building the C parser...)
+	@$(LOGGER) "Building the C parser..."
 	@$(MAKE) -C parser
 
 $(CLANG_TOOLS_BIN)/%: $(CLANG_TOOLS_BUILD_DIR)/Makefile
@@ -312,17 +313,17 @@ fail-compile:	| test-build
 # during the build.
 .PHONY: simple-build-test
 simple-build-test:
-	$(info Testing kcc...)
+	@$(LOGGER) "Testing kcc..."
 	printf "#include <stdio.h>\nint main(void) { printf(\"x\"); return 42; }" \
 		| $(OUTPUT_DIR)/kcc --use-profile $(PROFILE) -x c - -o $(OUTPUT_DIR)/testProgram.compiled
 	$(OUTPUT_DIR)/testProgram.compiled 2> /dev/null > $(OUTPUT_DIR)/testProgram.out; \
 		test $$? -eq 42
 	grep x $(OUTPUT_DIR)/testProgram.out > /dev/null 2>&1
-	$(info Done.)
-	$(info Cleaning up...)
+	@$(LOGGER) "Done."
+	@$(LOGGER) "Cleaning up..."
 	@rm -f $(OUTPUT_DIR)/testProgram.compiled
 	@rm -f $(OUTPUT_DIR)/testProgram.out
-	$(info Done.)
+	@$(LOGGER) "Done."
 
 
 # Builds with `KOMPILE_FLAGS=--profile-rule-parsing`.
@@ -335,7 +336,7 @@ profile-rule-parsing: export KOMPILE_FLAGS += --profile-rule-parsing
 profile-rule-parsing: test-build
 	$(eval TIMELOGS_DIR := $(OUTPUT_DIR)/timelogs.d)
 	$(eval TIMELOGS_CSV := $(TIMELOGS_DIR)/timelogs.csv)
-	$(info Moving timingXX.log files into $(TIMELOGS_DIR)...)
+	@$(LOGGER) "Moving timingXX.log files into $(TIMELOGS_DIR)..."
 	@cd $(OUTPUT_DIR)/profiles && \
 	find . \
 		! -path "*.build*" \
@@ -347,8 +348,8 @@ profile-rule-parsing: test-build
 		mkdir -p $(TIMELOGS_DIR)/"$$(dirname $$f)"; \
 		mv $$f $(TIMELOGS_DIR)/"$$(dirname $$f)"; \
 	done
-	$(info Done.)
-	$(info Generating $(TIMELOGS_CSV)...)
+	@$(LOGGER) "Done."
+	@$(LOGGER) "Generating $(TIMELOGS_CSV)..."
 	@cd $(TIMELOGS_DIR) && \
 	find . \
 		-type f \
@@ -356,7 +357,7 @@ profile-rule-parsing: test-build
 		-exec \
 			perl -ne '/Source\((.*?)\):(\d+):(\d+)\s+(.*?)$$/ && print "{},$$1,$$2,$$3,$$4\n";' {} \; \
 	> $(TIMELOGS_CSV)
-	$(info Done.)
+	@$(LOGGER) "Done."
 
 
 # This makefile does not need to be re-built.
@@ -387,6 +388,6 @@ $(XYZ_SEMANTICS):
 $(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: PROFILE_DEPS \
                                             $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
-	$(info Distributing $(NAME))
+	@$(LOGGER) "Distributing $(NAME)"
 	@$(foreach d,$(SUBPROFILE_DIRS), \
 		cp -RLp $(PROFILE_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(shell basename $(d));)
