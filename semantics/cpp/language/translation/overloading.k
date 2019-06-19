@@ -197,12 +197,12 @@ module CPP-TRANSLATION-OVERLOADING
           => standardConversionSequence(identity, identity, identity, B, P)
           requires bindsDirectlyToExp(P, A, C, B)
                andBool notBool (isCPPClassType(innerType(P)) andBool isCPPClassType(A)
-                    andBool isBaseClassOf(innerType(P), A))
+                    andBool isProperBaseClassOf(innerType(P), A))
 
      rule conversionSequence(cppRefType #as P::CPPType, t(... st: classType(...)) #as A::CPPType, C::ValueCategory, B::Bool, _, _)
           => standardConversionSequence(identity, derivedToBaseConversion(P, A), identity, B, P)
           requires bindsDirectlyToExp(P, A, C, B) andBool isCPPClassType(innerType(P))
-               andBool isBaseClassOf(innerType(P), A)
+               andBool isProperBaseClassOf(innerType(P), A)
 
      rule conversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC::Bool)
           => conversionSequence(innerType(P), A, C, false, false, CanUDC)
