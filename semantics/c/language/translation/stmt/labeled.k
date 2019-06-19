@@ -16,7 +16,7 @@ module C-STMT-LABELED
 
      context Case(_, _, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
      rule (.K => elaborate(K)) ~> Case(_, _, _:RValue, K:KItem)
-     rule <k> elaborateDone(K:KItem) ~> Case(SN:Int, CN:Int, Exp:RValue, _) => .K ...</k>
+     rule <k> elaborateDone(K:K) ~> Case(SN:Int, CN:Int, Exp:RValue, _) => .K ...</k>
           <elab>... .K => Case(SN, CN, Exp, K) </elab>
 
      rule (.K => elaborate(K)) ~> Default(_, K:KItem)
