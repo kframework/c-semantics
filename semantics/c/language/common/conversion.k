@@ -203,7 +203,7 @@ module C-CONVERSION
      }*/
      rule cast(ut(... st: _:SimpleFloatType) #as T'::UType, tv(V:Float, ut(... st: _:SimpleFloatType) #as T::UType))
           => tv(roundCFloat(T', V), castTypes(T', T))
-          requires floatInRange(V, T')
+          requires T' =/=Type T andBool floatInRange(V, T')
 
      rule (.K => UNDEF("CCV4",
                "Floating-point value outside the range of values that can be represented after conversion."))

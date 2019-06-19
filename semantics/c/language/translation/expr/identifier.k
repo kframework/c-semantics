@@ -15,8 +15,10 @@ module C-EXPR-IDENTIFIER
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(X) ...</uses>
+          <enums> Enums::Map </enums>
           requires Base =/=K nonStatic
                andBool notBool isRestrictType(T)
+               andBool notBool X in_keys(Enums)
           [structural]
      rule <k> X:CId => lv(restrictedNew(Base, getRestrictBlock(T)), T) ...</k>
           <env>... X |-> Base:DirectBase ...</env>
@@ -24,8 +26,10 @@ module C-EXPR-IDENTIFIER
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(X) ...</uses>
+          <enums> Enums::Map </enums>
           requires Base =/=K nonStatic
                andBool isRestrictType(T)
+               andBool notBool X in_keys(Enums)
           [structural]
      rule <k> X:CId => le(X, T) ...</k>
           <env>... X |-> nonStatic ...</env>
@@ -33,6 +37,8 @@ module C-EXPR-IDENTIFIER
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(X) ...</uses>
+          <enums> Enums::Map </enums>
+          requires notBool X in_keys(Enums)
           [structural]
 
      // We need to record uses of external symbols because if an external
@@ -46,6 +52,8 @@ module C-EXPR-IDENTIFIER
           <external-uses> Uses::Map => Uses[X <- L] </external-uses>
           <uses>... .Set => SetItem(X) ...</uses>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
+          <enums> Enums::Map </enums>
+          requires notBool X in_keys(Enums)
           [structural]
 
      // According to C18 sec. 6.6:6, enumeration constants are constants and therefore

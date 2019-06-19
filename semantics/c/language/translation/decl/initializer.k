@@ -44,6 +44,7 @@ module C-DECL-INITIALIZER
      rule figureInit(X:CId, aggregateOrUnionType #as T::Type, CompoundInit(L:KItem))
           => giveType(X, T)
           ~> figureInit-aux(X, T, startInit(T, X, CompoundInit(L)))
+          requires notBool (isIncompleteStringType(T) andBool isCompoundStringInit(L))
           [structural]
 
      rule figureInit(
@@ -121,6 +122,14 @@ module C-DECL-INITIALIZER
           requires (notBool isWCharType(T) orBool WStringLiteral(...) :/=K K)
                andBool (notBool isCharType(T) orBool StringLiteral(...) :/=K K)
 
+     syntax Bool ::= isIncompleteStringType(Type) [function]
+     rule isIncompleteStringType(t(_, _, incompleteArrayType(charType))) => true
+     rule isIncompleteStringType(_) => false [owise]
+
+     syntax Bool ::= isCompoundStringInit(KItem) [function]
+     rule isCompoundStringInit(list(ListItem(InitFragment(NextInit(), SingleInit(StringLiteral(_)))))) => true
+     rule isCompoundStringInit(_) => false [owise]
+
      // id, type, initializer
      syntax KItem ::= "figureInit-aux" "(" CId "," Type "," K ")" [strict(3)]
      rule <k> figureInit-aux(_:CId, t(_, _,
@@ -176,65 +185,111 @@ module C-DECL-INITIALIZER
 
      syntax SubObjectControl ::= "next" | "down" | "block"
 
-     rule <k> subobjectKCell ... </k>
+     syntax KItem ::= "subobjectKCell"
+     rule subobjectKCell => fillInit(?_) #Or fillInit-aux(?_) #Or t(?_, ?_, ?_) [macro]
+
+     syntax Bool ::= isInFieldInit(KItem) [function]
+     rule isInFieldInit(fillInit(InitFragment(InFieldInit(_, _), _))) => true
+     rule isInFieldInit(_) => false [owise]
+
+     syntax Bool ::= isAtIndexInit(KItem) [function]
+     rule isAtIndexInit(fillInit(InitFragment(AtIndexInit(_, _), _))) => true
+     rule isAtIndexInit(_) => false [owise]
+
+     syntax Bool ::= structOrUnionAtTop(List) [function]
+     rule structOrUnionAtTop(ListItem(ncle(_, structOrUnionType)) _::List) => true
+     rule structOrUnionAtTop(_) => true [owise]
+
+     syntax Bool ::= arrayAtTop(List) [function]
+     rule arrayAtTop(ListItem(ncle(_, t(... st: _:SimpleArrayType))) _::List) => true
+     rule arrayAtTop(_) => true [owise]
+
+     rule <k> subobjectKCell #as Init:KItem ...</k>
           <curr-subobject>
                (ListItem(down) => ListItem(ncle(K[[0]], T)))
                ListItem(ncle(K::InitLValue, t(_, _, arrayType(T::Type, _))))
           ...</curr-subobject>
+          <curr-object> Obj::List </curr-object>
+          requires notBool (isInFieldInit(Init) andBool structOrUnionAtTop(Obj))
+               andBool notBool (isAtIndexInit(Init) andBool arrayAtTop(Obj))
           [structural]
-     rule <k> subobjectKCell ... </k>
+     rule <k> subobjectKCell #as Init:KItem ...</k>
           <curr-subobject>
                (ListItem(down) => ListItem(ncle(K[[0]], T)))
                ListItem(ncle(K::InitLValue, t(_, _, incompleteArrayType(T::Type))))
           ...</curr-subobject>
+          <curr-object> Obj::List </curr-object>
+          requires notBool (isInFieldInit(Init) andBool structOrUnionAtTop(Obj))
+               andBool notBool (isAtIndexInit(Init) andBool arrayAtTop(Obj))
           [structural]
-     rule <k> subobjectKCell ... </k>
+     rule <k> subobjectKCell #as Init:KItem ...</k>
           <curr-subobject>
                (ListItem(down) => ListItem(firstField(K, findFieldNames(T), T)))
                ListItem(ncle(K:K, structOrUnionType #as T::Type))
           ...</curr-subobject>
+          <curr-object> Obj::List </curr-object>
+          requires notBool (isInFieldInit(Init) andBool structOrUnionAtTop(Obj))
+               andBool notBool (isAtIndexInit(Init) andBool arrayAtTop(Obj))
           [structural]
 
-     rule <k> subobjectKCell ... </k>
+     rule <k> subobjectKCell #as Init:KItem ...</k>
           <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue [[N::Int]], T::Type))
                     => ListItem(ncle(K[[N +Int 1]], T)))
                ListItem(ncle(K, t(_, _, arrayType(_, Len::Int))))
           ...</curr-subobject>
-          requires Len >Int N +Int 1
+          <curr-object> Obj::List </curr-object>
+          requires notBool (isInFieldInit(Init) andBool structOrUnionAtTop(Obj))
+               andBool notBool (isAtIndexInit(Init) andBool arrayAtTop(Obj))
+               andBool Len >Int N +Int 1
           [structural]
-     rule <k> subobjectKCell ... </k>
+     rule <k> subobjectKCell #as Init:KItem ...</k>
           <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue [[N::Int]], _)) => ListItem(noMoreIndices))
                ListItem(ncle(K, t(_, _, arrayType(_, Len::Int))))
           ...</curr-subobject>
-          requires notBool Len >Int N +Int 1
+          <curr-object> Obj::List </curr-object>
+          requires notBool (isInFieldInit(Init) andBool structOrUnionAtTop(Obj))
+               andBool notBool (isAtIndexInit(Init) andBool arrayAtTop(Obj))
+               andBool notBool Len >Int N +Int 1
           [structural]
-     rule <k> subobjectKCell ... </k>
+     rule <k> subobjectKCell #as Init:KItem ...</k>
           <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue [[N::Int]], T::Type))
                     => ListItem(ncle(K[[N +Int 1]], T)))
                ListItem(ncle(K, t(_, _, incompleteArrayType(_))))
           ...</curr-subobject>
+          <curr-object> Obj::List </curr-object>
+          requires notBool (isInFieldInit(Init) andBool structOrUnionAtTop(Obj))
+               andBool notBool (isAtIndexInit(Init) andBool arrayAtTop(Obj))
           [structural]
-     rule <k> subobjectKCell ... </k>
+     rule <k> subobjectKCell #as Init:KItem ...</k>
           <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue .init F::CId, _))
                     => ListItem(followingField(K, F, findFieldNames(T), T)))
                ListItem(ncle(K, t(... st: structType(_)) #as T::Type))
           ...</curr-subobject>
+          <curr-object> Obj::List </curr-object>
+          requires notBool (isInFieldInit(Init) andBool structOrUnionAtTop(Obj))
+               andBool notBool (isAtIndexInit(Init) andBool arrayAtTop(Obj))
           [structural]
-     rule <k> subobjectKCell ... </k>
+     rule <k> subobjectKCell #as Init:KItem ...</k>
           <curr-subobject>
                (ListItem(next) ListItem(ncle(K::InitLValue .init _, _)) => ListItem(noMoreFields))
                ListItem(ncle(K, t(... st: unionType(_))))
           ...</curr-subobject>
+          <curr-object> Obj::List </curr-object>
+          requires notBool (isInFieldInit(Init) andBool structOrUnionAtTop(Obj))
+               andBool notBool (isAtIndexInit(Init) andBool arrayAtTop(Obj))
           [structural]
-     rule <k> subobjectKCell ... </k>
+     rule <k> subobjectKCell #as Init:KItem ...</k>
           <curr-subobject>
                (ListItem(noMoreFields) => ListItem(next))
                ListItem(ncle(_ .init _::CId, _))
           ...</curr-subobject>
+          <curr-object> Obj::List </curr-object>
+          requires notBool (isInFieldInit(Init) andBool structOrUnionAtTop(Obj))
+               andBool notBool (isAtIndexInit(Init) andBool arrayAtTop(Obj))
           [structural]
 
      syntax KItem ::= "noMoreFields" | "noMoreIndices"
@@ -262,10 +317,9 @@ module C-DECL-INITIALIZER
 
      rule <k> fillInit(InitFragment(NextInit(), Exp:KItem)) => fillInit(Exp) ...</k>
           <curr-subobject>
-               ListItem(K:KItem)
-          ...</curr-subobject>
-          requires K =/=K next andBool K =/=K noMoreFields
-               andBool K =/=K down
+               ListItem(K:KItem) Remainder::List
+          </curr-subobject>
+          requires K =/=K noMoreFields andBool notBool controlAtTop(ListItem(K) Remainder)
           [structural]
 
      rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member."))
@@ -414,13 +468,10 @@ module C-DECL-INITIALIZER
                (.List => ListItem(findStruct(t(Qs, S, structType(X)))))
                L:List
           </curr-subobject>
-          requires {L[0]}<:KItem =/=K next andBool {L[0]}<:KItem =/=K down
+          requires notBool controlAtTop(L)
           [structural]
 
      syntax KItem ::= findStruct(Type)
-
-     syntax KItem ::= "subobjectKCell"
-     rule subobjectKCell => fillInit(?_) #Or fillInit-aux(?_) #Or t(?_, ?_, ?_) [macro]
 
      rule <k> subobjectKCell ... </k>
           <curr-subobject>
@@ -576,5 +627,10 @@ module C-DECL-INITIALIZER
                andBool (isBasicType(T) orBool isPointerType(T)
                     orBool isBitfieldType(T))
           [structural]
+
+     syntax Bool ::= controlAtTop(List) [function]
+     rule controlAtTop(ListItem(next) ListItem(ncle(_, _)) _::List) => true
+     rule controlAtTop(ListItem(down) ListItem(ncle(_, _)) _::List) => true
+     rule controlAtTop(_) => false [owise]
 
 endmodule

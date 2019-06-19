@@ -88,18 +88,21 @@ module C-COMMON-EXPR-ADDITIVE
           requires notBool isFunctionType(innerType(T'))
                andBool isCompleteType(innerType(T'))
                andBool isPromoted(T)
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
      rule tv(I:Int, integerUType #as T::UType) + tv(Loc:SymLoc, ut(... st: pointerType(_)) #as T'::UType)
           => addToPointer(Loc, T', I)
           requires notBool isFunctionType(innerType(T'))
                andBool isCompleteType(innerType(T'))
                andBool isPromoted(T)
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
      rule tv(Loc:SymLoc, ut(... st: pointerType(_)) #as T'::UType) - tv(I:Int, integerUType #as T::UType)
           => addToPointer(Loc, T', 0 -Int I)
           requires notBool isFunctionType(innerType(T'))
                andBool isCompleteType(innerType(T'))
                andBool isPromoted(T)
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
 
      rule tv(Loc:SymLoc, T::UType) + tv(I:Int, T'::UType)
