@@ -130,18 +130,24 @@ $(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: %.k \
                                                             | $(GENERATED_MAKEFILE_DIR)
 	set -e; \
 	TEMPFILE=$$(mktemp); \
-	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k \
+	KDEP_OUTPUT="$$( \
+		$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k \
+	)"; \
+	echo "$${KDEP_OUTPUT}" \
 		| perl -pe 's|(.*?)\s*:|\1 $@:|g' \
-	> $${TEMPFILE}; \
+		> $${TEMPFILE}; \
 	mv $${TEMPFILE} $@
 
 $(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: c-cpp.k \
                                                         | $(GENERATED_MAKEFILE_DIR)
 	set -e; \
 	TEMPFILE=$$(mktemp); \
-	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k \
+	KDEP_OUTPUT="$$( \
+		$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k \
+	)"; \
+	echo "$${KDEP_OUTPUT}" \
 		| perl -pe 's|(.*?)\s*:|\1 $@:|g' \
-	> $${TEMPFILE}; \
+		> $${TEMPFILE}; \
 	mv $${TEMPFILE} $@
 
 
