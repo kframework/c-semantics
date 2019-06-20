@@ -1,24 +1,29 @@
-TUS = $(wildcard ./*.c)
-EXCLUDES=
-TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link3.c, ${TUS:-link1.c=.c})))
-CC=gcc
-TEST_COMPARISON = ${TESTS:.c=.cmp}
+# The location of this makefile.
+ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
+# Intended to come from the environment.
+KCC ?= $(realpath $(ROOT)/../../../../../dist/kcc)
+
+TUS := $(wildcard ./*.c)
+EXCLUDES :=
+TESTS := $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link3.c, ${TUS:-link1.c=.c})))
+TEST_COMPARISON := ${TESTS:.c=.cmp}
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
-.PHONY: clean comparison
 .PRECIOUS: %.kcc %.out
 
+.PHONY: comparison
 comparison: ${TEST_COMPARISON}
 
 %.kcc: %.c
 	@echo -n "Compiling $<... "
-	@kcc -frecover-all-errors -fno-native-compilation -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -frecover-all-errors -fno-native-compilation -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@kcc -frecover-all-errors -fno-native-compilation -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -frecover-all-errors -fno-native-compilation -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.out: %-good.kcc
 	@echo -n "Running $<... "
@@ -47,5 +52,6 @@ comparison: ${TEST_COMPARISON}
 	@echo -n "Comparing $^... "
 	@diff --strip-trailing-cr $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
+.PHONY: clean
 clean:
 	rm -rf *.out *.kcc *.tmp *.gcc *-good.output *.cmp
