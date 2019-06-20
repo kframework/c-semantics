@@ -53,10 +53,6 @@ let close_output _ =
       close_me := false
   end
 
-   (* Signal that we are in MS VC mode *)
-let setMSVCMode () =
-  Cprint.msvcMode := true
-
 (* filename for patching *)
 let patchFileName : string ref = ref ""      (* by default do no patching *)
 

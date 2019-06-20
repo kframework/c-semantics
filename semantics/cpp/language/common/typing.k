@@ -338,7 +338,8 @@ module CPP-TYPING-SYNTAX
      syntax Bool ::= isBaseClassOf(base: CPPType, derived: CPPType) [function]
                    | isVirtualBaseClassOf(CPPType, CPPType) [function]
                    | isBaseClassOf(base: Class, derived: Class) [function, klabel(isClassBaseClassOf)]
-                   | isPropperBaseClassOf(base: Class, derived: Class) [function, klabel(isClassPropperBaseClassOf)]
+                   | isProperBaseClassOf(base: CPPType, derived: CPPType) [function]
+                   | isProperBaseClassOf(base: Class, derived: Class) [function, klabel(isClassProperBaseClassOf)]
                    | isDirectBaseClassOf(base: Class, derived: Class) [function]
                    | hasVirtualMembers(Class) [function, klabel(hasVirtualMembersCl)]
                    | hasVirtualMembers(CPPType) [function]
@@ -912,10 +913,12 @@ module CPP-TYPING
                (baseClass(B) |-> (_::TypeMap T |-> classOffset(_, Offset::Int))) _::Map)
      requires notBool (B in_keys(M))
 
+     rule isProperBaseClassOf(t(_, _, classType(B::Class)), t(_, _, classType(D::Class)))
+          => isProperBaseClassOf(B, D)
 
-     rule isPropperBaseClassOf(D::Class, D) => false
+     rule isProperBaseClassOf(D::Class, D) => false
 
-     rule isPropperBaseClassOf(B::Class, D::Class) => isBaseClassOf(B, D)
+     rule isProperBaseClassOf(B::Class, D::Class) => isBaseClassOf(B, D)
           requires B =/=K D
 
      rule isBaseClassOf(t(_, _, classType(B::Class)), t(_, _, classType(D::Class))) => isBaseClassOf(B, D)

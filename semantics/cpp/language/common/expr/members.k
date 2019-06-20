@@ -35,7 +35,7 @@ module CPP-EXPR-MEMBERS
           requires type(simpleType(TC)) ==Type type(classType(FC))
 
      rule lookupFieldCPP(_::Val, t(... st: classType(DC::Class => BC)), Name(BC::Class, _), PrevOffset::Int => PrevOffset +Int getBaseClassOffset(BC, DC))
-          requires isPropperBaseClassOf(BC, DC)
+          requires isProperBaseClassOf(BC, DC)
 
      rule <k> lookupFieldCPP(_::Val, t(... st: classType(FC::Class => C)), Name(FC::Class => C, F::CId), PrevOffset::Int => PrevOffset +Int Offset) ...</k>
           <class-id> FC </class-id>

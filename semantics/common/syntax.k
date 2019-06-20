@@ -25,17 +25,17 @@ module COMMON-SYNTAX
      syntax UnnamedCId ::= unnamed(Int, String)  // Unnamed struct/union/enums.
      syntax NoName ::= "#NoName" | #NoName(Int)  // Unnamed struct/union fields.
      syntax CId ::= NoName
-     syntax CId ::= Identifier(String)
+     syntax CId ::= Identifier(String) [symbol]
      syntax CId ::= UnnamedCId
 
      syntax CabsLoc ::= "UnknownCabsLoc"
-     syntax CabsLoc ::= CabsLoc(rel: String, abs: String, line: Int, col: Int, systemHeader: Bool)
+     syntax CabsLoc ::= CabsLoc(rel: String, abs: String, line: Int, col: Int, systemHeader: Bool) [symbol]
 
-     syntax Qualifier ::= Const()
-     syntax Qualifier ::= Volatile()
-     syntax Qualifier ::= Restrict()
-     syntax Qualifier ::= RestrictReserved(String, CabsLoc)
-     syntax Qualifier ::= Atomic()
+     syntax Qualifier ::= Const() [symbol]
+     syntax Qualifier ::= Volatile() [symbol]
+     syntax Qualifier ::= Restrict() [symbol]
+     syntax Qualifier ::= RestrictReserved(String, CabsLoc) [symbol]
+     syntax Qualifier ::= Atomic() [symbol]
 
      syntax EvalContext ::= "eval" | "noEval"
 
@@ -62,10 +62,10 @@ module COMMON-SYNTAX
 
      syntax Location ::= CodeLoc(K, CabsLoc)
 
-     syntax FunctionSpecifier ::= Inline()
-     syntax Init ::= NoInit()
+     syntax FunctionSpecifier ::= Inline() [symbol]
+     syntax Init ::= NoInit() [symbol]
 
-     syntax AutoSpecifier ::= Auto()
-     syntax StorageClassSpecifier ::= Static() | Extern() | Register() | ThreadLocal()
+     syntax AutoSpecifier ::= Auto() [symbol]
+     syntax StorageClassSpecifier ::= Static() [symbol] | Extern() [symbol] | Register() [symbol] | ThreadLocal() [symbol]
 
 endmodule

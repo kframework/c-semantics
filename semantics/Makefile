@@ -25,6 +25,10 @@ K_INCLUDE_DIRS += $(PROFILE_DIR)/semantics/cpp
 # Appending to whatever the environment provided.
 KDEP_FLAGS += $(addprefix -I ,$(K_INCLUDE_DIRS))
 KOMPILE_FLAGS += $(addprefix -I ,$(K_INCLUDE_DIRS))
+KOMPILE_FLAGS += --no-prelude
+KOMPILE_FLAGS += -w all
+KOMPILE_FLAGS += -v
+KOMPILE_FLAGS += --debug
 
 
 # Used specifically in the timestamp_of rules.
@@ -45,40 +49,37 @@ endef
 $(call timestamp_of,c-translation):
 	$(info Kompiling the static C semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) c-translation.k \
-		-d "$(OUTPUT_DIR)/c-translation-kompiled" \
-		--no-prelude -w all -v --debug
+		-d "$(OUTPUT_DIR)/c-translation-kompiled"
 
 $(call timestamp_of,cpp-translation):
 	$(info Kompiling the static C++ semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) cpp-translation.k \
-		-d "$(OUTPUT_DIR)/cpp-translation-kompiled" \
-		--no-prelude -w all -v --debug
+		-d "$(OUTPUT_DIR)/cpp-translation-kompiled"
 
 $(call timestamp_of,c-cpp-linking):
 	$(info Kompiling the C and C++ linking semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) c-cpp-linking.k \
-		-d "$(OUTPUT_DIR)/c-cpp-linking-kompiled" \
-		--no-prelude -w all -v --debug
+		-d "$(OUTPUT_DIR)/c-cpp-linking-kompiled"
 
 $(call timestamp_of,c-cpp):
 	$(info Kompiling the dynamic C and C++ semantics...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-cpp-kompiled" \
-		--no-prelude -w all -v --transition "interpRule" \
-		--debug
+		--transition "interpRule"
 
 $(call timestamp_of,c-nd):
 	$(info Kompiling the dynamic C and C++ semantics with expression sequencing non-determinism...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-nd-kompiled" \
-		--no-prelude --transition "observable ndtrans" \
-		--superheat "ndheat" --supercool "ndlocal"
+		--transition "observable ndtrans" \
+		--superheat "ndheat" \
+		--supercool "ndlocal"
 
 $(call timestamp_of,c-nd-thread):
 	$(info Kompiling the dynamic C and C++ semantics with thread-interleaving non-determinism...)
 	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-nd-thread-kompiled" \
-		--no-prelude --transition "observable ndtrans ndthread"
+		--transition "observable ndtrans ndthread"
 
 
 .PHONY: default
@@ -125,19 +126,29 @@ endif
 # See https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html
 Makefile: $(DEPENDS) ;
 
-
-# The included makefiles depend on these.
-K_FILE_DEPS := $(wildcard *.k)
-K_FILE_DEPS += $(shell find $(OUTPUT_DIR) -type f -name '*.k')
-K_FILE_DEPS += $(shell find $(PROFILE_DIR)/semantics -type f -name '*.k')
-
-$(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: $(K_FILE_DEPS) \
+$(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: %.k \
                                                             | $(GENERATED_MAKEFILE_DIR)
-	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k > $@
+	set -e; \
+	TEMPFILE=$$(mktemp); \
+	KDEP_OUTPUT="$$( \
+		$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/$*-kompiled" -- $*.k \
+	)"; \
+	echo "$${KDEP_OUTPUT}" \
+		| perl -pe 's|(.*?)\s*:|\1 $@:|g' \
+		> $${TEMPFILE}; \
+	mv $${TEMPFILE} $@
 
-$(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: $(K_FILE_DEPS) \
+$(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: c-cpp.k \
                                                         | $(GENERATED_MAKEFILE_DIR)
-	$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k > $@
+	set -e; \
+	TEMPFILE=$$(mktemp); \
+	KDEP_OUTPUT="$$( \
+		$(KDEP) $(KDEP_FLAGS) -d "$(OUTPUT_DIR)/c-$*-kompiled" -- c-cpp.k \
+	)"; \
+	echo "$${KDEP_OUTPUT}" \
+		| perl -pe 's|(.*?)\s*:|\1 $@:|g' \
+		> $${TEMPFILE}; \
+	mv $${TEMPFILE} $@
 
 
 # Move this to the end so that .SECONDEXPANSION
