@@ -44,6 +44,12 @@ define timestamp_of
     $(OUTPUT_DIR)/$(1)-kompiled/$(1)-kompiled/timestamp
 endef
 
+XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
+
+.PHONY: default
+default: $(XYZ_SEMANTICS)
+
+
 # Prerequisites for the timestamp rules are added
 # by the `include`d makefiles.
 $(call timestamp_of,c-translation):
@@ -67,79 +73,31 @@ $(call timestamp_of,c-cpp):
 		-d "$(OUTPUT_DIR)/c-cpp-kompiled" \
 		--transition "interpRule"
 
-$(call timestamp_of,c-nd):
-	$(info Kompiling the dynamic C and C++ semantics with expression sequencing non-determinism...)
-	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
-		-d "$(OUTPUT_DIR)/c-nd-kompiled" \
-		--transition "observable ndtrans" \
-		--superheat "ndheat" \
-		--supercool "ndlocal"
-
-$(call timestamp_of,c-nd-thread):
-	$(info Kompiling the dynamic C and C++ semantics with thread-interleaving non-determinism...)
-	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
-		-d "$(OUTPUT_DIR)/c-nd-thread-kompiled" \
-		--transition "observable ndtrans ndthread"
-
-
-.PHONY: default
-default: $(XYZ_SEMANTICS)
-
-XYZ_SEMANTICS := $(addsuffix -semantics,c-translation cpp-translation c-cpp-linking c-cpp)
-
-.PHONY: all
-all: nd thread
-
-.PHONY: nd
-nd: c-nd-semantics
-
-.PHONY: thread
-thread: c-nd-thread-semantics
-
 .PHONY: clean
 clean:
-	@-rm -rf */c-translation-kompiled \
-           */cpp-translation-kompiled \
-					 */c-cpp-kompiled \
-					 */c-nd-kompiled \
-					 */c-nd-thread-kompiled \
-					 .kompile-* \
-					 $(OUTPUT_DIR)
+	@-rm -rf .kompile-*
 
 GENERATED_MAKEFILE_DIR := $(OUTPUT_DIR)/make.d
 
 $(GENERATED_MAKEFILE_DIR): ;@mkdir -p $@
 
-BASIC_DEPENDS := $(addsuffix .dep.mk, \
-                   $(addprefix $(GENERATED_MAKEFILE_DIR)/basic-, \
-                      c-translation cpp-translation c-cpp-linking c-cpp))
-SPECIAL_DEPENDS := $(addsuffix .dep.mk, \
-                     $(addprefix $(GENERATED_MAKEFILE_DIR)/, \
-                        nd nd-thread))
 
 # See https://stackoverflow.com/a/4270649/6209703
 ifneq ($(MAKECMDGOALS),clean)
-  DEPENDS := $(BASIC_DEPENDS) $(SPECIAL_DEPENDS)
+  DEPENDS := $(addsuffix .dep.mk, \
+               $(addprefix $(GENERATED_MAKEFILE_DIR)/, \
+                 c-translation cpp-translation c-cpp-linking c-cpp))
+
   -include $(DEPENDS)
 endif
 
 # See https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html
 Makefile: $(DEPENDS) ;
 
-$(BASIC_DEPENDS): $(GENERATED_MAKEFILE_DIR)/basic-%.dep.mk: %.k \
-                                                            | $(GENERATED_MAKEFILE_DIR)
+$(DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: %.k \
+                                                | $(GENERATED_MAKEFILE_DIR)
 	../scripts/gen-makefile-atomically.sh \
 		"$(OUTPUT_DIR)/$*-kompiled" \
-		"$(realpath $<)" \
-		"$@" \
-		"$(KDEP)" \
-		"$(KDEP_FLAGS)"
-
-
-$(SPECIAL_DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: c-cpp.k \
-                                                        | $(GENERATED_MAKEFILE_DIR)
-	../scripts/gen-makefile-atomically.sh \
-		"$(OUTPUT_DIR)/c-$*-kompiled" \
 		"$(realpath $<)" \
 		"$@" \
 		"$(KDEP)" \
