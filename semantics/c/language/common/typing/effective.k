@@ -119,6 +119,8 @@ module C-TYPING-EFFECTIVE
 
      rule getFixedFieldType(loc(_, _, _) #as Loc::SymLoc, F::CId, T::Type)
           => getFixedFieldType(stripProv(Loc), F, T)
+     rule getFixedFieldType(loc(_, _), F::CId, T::Type) => findFieldType(F, T)
+          requires notBool isFlexibleArrayType(findFieldType(F, T))
      rule <k> getFixedFieldType(loc(Base::SymBase, Offset::Int), F::CId, T::Type)
                => fixFlexibleArray'(findFieldType(F, T), Len -Int (Offset +Int (findFieldOffset(F, T) /Int cfg:bitsPerByte)))
           ...</k>
@@ -130,8 +132,6 @@ module C-TYPING-EFFECTIVE
           <mem> Mem::Map </mem>
           requires isFlexibleArrayType(findFieldType(F, T))
                andBool notBool (Base in_keys(Mem))
-     rule getFixedFieldType(_, F::CId, T::Type) => findFieldType(F, T)
-          requires notBool isFlexibleArrayType(findFieldType(F, T))
 
      // Locks the type of the flexible array member to a fixed array.
      syntax EffectiveType ::= fixFlexibleType(EffectiveType, Int) [function]
