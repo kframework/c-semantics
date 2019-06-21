@@ -1,29 +1,35 @@
-TUS = $(wildcard ./*.c) $(wildcard ./*.C)
-EXCLUDES=
-TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
-CPP_TESTS = $(filter-out %.c, ${TESTS})
-C_TESTS = $(filter-out %.C, ${TESTS})
-KCC_COMPILED_TESTS = ${TESTS:=.kcc.out}
-TEST_COMPARISON = ${TESTS:=.cmp}
-CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
-C_TEST_COMPARISON = ${C_TESTS:=.cmp}
+include ../check-results.mk
 
+TUS := $(wildcard ./*.c) $(wildcard ./*.C)
+EXCLUDES :=
+TESTS := $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
+CPP_TESTS := $(filter-out %.c, ${TESTS})
+C_TESTS := $(filter-out %.C, ${TESTS})
+KCC_COMPILED_TESTS := ${TESTS:=.kcc.out}
+TEST_COMPARISON := ${TESTS:=.cmp}
+CPP_TEST_COMPARISON := ${CPP_TESTS:=.cmp}
+C_TEST_COMPARISON := ${C_TESTS:=.cmp}
+
+# Override the definition in `../check-results.mk`.
 CHECK_RESULT_COMPILE = if [ $$? -eq 1 -o $$? -eq 255 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
-CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
 KCC := ../../dist/kcc
 KXX := ../../dist/k++
 
-KCCFLAGS = -fno-diagnostics-color -Werror -Wfatal-errors
+KCCFLAGS := -fno-diagnostics-color -Werror -Wfatal-errors
 
-.PHONY: test clean reference comparison
 .PRECIOUS: %.kcc %.out
 
+.PHONY: test
 test: ${KCC_COMPILED_TESTS}
 
+.PHONY: comparison
 comparison: ${TEST_COMPARISON}
 
+.PHONY: c-comparison
 c-comparison: ${C_TEST_COMPARISON}
+
+.PHONY: cpp-comparison
 cpp-comparison: ${CPP_TEST_COMPARISON}
 
 %-link1.c.kcc.out: %-link1.c %-link2.c
@@ -51,5 +57,6 @@ cpp-comparison: ${CPP_TEST_COMPARISON}
 	@echo -n "Comparing $^... "
 	@diff $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
+.PHONY: clean
 clean:
 	rm -rf *.out *.kcc *.tmp *.cmp
