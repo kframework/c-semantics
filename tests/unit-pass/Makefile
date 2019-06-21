@@ -2,39 +2,22 @@ include ../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
 EXCLUDES :=
-OS_TUS := $(wildcard ./j*.c) $(wildcard ./*.C)
-OS_EXCLUDES := ./stdio-scanf11.c \
-               ./stdio-scanf12.c \
-               ./stdio-scanf15.c \
-               ./stdio-bug3.c \
-               ./stdio-bug5.c \
-               ./stdio-bug6.c \
-               ./stdio-bug7.c \
-               ./stdio-bug12.c \
-               ./stdio-bug18.c \
-               ./stdio-bug19.c \
-               ./stdio-bug20.c \
-               ./stdio-fwrite.c \
-               ./stdio-temptest.c \
-               ./compcertTSO-2.c \
-               ./stdio-ferror.c \
-               ./stdio-fgets.c \
-               ./stdio-fseek.c \
-               ./stdio-scanf-flush.c \
-               ./stdio-ungetc.c \
-               ./stdio-sscanf.c \
-               ./stdio-fileno.c \
-               ./inst-check.c \
+OS_STDIO_EXCLUDES := $(wildcard ./stdio-*.c)
+OS_EXCLUDES := $(OS_STDIO_EXCLUDES) \
                ./pthreads-starve.c \
                ./fopen-enoent.c \
                ./oldstyle-main.c \
-               ./struct-ini-1.c \
                ./j016.c \
+               ./struct-ini-1.c \
+               ./20051113-1.c \
+               ./20050502-1.c \
+               ./string-opt-5.c \
+               ./inst-check.c \
                ./include-time.C \
                ./new23.C \
                ./new41.C
 TESTS := $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
-OS_TESTS := $(filter-out $(OS_EXCLUDES), $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${OS_TUS}))))
+OS_TESTS := $(filter-out $(OS_EXCLUDES), $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS}))))
 CPP_TESTS := $(filter-out %.c, ${TESTS})
 C_TESTS := $(filter-out %.C, ${TESTS})
 GCC_COMPILED_TESTS := ${TESTS:=.gcc}

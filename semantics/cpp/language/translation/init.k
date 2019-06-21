@@ -67,8 +67,6 @@ module CPP-TRANSLATION-INIT
 
      rule StmtLoc(L::CabsLoc, S::Stmt) => L ~> S
 
-     rule DeclLoc(L::CabsLoc, D::Decl) => L ~> D
-
      rule <k> L:CabsLoc => .K ...</k>
           <elab>... .K => L </elab>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>

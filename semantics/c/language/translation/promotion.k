@@ -31,6 +31,7 @@ module C-PROMOTION
           => fillExpr(O, L, cast(promote(utype(R)), R))
           requires isIntegerType(type(R))
                andBool notBool isPromoted(utype(R))
+               andBool (notBool isIntegerType(type(L)) orBool isPromoted(utype(L)))
 
      syntax KItem ::= arithBinNonEqualityOp(K, K)
      rule arithBinNonEqualityOp(L:K, R:K)
@@ -51,25 +52,25 @@ module C-PROMOTION
 
      rule arithBinNonEqualityOp(tv(V::CValue, T::UType), R:RValue) #as O:KItem
           => fillExpr(O, tv(V, stripConstants(T)), R)
-          requires fromConstantExpr(T)
-               andBool notBool fromConstantExpr(R)
+          requires fromConstantExpr(T) andBool notBool fromConstantExpr(R)
                andBool (notBool isIntegerUType(T) orBool isPromoted(T))
+               andBool (notBool isIntegerUType(utype(R)) orBool isPromoted(utype(R)))
      rule arithBinNonEqualityOp(L:RValue, tv(V::CValue, T::UType)) #as O:KItem
           => fillExpr(O, L, tv(V, stripConstants(T)))
-          requires fromConstantExpr(T)
-               andBool notBool fromConstantExpr(L)
+          requires fromConstantExpr(T) andBool notBool fromConstantExpr(L)
                andBool (notBool isIntegerUType(T) orBool isPromoted(T))
+               andBool (notBool isIntegerUType(utype(L)) orBool isPromoted(utype(L)))
 
      rule arithBinNonEqualityOp(te(V:K, T::UType), R:RValue) #as O:KItem
           => fillExpr(O, te(V, stripConstants(T)), R)
-          requires fromConstantExpr(T)
-               andBool notBool fromConstantExpr(R)
+          requires fromConstantExpr(T) andBool notBool fromConstantExpr(R)
                andBool (notBool isIntegerUType(T) orBool isPromoted(T))
+               andBool (notBool isIntegerUType(utype(R)) orBool isPromoted(utype(R)))
      rule arithBinNonEqualityOp(L:RValue, te(V:K, T::UType)) #as O:KItem
           => fillExpr(O, L, te(V, stripConstants(T)))
-          requires fromConstantExpr(T)
-               andBool notBool fromConstantExpr(L)
+          requires fromConstantExpr(T) andBool notBool fromConstantExpr(L)
                andBool (notBool isIntegerUType(T) orBool isPromoted(T))
+               andBool (notBool isIntegerUType(utype(L)) orBool isPromoted(utype(L)))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.8}{1}}}{
      Many operators that expect operands of arithmetic type cause conversions
@@ -123,8 +124,8 @@ module C-PROMOTION
                         cast(usualArithmeticConversion(utype(L), utype(R)), R))
          requires isArithmeticType(type(L))
                andBool isArithmeticType(type(R))
-               andBool (notBool isIntegerType(type(L)) orBool isPromoted(utype(L)))
-               andBool (notBool isIntegerType(type(R)) orBool isPromoted(utype(R)))
+               andBool (notBool isIntegerUType(utype(L)) orBool isPromoted(utype(L)))
+               andBool (notBool isIntegerUType(utype(R)) orBool isPromoted(utype(R)))
                andBool notBool (arithBinNonEqualityOp(_, _) :=K O andBool (fromConstantExpr(L) xorBool fromConstantExpr(R)))
                andBool (utype(L) =/=Type utype(R))
 

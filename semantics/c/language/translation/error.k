@@ -8,6 +8,7 @@ endmodule
 
 module C-TRANSLATION-ERROR
      imports C-TRANSLATION-ERROR-SYNTAX
+     imports C-CONFIGURATION
      imports BOOL
      imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports ERROR-SYNTAX
@@ -18,8 +19,10 @@ module C-TRANSLATION-ERROR
      rule lintEmpty(_) => .K
           requires notBool hasLint
 
-     rule EXIT(E:ErrorMsg)
-          => reportError(E, nameOfCurrentTranslationUnit(), currentTranslationScope(), currentTranslationLoc(), .Map, .K)
-          ~> HALT
+     rule <k> EXIT(E:ErrorMsg)
+               => reportError(E, nameOfCurrentTranslationUnit(), currentTranslationScope(), currentTranslationLoc(), .Map, .K)
+               ~> HALT
+          ...</k>
+          <curr-eval-context> eval </curr-eval-context>
 
 endmodule
