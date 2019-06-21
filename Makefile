@@ -368,9 +368,6 @@ clean:
 	-$(MAKE) -C parser clean
 	-$(MAKE) -C semantics clean
 	-$(MAKE) -C tests clean
-	-$(MAKE) -C tests/unit-pass clean
-	-$(MAKE) -C tests/unit-fail clean
-	-$(MAKE) -C tests/unit-fail-compilation clean
 	-rm -rf scripts/cdecl-3.6/
 	-rm -rf $(OUTPUT_DIR)
 
