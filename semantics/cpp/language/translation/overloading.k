@@ -269,12 +269,12 @@ module CPP-TRANSLATION-OVERLOADING
           => standardConversionSequence(identity, identity, identity, B, P)
           requires bindsDirectlyToExp(P, A, C, B)
                andBool notBool (isCPPClassType(innerType(P)) andBool isCPPClassType(A)
-                    andBool isBaseClassOf(innerType(P), A))
+                    andBool isProperBaseClassOf(innerType(P), A))
 
      rule computeConversionSequence(cppRefType #as P::CPPType, t(... st: classType(...)) #as A::CPPType, C::ValueCategory, B::Bool, _, _)
           => standardConversionSequence(identity, derivedToBaseConversion(P, A), identity, B, P)
           requires bindsDirectlyToExp(P, A, C, B) andBool isCPPClassType(innerType(P))
-               andBool isBaseClassOf(innerType(P), A)
+               andBool isProperBaseClassOf(innerType(P), A)
 
      rule computeConversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC::Bool)
           => computeConversionSequence(innerType(P), A, C, false, false, CanUDC)
@@ -873,6 +873,7 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule rank(derivedToBaseConversion(...)) => 1
 
+     // @ref n4820 12.3.3.2:4.1
      rule booleanConversion(A1::CPPType) >Conv booleanConversion(A2::CPPType)
           => true
           requires notBool (isCPPPointerType(A1) orBool isCPPMemberPointerType(A1) orBool isCPPNullPtrTType(A1))
@@ -883,38 +884,35 @@ module CPP-TRANSLATION-OVERLOADING
           requires promote(A1) ==Type P1 andBool promote(promote(A2)) ==Type P2
                andBool promote(A2) =/=Type promote(promote(A2))
 
+     // @ref n4820 12.3.3.2:4.3a
      rule pointerConversion(t(... st: pointerType(t(... st: classType(...)) #as A::CPPType)), t(... st: pointerType(t(... st: classType(...)) #as B1::CPPType)))
           >Conv
           pointerConversion(t(... st: pointerType(t(... st: void))), t(... st: pointerType(B2::CPPType)))
           => true
           requires B1 ==Type B2 andBool A =/=Type B1 andBool isBaseClassOf(A, B1)
 
+     // @ref n4820 12.3.3.2:4.3b
      rule pointerConversion(t(... st: pointerType(t(... st: void))), t(... st: pointerType(t(... st: classType(...)) #as A::CPPType)))
           >Conv
           pointerConversion(t(... st: pointerType(t(... st: void))), t(... st: pointerType(t(... st: classType(...)) #as B::CPPType)))
           => true
           requires A =/=Type B andBool isBaseClassOf(A, B)
 
+     // @ref n4820 12.3.3.2:4.4.1
      rule pointerConversion(t(... st: pointerType(t(... st: classType(...)) #as B::CPPType)), t(... st: pointerType(t(... st: classType(...)) #as C1::CPPType)))
           >Conv
           pointerConversion(t(... st: pointerType(t(... st: classType(...)) #as A::CPPType)), t(... st: pointerType(C2::CPPType)))
           => true
           requires A =/=Type B andBool B =/=Type C1 andBool C1 ==Type C2 andBool isBaseClassOf(A, B) andBool isBaseClassOf(B, C1)
 
+     // @ref n4820 12.3.3.2:4.4.3
      rule pointerConversion(t(... st: pointerType(t(... st: classType(...)) #as A1::CPPType)), t(... st: pointerType(t(... st: classType(...)) #as B::CPPType)))
           >Conv
           pointerConversion(t(... st: pointerType(A2::CPPType)), t(... st: pointerType(t(... st: classType(...)) #as C::CPPType)))
           => true
           requires A1 ==Type A2 andBool A1 =/=Type B andBool B =/=Type C andBool isBaseClassOf(A1, B) andBool isBaseClassOf(B, C)
 
-     rule derivedToBaseConversion(P1::CPPType, A1::CPPType)
-          >Conv
-          derivedToBaseConversion(P2::CPPType, A2::CPPType)
-          =>
-          pointerConversion(type(pointerType(P1)), type(pointerType(A1)))
-          >Conv
-          pointerConversion(type(pointerType(P2)), type(pointerType(A2)))
-
+     // @ref n4820 12.3.3.2:4.4.3
      rule memberPointerConversion(t(... st: memberPointerType(P1::CPPType, _)), t(... st: memberPointerType(A1::CPPType, _)))
           >Conv
           memberPointerConversion(t(... st: memberPointerType(P2::CPPType, _)), t(... st: memberPointerType(A2::CPPType, _)))
@@ -922,6 +920,15 @@ module CPP-TRANSLATION-OVERLOADING
           pointerConversion(type(pointerType(A1)), type(pointerType(P1)))
           >Conv
           pointerConversion(type(pointerType(A2)), type(pointerType(P2)))
+
+     // @ref n4820 12.3.3.2:4.4.4
+     rule derivedToBaseConversion(P1::CPPType, A1::CPPType)
+          >Conv
+          derivedToBaseConversion(P2::CPPType, A2::CPPType)
+          =>
+          pointerConversion(type(pointerType(P1)), type(pointerType(A1)))
+          >Conv
+          pointerConversion(type(pointerType(P2)), type(pointerType(A2)))
 
      rule _ >Conv _ => false [owise]
 
