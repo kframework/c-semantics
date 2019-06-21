@@ -244,14 +244,17 @@ let interpret_wcharacter_constant char_list =
 
 let constant =
   let float_literal r =
-    let hex_float_constant f =
-      let [significand; exponentPart] = Str.split (Str.regexp "[pP]") f in
-      let (wholePart, fractionalPart) = match Str.split_delim (Str.regexp "\.") significand with
+    let split_significand significand = match Str.split_delim (Str.regexp "\.") significand with
         | [""; ""] -> ("0", "0")
         | [wp; ""] -> (wp, "0")
         | [""; fp] -> ("0", fp)
         | [wp; fp] -> (wp, fp)
+        | [""]     -> ("0", "0")
+        | [wp]     -> (wp, "0")
         | _        -> ("0", "0") in
+    let hex_float_constant f =
+      let [significand; exponentPart] = Str.split (Str.regexp "[pP]") f in
+      let (wholePart, fractionalPart) = split_significand significand in
       let [exponentPart]              = Str.split (Str.regexp "[+]") exponentPart in
       let exponentPart                = int_of_string exponentPart in
       let significand                 = wholePart ^ "." ^ fractionalPart in
@@ -261,12 +264,7 @@ let constant =
       let (significand, exponentPart) = match Str.split (Str.regexp "[eE]") f with
         | [x]    -> (x, "0")
         | [x; y] -> (x, y) in
-      let (wholePart, fractionalPart) = match Str.split_delim (Str.regexp "\.") significand with
-        | [""; ""] -> ("0", "0")
-        | [wp; ""] -> (wp, "0")
-        | [""; fp] -> ("0", fp)
-        | [wp; fp] -> (wp, fp)
-        | _        -> ("0", "0") in
+      let (wholePart, fractionalPart) = split_significand significand in
       let stringRep                   = wholePart ^ "." ^ fractionalPart ^ "e" ^ exponentPart in
       let [exponentPart]              = Str.split (Str.regexp "[+]") exponentPart in
       let exponentPart                = int_of_string exponentPart in
