@@ -14,6 +14,8 @@ module C-CONFIGURATION
      imports SYMLOC-SYNTAX
      imports COMMON-THREAD-LOCAL
 
+     syntax GeneratedTopCell
+
      configuration
 <global />
 <s />
@@ -36,7 +38,7 @@ module C-CONFIGURATION
                <thread-id color="yellow"> 0 </thread-id>
 
                <k color="green" multiplicity="?">
-                    loadObj(unwrapObj($PGM:K))
+                    loadObj(unwrapObj($PGM:GeneratedTopCell))
                     ~> initMainThread(getEntryPoint($OPTIONS:Set))
                     ~> pgmArgs($ARGV:List)
                     ~> callEntryPoint(getEntryPoint($OPTIONS:Set), size($ARGV:List), incomingArguments($ARGV:List))

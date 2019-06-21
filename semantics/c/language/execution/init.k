@@ -40,7 +40,7 @@ module C-EXECUTION-INIT
      imports LIBC-IO-SYNTAX
      imports LIBCPP-BOOTSTRAP-SYNTAX
 
-     syntax TCell ::= ".TCell" [klabel(.TCell)]
+     syntax TCell ::= ".TCell" [klabel(.TCell), symbol]
 
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the
