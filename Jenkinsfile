@@ -43,6 +43,7 @@ pipeline {
       steps {
         sh '''
           eval $(opam config env)
+          ${K_BIN}/spawn-kserver
           make -C tests/unit-pass -j$(nproc) os-comparison
         '''
       }

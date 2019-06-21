@@ -182,10 +182,12 @@ module C-DECL-GLOBAL
           requires getQualifiers(T) =/=K noQuals
           [structural]
 
-     rule (.K => CV("TDG9",
-          "file-scope declaration of " +String showCId(X)
-          +String " with a variably-modified type."))
-          ~> declare''(T::Type, X:CId, _)
+     rule <k> (.K => CV("TDG9",
+               "file-scope declaration of " +String showCId(X)
+               +String " with a variably-modified type."))
+               ~> declare''(T::Type, X:CId, _)
+          ...</k>
+          <curr-scope> fileScope </curr-scope>
           requires notBool isFunctionType(T) andBool isVariablyModifiedType(T)
 
      // Checks if the type is complete if there's an initializer.

@@ -251,12 +251,12 @@ module C-TYPING-EXPR
           requires stripQualifiers(T) ==Type stripQualifiers(T')
                andBool SizeofExpression(...) :/=K K
 
-     rule elaborateDone(V:K, _) ~> typeof(_ ? _ : (t(... st: pointerType(_)) #as T::Type))
+     rule elaborateDone(V:K, V':K) ~> typeof(_ ? t(...) : (t(... st: pointerType(_)) #as T::Type))
           => typeof(T)
-          requires isNPC(V)
-     rule elaborateDone(_, V:K) ~> typeof(_ ? t(... st: pointerType(_)) #as T::Type : _)
+          requires isNPC(V) andBool notBool isNPC(V')
+     rule elaborateDone(V:K, V':K) ~> typeof(_ ? t(... st: pointerType(_)) #as T::Type : t(...))
           => typeof(T)
-          requires isNPC(V)
+          requires isNPC(V') andBool notBool isNPC(V)
 
      rule elaborateDone(_, V:K)
           ~> typeof(_ ? t(_, Mods1::Set, pointerType(t(Qs1'::Quals, Mods1'::Set, T::SimpleType))) : t(_, Mods2::Set, pointerType(t(Qs2'::Quals, Mods2'::Set, void))))

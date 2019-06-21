@@ -176,10 +176,20 @@ module C-TYPING-COMMON
      syntax Int ::= numBits(SimpleIntegerType) [function]
      rule numBits(T::SimpleIntegerType) => numBytesArithmetic(T) *Int cfg:bitsPerByte
 
-     rule min(ut(_, bitfieldType(_:SimpleSignedType, N::Int)))
+     rule min(ut(_, enumType(S::TagId))) => min(utype(getEnumAlias(S)))
+     rule max(ut(_, enumType(S::TagId))) => max(utype(getEnumAlias(S)))
+
+     rule min(ut(_, T:SimpleIntegerType)) => imin(T)
+     rule max(ut(_, T:SimpleIntegerType)) => imax(T)
+
+     rule imin(bitfieldType(_:SimpleSignedType, N::Int))
           => 0 -Int (1 <<Int absInt(N -Int 1))
-     rule max(ut(_, bitfieldType(_:SimpleSignedType, N::Int)))
+     rule imax(bitfieldType(_:SimpleSignedType, N::Int))
           => (1 <<Int absInt(N -Int 1)) -Int 1
+
+     rule imin(bitfieldType(_:SimpleUnsignedType, N::Int)) => 0
+     rule imax(bitfieldType(_:SimpleUnsignedType, N::Int))
+          => (1 <<Int absInt(N)) -Int 1
 
      rule imin(T:SimpleSignedType)
           => 0 -Int (1 <<Int absInt(numBits(T) -Int 1))
@@ -187,20 +197,8 @@ module C-TYPING-COMMON
           => (1 <<Int absInt(numBits(T) -Int 1)) -Int 1
 
      rule imin(_:SimpleUnsignedType) => 0
-
-     rule imax(bool) => 1
-
-     rule max(ut(_, bitfieldType(_:SimpleUnsignedType, N::Int)))
-          => (1 <<Int absInt(N)) -Int 1
-
      rule imax(T:SimpleUnsignedType)
           => (1 <<Int absInt(numBits(T))) -Int 1
-
-     rule min(ut(_, T:SimpleIntegerType)) => imin(T)
-     rule max(ut(_, T:SimpleIntegerType)) => imax(T)
-
-     rule min(ut(_, enumType(S::TagId))) => min(utype(getEnumAlias(S)))
-     rule max(ut(_, enumType(S::TagId))) => max(utype(getEnumAlias(S)))
 
      rule innerType(T:UType) => innerType(type(T))
 
