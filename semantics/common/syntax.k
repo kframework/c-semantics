@@ -63,7 +63,8 @@ module COMMON-SYNTAX
      syntax Location ::= CodeLoc(K, CabsLoc)
 
      syntax FunctionSpecifier ::= Inline() [symbol]
-     syntax Init ::= NoInit() [symbol]
+     syntax NoInit ::= NoInit() [symbol]
+     syntax Init ::= NoInit
 
      syntax AutoSpecifier ::= Auto() [symbol]
      syntax StorageClassSpecifier ::= Static() [symbol] | Extern() [symbol] | Register() [symbol] | ThreadLocal() [symbol]

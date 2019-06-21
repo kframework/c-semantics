@@ -29,7 +29,7 @@ let init_state : printer_state =
 type csort =
   | K | KItem | KResult | Bool | Int | Float | String
   | Specifier | Qualifier | FunctionSpecifier | StorageClassSpecifier | SpecifierElem
-  | AutoSpecifier | TypeSpecifier | CabsLoc | CId | Init | RValue | StrictList
+  | AutoSpecifier | TypeSpecifier | CabsLoc | CId | NoInit | RValue | StrictList
   | Constant | StringLiteral | FloatConstant | IntConstant
 
 let csort_to_string : csort -> string = function
@@ -49,7 +49,7 @@ let csort_to_string : csort -> string = function
   | TypeSpecifier         -> "TypeSpecifier"
   | CabsLoc               -> "CabsLoc"
   | CId                   -> "CId"
-  | Init                  -> "Init"
+  | NoInit                -> "NoInit"
   | RValue                -> "RValue"
   | StrictList            -> "StrictList"
   | Constant              -> "Constant"
@@ -345,7 +345,7 @@ and specifier a = kapply Specifier "Specifier" [list_of specifier_elem a KItem]
 and name (a, b, c, d) = kapply KItem "Name" [identifier a CId; decl_type b KItem; list_of specifier_elem c KItem]
 and single_name (a, b) = kapply KItem "SingleName" [specifier a KItem; name b KItem]
 and init_expression = function
-  | NO_INIT         -> kapply0 Init "NoInit"
+  | NO_INIT         -> kapply0 NoInit "NoInit"
   | SINGLE_INIT exp -> kapply KItem "SingleInit" [expression exp KItem]
   | COMPOUND_INIT a -> kapply KItem "CompoundInit" [list_of init_fragment a KItem]
 and init_fragment (a, b) =

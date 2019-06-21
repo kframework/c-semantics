@@ -93,8 +93,7 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= "comma"
      // these are semantic
 
-     syntax KResult ::= initValue(CId, Type, K)
-     syntax NoInit
+     syntax NoInit ::= initValue(CId, Type, K)
      syntax KResult ::= NoInit
 
      syntax CompoundLiteralId ::= compoundLiteral(Int)
@@ -208,10 +207,6 @@ module C-DYNAMIC
 
      rule N:Int => tv(N, utype(cfg:largestUnsigned))
           [structural] // for internal computations
-
-     rule isNoInit(NoInit()) => true
-     rule isNoInit(initValue(_, _, .K)) => true
-     rule isNoInit(_) => false [owise]
 
      rule fillRHoles(V:RValue, te(L:K := E:K, T::UType)) => te(L := fillRHoles(V, E), T)
      rule fillRHoles(V:RValue, Cast(T::Type, E:K)) => Cast(T, fillRHoles(V, E))
