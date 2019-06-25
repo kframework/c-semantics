@@ -33,13 +33,8 @@ OS_TEST_COMPARISON := ${OS_TESTS:=.cmp}
 CPP_TEST_COMPARISON := ${CPP_TESTS:=.cmp}
 C_TEST_COMPARISON := ${C_TESTS:=.cmp}
 
-ifeq ($(origin CC),default)
-	CC := gcc-7
-endif
-
-ifeq ($(origin CXX),default)
-	CXX := g++-7
-endif
+CC := gcc-7
+CXX := g++-7
 
 KCC := $(ROOT)/../../dist/kcc
 KXX := $(ROOT)/../../dist/k++
