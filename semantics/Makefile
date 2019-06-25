@@ -94,14 +94,12 @@ endif
 # See https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html
 Makefile: $(DEPENDS) ;
 
-$(DEPENDS): $(GENERATED_MAKEFILE_DIR)/%.dep.mk: %.k \
-                                                | $(GENERATED_MAKEFILE_DIR)
-	../scripts/gen-makefile-atomically.sh \
-		"$(OUTPUT_DIR)/$*-kompiled" \
-		"$(realpath $<)" \
+# This rule generates $(DEPENDS), which is empty if the goal is `clean`.
+$(GENERATED_MAKEFILE_DIR)/%.dep.mk: %.k \
+                                    | $(GENERATED_MAKEFILE_DIR)
+	$(CURDIR)/../scripts/gen-file-atomically.sh \
 		"$@" \
-		"$(KDEP)" \
-		"$(KDEP_FLAGS)"
+		"$(KDEP) $(KDEP_FLAGS) -d $(OUTPUT_DIR)/$*-kompiled -- $(realpath $<)"
 
 
 # Move this to the end so that .SECONDEXPANSION
