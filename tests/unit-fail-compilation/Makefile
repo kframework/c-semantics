@@ -1,4 +1,8 @@
-include ../check-results.mk
+ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
+Makefile: $(ROOT)/../check-results.mk ;
+
+include $(ROOT)/../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
 EXCLUDES :=
@@ -13,8 +17,8 @@ C_TEST_COMPARISON := ${C_TESTS:=.cmp}
 # Override the definition in `../check-results.mk`.
 CHECK_RESULT_COMPILE = if [ $$? -eq 1 -o $$? -eq 255 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
-KCC := ../../dist/kcc
-KXX := ../../dist/k++
+KCC := $(ROOT)/../../dist/kcc
+KXX := $(ROOT)/../../dist/k++
 
 KCCFLAGS := -fno-diagnostics-color -Werror -Wfatal-errors
 
