@@ -240,7 +240,7 @@ module C-DYNAMIC
      syntax SSList ::= KItem "seqstrict::" SSList [seqstrict]
                      | ".SSList"
      rule isKResult(.SSList) => true
-     rule isKResult(S1::SSList seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
+     rule isKResult(S1::KItem seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
      rule toSSList(ListItem(K:KItem) L::List) => K seqstrict:: toSSList(L)
      rule toSSList(.List) => .SSList
      rule ofSSList(krlist(L1::List) seqstrict:: L2::SSList) => L1 ofSSList(L2)
@@ -254,7 +254,7 @@ module C-DYNAMIC
      syntax SList ::= KItem "strict::" SList [strict]
                     | ".SList"
      rule isKResult(.SList) => true
-     rule isKResult(S1::SList strict:: S2::SList) => isKResult(S1) andBool isKResult(S2)
+     rule isKResult(S1::KItem strict:: S2::SList) => isKResult(S1) andBool isKResult(S2)
      rule toSList(ListItem(K:KItem) L::List) => K strict:: toSList(L)
      rule toSList(.List) => .SList
      rule ofSList(krlist(L1::List) strict:: L2::SList) => L1 ofSList(L2)

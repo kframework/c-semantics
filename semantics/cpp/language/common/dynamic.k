@@ -661,7 +661,7 @@ module CPP-DYNAMIC-OTHER
 
      rule isKResult(.SPRValList) => true
 
-     rule isKResult(S1::SPRValList prval:: S2::SPRValList) => isKResult(S1) andBool isKResult(S2)
+     rule isKResult(S1:K prval:: S2::SPRValList) => isKResult(S1) andBool isKResult(S2)
 
      rule toSPRValList(ListItem(K:KItem) L::List) => K prval:: toSPRValList(L)
 
@@ -695,7 +695,7 @@ module CPP-DYNAMIC-OTHER
 
      rule isKResult(.STypeStrictList) => true
 
-     rule isKResult(S1::STypeStrictList typeStrict:: S2::STypeStrictList) => isKResult(S1) andBool isKResult(S2)
+     rule isKResult(S1:K typeStrict:: S2::STypeStrictList) => isKResult(S1) andBool isKResult(S2)
 
      rule toSTypeStrictList(ListItem(K:KItem) L::List) => K typeStrict:: toSTypeStrictList(L)
 
@@ -723,7 +723,7 @@ module CPP-DYNAMIC-OTHER
      syntax SSList ::= KItem "seqstrict::" SSList [klabel(seqstrictlist-sep-cpp), seqstrict(c)]
                      | ".SSList" [klabel(seqstrictlist-unit-cpp)]
      rule isKResult(.SSList) => true
-     rule isKResult(S1::SSList seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
+     rule isKResult(S1::KItem seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
      rule isExecResult(.SSList) => true
      rule isExecResult(S1::SSList seqstrict:: S2::SSList) => isExecResult(S1) andBool isExecResult(S2)
      rule toSSList(ListItem(K:KItem) L::List) => K seqstrict:: toSSList(L)
@@ -742,7 +742,7 @@ module CPP-DYNAMIC-OTHER
      syntax SList ::= KItem "strict::" SList [klabel(strictlist-sep-cpp), strict(c)]
                     | ".SList" [klabel(strictlist-unit-cpp)]
      rule isKResult(.SList) => true
-     rule isKResult(S1::SList strict:: S2::SList) => isKResult(S1) andBool isKResult(S2)
+     rule isKResult(S1::KItem strict:: S2::SList) => isKResult(S1) andBool isKResult(S2)
      rule isExecResult(.SList) => true
      rule isExecResult(S1::SList strict:: S2::SList) => isExecResult(S1) andBool isExecResult(S2)
      rule toSList(ListItem(K:KItem) L::List) => K strict:: toSList(L)
