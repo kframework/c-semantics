@@ -1,4 +1,8 @@
-include ../check-results.mk
+ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
+Makefile: $(ROOT)/../check-results.mk ;
+
+include $(ROOT)/../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
 EXCLUDES :=
