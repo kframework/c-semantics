@@ -48,8 +48,6 @@ export CXX := $(PROFILE_DIR)/cxx
 
 export LOGGER := $(ROOT)/scripts/build-logger.sh
 
-K_DIST := $(realpath $(K_BIN)/..)
-
 CLANG_TOOLS_BUILD_DIR := $(OUTPUT_DIR)/clang-tools
 CLANG_TOOLS_BIN := $(CLANG_TOOLS_BUILD_DIR)/bin
 
@@ -70,7 +68,6 @@ FILES_TO_DIST := \
 	$(CLANG_TOOLS_BIN)/clang-kast \
 	$(CLANG_TOOLS_BIN)/call-sites \
 	scripts/cdecl-3.6/src/cdecl \
-	$(K_DIST) \
 	LICENSE \
 	licenses
 
