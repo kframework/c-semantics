@@ -108,17 +108,21 @@ module C-COMMON-EXPR-ADDITIVE
      rule tv(Loc:SymLoc, T::UType) + tv(I:Int, T'::UType)
           => addToIntptr(Loc, T, I)
           requires isPromoted(T) andBool T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
      rule tv(I:Int, T::UType) + tv(Loc:SymLoc, T'::UType)
           => addToIntptr(Loc, T, I)
           requires isPromoted(T) andBool T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
      rule tv(Loc:SymLoc, T::UType) - tv(I:Int, T'::UType)
           => addToIntptr(Loc, T, 0 -Int I)
           requires isPromoted(T) andBool T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
      rule tv(_:SymLoc, T::UType) + tv((Loc':SymLoc => unknown(maxIntPtrValue(Loc'))), T'::UType)
           requires isPromoted(T) andBool T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
 
      rule (.K => CV("CEA7",
@@ -229,6 +233,7 @@ module C-COMMON-EXPR-ADDITIVE
                andBool notBool isFunctionType(T) andBool notBool isFunctionType(T')
                andBool isCompleteType(T) andBool isCompleteType(T')
                andBool stripQualifiers(T) ==Type stripQualifiers(T')
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
 
      rule tv(L1:SymLoc, integerUType #as T::UType)
@@ -236,6 +241,7 @@ module C-COMMON-EXPR-ADDITIVE
           => computePointerDifference(offset(L1) -Int offset(L2), 1, T, #if isSignedIntegerUType(T) #then "intptr_t" #else "uintptr_t" #fi)
           requires sameBase(L1, L2)
                andBool isPromoted(T) andBool T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
 
      rule (.K => CV("CEA9",
                "Computing pointer difference between pointers not to qualified or unqualified versions of compatible complete object types."))
@@ -268,25 +274,31 @@ module C-COMMON-EXPR-ADDITIVE
      rule tv(I1:Int, T::UType) + tv(I2:Int, T'::UType)
           => intArithInterpret(T, (I1 +Int I2))
           requires isPromoted(T) andBool T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
      rule tv(I1:Int, T::UType) - tv(I2:Int, T'::UType)
           => intArithInterpret(T, (I1 -Int I2))
           requires isPromoted(T) andBool T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
      rule tv(F1:Float, T::UType) + tv(F2:Float, T'::UType)
           => floatArithInterpret(T, F1 +Float F2)
           requires T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
      rule tv(F1:Float, T::UType) - tv(F2:Float, T'::UType)
           => floatArithInterpret(T, (F1 -Float F2))
           requires T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
 
      rule tv(V::CValue, T::UType) + tv(V'::CValue, T'::UType)
           => makeUnknown(tv(stripUnknown(V), T) + tv(stripUnknown(V'), T'))
-          requires isUnknown(V) orBool isUnknown(V')
+          requires (isUnknown(V) orBool isUnknown(V'))
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
      rule tv(V::CValue, T::UType) - tv(V'::CValue, T'::UType)
           => makeUnknown(tv(stripUnknown(V), T) - tv(stripUnknown(V'), T'))
-          requires isUnknown(V) orBool isUnknown(V')
+          requires (isUnknown(V) orBool isUnknown(V'))
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
 
 endmodule

@@ -30,22 +30,13 @@ module C-STMT-RETURN
      // Return (from C function)
      rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
           <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
-          <curr-tu> TU:String </curr-tu>
-          <tu-id> TU </tu-id>
-          <gtypes>...
-               F |-> t(_, Mods:Set, functionType(T::UType, _))
-          ...</gtypes>
-          requires notBool (Noreturn() in Mods)
-          [structural]
-
-     rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
-          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-tu> "builtin" </curr-tu>
           <types>...
                F |-> t(_, Mods:Set, functionType(T::UType, _))
           ...</types>
           requires notBool (Noreturn() in Mods)
           [structural]
+
      rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
           <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-tu> "native" </curr-tu>
@@ -56,7 +47,7 @@ module C-STMT-RETURN
           [structural]
 
      rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn."))
-               ~> Return(_)
+               ~> Return(_:RValue)
           ...</k>
           <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
           <curr-tu> TU:String </curr-tu>
