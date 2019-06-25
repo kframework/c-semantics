@@ -41,11 +41,6 @@ CXXFLAGS += -Wextra
 CXXFLAGS += -Werror
 CXXFLAGS += -pedantic
 
-# We export these so they are available to the
-# `clang-tools` target.
-export CC := $(PROFILE_DIR)/cc
-export CXX := $(PROFILE_DIR)/cxx
-
 export LOGGER := $(ROOT)/scripts/build-logger.sh
 
 CLANG_TOOLS_BUILD_DIR := $(OUTPUT_DIR)/clang-tools
@@ -238,6 +233,8 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 
 
 .PHONY: $(PROFILE)-native
+$(PROFILE)-native: CC := $(PROFILE_DIR)/cc
+$(PROFILE)-native: CXX := $(PROFILE_DIR)/cxx
 $(PROFILE)-native: $(PROFILE_OUTPUT_DIR)/native/main.o \
                    $(PROFILE_OUTPUT_DIR)/native/server.c \
                    $(PROFILE_OUTPUT_DIR)/native/builtins.o \
@@ -275,13 +272,16 @@ parser/cparser:
 	@$(MAKE) -C parser
 
 $(CLANG_TOOLS_BIN)/%: $(CLANG_TOOLS_BUILD_DIR)/Makefile
+	@$(LOGGER) "Entering target $@"
 	@$(MAKE) -C $(CLANG_TOOLS_BUILD_DIR) $*
 
 $(CLANG_TOOLS_BUILD_DIR)/Makefile: clang-tools/CMakeLists.txt | $(CLANG_TOOLS_BUILD_DIR)
+	@$(LOGGER) "Entering target $@"
 	@cd $(CLANG_TOOLS_BUILD_DIR) \
 		&& test -f Makefile || cmake $(ROOT)/clang-tools
 
 scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
+	@$(LOGGER) "Entering target $@"
 	flock -w 120 $< sh -c 'cd scripts && tar xvf cdecl-$*.tar.gz && cd cdecl-$* && ./configure --without-readline && $(MAKE)' || true
 
 
