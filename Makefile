@@ -135,11 +135,11 @@ check-k:
 
 
 $(OUTPUT_DIR)/writelong: scripts/writelong.c | $(OUTPUT_DIR)
-	@$(LOGGER) Building $@
+	@$(LOGGER) "Building $@"
 	@$(CC) $(CFLAGS) $< -o $@
 
 $(OUTPUT_DIR)/extract-references: scripts/extract-references.cpp | $(OUTPUT_DIR)
-	@$(LOGGER) Building $@
+	@$(LOGGER) "Building $@"
 	@$(CXX) $(CXXFLAGS) $< -lstdc++fs -o $@
 
 $(OUTPUT_DIR)/kcc: scripts/getopt.pl \
