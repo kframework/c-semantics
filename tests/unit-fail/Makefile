@@ -21,8 +21,8 @@ CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $
 # CHECK_RESULT_RUN = if [ $$? -eq 139 ] ; then echo "passed $<"; cat $@.tmp > $@; rm $@.tmp; else echo "failed $<"; cat $@.tmp; exit 1; fi
 CHECK_RESULT_DIFF = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
-KCC := ../../dist/kcc
-KXX := ../../dist/k++
+KCC := $(ROOT)/../../dist/kcc
+KXX := $(ROOT)/../../dist/k++
 
 KCCFLAGS := -frecover-all-errors -fno-diagnostics-color
 

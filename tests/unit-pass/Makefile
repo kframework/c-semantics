@@ -41,8 +41,8 @@ ifeq ($(origin CXX),default)
 	CXX := g++-7
 endif
 
-KCC := ../../dist/kcc
-KXX := ../../dist/k++
+KCC := $(ROOT)/../../dist/kcc
+KXX := $(ROOT)/../../dist/k++
 
 LDFLAGS := -pthread
 
