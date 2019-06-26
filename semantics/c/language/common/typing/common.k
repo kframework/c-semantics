@@ -98,9 +98,8 @@ module C-TYPING-COMMON
 
      rule getEnumAlias(S::TagId) => getEnumAlias'(getTagInfo(S))
 
-     syntax SimpleBasicType ::= "getEnumAlias'" "(" TagInfo ")" [function]
-     rule getEnumAlias'(enumInfo(... enumAlias: T::SimpleBasicType)) => T
-     rule getEnumAlias'(_) => no-type [owise]
+     syntax SimpleIntegerType ::= "getEnumAlias'" "(" TagInfo ")" [function]
+     rule getEnumAlias'(enumInfo(... enumAlias: T::SimpleIntegerType)) => T
 
      rule getFieldInfo(Tag::TagId) => toFieldInfo(getTagInfo(Tag))
 
@@ -154,6 +153,7 @@ module C-TYPING-COMMON
      rule numBytesArithmetic(unsigned-long-long-int) => numBytesArithmetic(long-long-int)
      rule numBytesArithmetic(unsigned-oversized-int) => numBytesArithmetic(oversized-int)
      rule numBytesArithmetic(_) => 0 [owise]
+
      rule numBytes(enumType(S::TagId)) => numBytesArithmetic(getEnumAlias(S))
      rule numBytes(T::SimpleUType) => numBytesArithmetic(T) [owise]
 
