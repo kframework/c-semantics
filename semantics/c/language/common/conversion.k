@@ -76,6 +76,10 @@ module C-CONVERSION
           => tv(V, castTypes(T', T))
           requires T' =/=Type T andBool notBool isBoolUType(T') andBool intInRange(V, T')
 
+     syntax KItem ::= stop(Bool, Bool, Bool, Bool)
+     rule cast(ut(.Set, enumType(_)) #as T'::UType, tv(2, ut(SetItem(IntegerConstant), int) #as T::UType))
+          => stop(T' ==Type T, T' =/=Type T, isBoolUType(T'), intInRange(2, T'))
+
      rule cast(integerUType #as T'::UType, tv(encodedPtr(L:SymLoc, N::Int, M::Int), integerUType #as T::UType))
           => tv(encodedPtr(L, N, M), T')
           requires notBool isBoolUType(T')
