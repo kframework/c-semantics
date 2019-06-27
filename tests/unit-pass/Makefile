@@ -39,9 +39,8 @@ CXX := g++-7
 KCC := $(ROOT)/../../dist/kcc
 KXX := $(ROOT)/../../dist/k++
 
-KCCFLAGS := -fno-native-compilation -Wfatal-errors
-
 LDFLAGS := -pthread
+
 
 .PRECIOUS: %.kcc %.out
 
@@ -79,18 +78,18 @@ zeroinit-class-padding.C.cmp:
 
 %-link1.c.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@$(KCC) $(KCCFLAGS) -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.C.kcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
-	@$(KXX) $(KCCFLAGS) -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KXX) -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.c.kcc: %.c
 	@echo -n "Compiling $<... "
-	@$(KCC) $(KCCFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.kcc: %.C
 	@echo -n "Compiling $<... "
-	@$(KXX) $(KCCFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KXX) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.c.gcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^ (reference)... "
