@@ -208,8 +208,8 @@ module C-TYPING-EXPR
      rule isNPC(V:RValue) => isNullPointerConstant(V)
      rule isNPC(_) => false [owise]
 
-     rule elaborateDone(_, _) ~> typeof(_ ? (arrayOrFunctionType #as T::Type => rvalType(T)) : _)
-     rule elaborateDone(_, _) ~> typeof(_ ? _ : (arrayOrFunctionType #as T::Type => rvalType(T)))
+     rule elaborateDone(_, _) ~> typeof(_ ? (arrayOrFunctionType #as T::Type => type(rvalType(T))) : _)
+     rule elaborateDone(_, _) ~> typeof(_ ? _ : (arrayOrFunctionType #as T::Type => type(rvalType(T))))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
      If both the second and third operands have arithmetic type, the result
@@ -221,9 +221,9 @@ module C-TYPING-EXPR
      rule elaborateDone(_, _) ~> typeof(_ ? arithmeticType #as T::Type : (arithmeticType #as T'::Type))
           => typeof(usualArithmeticConversion(T, T'))
      rule elaborateDone(_, _) ~> typeof(_ ? t(... st: void) #as T::Type : t(... st: void))
-          => typeof(T)
+          => typeof(stripQualifiers(T))
      rule elaborateDone(_, _) ~> typeof(_ ? structOrUnionType #as T::Type : (structOrUnionType #as T'::Type))
-          => typeof(T)
+          => typeof(stripQualifiers(T))
           requires T ==Type T'
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{
@@ -251,11 +251,11 @@ module C-TYPING-EXPR
           requires stripQualifiers(T) ==Type stripQualifiers(T')
                andBool SizeofExpression(...) :/=K K
 
-     rule elaborateDone(V:K, V':K) ~> typeof(_ ? (t(...) #as T::Type) : (t(...) #as T'::Type))
-          => typeof(T')
+     rule elaborateDone(V:K, V':K) ~> typeof(_ ? t(...) : (t(...) #as T'::Type))
+          => typeof(stripQualifiers(T'))
           requires isNPC(V) andBool isPointerType(T')
-     rule elaborateDone(V:K, V':K) ~> typeof(_ ? (t(...) #as T::Type) : (t(...) #as T'::Type))
-          => typeof(T)
+     rule elaborateDone(V:K, V':K) ~> typeof(_ ? (t(...) #as T::Type) : t(...))
+          => typeof(stripQualifiers(T))
           requires isNPC(V') andBool isPointerType(T)
 
      rule elaborateDone(_, V:K)
