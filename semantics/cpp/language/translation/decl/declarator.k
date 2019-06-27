@@ -56,7 +56,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule FunctionDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Params::List)
           => NormalizedDecl(N, X, Mangled, T, NoInit(), Function(Params)) [anywhere]
 
-     rule VarDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Init::Expr, IsDirect:Bool)
+     rule VarDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Init::Init, IsDirect:Bool)
           => NormalizedDecl(N, X, Mangled, T, Init, Var(#if IsDirect #then DirectInit() #else CopyInit() #fi)) [anywhere]
 
      rule FunctionDefinition(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Params::List, Body::Stmt)
@@ -837,6 +837,6 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule #emptyDefaultArguments(N::Int => N -Int 1,
             defArgs(krlist(_::List (.List => ListItem(NoArg()))),
-                    krlist(_::List (.List => ListItem(NoInitCat()))),
-                    krlist(_::List (.List => ListItem(NoInitType()))))) [owise]
+                    krlist(_::List (.List => ListItem(NoInitType()))),
+                    krlist(_::List (.List => ListItem(NoInitCat()))))) [owise]
 endmodule
