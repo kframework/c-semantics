@@ -16,21 +16,6 @@ module C-EXPR-ASSIGNMENT
           requires notBool isRestrictType(T')
                andBool (T ==Type utype(T'))
           [structural]
-     rule nclv(Loc:SymLoc, T'::Type) := tv(V:CValue, T::UType)
-          => checkOverlap(stripProv(Loc), T, T')
-          ~> write(Loc, V, T')
-          ~> tv(V, stripConstants(T))
-          requires notBool isRestrictType(T')
-               andBool (T ==Type utype(T'))
-          [structural]
-     rule nclv(Loc:SymLoc, T'::Type) := tv(V:SymLoc, T::UType)
-          => checkOverlap(stripProv(Loc), T, T')
-          ~> checkRestrictAssign(getRestrictBlock(T'), getRelevantTags(Loc, V))
-          ~> write(Loc, V, T')
-          ~> tv(V, stripConstants(T))
-          requires isRestrictType(T')
-               andBool (T ==Type utype(T'))
-          [structural]
      rule nclv(Loc:SymLoc, T'::Type) := tv(V:SymLoc, T::UType)
           => checkOverlap(stripProv(Loc), T, T')
           ~> checkRestrictAssign(getRestrictBlock(T'), getRelevantTags(Loc, V))
