@@ -6,7 +6,7 @@ export KOMPILE := $(K_BIN)/kompile
 export KDEP := $(K_BIN)/kdep
 
 # Appending to whatever the environment provided.
-K_OPTS += -Xmx8g
+K_OPTS += -Xmx16g
 K_OPTS += -Xss32m
 export K_OPTS
 

@@ -1,3 +1,13 @@
+module CPP-TRANSLATION-ENV-SYNTAX
+     imports COMPAT-SORTS
+
+      syntax DefaultArguments ::= defArgs(vals: StrictList, types: StrictList, cats: StrictList)
+
+      syntax DefaultArguments ::= DefaultArgumentsResult
+
+      syntax DefaultArgumentsResult ::= defArgs(vals: StrictListResult, types: StrictListResult, cats: StrictListResult)
+endmodule
+
 module CPP-EXECUTION-ENV-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
@@ -10,6 +20,7 @@ module CPP-EXECUTION-ENV-SYNTAX
 endmodule
 
 module CPP-EXECUTION-ENV
+     imports CPP-TRANSLATION-ENV-SYNTAX
      imports CPP-EXECUTION-ENV-SYNTAX
      imports C-CONFIGURATION
 

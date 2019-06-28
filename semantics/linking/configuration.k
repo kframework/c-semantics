@@ -16,7 +16,7 @@ module C-CONFIGURATION
 
 <exec>
      <k color="green">
-          load($OBJS:K)
+          $OBJS:KItem
           ~> link
           ~> cleanup
      </k>

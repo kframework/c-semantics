@@ -8,6 +8,7 @@ use File::Temp;
 use File::Copy;
 use MIME::Base64;
 use String::Escape qw(quote backslash); 
+use String::ShellQuote qw(shell_quote_best_effort);
 
 setpgrp;
 
@@ -31,9 +32,9 @@ my $SCRIPTS_DIR = '__EXTERN_SCRIPTS_DIR__';
 
 my $KRUN = '__EXTERN_KRUN__';
 
-my $EXEC_DEF = catfile($SCRIPTS_DIR, "c-cpp-kompiled");
-my $EXEC_ND_DEF = catfile($SCRIPTS_DIR, "c-nd-kompiled");
-my $EXEC_ND_THREAD_DEF = catfile($SCRIPTS_DIR, "c-nd-thread-kompiled");
+my $EXEC_DEF = catfile(catfile($SCRIPTS_DIR, "c-cpp-kompiled"), "c-cpp-kompiled");
+my $EXEC_ND_DEF = catfile(catfile($SCRIPTS_DIR, "c-nd-kompiled"), "c-nd-kompiled");
+my $EXEC_ND_THREAD_DEF = catfile(catfile($SCRIPTS_DIR, "c-nd-thread-kompiled"), "c-nd-thread-kompiled");
 
 my @temporaryFiles = ();
 
@@ -64,10 +65,9 @@ sub main {
         $objInput = '';
       }
 
-      my $argv = reduce { our ($a, $b); "`_List_`($a,$b)" } (map {qq|`ListItem`(#token($_, "String"))|} (map {quote(backslash(quote(backslash($_))))} ($0, @ARGV)));
+      my $argv = reduce { our ($a, $b); "Lbl'Unds'List'Unds'{}($a,$b)" } (map {qq|LblListItem{}(inj{SortString{}, SortKItem{}}(\\dv{SortString{}}($_)))|} (map {quote(backslash($_))} ($0, @ARGV)));
 
-      my @cmd = ('--output', 'kast', '--no-sort-collections', '--no-alpha-renaming', '-d', $EXEC_DEF, "-cARGV=$argv", '-pARGV=printf %s', '-w', 'none', '--parser',
-                 'cat', $fileInput);
+      my @cmd = ('-d', $EXEC_DEF, "-c", "ARGV", $argv, "List", "kore", "-c", "PGM", $fileInput, "GeneratedTopCell", "korefile");
       my $options = getOptions();
 
       if (defined $ENV{HELP}) {
@@ -84,72 +84,39 @@ sub main {
             return 1;
       }
 
-      if (defined $ENV{TRACE}) {
-           push @cmd, '--trace';
-      }
-
       if (defined $ENV{DEBUG}) {
            push @cmd, '--debug';
       }
 
-      if (defined $ENV{VERBOSE}) {
-           push @cmd, '--verbose';
-      }
-
-      push @cmd, '--native-libraries';
-      my $libs = nativeLibraries();
+      #push @cmd, '--native-libraries';
+      #my $libs = nativeLibraries();
       # kcc may have been run as k++ so this is necessary
-      push @cmd, "-lstdc++ $libs $objInput";
+      #push @cmd, "-lstdc++ $libs $objInput";
 
       if (defined $ENV{DEPTH}) {
             push @cmd, '--depth';
             push @cmd, $ENV{DEPTH};
       }
 
-      if (defined $ENV{PROVE}) {
-            push @cmd, '--prove';
-            push @cmd, $ENV{PROVE};
-            push @cmd, '--smt_prelude';
-            push @cmd, $ENV{SMT_PRELUDE};
-      } else {
-            push @cmd, '--smt';
-            push @cmd, 'none';
-            push @cmd, '--output-file';
-            push @cmd, $fileOutput;
-      }
-
-      if (defined $ENV{SEARCH}) {
-            push @cmd, '--search-final';
-            $options = "`_Set_`(`SetItem`(`NoIO`(.KList)), $options)";
-            push @cmd, '-d';
-            push @cmd, $EXEC_ND_DEF;
-            print 'Searching reachable states... ';
-            print "(with non-deterministic expression sequencing)\n";
-      }
-
-      if (defined $ENV{THREADSEARCH}) {
-            push @cmd, '--search-final';
-            $options = "`_Set_`(`SetItem`(`NoIO`(.KList)), $options)";
-            push @cmd, '-d';
-            push @cmd, $EXEC_ND_THREAD_DEF;
-            print 'Searching reachable states... ';
-            print "(with non-deterministic thread interleaving)\n";
-      }
+      push @cmd, '--output-file';
+      push @cmd, $fileOutput;
 
       my $encodedJson = getJson();
 
-      push @cmd, "-cOPTIONS=$options";
-      push @cmd, '-pOPTIONS=printf %s';
-      push @cmd, '-cJSON=#token(' . $encodedJson . ', "String")';
-      push @cmd, '-pJSON=printf %s';
+      push @cmd, "-c";
+      push @cmd, "OPTIONS";
+      push @cmd, $options;
+      push @cmd, "Set";
+      push @cmd, "kore";
+      push @cmd, "-c";
+      push @cmd, "JSON";
+      push @cmd, "\\dv{SortString{}}($encodedJson)";
+      push @cmd, "String";
+      push @cmd, "kore";
 
       # Execute krun with the arguments in @cmd
-      print("'krun' '" . join("' '", @cmd) . "'\n") if defined $ENV{VERBOSE};
+      print(join(' ', ($KRUN, map {shell_quote_best_effort($_)} @cmd)) . "\n") if defined $ENV{VERBOSE};
       my $ret = system($KRUN, @cmd) >> 8;
-
-      if (defined $ENV{LTLMC} | defined $ENV{PROVE}) {
-            return 0;
-      }
 
       return processResult($fileOutput, $ret, defined $ENV{VERBOSE});
 }
