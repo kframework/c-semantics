@@ -37,6 +37,8 @@ use constant KRUN         => do {
       my $ext = IS_CYGWIN? '.bat' : '';
       $path . $ext;
 };
+
+use constant LLVM_KRUN => kBinDir('llvm-krun');
 use constant PRINTF       => IS_CYGWIN? 'printf %%s' : 'printf %s';
 use constant QUOTE_INT    => IS_CYGWIN? printable("\"Int\"") : "\"Int\"";
 use constant QUOTE_STRING => IS_CYGWIN? printable("\"String\"") : "\"String\"";
@@ -127,7 +129,7 @@ sub main {
             close(FILE);
 
             my $profDir = profileDir();
-            my $krun = KRUN;
+            my $krun = LLVM_KRUN;
             $template =~ s?__EXTERN_SCRIPTS_DIR__?$profDir?g;
             $template =~ s?__EXTERN_HEAP_SIZE__?$heapSize?g;
             $template =~ s?__EXTERN_KRUN__?$krun?g;
@@ -292,15 +294,15 @@ sub makeOptions {
       my @options = ();
 
       if (arg('-fno-native-compilation')) {
-            push(@options, "`NoNativeFallback`(.KList)");
+            push(@options, "LblNoNativeFallback{}()");
       }
 
       if (arg('-frecover-all-errors')) {
-            push(@options, "`RecoverAll`(.KList)");
+            push(@options, "LblRecoverAll{}()");
       }
 
       if (arg('-fuse-native-std-lib')) {
-            push(@options, "`UseNativeStdLib`(.KList)");
+            push(@options, "LblUseNativeStdLib{})");
       }
 
       if (arg('-flint') || arg('-Wlint')) {
@@ -334,23 +336,23 @@ sub makeOptions {
                   $stackSize = printable($stackSize);
             }
             my $int = QUOTE_INT;
-            push(@options, "`Lint`(.KList)");
-            push(@options, "`Heap`(#token($heapSize, $int))");
-            push(@options, "`Stack`(#token($stackSize, $int))");
+            push(@options, "LblLint{}()");
+            push(@options, "LblHeap{}(\\dv{SortInt{}}($heapSize))");
+            push(@options, "LblStack{}(\\dv{SortInt{}}($stackSize))");
       }
 
       if (arg('-e')) {
             my $entry = quote(printable(quote(arg('-e'))));
             my $string = QUOTE_STRING;
-            push(@options, "`EntryPoint`(#token($entry, $string))");
+            push(@options, "LblEntryPoint{}(\\dv{SortString{}}($entry))");
       }
 
       if (arg('-finteractive-fail')) {
-            push(@options, "`InteractiveFail`(.KList)");
+            push(@options, "LblInteractiveFail{}()");
       }
 
       if (arg('-Wfatal-errors')) {
-            push(@options, "`FatalErrors`(.KList)");
+            push(@options, "LblFatalErrors{}()");
       }
 
       for (breakpoints()) {
@@ -358,22 +360,22 @@ sub makeOptions {
             $file = quote(printable(quote(rel2abs($file))));
             $line = quote(printable($line));
             my ($string, $int) = (QUOTE_STRING, QUOTE_INT);
-            push(@options, "`Breakpoint`(#token($file, $string), #token($line, $int))");
+            push(@options, "LblBreakpoint{}(\\dv{SortString{}}($file), \\dv{SortInt{}}($line))");
       }
 
       if ($link) {
-            push(@options, "`Link`(.KList)");
+            push(@options, "LblLink{}()");
       }
 
-      return makeSet(@options);
+      return makeOptionSet(@options);
 
 }
 
 sub addArg {
-      my ($name, $value, $category, @krunArgs) = @_;
+      my ($name, $value, $sort, $category, @krunArgs) = @_;
 
       if (useInterpreter()) {
-            push(@krunArgs, '-c', $name, $value, $category);
+            push(@krunArgs, '-c', $name, $value, $sort, $category);
       } else {
             push(@krunArgs, "-c$name=$value");
             if ($category eq 'text' or $category eq 'binary') {
@@ -414,7 +416,7 @@ sub linkAll {
 }
 
 sub getKRunCommand {
-      my ($output, $symbols, $sem) = @_;
+      my ($output, $sem) = @_;
 
       my $def = profileDir($sem);
 
@@ -422,9 +424,9 @@ sub getKRunCommand {
       if (useInterpreter()) {
             my $dir = catfile($def, $sem);
             @krun =
-                  ( catfile($dir, 'interpreter')
-                  , catfile($dir, 'realdef.cma')
-                  , $symbols
+                  ( LLVM_KRUN
+	          , '-d'
+		  , $dir
                   , '--output-file', $output
                   );
       } else {
@@ -435,7 +437,6 @@ sub getKRunCommand {
                   , '-d', $def
                   , '-w', 'none'
                   , '--smt', 'none'
-                  , '--argv', $symbols
                   );
 
             if (arg('-d')) {
@@ -451,7 +452,7 @@ sub getLinkingCommand {
 
       my @objs = objFiles();
 
-      my @krun = getKRunCommand($output, $symbols, 'c-cpp-linking-kompiled');
+      my @krun = getKRunCommand($output, 'c-cpp-linking-kompiled');
 
       if (arg('-flinking-depth=')) {
             push(@krun, '--depth');
@@ -459,15 +460,15 @@ sub getLinkingCommand {
       }
 
       my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
-      my $json = "#token($rvErrorJson, $string)";
+      my $json = "\\dv{SortString{}}($rvErrorJson)";
 
-      @krun = addArg("OPTIONS", makeOptions($link), 'text', @krun);
-      @krun = addArg("JSON", $json, 'text', @krun);
+      @krun = addArg("OPTIONS", makeOptions($link), 'Set', 'kore', @krun);
+      @krun = addArg("JSON", $json, 'String', 'kore', @krun);
 
       my $uuid = create_uuid_as_string();
       my $encodedUuid = quote(printable(quote($uuid)));
-      my $uuidOpt = "#token($encodedUuid, $string)";
-      @krun = addArg("UUID", $uuidOpt, 'text', @krun);
+      my $uuidOpt = "\\dv{SortString{}}($encodedUuid)";
+      @krun = addArg("UUID", $uuidOpt, 'String', 'kore', @krun);
 
       if (scalar @objs) {
             my $allObjsFile = tempFile('all-objs');
@@ -483,28 +484,23 @@ sub getLinkingCommand {
                         };
                   }
                   if (length $thisObj) {
-                        # push(@objTexts, "`unwrapObj`($thisObj)");
-                        $thisObj = substr($thisObj, 8, -1);
                         # wrap $thisObj with `unwrapObj`()
-                        push(@objTexts, "$thisObj\x02\x00\x00\x00\x00\x00\x00\x00\x09\x00u\x00n\x00w\x00r\x00a\x00p\x00O\x00b\x00j\x00\x00\x00\x00\x01");
+                        push(@objTexts, "LblunwrapObj{}($thisObj)");
                   }
             }
-            my $objText = join('', @objTexts);
-            my $one = chr((scalar @objTexts >> 24) & 0xff);
-            my $two = chr((scalar @objTexts >> 16) & 0xff);
-            my $three = chr((scalar @objTexts >> 8) & 0xff);
-            my $four = chr((scalar @objTexts >> 0) & 0xff);
-            $objText = MAGIC . "\x04\x00\x01$objText\x03$one$two$three$four\x07";
+            my $objText = 'dotk{}()';
+	    foreach my $obj (@objTexts) {
+              $objText = 'kseq{}(' . $obj . ', ' . $objText . ')';
+	    }
+            $objText = "Lblload{}($objText)";
             open(my $file, '>', "$allObjsFile");
             print $file $objText;
             close $file;
 
-            @krun = addArg("OBJS", $allObjsFile, 'binaryfile', @krun);
+            @krun = addArg("OBJS", $allObjsFile, 'KItem', 'korefile', @krun);
       } else {
-            @krun = addArg("OBJS", ".K", 'text', @krun);
+            @krun = addArg("OBJS", "Lblload{}(dotk{}())", 'KItem', 'text', @krun);
       }
-
-      @krun = addArg("PGM", ".K", 'text', @krun);
 
       setShellDebugFile($output, 1);
       return @krun;
@@ -516,7 +512,7 @@ sub getTranslationCommand {
       my $cTransDef = profileDir("c-translation-kompiled");
       my $cppTransDef = profileDir("cpp-translation-kompiled");
 
-      my @krun = getKRunCommand($output, 'dummy',
+      my @krun = getKRunCommand($output,
             $lang eq 'c++'? 'cpp-translation-kompiled' : 'c-translation-kompiled');
 
       if (arg('-ftranslation-depth=')) {
@@ -525,17 +521,17 @@ sub getTranslationCommand {
       }
 
       my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
-      my $json = "#token($rvErrorJson, $string)";
+      my $json = "\\dv{SortString{}}($rvErrorJson)";
 
-      @krun = addArg("OPTIONS", makeOptions(0), 'text', @krun);
-      @krun = addArg("JSON", $json, 'text', @krun);
+      @krun = addArg("OPTIONS", makeOptions(0), 'Set', 'kore', @krun);
+      @krun = addArg("JSON", $json, 'String', 'kore', @krun);
 
       my $encodedUuid = quote(printable(quote($uuid)));
-      my $uuidOpt = "#token($encodedUuid, $string)";
-      @krun = addArg("UUID", $uuidOpt, 'text', @krun);
+      my $uuidOpt = "\\dv{SortString{}}($encodedUuid)";
+      @krun = addArg("UUID", $uuidOpt, 'String', 'kore', @krun);
 
       my $kast = parse($src, $lang, $trampolines);
-      @krun = addArg("PGM", $kast, 'textfile', @krun);
+      @krun = addArg("PGM", $kast, 'KItem', 'korefile', @krun);
 
       setShellDebugFile($output, 1);
       return @krun;
@@ -612,7 +608,7 @@ sub parse {
             return $kast;
       }
       my $cparser = distDir('cparser');
-      shell($cparser, $ppResult, '--trueName', $inputFile)->verbose()->stdout($kast)->run();
+      shell($cparser, $ppResult, '--kore', '--trueName', $inputFile)->verbose()->stdout($kast)->run();
 
       return $kast;
 }
@@ -641,16 +637,16 @@ sub getStd {
       return "-std=$std";
 }
 
-sub makeSet {
-      my $set = '`.Set`(.KList)';
+sub makeOptionSet {
+      my $set = "Lbl'Stop'Set{}()";
       foreach my $el (@_) {
-            $set = "`_Set_`(`SetItem`($el), $set)";
+            $set = "Lbl'Unds'Set'Unds'{}(LblSetItem{}(inj{SortOpt{}, SortKItem{}}($el)), $set)";
       }
       return $set;
 }
 
 sub useInterpreter {
-      -e profileDir('cpp-translation-kompiled', 'cpp-translation-kompiled', 'interpreter');
+      return 1;
 }
 
 sub getRVErrorJson {
