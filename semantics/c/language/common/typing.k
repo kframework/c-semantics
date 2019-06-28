@@ -276,7 +276,6 @@ module C-TYPING-SYNTAX
      syntax Float ::= fmax(UType) [function]
      syntax Float ::= fmin(UType) [function]
      syntax Bool ::= intInRange(Int, UType) [function]
-                   | intInRangeArithmetic(Int, SimpleIntegerType) [function]
      syntax Bool ::= floatInRange(Float, UType) [function]
 
      syntax Modifier ::= Packed()
@@ -372,7 +371,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isFlexibleType(EffectiveType) [function]
 
      // moved from BITSIZE because type compatibility depends on it quite indirectly
-     syntax Int ::= numBytes(SimpleUType) [function]
+     syntax Int ::= numBytesArithmetic(SimpleUType) [function]
 
      syntax Int ::= typePrecision(UType) [function]
      syntax Int ::= typeExponent(UType) [function]

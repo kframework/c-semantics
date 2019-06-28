@@ -131,8 +131,6 @@ module C-TYPING-COMMON
      rule extractTagInfo(enumInfo(...) #as EI::EnumInfo) => EI
      rule extractTagInfo(_) => #incomplete [owise]
 
-     syntax Int ::= numBytesArithmetic(SimpleUType) [function]
-
      rule numBytesArithmetic(bool) => cfg:sizeofBool
      rule numBytesArithmetic(_:SimpleSignedCharType) => cfg:sizeofSignedChar
      rule numBytesArithmetic(short-int) => cfg:sizeofShortInt
@@ -152,10 +150,6 @@ module C-TYPING-COMMON
      rule numBytesArithmetic(unsigned-long-int) => numBytesArithmetic(long-int)
      rule numBytesArithmetic(unsigned-long-long-int) => numBytesArithmetic(long-long-int)
      rule numBytesArithmetic(unsigned-oversized-int) => numBytesArithmetic(oversized-int)
-     rule numBytesArithmetic(_) => 0 [owise]
-
-     rule numBytes(enumType(S::TagId)) => numBytesArithmetic(getEnumAlias(S))
-     rule numBytes(T::SimpleUType) => numBytesArithmetic(T) [owise]
 
      rule typePrecision(ut(_, float)) => cfg:precisionofFloat
      rule typePrecision(ut(_, double)) => cfg:precisionofDouble
