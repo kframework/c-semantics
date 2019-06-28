@@ -327,11 +327,6 @@ module C-CONVERSION
                orBool type(pointerType(T')) ==Type type(pointerType(T))
                orBool getAlignas(T') <=Int getAlign(Loc)
                orBool (isFunctionType(T) andBool isFunctionType(T')))
-     rule cast(ut(Mods'::Set, pointerType(T'::Type)), tv(NullPointer, ut(Mods::Set, pointerType(T::Type))))
-          => tv(NullPointer, castTypes(ut(Mods', pointerType(T')), ut(Mods, pointerType(T))))
-          requires notBool isCompleteType(T')
-               orBool type(pointerType(T')) ==Type type(pointerType(T))
-               orBool (isFunctionType(T) andBool isFunctionType(T'))
      //TODO(dwightguth): handle pointer alignment
      rule (.K => UNDEF("CCV11",
                "Conversion to a pointer type with a stricter alignment requirement (possibly undefined)."))

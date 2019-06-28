@@ -53,22 +53,22 @@ default: $(XYZ_SEMANTICS)
 # Prerequisites for the timestamp rules are added
 # by the `include`d makefiles.
 $(call timestamp_of,c-translation):
-	$(info Kompiling the static C semantics...)
+	@$(LOGGER) "Kompiling the static C semantics..."
 	$(KOMPILE) $(KOMPILE_FLAGS) c-translation.k \
 		-d "$(OUTPUT_DIR)/c-translation-kompiled"
 
 $(call timestamp_of,cpp-translation):
-	$(info Kompiling the static C++ semantics...)
+	@$(LOGGER) "Kompiling the static C++ semantics..."
 	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) cpp-translation.k \
 		-d "$(OUTPUT_DIR)/cpp-translation-kompiled"
 
 $(call timestamp_of,c-cpp-linking):
-	$(info Kompiling the C and C++ linking semantics...)
+	@$(LOGGER) "Kompiling the C and C++ linking semantics..."
 	$(KOMPILE) $(KOMPILE_FLAGS) $(CPP_KOMPILE_FLAGS) c-cpp-linking.k \
 		-d "$(OUTPUT_DIR)/c-cpp-linking-kompiled"
 
 $(call timestamp_of,c-cpp):
-	$(info Kompiling the dynamic C and C++ semantics...)
+	@$(LOGGER) "Kompiling the dynamic C and C++ semantics..."
 	$(KOMPILE) $(KOMPILE_FLAGS) $(EXECUTION_KOMPILE_FLAGS) c-cpp.k \
 		-d "$(OUTPUT_DIR)/c-cpp-kompiled" \
 		--transition "interpRule"

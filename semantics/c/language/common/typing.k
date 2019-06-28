@@ -62,9 +62,9 @@ module C-TYPING-SYNTAX
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Int, Map, Map, Set)
-     syntax EnumInfo ::= enumInfo(enumAlias: SimpleBasicType, ctMap: Map)
+     syntax EnumInfo ::= enumInfo(enumAlias: SimpleIntegerType, ctMap: Map)
      syntax TagInfo ::= FieldInfo | EnumInfo
-     syntax SimpleBasicType ::= getEnumAlias(TagId) [function]
+     syntax SimpleIntegerType ::= getEnumAlias(TagId) [function]
      syntax FieldInfo ::= getFields(Type) [function]
      syntax FieldInfo ::= getFields(UType) [function]
      syntax FieldInfo ::= getFlatFields(Type) [function]

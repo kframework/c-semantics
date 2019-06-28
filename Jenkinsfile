@@ -24,7 +24,7 @@ pipeline {
         sh '''
           eval $(opam config env)
           export KOMPILE_FLAGS=-O2
-          make -j4 profile-rule-parsing
+          make -j4 profile-rule-parsing --output-sync=line
         '''
       }
       post { success {
