@@ -60,6 +60,7 @@ FILES_TO_DIST := \
 	scripts/program-runner \
 	scripts/histogram-csv \
 	parser/cparser \
+	$(realpath $(K_BIN)/..) \
 	$(CLANG_TOOLS_BIN)/clang-kast \
 	$(CLANG_TOOLS_BIN)/call-sites \
 	scripts/cdecl-3.6/src/cdecl \
@@ -71,8 +72,7 @@ PROFILE_FILE_DEPS := $(foreach f, $(PROFILE_FILES), $(PROFILE_DIR)/$(f))
 SUBPROFILE_FILE_DEPS := $(foreach d, $(SUBPROFILE_DIRS), \
                         $(foreach f, $(PROFILE_FILES), $(d)/$(f)))
 
-PERL_MODULES_DIR := scripts/RV_Kcc
-PERL_MODULES := $(wildcard $(PERL_MODULES_DIR)/*.pm)
+PERL_MODULES := $(wildcard $(ROOT)/scripts/RV_Kcc/*.pm)
 
 LIBC_SO := $(PROFILE_OUTPUT_DIR)/lib/libc.so
 LIBSTDCXX_SO := $(PROFILE_OUTPUT_DIR)/lib/libstdc++.so
@@ -150,20 +150,30 @@ $(OUTPUT_DIR)/kcc: scripts/getopt.pl \
 	cp -RLp $(FILES_TO_DIST) $(OUTPUT_DIR)
 	cp -RLp $(PERL_MODULES) $(OUTPUT_DIR)/RV_Kcc
 	cat scripts/RV_Kcc/Opts.pm | perl scripts/getopt.pl > $(OUTPUT_DIR)/RV_Kcc/Opts.pm
-	ln -rsf $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
+	cp -Lp $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
 
 .PHONY: pack
+pack: FATPACK_COMMAND := PERL5LIB="$(OUTPUT_DIR):$(PERL5LIB)" fatpack
 pack: $(OUTPUT_DIR)/kcc
-	cd $(OUTPUT_DIR) && fatpack trace kcc
-	cd $(OUTPUT_DIR) && fatpack packlists-for `cat fatpacker.trace` > packlists
-	cat dist/packlists
-	cd $(OUTPUT_DIR) && fatpack tree `cat packlists`
-	ln -rsf $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/fatlib/RV_Kcc
-	cd $(OUTPUT_DIR) && fatpack file kcc > kcc.packed
+	@$(LOGGER) "Entering target $@"
+	cd $(OUTPUT_DIR) \
+		&& $(FATPACK_COMMAND) trace kcc
+	cd $(OUTPUT_DIR) \
+		&& $(FATPACK_COMMAND) packlists-for `cat fatpacker.trace` > packlists
+	$(LOGGER) "$$(cat $(OUTPUT_DIR)/packlists)"
+	cd $(OUTPUT_DIR) \
+		&& $(FATPACK_COMMAND) tree `cat packlists`
+	cp -RLp $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/fatlib/RV_Kcc
+	cd $(OUTPUT_DIR) \
+		&& $(FATPACK_COMMAND) file kcc > kcc.packed
 	chmod --reference=$(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kcc.packed
 	mv -f $(OUTPUT_DIR)/kcc.packed $(OUTPUT_DIR)/kcc
-	ln -rsf $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
-	rm -rf $(OUTPUT_DIR)/fatlib $(OUTPUT_DIR)/RV_Kcc $(OUTPUT_DIR)/packlists $(OUTPUT_DIR)/fatpacker.trace
+	cp -Lp $(OUTPUT_DIR)/kcc $(OUTPUT_DIR)/kclang
+	rm -rf \
+		$(OUTPUT_DIR)/fatlib \
+		$(OUTPUT_DIR)/RV_Kcc \
+		$(OUTPUT_DIR)/packlists \
+		$(OUTPUT_DIR)/fatpacker.trace
 
 .PHONY: PROFILE_DEPS
 PROFILE_DEPS: $(OUTPUT_DIR)/kcc \
