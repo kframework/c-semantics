@@ -171,10 +171,10 @@ module C-TYPING-COMMON
      rule numBits(T::SimpleIntegerType) => numBytesArithmetic(T) *Int cfg:bitsPerByte
 
      rule min(ut(_, enumType(S::TagId)))  => imin(getEnumAlias(S))
-     rule min(ut(_, T:SimpleIntegerType)) => imin(T)
+     rule min(ut(_, T:SimpleIntegerType)) => imin(T) [owise]
 
      rule max(ut(_, enumType(S::TagId)))  => imax(getEnumAlias(S))
-     rule max(ut(_, T:SimpleIntegerType)) => imax(T)
+     rule max(ut(_, T:SimpleIntegerType)) => imax(T) [owise]
 
      rule imin(_:SimpleUnsignedType)                     => 0
      rule imin(bitfieldType(_:SimpleUnsignedType, _))    => 0
