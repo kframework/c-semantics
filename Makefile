@@ -85,6 +85,21 @@ endef
 .PHONY: default
 default: test-build
 
+.PHONY: k
+k:
+	cd $(ROOT)/.build/k \
+	&& mvn package -q -U \
+		  -DskipTests -DskipKTest \
+		  -Dhaskell.backend.skip -Dllvm.backend.skip \
+		  -Dcheckstyle.skip
+
+# k is .PHONY, so it will force this target too.
+%-with-k: export K_BIN := $(ROOT)/.build/k/k-distribution/target/release/k/bin
+%-with-k: k
+	@$(LOGGER) "Entering target $@"
+	@$(MAKE) $*
+
+
 # Targets intended for direct invocation by the user,
 # to check the installation of dependencies.
 #
