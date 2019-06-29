@@ -42,7 +42,7 @@ module C-STMT-RETURN
      rule <k> getCurrentFunctionType() => T ...</k>
           <curr-scope> blockScope(... functionLoc: F::SymBase) </curr-scope>
           <functions>...
-               F |-> functionObject(_, t(_, Mods:Set, functionType(T::UType, _)), _, _)
+               F |-> functionObject(_, T::Type, _, _)
           ...</functions>
           [structural]
      rule <k> getCurrentFunctionType() => T ...</k>
