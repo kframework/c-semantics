@@ -95,9 +95,7 @@ k:
 
 # k is .PHONY, so it will force this target too.
 %-with-k: export K_BIN := $(ROOT)/.build/k/k-distribution/target/release/k/bin
-%-with-k: k
-	@$(LOGGER) "Entering target $@"
-	@$(MAKE) $*
+%-with-k: % ;
 
 
 # Targets intended for direct invocation by the user,
