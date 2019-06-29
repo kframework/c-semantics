@@ -88,7 +88,7 @@ default: test-build
 .PHONY: k
 k:
 	cd $(ROOT)/.build/k \
-	&& mvn package -q -U \
+	&& mvn package -U \
 		  -DskipTests -DskipKTest \
 		  -Dhaskell.backend.skip -Dllvm.backend.skip \
 		  -Dcheckstyle.skip
