@@ -62,9 +62,9 @@ module C-TYPING-SYNTAX
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Int, Map, Map, Set)
-     syntax EnumInfo ::= enumInfo(enumAlias: SimpleBasicType, ctMap: Map)
+     syntax EnumInfo ::= enumInfo(enumAlias: SimpleIntegerType, ctMap: Map)
      syntax TagInfo ::= FieldInfo | EnumInfo
-     syntax SimpleBasicType ::= getEnumAlias(TagId) [function]
+     syntax SimpleIntegerType ::= getEnumAlias(TagId) [function]
      syntax FieldInfo ::= getFields(Type) [function]
      syntax FieldInfo ::= getFields(UType) [function]
      syntax FieldInfo ::= getFlatFields(Type) [function]
@@ -276,7 +276,6 @@ module C-TYPING-SYNTAX
      syntax Float ::= fmax(UType) [function]
      syntax Float ::= fmin(UType) [function]
      syntax Bool ::= intInRange(Int, UType) [function]
-                   | intInRangeArithmetic(Int, SimpleIntegerType) [function]
      syntax Bool ::= floatInRange(Float, UType) [function]
 
      syntax Modifier ::= Packed()
@@ -372,7 +371,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isFlexibleType(EffectiveType) [function]
 
      // moved from BITSIZE because type compatibility depends on it quite indirectly
-     syntax Int ::= numBytes(SimpleUType) [function]
+     syntax Int ::= numBytesArithmetic(SimpleUType) [function]
 
      syntax Int ::= typePrecision(UType) [function]
      syntax Int ::= typeExponent(UType) [function]

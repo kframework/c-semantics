@@ -407,7 +407,10 @@ module C-IO
           <mem>...
                Base |-> object(_, _, M::Array)
           ...</mem>
-          requires Size >Int 0 andBool notBool (Loc in locations(Mem)) andBool Offset in_keys(M) andBool M[Offset] =/=K uninit [structural]
+          requires Size >Int 0
+               andBool notBool (Loc in locations(Mem))
+               andBool Offset in_keys(M) andBool M[Offset] =/=K uninit
+          [structural]
      rule <k> dataList(_::List (.List => ListItem(getUninitializedBits(Loc, ObjT))))
                ~> readBytesForWriting(loc(Base::SymBase, Offset::Int) #as Loc::SymLoc => Loc +bytes 1, Size::Int => Size -Int 1)
           ...</k>
@@ -415,8 +418,9 @@ module C-IO
           <mem>...
                Base |-> object(ObjT::EffectiveType, _, (M::Array => M[Offset <- getUninitializedBits(Loc, ObjT)]))
           ...</mem>
-          requires Size >Int 0 andBool (notBool (Offset in_keys(M)) orBool M[Offset] ==K uninit)
+          requires Size >Int 0
                andBool notBool (Loc in locations(Mem))
+               andBool notBool (Offset in_keys(M) andBool M[Offset] =/=K uninit)
      rule dataList(_) ~> (readBytesForWriting(_, 0) => .K)
           [structural]
 
