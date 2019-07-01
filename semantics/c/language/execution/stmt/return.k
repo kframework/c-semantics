@@ -46,6 +46,10 @@ module C-STMT-RETURN
           ...</functions>
           [structural]
      rule <k> getCurrentFunctionType() => T ...</k>
+          <curr-scope> blockScope(... functionLoc: obj(_, _, nativeSymbol(F::String))) </curr-scope>
+          <types>... F |-> T::Type ...</types>
+          [structural]
+     rule <k> getCurrentFunctionType() => T ...</k>
           <curr-scope> blockScope(... functionId: nativeFunction(F::Int)) </curr-scope>
           <types>... nativeFunction(F) |-> T::Type ...</types>
           [structural]
