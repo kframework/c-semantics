@@ -45,13 +45,12 @@ module C-STMT-RETURN
                F |-> functionObject(_, T::Type, _, _)
           ...</functions>
           [structural]
+     // Case for returning from native functions.
      rule <k> getCurrentFunctionType() => T ...</k>
-          <curr-scope> blockScope(... functionLoc: obj(_, _, nativeSymbol(F::String))) </curr-scope>
-          <types>... F |-> T::Type ...</types>
-          [structural]
-     rule <k> getCurrentFunctionType() => T ...</k>
-          <curr-scope> blockScope(... functionId: nativeFunction(F::Int)) </curr-scope>
-          <types>... nativeFunction(F) |-> T::Type ...</types>
+          <curr-scope> blockScope(... functionId: X::CId, functionLoc: F::SymBase) </curr-scope>
+          <types>... X |-> T::Type ...</types>
+          <functions> Functions::Map </functions>
+          requires notBool F in_keys(Functions)
           [structural]
 
      syntax KItem ::= "Return'" "(" K ")"
