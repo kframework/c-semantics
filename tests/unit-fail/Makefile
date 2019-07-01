@@ -17,8 +17,6 @@ TEST_COMPARISON := ${TESTS:=.cmp}
 CPP_TEST_COMPARISON := ${CPP_TESTS:=.cmp}
 C_TEST_COMPARISON := ${C_TESTS:=.cmp}
 
-CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
-# CHECK_RESULT_RUN = if [ $$? -eq 139 ] ; then echo "passed $<"; cat $@.tmp > $@; rm $@.tmp; else echo "failed $<"; cat $@.tmp; exit 1; fi
 CHECK_RESULT_DIFF = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
 KCC := $(ROOT)/../../dist/kcc
