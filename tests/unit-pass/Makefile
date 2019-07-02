@@ -1,4 +1,8 @@
-include ../check-results.mk
+ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
+Makefile: $(ROOT)/../check-results.mk ;
+
+include $(ROOT)/../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
 EXCLUDES :=
@@ -29,16 +33,11 @@ OS_TEST_COMPARISON := ${OS_TESTS:=.cmp}
 CPP_TEST_COMPARISON := ${CPP_TESTS:=.cmp}
 C_TEST_COMPARISON := ${C_TESTS:=.cmp}
 
-ifeq ($(origin CC),default)
-	CC := gcc-7
-endif
+CC := gcc-7
+CXX := g++-7
 
-ifeq ($(origin CXX),default)
-	CXX := g++-7
-endif
-
-KCC := ../../dist/kcc
-KXX := ../../dist/k++
+KCC := $(ROOT)/../../dist/kcc
+KXX := $(ROOT)/../../dist/k++
 
 LDFLAGS := -pthread
 

@@ -156,13 +156,13 @@ module C-BINDING
      rule #arePromotedTypesCompat(V:Int, T::UType, signedIntegerUType #as T'::UType) => true
           requires (argPromoteType(T)
                     ==K correspondingUnsignedType(argPromoteType(T')))
-               andBool representable(V, argPromoteType(T))
-               andBool representable(V,
+               andBool intInRange(V, argPromoteType(T))
+               andBool intInRange(V,
                     correspondingUnsignedType(argPromoteType(T')))
      rule #arePromotedTypesCompat(V:Int, signedIntegerUType #as T::UType, T'::UType) => true
           requires (argPromoteType(T') ==K correspondingUnsignedType(argPromoteType(T)))
-               andBool representable(V, argPromoteType(T'))
-               andBool representable(V,
+               andBool intInRange(V, argPromoteType(T'))
+               andBool intInRange(V,
                     correspondingUnsignedType(argPromoteType(T)))
      rule #arePromotedTypesCompat(_, ut(... st: pointerType(_)) #as T::UType, ut(... st: pointerType(_)) #as T'::UType) => true
           requires (isCharType(innerType(argPromoteType(T)))
@@ -170,10 +170,6 @@ module C-BINDING
                andBool (isCharType(innerType(argPromoteType(T')))
                     orBool isVoidType(innerType(argPromoteType(T'))))
      rule #arePromotedTypesCompat(_, _, _) => false [owise]
-
-     syntax Bool ::= representable(Int, UType)  [function]
-     rule representable(V::Int, T::UType)
-          => (V <=Int max(T)) andBool (V >=Int min(T))
 
      syntax KItem ::= argPromote(RValue) [function]
      rule argPromote(V::RValue) => cast(argPromoteType(utype(V)), V)

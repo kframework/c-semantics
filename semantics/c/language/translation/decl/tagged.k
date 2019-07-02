@@ -95,8 +95,8 @@ module C-DECL-TAGGED
           => addTag(X, enumInfo(firstSuitableType(Min, Max, enumAliases), M))
           [structural]
 
-     syntax SimpleBasicType ::= firstSuitableType(Int, Int, List) [function]
-     rule firstSuitableType(Min::Int, Max::Int, ListItem(T::SimpleBasicType) _) => T
+     syntax SimpleIntegerType ::= firstSuitableType(Int, Int, List) [function]
+     rule firstSuitableType(Min::Int, Max::Int, ListItem(T::SimpleIntegerType) _) => T
           requires Min >=Int min(utype(T)) andBool Max <=Int max(utype(T))
      rule firstSuitableType(Min::Int, _, .List)
           // Appears to be gcc's behavior.

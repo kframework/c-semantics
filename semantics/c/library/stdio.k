@@ -1844,18 +1844,6 @@ module LIBC-STDIO
           <format-state> "%" </format-state>
           requires isSign(C) orBool (isDigit(C, 10) andBool C =/=String "0")
           [structural]
-     rule <k> formatter'((ListItem(tv(W':Int, _)) => .List) _) ...</k>
-          <format> ListItem("*") ListItem(".") => .List ...</format>
-          <format-field-width> "" => showInt(W') </format-field-width>
-          <format-state> "%" => "%." </format-state>
-          [structural]
-     rule <k> formatter'((ListItem(tv(W':Int, _)) => .List) _) ...</k>
-          <format> (ListItem("*") => .List) ListItem(C:String) ...</format>
-          <format-field-width> "" => showInt(W') </format-field-width>
-          <format-state> "%" </format-state>
-          requires C =/=K "*"
-               andBool notBool isDigit(C, 10)
-          [structural]
      rule <k> formatter'(_) ...</k>
           <format> ListItem("*") => .List ...</format>
           <format-field-width> "" => "*" </format-field-width>
@@ -1878,7 +1866,7 @@ module LIBC-STDIO
           <format-precision> P:String </format-precision>
           <format-state> "%." => "%" </format-state>
           requires P =/=K ""
-               andBool notBool isDigit(C, 10) andBool notBool C ==K "*"
+               andBool notBool isDigit(C, 10) andBool C =/=K "*"
           [structural]
      rule <k> formatter'(_) ...</k>
           <format> ListItem(C:String) ...</format>
