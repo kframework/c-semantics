@@ -477,8 +477,10 @@ module C-COMMON-EXPR-RELATIONAL
           requires (notBool isFunctionType(innerType(T1)) andBool isVoidType(innerType(T2)))
                orBool (notBool isFunctionType(innerType(T2)) andBool isVoidType(innerType(T1)))
      // null pointer
-     rule isCompatibleEqualityTypes(ut(... st: pointerType(_)), _, _, NullPointer) => true
-     rule isCompatibleEqualityTypes(_, ut(... st: pointerType(_)), NullPointer, _) => true
+     rule isCompatibleEqualityTypes(T1::UType, ut(... st: pointerType(_)), V1::CValue, _) => true
+          requires isNullPointerConstant(tv(V1, T1)) orBool V1 ==K NullPointer
+     rule isCompatibleEqualityTypes(ut(... st: pointerType(_)), T2::UType, _, V2::CValue) => true
+          requires isNullPointerConstant(tv(V2, T2)) orBool V2 ==K NullPointer
      rule isCompatibleEqualityTypes(_, _, _, _) => false [owise]
 
      // we check also that they aren't both arithmetic types because arithmetic types must be promoted

@@ -96,19 +96,18 @@ let if_kore_strict (kore_true : 'a) (kore_false : 'a) : 'a printer =
 let (%) (g : 'b -> 'c) (f : 'a -> 'b) : 'a -> 'c = fun a -> g (f a)
 
 (* Escaping. *)
-let k_char_escape (buf: Buffer.t) : char -> unit = Buffer.add_string buf % function
-  | '"'  -> "\\\""
-  | '\\' -> "\\\\"
-  | '\n' -> "\\n"
-  | '\t' -> "\\t"
-  | '\r' -> "\\r"
-  | c when let code = Char.code c in code >= 32 && code < 127
-         -> Printf.sprintf "%c" c
-  | c    -> Printf.sprintf "\\x%02x" (Char.code c)
-
 let k_string_escape (str : string) : string =
+  let k_char_escape : char -> string = function
+    | '"'  -> "\\\""
+    | '\\' -> "\\\\"
+    | '\n' -> "\\n"
+    | '\t' -> "\\t"
+    | '\r' -> "\\r"
+    | c when let code = Char.code c in code >= 32 && code < 127
+           -> Printf.sprintf "%c" c
+    | c    -> Printf.sprintf "\\x%02x" (Char.code c) in
   let buf = Buffer.create (String.length str) in
-  String.iter (k_char_escape buf) str; Buffer.contents buf
+  String.iter (Buffer.add_string buf % k_char_escape) str; Buffer.contents buf
 
 let klabel_char_escape_kore (buf: Buffer.t) : char -> unit =
   let apost s =
@@ -168,7 +167,7 @@ let ktoken (sort : csort) (s : string) : unit printer =
     (puts "\dv{"      >> ksort sort               >> puts "}(\""   >> puts (k_string_escape s) >> puts "\")")
     (puts "#token(\"" >> puts (k_string_escape s) >> puts "\", \"" >> ksort sort               >> puts "\")")
 
-let ktoken_string (s : string) : unit printer          = kstring s >>= ktoken String
+let ktoken_string (s : string) : unit printer          = kstring (k_string_escape s) >>= ktoken String
 let ktoken_bool (v : bool) : unit printer              = ktoken Bool (if v then "true" else "false")
 let ktoken_int (v : int) : unit printer                = ktoken Int (string_of_int v)
 let ktoken_int_of_string (v : string) : unit printer   = ktoken Int v

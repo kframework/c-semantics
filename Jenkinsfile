@@ -2,8 +2,8 @@ pipeline {
   agent {
     dockerfile {
       additionalBuildArgs ''' \
-        --build-arg USER_ID=$(id -u) \
-        --build-arg GROUP_ID=$(id -g) \
+        --build-arg UID=$(id -u) \
+        --build-arg GID=$(id -g) \
       '''
     }
   }
@@ -23,8 +23,9 @@ pipeline {
       steps {
         sh '''
           eval $(opam config env)
+          eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
           export KOMPILE_FLAGS=-O2
-          make -j4 profile-rule-parsing
+          make -j4 profile-rule-parsing --output-sync=line
         '''
       }
       post { success {
@@ -35,6 +36,7 @@ pipeline {
       timeout(time: 8, unit: 'SECONDS') {
         sh '''
           eval $(opam config env)
+          eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
           make
         '''
       }
@@ -43,6 +45,7 @@ pipeline {
       steps {
         sh '''
           eval $(opam config env)
+          eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
           ${K_BIN}/spawn-kserver
           make -C tests/unit-pass -j$(nproc) os-comparison
         '''

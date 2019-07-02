@@ -13,8 +13,8 @@ module C-LITERAL
      syntax Constant ::= RValue
 
      syntax Bool ::= withinRange(Int, SimpleIntegerType) [function]
-     rule withinRange(I::Int, T::SimpleIntegerType)
-          => intInRangeArithmetic(I, T)
+     rule withinRange(V::Int, T::SimpleIntegerType)
+          => (V <=Int imax(T)) andBool (V >=Int imin(T))
 
      syntax String ::= simplifyForHex(String) [function]
      rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S))

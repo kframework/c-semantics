@@ -10,6 +10,7 @@ module C-STMT-RETURN
      imports C-IO-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
      imports DELETE-OBJECT-SYNTAX
 
@@ -28,54 +29,28 @@ module C-STMT-RETURN
      }*/
 
      // Return (from C function)
-     rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
-          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
-          <curr-tu> TU:String </curr-tu>
-          <tu-id> TU </tu-id>
-          <gtypes>...
-               F |-> t(_, Mods:Set, functionType(T::UType, _))
-          ...</gtypes>
+     rule (.K => getCurrentFunctionType()) ~> Return(V:RValue)
+     rule t(_, Mods::Set, functionType(T::UType, _)) ~> Return(V:RValue) => Return'(cast(T, V))
           requires notBool (Noreturn() in Mods)
           [structural]
-
-     rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
-          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
-          <curr-tu> "builtin" </curr-tu>
-          <types>...
-               F |-> t(_, Mods:Set, functionType(T::UType, _))
-          ...</types>
-          requires notBool (Noreturn() in Mods)
-          [structural]
-     rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
-          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
-          <curr-tu> "native" </curr-tu>
-          <types>...
-               F |-> t(_, Mods:Set, functionType(T::UType, _))
-          ...</types>
-          requires notBool (Noreturn() in Mods)
-          [structural]
-
-     rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn."))
-               ~> Return(_)
-          ...</k>
-          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
-          <curr-tu> TU:String </curr-tu>
-          <tu-id> TU </tu-id>
-          <gtypes>...
-               F:CId |-> t(_, Mods:Set, _)
-          ...</gtypes>
+     rule (t(_, Mods::Set, _) => UNDEF("ESR1", "Return from a function declared _Noreturn."))
+          ~> Return(_:RValue)
           requires Noreturn() in Mods
           [structural]
 
-     rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn."))
-               ~> Return(_)
-          ...</k>
-          <curr-scope> blockScope(... functionId: F:CId) </curr-scope>
-          <curr-tu> "native" </curr-tu>
-          <types>...
-               F:CId |-> t(_, Mods:Set, _)
-          ...</types>
-          requires Noreturn() in Mods
+     syntax KItem ::= getCurrentFunctionType()
+     rule <k> getCurrentFunctionType() => T ...</k>
+          <curr-scope> blockScope(... functionLoc: F::SymBase) </curr-scope>
+          <functions>...
+               F |-> functionObject(_, T::Type, _, _)
+          ...</functions>
+          [structural]
+     // Case for returning from native functions.
+     rule <k> getCurrentFunctionType() => T ...</k>
+          <curr-scope> blockScope(... functionId: X::CId, functionLoc: F::SymBase) </curr-scope>
+          <types>... X |-> T::Type ...</types>
+          <functions> Functions::Map </functions>
+          requires notBool F in_keys(Functions)
           [structural]
 
      syntax KItem ::= "Return'" "(" K ")"
