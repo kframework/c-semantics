@@ -29,22 +29,28 @@ module C-STMT-RETURN
      }*/
 
      // Return (from C function)
-     rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
-          <curr-scope> blockScope(... functionLoc: F::SymBase) </curr-scope>
-          <functions>...
-               F |-> functionObject(_, t(_, Mods:Set, functionType(T::UType, _)), _, _)
-          ...</functions>
+     rule (.K => getCurrentFunctionType()) ~> Return(V:RValue)
+     rule t(_, Mods::Set, functionType(T::UType, _)) ~> Return(V:RValue) => Return'(cast(T, V))
           requires notBool (Noreturn() in Mods)
           [structural]
+     rule (t(_, Mods::Set, _) => UNDEF("ESR1", "Return from a function declared _Noreturn."))
+          ~> Return(_:RValue)
+          requires Noreturn() in Mods
+          [structural]
 
-     rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn."))
-               ~> Return(_:RValue)
-          ...</k>
+     syntax KItem ::= getCurrentFunctionType()
+     rule <k> getCurrentFunctionType() => T ...</k>
           <curr-scope> blockScope(... functionLoc: F::SymBase) </curr-scope>
           <functions>...
-               F |-> functionObject(_, t(_, Mods:Set, functionType(T::UType, _)), _, _)
+               F |-> functionObject(_, T::Type, _, _)
           ...</functions>
-          requires Noreturn() in Mods
+          [structural]
+     // Case for returning from native functions.
+     rule <k> getCurrentFunctionType() => T ...</k>
+          <curr-scope> blockScope(... functionId: X::CId, functionLoc: F::SymBase) </curr-scope>
+          <types>... X |-> T::Type ...</types>
+          <functions> Functions::Map </functions>
+          requires notBool F in_keys(Functions)
           [structural]
 
      syntax KItem ::= "Return'" "(" K ")"
