@@ -5,8 +5,10 @@ module CPP-EXECUTION-STMT-EXPR
      imports COMPAT-SYNTAX
      imports CPP-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-REFERENCE-SYNTAX
 
      rule ExpressionStmt(V:Val) => fullExpression
-          requires Execution() andBool isEvalVal(V)
+          requires Execution() andBool
+          (isEvalVal(V) orBool referenceBindingResult(_) :=K V)
 
 endmodule

@@ -39,13 +39,6 @@ module CPP-TRANSLATION-EXPR-FUNCTION-CALL
 
      rule bindParams(ListItem(T:CPPType) P::List, ListItem(Init::Init) A::List, ListItem(_) DArgs::List)
           => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, Init, CopyInit())) bindParams(P, A, DArgs)
-          requires notBool (isCPPRefType(T) andBool isExpr(Init))
-
-     // in this case we are calling bindReference instead of the regular initialization scenario, but
-     // bindReference shouldn't be executed in the calling context, it needs to be executed only in the
-     // called function, otherwise we will end up with an lvalue where the parameter should be an xvalue.
-     rule bindParams(ListItem(cppRefType #as T::CPPType) P::List, ListItem(Init:Expr) A::List, ListItem(_) DArgs::List)
-          => ListItem(Init) bindParams(P, A, DArgs)
 
      // ignore implicit object parameter for static function member
      rule bindParams(ListItem(implicitObjectParameter(t(... st: no-type))) P::List,
