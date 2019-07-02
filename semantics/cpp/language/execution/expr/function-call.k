@@ -14,6 +14,7 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
      imports CPP-EXECUTION-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
      imports CPP-MEMORY-READING-SYNTAX
+     imports CPP-REFERENCE-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
@@ -164,6 +165,9 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
      rule getBaseOfVal(lv(...v: L::SymLoc) #Or xv(...v: L::SymLoc) #Or prv(...v: L::SymLoc))
           => baseOfLoc(L)
 
+     rule getBaseOfVal(referenceBindingResult(V::Val))
+          => getBaseOfVal(V)
+
      syntax SymBase ::= baseOfLoc(SymLoc) [function]
 
      rule baseOfLoc(loc(Base::SymBase, _)) => Base
@@ -172,15 +176,7 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
               => addToExecEnv(X, T, getBaseOfVal(V), false)
            ...</k>
           <curr-function-params>... .List => ListItem(X) </curr-function-params>
-          requires notBool isCPPRefType(T)
-               andBool X =/=K #NoName
-
-     rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObjectExec(X, T,
-               bindReference(ExecName(NoNNS(), X), V),
-               Var(CopyInit()), AutoStorage, .Set) ...</k>
-          <curr-function-params>... .List => ListItem(X) </curr-function-params>
-          requires isCPPRefType(T)
-               andBool X =/=K #NoName
+          requires X =/=K #NoName
 
      rule bindParam(#NoName, T::CPPType, V:Val) => declareNonStaticObjectExec(#NoName, T, V,
                Var(CopyInit()), AutoStorage, .Set)

@@ -1,9 +1,13 @@
 module CPP-REFERENCE-SYNTAX
      imports CPP-TYPING-SORTS
+     imports CPP-DYNAMIC-SORTS
 
      syntax Bool ::= isReferenceCompatible(CPPType, CPPType) [function]
                    | isReferenceRelated(CPPType, CPPType) [function]
                    | isValidReferenceType(CPPType) [function]
+
+     syntax ReferenceBindingResult ::= referenceBindingResult(Val)
+     syntax ValResult ::= ReferenceBindingResult
 
 endmodule
 

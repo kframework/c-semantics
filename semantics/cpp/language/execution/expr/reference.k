@@ -20,7 +20,7 @@ module CPP-EXECUTION-EXPR-REFERENCE
 
      rule bindReference2(E1:LVal, E2::Expr)
           =>
-          bindReference3(E1, E2) ~> E1
+          bindReference3(E1, E2) ~> referenceBindingResult(E1)
 
      syntax KItem ::= bindReference3(LVal, Expr) [strict(c; 2)]
 
