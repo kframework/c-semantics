@@ -180,13 +180,10 @@ module COMPAT
      rule showCId(#NoName) => "<anonymous>"
      rule showCId(#NoName(_)) => "<anonymous>"
      rule showCId(vararg(N::Int)) => "<vararg " +String showInt(N) +String ">"
-     rule showCId(X:UnnamedCId) => #showCId(X, #configuration)
      rule showCId(_::CId) => "<unknown>" [owise]
 
-     syntax String ::= #showCId(CId, K) [function]
-     rule #showCId(X::UnnamedCId, <generatedTop>... <unnamed-locs>... X |-> CabsLoc(File::String, _, Line::Int, _, _) ...</unnamed-locs> ...</generatedTop>)
-          => "<anonymous at " +String File +String ":" +String showInt(Line) +String ">"
-     rule #showCId(_, _) => "<unknown>" [owise]
+     rule [[ showCId(X::UnnamedCId) => "<anonymous at " +String File +String ":" +String showInt(Line) +String ">" ]]
+          <unnamed-locs>... X |-> CabsLoc(File::String, _, Line::Int, _, _) ...</unnamed-locs>
 
      rule showInt(V::Int) => Int2String(V)
 
@@ -241,34 +238,6 @@ module COMPAT
      syntax Map ::= removeBagItemFromMap(Map, K) [function]
      rule removeBagItemFromMap(K |-> 1 M::Map, K:KItem) => M
      rule removeBagItemFromMap(K |-> I::Int M::Map, K:KItem) => K |-> (I -Int 1) M
-
-     syntax KItem ::= "seqstrict()"
-     rule seqstrict(list(HOLE:List)) => toSSList(HOLE) ~> seqstrict() [heat]
-     rule HOLE:SSList ~> seqstrict() => seqstrict(krlist(ofSSList(HOLE))) [cool]
-
-     syntax SSList ::= K "seqstrict::" SSList [seqstrict]
-                     | ".SSList"
-     rule isKResult(.SSList) => true
-     rule isKResult(S1::SSList seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
-     rule toSSList(ListItem(K:KItem) L::List) => K seqstrict:: toSSList(L)
-     rule toSSList(.List) => .SSList
-     rule ofSSList(krlist(L1::List) seqstrict:: L2::SSList) => L1 ofSSList(L2)
-     rule ofSSList(.SSList) => .List
-     rule ofSSList(K:KItem seqstrict:: L::SSList) => ListItem(K) ofSSList(L) [owise]
-
-     syntax KItem ::= "strict()"
-     rule list(HOLE:List) => toSList(HOLE) ~> strict() [heat]
-     rule HOLE:SList ~> strict() => krlist(ofSList(HOLE)) [cool]
-
-     syntax SList ::= K "strict::" SList [strict]
-                    | ".SList"
-     rule isKResult(.SList) => true
-     rule isKResult(S1::SList strict:: S2::SList) => isKResult(S1) andBool isKResult(S2)
-     rule toSList(ListItem(K:KItem) L::List) => K strict:: toSList(L)
-     rule toSList(.List) => .SList
-     rule ofSList(krlist(L1::List) strict:: L2::SList) => L1 ofSList(L2)
-     rule ofSList(.SList) => .List
-     rule ofSList(K:KItem strict:: L::SList) => ListItem(K) ofSList(L) [owise]
 
      syntax List ::= reverseAppendList(List, List) [function]
      rule reverseAppendList(.List, L::List) => L

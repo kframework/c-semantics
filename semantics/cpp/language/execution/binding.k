@@ -8,7 +8,7 @@ module CPP-BINDING-SYNTAX
 
      syntax KItem ::= bindParam(CId, CPPType, Init) [klabel(bindParamCpp3)]
 
-     syntax KItem ::= setThis(Expr) [strict]
+     syntax KItem ::= setThis(Expr) [strict(c)]
 endmodule
 
 module CPP-EXECUTION-BINDING

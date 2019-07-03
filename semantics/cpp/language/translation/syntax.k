@@ -158,7 +158,7 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax Stmt ::= DeclStmt(List)
                    | TGotoStmt(CId)
-                   | TExpressionStmt(Expr) [strict]
+                   | TExpressionStmt(Expr) [strict(c)]
                    | TLabelStmt(CId, List)
                    | TCatchAnyOp(Stmt)
                    | TBreakStmt()
@@ -211,8 +211,8 @@ module CPP-ABSTRACT-SYNTAX
                    | UnaryOperator(OpId, Expr)
                    | BinaryOperator(OpId, Expr, Init)
                    | ConditionalOperator(Expr, Expr, Expr)
-                   | ParenthesizedCast(AType, Expr) [strict]
-                   | StaticCast(AType, Expr) [strict]
+                   | ParenthesizedCast(AType, Expr) [strict(c)]
+                   | StaticCast(AType, Expr) [strict(c)]
                    | DynamicCast(AType, Expr)
                    | FunctionalCast(AType, List) [strict(1)]
                    | SizeofType(AType) [strict]

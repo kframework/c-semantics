@@ -3,7 +3,7 @@ module CPP-EXPR-MEMBERS-SYNTAX
      imports CPP-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-SORTS
-     syntax Expr ::= fieldExp(Expr, CPPType, Int) [strict(1)]
+     syntax Expr ::= fieldExp(Expr, CPPType, Int) [strict(c; 1)]
 endmodule
 
 module CPP-EXPR-MEMBERS

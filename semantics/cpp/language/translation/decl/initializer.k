@@ -156,7 +156,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                orBool hasConstructorThat(T, isUserProvidedDefaultConstructor)
                orBool hasConstructorThat(T, isDeletedDefaultConstructor)
 
-     syntax Expr ::= strictCompoundInit(Expr, Expr) [strict]
+     syntax Expr ::= strictCompoundInit(Expr, Expr) [strict(c)]
 
      rule strictCompoundInit(V1:Val, V2:Val) => compoundInit(V1, V2)
 

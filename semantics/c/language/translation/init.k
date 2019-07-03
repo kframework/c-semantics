@@ -60,7 +60,10 @@ module C-TRANSLATION-INIT
 
      rule NothingExpression() => emptyValue
 
-     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tu> Tu::String </curr-tu> ...</generatedTop>) => Tu
+     rule [[ nameOfCurrentTranslationUnit() => Tu ]]
+          <curr-tu> Tu::String </curr-tu>
+
+     context alias [c]: HERE:K
 
      rule (<T>...
                <k> cleanup </k>

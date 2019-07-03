@@ -3,13 +3,11 @@ module C-LINKING-INTERFACE
      imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports C-CONFIGURATION
 
-     rule currentTranslationScope() => #currentTranslationScope(#configuration)
-     syntax Scope ::= #currentTranslationScope(K) [function]
-     rule #currentTranslationScope(<generatedTop>... <curr-scope>S::Scope</curr-scope> ...</generatedTop>) => S
+     rule [[ currentTranslationScope() => S ]]
+          <curr-scope>S::Scope</curr-scope>
 
-     rule currentTranslationLoc() => #currentTranslationLoc(#configuration)
-     syntax CabsLoc ::= #currentTranslationLoc(K) [function]
-     rule #currentTranslationLoc(<generatedTop>... <curr-program-loc>Loc::CabsLoc</curr-program-loc> ...</generatedTop>) => Loc
+     rule [[ currentTranslationLoc() => Loc ]]
+          <curr-program-loc>Loc::CabsLoc</curr-program-loc>
 
      rule <k> setTranslationLoc(Loc::CabsLoc) => .K ... </k>
           <curr-program-loc> _ => Loc </curr-program-loc>

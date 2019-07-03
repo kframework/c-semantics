@@ -166,7 +166,7 @@ module CPP-CLASS-SYNTAX
      imports INT
      syntax ClassOffset ::= classOffset(naoffset:Int, offset: Int)
 
-     syntax Expr ::= evalBraceOrEqualInitializer(class: Class, object: Expr, initializer: Expr) [strict(2)]
+     syntax Expr ::= evalBraceOrEqualInitializer(class: Class, object: Expr, initializer: Expr) [strict(c; 2)]
 
      syntax KItem ::= returnFromBraceOrEqualInitializer(LVal, Scope)
 
@@ -184,9 +184,9 @@ module CPP-CLASS-SYNTAX
 
      syntax CId ::= unnamedObject(Class)
 
-     syntax Expr ::= beginConstruction(Expr, isBaseClassSubobject: Bool) [strict]
+     syntax Expr ::= beginConstruction(Expr, isBaseClassSubobject: Bool) [strict(c; 1)]
 
-     syntax Expr ::= endConstruction(Expr, isConstructor: Bool) [strict]
+     syntax Expr ::= endConstruction(Expr, isConstructor: Bool) [strict(c; 1)]
 
      syntax BaseClass ::= baseClass(Class)
 

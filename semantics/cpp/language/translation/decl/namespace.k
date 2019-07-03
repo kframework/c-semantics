@@ -8,9 +8,9 @@ module CPP-TRANSLATION-DECL-NAMESPACE
      imports CPP-TRANSLATION-ENV-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
 
-     syntax Decl ::= NamespaceNameDecl(Expr, Bool, List) [strict(1)]
-                   | NamespaceNameAliasDecl(CId, Expr) [strict(2)]
-                   | UsingNameDirective(Expr) [strict(1)]
+     syntax Decl ::= NamespaceNameDecl(Expr, Bool, List) [strict(c; 1)]
+                   | NamespaceNameAliasDecl(CId, Expr) [strict(c; 2)]
+                   | UsingNameDirective(Expr) [strict(c; 1)]
 
      rule <k> NamespaceDecl(X::CId, IsInline::Bool, Decls::List) => NamespaceNameDecl(nameLookupInNamespace(X, N, NoTag(), defaultMask), IsInline, Decls) ...</k>
           <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
