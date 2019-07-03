@@ -34,11 +34,10 @@ RUN apt-get upgrade --yes -qq \
     && apt install --yes                                                             \
         bison build-essential clang++-6.0 clang-6.0 cmake coreutils curl diffutils   \
         flex git libboost-test-dev libffi-dev libgmp-dev libjemalloc-dev libmpfr-dev \
-        libstdc++6 libxml2 libyaml-cpp-dev llvm-6.0 m4 maven opam openjdk-8-jdk      \
+        libstdc++6 libxml2 libyaml-cpp-dev llvm-6.0 m4 maven opam openjdk-11-jdk     \
         pkg-config python3 python-jinja2 python-pygments unifdef zlib1g-dev          \
         cpanminus
 
-RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
 ##########################
 # Set up a default user. #
