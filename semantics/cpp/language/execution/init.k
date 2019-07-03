@@ -36,7 +36,13 @@ module CPP-EXECUTION-INIT
           requires getParams(T) ==K .List
 
      rule #callCppEntryPoint(T::CPPType, Base::SymBase, Argc:Int, X:CId, Args:K)
-          => Args ~> setupCppEnv(Argc) ~> BuiltinCallOp(lv(lnew(Base), noTrace, T), false, ListItem(prv(Argc, noTrace, type(int))) ListItem(ExecName(NoNNS(), X)))
+          => Args
+          ~> setupCppEnv(Argc)
+          ~> BuiltinCallOp(lv(lnew(Base), noTrace, T), false,
+               ListItem(le(temp(!I:Int, type(int)), noTrace, T) :=init prv(Argc, noTrace, type(int)))
+
+               ListItem(ExecName(NoNNS(), X))
+          )
           requires size(getParams(T)) ==Int 2
 
      syntax KItem ::= setupCppEnv(Int)

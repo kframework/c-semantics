@@ -159,9 +159,18 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
                <most-derived-class> MDC </most-derived-class>
           ...</function-control>)
 
-     rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObjectExec(X, T,
-               ExecName(NoNNS(), X) :=init V,
-               Var(CopyInit()), AutoStorage, .Set) ...</k>
+     syntax SymBase ::= getBaseOfVal(Val) [function]
+
+     rule getBaseOfVal(lv(...v: L::SymLoc) #Or xv(...v: L::SymLoc) #Or prv(...v: L::SymLoc))
+          => baseOfLoc(L)
+
+     syntax SymBase ::= baseOfLoc(SymLoc) [function]
+
+     rule baseOfLoc(loc(Base::SymBase, _)) => Base
+
+     rule <k> bindParam(X::CId, T::CPPType, V:Val)
+              => addToExecEnv(X, T, getBaseOfVal(V), false)
+           ...</k>
           <curr-function-params>... .List => ListItem(X) </curr-function-params>
           requires notBool isCPPRefType(T)
                andBool X =/=K #NoName
