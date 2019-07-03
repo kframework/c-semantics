@@ -12,9 +12,11 @@ module CPP-REFERENCE
      imports BOOL
      imports COMMON-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-CONVERSION-SYNTAX // isSimilar
 
+     // @ref n4820 9.3.3/4
      rule isReferenceRelated(T1::CPPType, T2::CPPType) => true
-          requires utype(T1) ==Type utype(T2)
+          requires isSimilar(utype(T1), utype(T2))
 
      rule isReferenceRelated(t(... st: classType(...)) #as T1::CPPType, t(... st: classType(...)) #as T2::CPPType) => isBaseClassOf(T1, T2)
 
