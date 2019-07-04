@@ -363,7 +363,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule EmptyBlock() => BlockStmt(.List)
 
      syntax KItem ::= implicitDeclarationOfCopyConstructor(Class)
-                    | implicitDeclarationOfCopyConstructor2(Class, Bool) [strict(2)]
+                    | implicitDeclarationOfCopyConstructor2(Class, Bool)
 
      // @ref n4800 12.8:8
      rule implicitDeclarationOfCopyConstructor(C::Class)
@@ -698,7 +698,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      syntax Bool ::= #isTrivialDefaultConstructor(ClassInfo) [function]
                    | #hasMethodThat(CId, ClassInfo, TypePredicate) [function]
-                   | #isDeleted(SymBase, K) [function]
+                   | #isDeleted(SymBase) [function]
 
      // @ref n4296 12.1:4.8
      rule isTrivialDefaultConstructor(T::CPPType, K:K) => isDefaultConstructor(T, K) andBool notBool isUserProvidedConstructor(T, K) andBool notBool hasVirtualMembers(type(classType(getMethodClass(T)))) andBool #isTrivialDefaultConstructor(getClassInfo(getMethodClass(T)))
@@ -787,9 +787,10 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule #hasMethodThat(...) => false [owise]
 
-     rule isDeleted(_, envEntry(... base: Base::SymBase)) => #isDeleted(Base, #configuration)
+     rule isDeleted(_, envEntry(... base: Base::SymBase)) => #isDeleted(Base)
 
-     rule #isDeleted(Base::SymBase, <generatedTop>... <functions>... Base |-> Deleted() ...</functions> ...</generatedTop>) => true
+     rule [[ #isDeleted(Base::SymBase) => true ]]
+          <functions>... Base |-> Deleted() ...</functions>
 
      rule #isDeleted(...) => false [owise]
 
@@ -885,7 +886,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule resolve(E:ResolvedExpr) ~> figureDestruct(.List, .List, Res:K) => Res
           requires notBool isNotFoundNameRef(E)
 
-     syntax KItem ::= TaddToConstructed(Expr, CPPType) [strict(1)]
+     syntax KItem ::= TaddToConstructed(Expr, CPPType) [strict(c; 1)]
 
      rule <k> TaddToConstructed(L:LVal, T::CPPType) => .K ...</k>
           <elab>... .K => addToConstructed(L, T) </elab>
@@ -924,9 +925,9 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
 
      rule BitFieldDecl(NoNNS(), X::CId, t(Q::Quals, Mods::Set, T::CPPSimpleType), prv(N::Int, _, _)) => declareField(X, t(Q, Mods, bitfieldType(T, N)), NoInit())
 
-     rule FieldDecl(NoNNS(), X::CId, T::CPPType, Init::Init) => declareField(X, T, Init)
+     rule FieldDecl(NoNNS(), X::CId, T:CPPType, Init::Init) => declareField(X, T, Init)
 
-     syntax KItem ::= declareField(CId, CPPType, Init) [strict(2)]
+     syntax KItem ::= declareField(CId, CPPType, Init)
 
      syntax ClassOffset ::= "uninitialized"
 

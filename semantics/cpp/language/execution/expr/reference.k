@@ -13,7 +13,7 @@ module CPP-EXECUTION-EXPR-REFERENCE
           => bindReference2(E1, E2)
           requires Execution()
 
-     syntax Expr ::= bindReference2(Expr, Expr) [strict(2)]
+     syntax Expr ::= bindReference2(Expr, Expr) [strict(c; 2)]
 
      // we need this result tag because lvalues of reference type aren't KResults
      context bindReference2(HOLE:Expr, _) [result(LVal)]
@@ -22,7 +22,7 @@ module CPP-EXECUTION-EXPR-REFERENCE
           =>
           bindReference3(E1, E2) ~> referenceBindingResult(E1)
 
-     syntax KItem ::= bindReference3(LVal, Expr) [strict(2)]
+     syntax KItem ::= bindReference3(LVal, Expr) [strict(c; 2)]
 
      // @ref n4296 8.5.3:5.1.1
      // @ref n4800 9.3.3:5.1
@@ -67,7 +67,7 @@ module CPP-EXECUTION-EXPR-REFERENCE
           andBool notBool isCPPArrayType(T2)
           andBool notBool isCPPClassType(T1)
 
-     syntax KItem ::= bindReference4(LVal, Expr) [strict(2)]
+     syntax KItem ::= bindReference4(LVal, Expr) [strict(c; 2)]
 
      rule bindReference4(
                lv(Loc1::SymLoc, _, T1::CPPType),

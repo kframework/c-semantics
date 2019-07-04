@@ -156,7 +156,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                orBool hasConstructorThat(T, isUserProvidedDefaultConstructor)
                orBool hasConstructorThat(T, isDeletedDefaultConstructor)
 
-     syntax Expr ::= strictCompoundInit(Expr, Expr) [strict]
+     syntax Expr ::= strictCompoundInit(Expr, Expr) [strict(c)]
 
      rule strictCompoundInit(V1:Val, V2:Val) => compoundInit(V1, V2)
 
@@ -442,6 +442,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                     | braceElisionNo()
                     | braceElisionMaybe(Init, CPPType)
                     | braceElisionMaybe2(init: Expr, initType: TypeExpr, initCat: CatExpr, destType: CPPType)
+                    | braceElisionMaybe3(KItem) [strict]
 
      // If the initializer is neither BraceInit nor Expr, then this rule may not apply.
      rule braceElisionMaybe(E:Expr, T::CPPType) => braceElisionMaybe2(E, E, E, T)
@@ -456,7 +457,11 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                initCat:  FromC:ValueCategory,
                destType: ToT::CPPType
           ) =>
-          #if canBeImplicitlyConvertedTo(FromT, FromC, ToT)
+          braceElisionMaybe3(canBeImplicitlyConvertedTo(FromT, FromC, ToT))
+
+     rule braceElisionMaybe3(B:Bool)
+          =>
+          #if B
           #then braceElisionNo()
           #else braceElisionYes()
           #fi

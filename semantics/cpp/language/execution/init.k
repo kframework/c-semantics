@@ -90,4 +90,6 @@ module CPP-EXECUTION-INIT
 
      rule <k> #ExecExprLoc(L::CabsLoc, V:RValue) => convertValToCPP(V) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
+
+     context alias [c]: HERE:K
 endmodule

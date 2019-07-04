@@ -1,6 +1,6 @@
 module CPP-STMT-RETURN-SYNTAX
      imports BASIC-K
-     syntax KItem ::= "Return''" "(" K ")" [strict]
+     syntax KItem ::= "Return''" "(" K ")" [strict(c)]
 endmodule
 
 module CPP-EXECUTION-STMT-RETURN
@@ -32,7 +32,7 @@ module CPP-EXECUTION-STMT-RETURN
 
      rule prepareReturn(t(... st: void) #as T::CPPType, V:PRVal) => Return''(V)
 
-     syntax KItem ::= "Return'" "(" K "," CPPType ")" [strict(1)]
+     syntax KItem ::= "Return'" "(" K "," CPPType ")" [strict(c; 1)]
 
      rule Return'(referenceBindingResult(V::Val) => V, _)
 

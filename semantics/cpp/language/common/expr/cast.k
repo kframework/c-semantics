@@ -5,7 +5,7 @@ module CPP-EXPR-CAST-SYNTAX
      syntax Val ::= convertConst(CPPType, Val) [function]
 
      syntax Expr ::= convertStatic(CPPType, Val, Trace) [function]
-                   | #convertStatic(CPPType, Expr) [strict(2)]
+                   | #convertStatic(CPPType, Expr) [strict(c; 2)]
 
      syntax Expr ::= convertReinterpret(CPPType, Val) [function]
 

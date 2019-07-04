@@ -65,7 +65,7 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
           => virtualCall(CallT, computeFinalOverrider(Q, CallT, readBytes(stripProv(Obj), byteSizeofType(type(pointerType(type(void)))), type(pointerType(type(void))))),
                krlist(ListItem(Arg1) Args))
 
-     syntax Expr ::= virtualCall(CPPType, Expr, StrictList) [strict(2)]
+     syntax Expr ::= virtualCall(CPPType, Expr, StrictList) [strict(c; 2)]
                    | computeFinalOverrider(QualId, CPPType, K) [strict(3)]
                    | #computeFinalOverrider(QualId, CPPType, CPPValue)
                    | getOverrides(Class, CId, CPPType, candidates: List)

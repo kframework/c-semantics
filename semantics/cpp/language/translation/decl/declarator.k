@@ -11,7 +11,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      syntax Decl ::= DeclaratorAndSpecifiers(Declarator, Set)
                     | declareObject(NNSVal, NNSVal, CId, CId, CPPType, Init, DeclarationType, Linkage, Duration, Set)
                     | defineObject(NNSVal, CId, CId, CPPType, Init, DeclarationType, Set)
-                    | initializeObject(NNSVal, CId, CPPType, init: K, DeclarationType) [strict(4)]
+                    | initializeObject(NNSVal, CId, CPPType, init: K, DeclarationType) [strict(c; 4)]
 
      syntax Declarator ::= NormalizedDecl(nns: NNS, id: CId, mangled: CId, type: AType, init: Init, dtype: DeclarationType)
 

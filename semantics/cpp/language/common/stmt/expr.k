@@ -2,8 +2,8 @@ module CPP-COMMON-STMT-EXPR-SYNTAX
      imports CPP-DYNAMIC-SORTS
      syntax Bool ::= isConvertableDiscardedExpr(Val) [function]
 
-     syntax Expr ::= prDiscardedExpr(Expr) [strict]
-                   | glDiscardedExpr(Expr) [strict]
+     syntax Expr ::= prDiscardedExpr(Expr) [strict(c)]
+                   | glDiscardedExpr(Expr) [strict(c)]
 endmodule
 
 module CPP-COMMON-STMT-EXPR

@@ -24,7 +24,7 @@ module CPP-TRANSLATION-OVERLOADING-SYNTAX
 
      syntax BuiltinOp ::= builtinOp(Expr)
 
-     syntax Bool ::= canBeImplicitlyConvertedTo(fromType: CPPType, fromCat: ValueCategory, toType: CPPType) [function]
+     syntax KItem ::= canBeImplicitlyConvertedTo(fromType: CPPType, fromCat: ValueCategory, toType: CPPType)
 endmodule
 
 module CPP-TRANSLATION-OVERLOADING
@@ -85,6 +85,8 @@ module CPP-TRANSLATION-OVERLOADING
           <tr-this> Obj:K </tr-this>
 
      syntax Expr ::= #resolveOverload(cands: CandidateSet, args: StrictList, types: StrictList, cats: StrictList, trace: Expr, ot: OverloadType)
+                   | #resolveOverload2(cands: CandidateSet, args: StrictList, types: StrictList, cats: StrictList, trace: Expr, ot: OverloadType)
+
 
      syntax List ::= getArgs(List, QualId, Expr, K) [function]
 
@@ -131,29 +133,85 @@ module CPP-TRANSLATION-OVERLOADING
 
      context #resolveOverload(... cats: (HOLE:StrictList => cats(HOLE)))
 
-     rule #resolveOverload(cSet(... candidates: (T::CPPType |-> envEntry(... defaultArgs: DA::DefaultArgumentsResult) => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _, _)
-          requires isCPPFunctionType(T) andBool (notBool acceptsNArgs(size(Args), T, getDefaultArgsVals(DA))
-            orBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA)))
+     syntax KItem ::= filterViableCandidates(TypeMap, List, List, List)
+                    | filterViableCandidatesResult(TypeMap)
+                    | filterViableCandidates1(src: TypeMap, filtered: TypeMap, List, List, List)
+                    | filterViableCandidates2(currType: CPPType, currEntry: KItem, src: TypeMap, filtered: TypeMap, List, List, List)
 
-     rule #resolveOverload(cSet(... candidates: (T::CPPType |-> builtinOp(_) => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _, _)
-          requires isCPPFunctionType(T) andBool #fun(DA::DefaultArgumentsResult =>
-               notBool acceptsNArgs(size(Args), T, getDefaultArgsVals(DA))
-                 orBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA)))
-               (emptyDefaultArguments(T))
+     rule (.K => filterViableCandidates(CS, Args, Types, Cats))
+          ~>
+          #resolveOverload(cSet(... candidates: CS::TypeMap), list(Args::List), krlist(Types::List), krlist(Cats::List), _, _)
 
-     syntax Bool ::= #notViableTypes(params: List, types: List, daTypes:List, cats: List, daCats: List, isNonStaticRefNone: Bool) [function]
-                   | notViableTypes(CPPType, List, List, List, List) [function]
-                   | viableType(CPPType, CPPType, ValueCategory) [function]
-                   | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool) [function]
+
+     rule (filterViableCandidatesResult(Filtered::TypeMap)
+          ~>
+          #resolveOverload(cSet(_, Id::QualId), Args::StrictList,
+                    Types::StrictList, Cats::StrictList, Trace::Expr, OT::OverloadType)
+          ) => #resolveOverload2(cSet(Filtered, Id), Args, Types, Cats, Trace, OT)
+
+     rule filterViableCandidates(M::TypeMap, Args::List, Types::List, Cats::List)
+          =>
+          filterViableCandidates1(M, .Map, Args, Types, Cats)
+
+     rule filterViableCandidates1(.Map, Filtered::TypeMap, _, _, _)
+          =>
+          filterViableCandidatesResult(Filtered)
+
+     rule filterViableCandidates1(T::CPPType |-> CurEntry::KItem Src::TypeMap, Filtered::TypeMap, Args::List, Types::List, Cats::List)
+          => keepThisCandidate(T, CurEntry, Args, Types, Cats)
+          ~> filterViableCandidates2(T, CurEntry, Src, Filtered, Args, Types, Cats)
+
+     rule (Keep:Bool ~>
+           filterViableCandidates2(T::CPPType, K::KItem, Src::TypeMap, Filtered::TypeMap, Args::List, Types::List, Cats::List))
+          =>
+          filterViableCandidates1(Src, #if Keep #then T |-> K #else .Map #fi Filtered, Args, Types, Cats)
+
+     syntax KItem ::= keepThisCandidate(CPPType, KItem, List, List, List)
+                    | keepThisCandidate1(CPPType, KItem, List, List, List)
+                    | keepThisCandidate2(CPPType, KItem, List, List, List)
+
+     rule keepThisCandidate(T::CPPType, K::KItem, Args::List, Types::List, Cats::List)
+          =>
+          #if notBool isCPPFunctionType(T) //e.g. a function pointer
+          #then
+               true
+          #else
+               keepThisCandidate1(T, K, Args, Types, Cats)
+          #fi
+
+     rule keepThisCandidate1(T::CPPType, K::KItem, Args::List, Types::List, Cats::List)
+          =>
+          #if notBool acceptsNArgs(size(Args), T, getDefaultArgsVals(getDA(T, K)))
+          #then
+               false
+          #else
+               keepThisCandidate2(T, K, Args, Types, Cats)
+          #fi
+
+     rule (.K => notViableTypes(T, Types, getDefaultArgsTypes(getDA(T, K)), Cats, getDefaultArgsCats(getDA(T, K))))
+          ~> keepThisCandidate2(T::CPPType, K::KItem, _, Types::List, Cats::List)
+
+     rule (B:Bool ~> keepThisCandidate2(...)) => notBool B
+
+     syntax DefaultArgumentsResult ::= getDA(CPPType, KItem) [function]
+     rule getDA(_, envEntry(... defaultArgs: DA::DefaultArgumentsResult)) => DA
+     rule getDA(T::CPPType, _) => emptyDefaultArguments(T) [owise]
+     
+     syntax KItem ::= #notViableTypes(params: List, types: List, daTypes:List, cats: List, daCats: List, isNonStaticRefNone: Bool)
+                   | notViableTypes(CPPType, List, List, List, List)
 
      rule notViableTypes(T::CPPType, Types::List, DATypes::List, Cats::List, DACats::List)
           => #notViableTypes(getParams(T), Types, DATypes, Cats, DACats, isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone())
 
-     rule #notViableTypes(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(_) DAs::List, ListItem(C::ValueCategory) Cs::List, ListItem(_) DCs::List, B::Bool)
-     => notBool viableType(P, A, C) orBool #notViableTypes(Ps, As, DAs, Cs, DCs, B)
+     rule (.K => viableType(P, A, C))
+          ~> #notViableTypes((ListItem(P:CPPType) => .List) _, (ListItem(A::CPPType) => .List) _, (ListItem(_) => .List) _, (ListItem(C::ValueCategory) => .List) _, (ListItem(_) => .List) _, _)
 
-     rule #notViableTypes(ListItem(implicitObjectParameter(P:CPPType))  Ps::List, ListItem(A::CPPType) As::List, DAs::List, ListItem(C::ValueCategory) Cs::List, DCs::List, B::Bool)
-     => notBool viableImplicitObjectParameter(P, A, C, B) orBool #notViableTypes(Ps, As, DAs, Cs, DCs, B)
+    rule (.K => viableImplicitObjectParameter(P, A, C, B))
+          ~> #notViableTypes((ListItem(implicitObjectParameter(P:CPPType)) => .List) _, (ListItem(A::CPPType) => .List) _, _, (ListItem(C::ValueCategory) => .List) _, _, B::Bool)
+
+     rule (false ~> #notViableTypes(...)) => true
+     rule (true => .K) ~> #notViableTypes(...)
+
 
      rule #notViableTypes(... params: ListItem(variadic)) => false
 
@@ -168,20 +226,34 @@ module CPP-TRANSLATION-OVERLOADING
                toType:   ToType::CPPType
           ) => viableType(FromType, ToType, FromCat)
 
-     rule viableType(P::CPPType, A::CPPType, C::ValueCategory) => conversionSequence(P, A, C, false, false, true) =/=K cannot-convert
+     syntax KItem ::= viableType(CPPType, CPPType, ValueCategory)
+                    | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool)
+
+     rule viableType(P::CPPType, A::CPPType, C::ValueCategory)
+          =>
+          computeConversionSequence(P, A, C, false, false, true)
+          ~> canConvert()
 
      rule viableImplicitObjectParameter(cppRefType #as P::CPPType, A::CPPType, C::ValueCategory, B::Bool)
-          => conversionSequence(P, A, C, B, true, true) =/=K cannot-convert
+          =>
+          computeConversionSequence(P, A, C, B, true, true)
+          ~> canConvert()
+
+     syntax KItem ::= canConvert()
+
+     rule (CS:ConversionSequence ~> canConvert())
+          => CS =/=K cannot-convert
 
      rule viableImplicitObjectParameter(t(... st: no-type), _, _, _) => true
 
      rule canConvertWithStandardConversion(P::CPPType, A::CPPType, C::ValueCategory) => computeSCS(P, A, C, false) =/=K cannot-convert
 
+     // Result: ConversionSequence
+     syntax KItem ::= computeConversionSequence(CPPType, CPPDType, ValueCategory, isNonStaticRefNone: Bool, isImplicit: Bool, canUserDefinedConvert: Bool)
+
+     syntax KResult ::= ConversionSequence
+
      syntax ConversionSequence ::= CannotConvert
-                                 | conversionSequence(CPPType, CPPDType, ValueCategory, isNonStaticRefNone: Bool, isImplicit: Bool, canUserDefinedConvert: Bool) [function]
-                                 | computeUDC(CPPType, CPPType, ValueCategory) [function]
-                                 | computeUDCFrom(CPPType, Class, ClassInfo, ValueCategory) [function]
-                                 | computeUDCTo(Class, ClassInfo, CPPType, ValueCategory) [function]
                                  | "ellipsisConversionSequence"
                                  | computeSCS(CPPType, CPPType, ValueCategory, isOverload: Bool) [function]
                                  | computeSCS2(Conversion, CPPType, CPPType, isOverload: Bool) [function]
@@ -193,43 +265,53 @@ module CPP-TRANSLATION-OVERLOADING
                                  | "bottomConversionSequence"
 
      // @ref n4296 13.3.3.1.4:1 (identity conversion)
-     rule conversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, B::Bool, _, _)
+     rule computeConversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, B::Bool, _, _)
           => standardConversionSequence(identity, identity, identity, B, P)
           requires bindsDirectlyToExp(P, A, C, B)
                andBool notBool (isCPPClassType(innerType(P)) andBool isCPPClassType(A)
                     andBool isProperBaseClassOf(innerType(P), A))
 
-     rule conversionSequence(cppRefType #as P::CPPType, t(... st: classType(...)) #as A::CPPType, C::ValueCategory, B::Bool, _, _)
+     rule computeConversionSequence(cppRefType #as P::CPPType, t(... st: classType(...)) #as A::CPPType, C::ValueCategory, B::Bool, _, _)
           => standardConversionSequence(identity, derivedToBaseConversion(P, A), identity, B, P)
           requires bindsDirectlyToExp(P, A, C, B) andBool isCPPClassType(innerType(P))
                andBool isProperBaseClassOf(innerType(P), A)
 
-     rule conversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC::Bool)
-          => conversionSequence(innerType(P), A, C, false, false, CanUDC)
+     rule computeConversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC::Bool)
+          => computeConversionSequence(innerType(P), A, C, false, false, CanUDC)
           requires notBool bindsDirectlyToExp(P, A, C, false)
                andBool notBool bindsDirectlyToConversion(P, A, C)
                andBool isValidReferenceType(P)
 
-     rule conversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, false, false, _)
+     rule computeConversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, false, false, _)
           => cannot-convert
           requires notBool bindsDirectlyToExp(P, A, C, false)
                andBool notBool bindsDirectlyToConversion(P, A, C)
                andBool notBool isValidReferenceType(P)
 
      // @ref n4296 13.3.1:5.1-5.2
-     rule conversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, B::Bool, true, _)
+     rule computeConversionSequence(cppRefType #as P::CPPType, A:CPPType, C::ValueCategory, B::Bool, true, _)
           => cannot-convert
           requires notBool bindsDirectlyToExp(P, A, C, B)
 
-     rule conversionSequence(P::CPPType, initListType(ListItem(A::CPPType)), initListCat(ListItem(C::ValueCategory)), false, false, CanUDC::Bool)
-          => listInitSequence(P, conversionSequence(P, A, C, false, false, CanUDC))
+     rule computeConversionSequence(P::CPPType, initListType(ListItem(A::CPPType)), initListCat(ListItem(C::ValueCategory)), false, false, CanUDC::Bool)
+          => computeListInitSequence(P, computeConversionSequence(P, A, C, false, false, CanUDC))
           requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P) andBool notBool isCPPArrayType(P)
 
-     rule conversionSequence(P::CPPType, initListType(.List), _, false, false, _)
+     syntax KItem ::= computeListInitSequence(CPPType, KItem) [strict(2)]
+
+     rule computeListInitSequence(P::CPPType, CS:ConversionSequence)
+          => listInitSequence(P, CS)
+
+     syntax KItem ::= computeUserDefinedConversionSequence(KItem, QualId, CPPType, KItem) [strict(1,4)]
+
+     rule computeUserDefinedConversionSequence(CS1:ConversionSequence, Q::QualId, T::CPPType, CS2:ConversionSequence)
+          => userDefinedConversionSequence(CS1, Q, T, CS2)
+
+     rule computeConversionSequence(P::CPPType, initListType(.List), _, false, false, _)
           => listInitSequence(P, standardConversionSequence(identity, identity, identity, false, P))
           requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P) andBool notBool isCPPArrayType(P)
 
-     rule conversionSequence(P::CPPType, initListType(L::List), _, false, false, _)
+     rule computeConversionSequence(P::CPPType, initListType(L::List), _, false, false, _)
           => cannot-convert
           requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P) andBool notBool isCPPArrayType(P)
                andBool size(L) >Int 1
@@ -262,56 +344,116 @@ module CPP-TRANSLATION-OVERLOADING
           requires notBool (isCPPClassType(T2) andBool notBool isReferenceRelated(innerType(T), T2))
                orBool bindsDirectlyToExp(T, T2, C, false)
 
-     rule conversionSequence(P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC::Bool) => adjustParamType(computeSCS(utype(P), utype(A), C, CanUDC), P)
+     rule computeConversionSequence(P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC::Bool) => adjustParamType(computeSCS(utype(P), utype(A), C, CanUDC), P)
           requires notBool isCPPRefType(P)
                andBool ((notBool isCPPClassType(P) andBool notBool isCPPClassType(A))
                     orBool utype(A) ==Type utype(P)
                     orBool (isCPPClassType(A) andBool isCPPClassType(P) andBool isBaseClassOf(P, A)))
 
-     rule conversionSequence(P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC:Bool) => #if CanUDC #then computeUDC(utype(P), utype(A), C) #else cannot-convert #fi [owise]
+     rule computeConversionSequence(P::CPPType, A:CPPType, C::ValueCategory, false, false, CanUDC:Bool) => #if CanUDC #then computeUDC(utype(P), utype(A), C) #else cannot-convert #fi [owise]
 
-     rule computeUDC(t(... st: classType(P::Class)), A::CPPType, C::ValueCategory) => computeUDCTo(P, getClassInfo(P), A, C)
+
+     syntax KItem ::= computeUDC(CPPType, CPPType, ValueCategory)
+                    | #computeUDC(KItem, KItem) [strict(1,2)]
+
+     rule computeUDC(t(... st: classType(P::Class)), A::CPPType, C::ValueCategory)
+          => computeUDCTo(P, getClassInfo(P), A, C)
           requires notBool isCPPClassType(A)
 
-     rule computeUDC(P::CPPType, t(... st: classType(A::Class)), C::ValueCategory) => computeUDCFrom(P, A, getClassInfo(A), C)
+     rule computeUDC(P::CPPType, t(... st: classType(A::Class)), C::ValueCategory)
+          => computeUDCFrom(P, A, getClassInfo(A), C)
           requires notBool isCPPClassType(P)
 
-     rule computeUDC(t(... st: classType(P::Class)), t(... st: classType(A::Class)), C::ValueCategory) => resolveUDC(ListItem(computeUDCFrom(type(classType(P)), A, getClassInfo(A), C)) ListItem(computeUDCTo(P, getClassInfo(P), type(classType(A)), C)), .List)
+     rule computeUDC(t(... st: classType(P::Class)), t(... st: classType(A::Class)), C::ValueCategory)
+          =>
+          #computeUDC(
+               computeUDCFrom(type(classType(P)), A, getClassInfo(A), C),
+               computeUDCTo(P, getClassInfo(P), type(classType(A)), C)
+          )
+
+     rule #computeUDC(CS1:ConversionSequence, CS2:ConversionSequence)
+          =>
+          resolveUDC(ListItem(CS1) ListItem(CS1))
+
+
+     syntax KItem ::= computeUDCTo(Class, ClassInfo, CPPType, ValueCategory)
+                    | #computeUDCTo(Class, List, CPPType, ValueCategory, List)
 
      rule computeUDCTo(_ :: Class(_, X::CId, _) #as P::Class, <class>... <cenv>... ConstructorId(X) |-> M::TypeMap ...</cenv> ...</class>, A::CPPType, C::ValueCategory)
-          => resolveUDC(#computeUDCTo(P, keys_list(stripExplicit(M)), A, C), .List)
+          => #computeUDCTo(P, keys_list(stripExplicit(M)), A, C, .List)
+
+     rule (.K => computeUserDefinedConversionSequence(
+               computeConversionSequence(Param, A, C, false, false, false),
+               P :: ConstructorId(X),
+               FuncT,
+               computeConversionSequence(type(classType(P)), type(classType(P)), unnamedCat(Ret), false, false, false)
+            )
+          ) ~>
+          #computeUDCTo(
+               _ :: Class(_, X::CId, _) #as P::Class,
+               (ListItem(t(... st: functionType(... returnType: Ret::CPPType, paramTypes: Param::CPPType)) #as FuncT::CPPType) => .List) L::List,
+               A::CPPType,
+               C::ValueCategory,
+               _
+          )
+
+     rule (UDC:ConversionSequence => .K)
+          ~> #computeUDCTo(_, _, _, _, (.List => ListItem(UDC)) _)
+
+     rule #computeUDCTo(_, .List, _, _, Result::List)
+     => resolveUDC(Result)
+
+     syntax KItem ::= computeUDCFrom(CPPType, Class, ClassInfo, ValueCategory)
+                    | #computeUDCFrom(CPPType, List, Class, ValueCategory, List)
 
      rule computeUDCFrom(P::CPPType, A::Class, <class>... <conversion-functions> L::List </conversion-functions> ...</class>, C::ValueCategory)
-          => resolveUDC(#computeUDCFrom(P, L, A, C), .List)
+          => #computeUDCFrom(P, L, A, C, .List)
 
-     syntax List ::= #computeUDCFrom(CPPType, List, Class, ValueCategory) [function]
-                   | #computeUDCTo(Class, List, CPPType, ValueCategory) [function]
+     rule (.K => computeUserDefinedConversionSequence(
+               computeConversionSequence(implicitObjectParameterType(FuncT), type(classType(A)), C, getRefQualifier(FuncT) ==K RefNone(), true, false),
+               A :: ConversionId(Ret),
+               FuncT,
+               computeConversionSequence(P, Ret, unnamedCat(Ret), false, false, false)
+            )
+          )
+          ~>
+          #computeUDCFrom(
+               P::CPPType,
+               (ListItem(t(... st: functionType(... returnType: Ret::CPPType)) #as FuncT::CPPType) => .List) L::List,
+               A::Class,
+               C::ValueCategory,
+               _
+          )
 
-     syntax ConversionSequence ::= resolveUDC(List, List) [function]
+     rule (UDC:ConversionSequence => .K)
+          ~> #computeUDCFrom(_, _, _, _, (.List => ListItem(UDC)) _)
 
-     rule #computeUDCTo(_ :: Class(_, X::CId, _) #as P::Class, ListItem(t(... st: functionType(... returnType: Ret::CPPType, paramTypes: Param::CPPType)) #as FuncT::CPPType) L::List, A::CPPType, C::ValueCategory)
-          => ListItem(userDefinedConversionSequence(conversionSequence(Param, A, C, false, false, false), P :: ConstructorId(X), FuncT, conversionSequence(type(classType(P)), type(classType(P)), unnamedCat(Ret), false, false, false))) #computeUDCTo(P, L, A, C)
+     rule #computeUDCFrom(_, .List, _, _, Result::List) => resolveUDC(Result)
 
-     rule #computeUDCTo(_, .List, _, _) => .List
+     // result: ConversionSequence
+     syntax KItem ::= resolveUDC(KItem)
+                    | resolveUDCHold()
+                    | #resolveUDC(List, List)
 
-     rule #computeUDCFrom(P::CPPType, ListItem(t(... st: functionType(... returnType: Ret::CPPType)) #as FuncT::CPPType) L::List, A::Class, C::ValueCategory)
-          => ListItem(userDefinedConversionSequence(conversionSequence(implicitObjectParameterType(FuncT), type(classType(A)), C, getRefQualifier(FuncT) ==K RefNone(), true, false), A :: ConversionId(Ret), FuncT, conversionSequence(P, Ret, unnamedCat(Ret), false, false, false))) #computeUDCFrom(P, L, A, C)
+     rule resolveUDC(K::KItem)
+          => K ~> resolveUDCHold()
 
-     rule #computeUDCFrom(_, .List, _, _) => .List
+     rule L:List ~> resolveUDCHold()
+          => #resolveUDC(L, .List)
 
-     rule resolveUDC((ListItem(cannot-convert) => .List) _, _)
+     rule #resolveUDC((ListItem(cannot-convert) => .List) _, _)
 
-     rule resolveUDC((ListItem(userDefinedConversionSequence(cannot-convert, _, _, _)) => .List) _, _)
+     rule #resolveUDC((ListItem(userDefinedConversionSequence(cannot-convert, _, _, _)) => .List) _, _)
 
-     rule resolveUDC((ListItem(userDefinedConversionSequence(_, _, _, cannot-convert)) => .List) _, _)
+     rule #resolveUDC((ListItem(userDefinedConversionSequence(_, _, _, cannot-convert)) => .List) _, _)
 
-     rule resolveUDC((ListItem(C::ConversionSequence) => .List) _, (.List => ListItem(C)) _) [owise]
+     rule #resolveUDC((ListItem(C::ConversionSequence) => .List) _, (.List => ListItem(C)) _) [owise]
 
-     rule resolveUDC(.List, .List) => cannot-convert
+     rule #resolveUDC(.List, .List) => cannot-convert
 
-     rule resolveUDC(.List, ListItem(C::ConversionSequence)) => C
+     rule #resolveUDC(.List, ListItem(C::ConversionSequence)) => C
 
-     rule resolveUDC(.List, ListItem(_) ListItem(_) _) => ambiguousConversionSequence
+     rule #resolveUDC(.List, ListItem(_) ListItem(_) _) => ambiguousConversionSequence
 
      rule computeSCS(P::CPPType, A::CPPType, _:GLValueCategory, B::Bool) => computeSCS2(lvalueConversion, P, prvalType(A), B)
           requires notBool isCPPFunctionType(A) andBool notBool isCPPArrayType(A)
@@ -446,51 +588,39 @@ module CPP-TRANSLATION-OVERLOADING
 
      // do not actually perform overload resolution, this was a function call
      // in which the postfix expression was a function pointer
-     rule #resolveOverload(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase), id: X::QualId), list(Args::List), _, _, E::Expr, _)
+     rule #resolveOverload2(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase), id: X::QualId), list(Args::List), _, _, E::Expr, _)
           => Odr.newUse(Base)
           ~> updateExternalUses(Base)
           ~> checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T))))))
           requires isCPPPointerType(T) andBool isCPPFunctionType(innerType(T)) andBool Base =/=K nonStatic
 
-     rule #resolveOverload(cSet(... candidates: T::CPPType |-> envEntry(... base: nonStatic)), list(Args::List), _, _, E::Expr, _)
+     rule #resolveOverload2(cSet(... candidates: T::CPPType |-> envEntry(... base: nonStatic)), list(Args::List), _, _, E::Expr, _)
           => checkAccess(CallExpr(le(E, hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T))))))
           requires isCPPPointerType(T) andBool isCPPFunctionType(innerType(T))
 
      // only one viable candidate
      rule bestViable(T::CPPType, envEntry(... base: Base::SymBase, defaultArgs: defArgs(... vals: DArgs::StrictListResult)))
-          ~> #resolveOverload(cSet(... id: X::QualId), list(Args::List), _, _, E::Expr, _)
+          ~> #resolveOverload2(cSet(... id: X::QualId), list(Args::List), _, _, E::Expr, _)
           => #if isMethodPure(T) andBool isVirtualCall(hasTrace(E), T) #then .K #else Odr.newUse(Base) #fi
           ~> updateExternalUses(Base)
           ~> checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), DArgs))
 
-     rule bestViable(T::CPPType, builtinOp(E::Expr)) ~> #resolveOverload(...) => E
+     rule bestViable(T::CPPType, builtinOp(E::Expr)) ~> #resolveOverload2(...) => E
 
      rule (.K => computeBestViable(M, Types, Cats, O))
-          ~> #resolveOverload(cSet(... candidates: M::TypeMap), list(Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)
-          requires allViable(M, size(Args), Types, Cats) [owise] //allViable is expensive so we evaluate this rule late in order to avoid recomputing it over and over unnecessarily
+          ~> #resolveOverload2(cSet(... candidates: M::TypeMap), list(Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)
+          requires allFunctionTypes(M)
 
-     syntax Bool ::= allViable(cands: TypeMap, Int, List, List) [function]
+     syntax Bool ::= allFunctionTypes(TypeMap) [function]
 
-     rule allViable(T::CPPType |-> envEntry(... defaultArgs: DA::DefaultArgumentsResult) M::TypeMap, NArgs::Int, Types::List, Cats::List)
-          => isCPPFunctionType(T) andBool acceptsNArgs(NArgs, T, getDefaultArgsVals(DA))
-               andBool notBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA))
-               andBool allViable(M, NArgs, Types, Cats)
+     rule allFunctionTypes(.Map) => true
 
-     // TODO(traiansf): properly resolve default arguments for templates
-     rule allViable(T::CPPType |-> Val:KItem M::TypeMap, NArgs::Int, Types::List, Cats::List)
-          => isCPPFunctionType(T) andBool #fun(DA::DefaultArgumentsResult =>
-               acceptsNArgs(NArgs, T, getDefaultArgsVals(DA))
-               andBool notBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA)))(emptyDefaultArguments(T))
-               andBool allViable(M, NArgs, Types, Cats)
-          requires isTemplateSpecialization(Val) orBool isBuiltinOp(Val)
+     rule allFunctionTypes((T::CPPType |-> _) M::TypeMap)
+          => isCPPFunctionType(T) andBool allFunctionTypes(M)
 
-     rule allViable(T::CPPType |-> templateInfo(...) _, _, _, _) => false
-
-     rule allViable(... cands: .Map) => true
-
-     syntax KItem ::= computeBestViable(TypeMap, List, List, OverloadType) [function]
-                    | #computeBestViable(CPPType, K, List, List, List, OverloadType, List) [function]
-                    | checkIsBest(CPPType, K, List, List, OverloadType, List) [function]
+     syntax KItem ::= computeBestViable(TypeMap, List, List, OverloadType)
+                    | #computeBestViable(CPPType, K, List, List, List, OverloadType, List)
+                    | checkIsBest(CPPType, K, List, List, OverloadType, List)
                     | bestViable(CPPType, K)
                     | "noBestViable"
 
@@ -499,18 +629,30 @@ module CPP-TRANSLATION-OVERLOADING
      rule computeBestViable(T::CPPType |-> K:KItem M::TypeMap, Types::List, Cats::List, O::OverloadType)
           => #computeBestViable(T, K, Map2List(M), Types, Cats, O, .List)
 
-     rule #computeBestViable(
+     rule (.K => isBetterFunctionThan(T2, K2, T1, K1, Types, Cats, O))
+          ~> #computeBestViable(
                T1::CPPType,
                K1:K,
-               (ListItem(kpair(T2::CPPType, K2:K)) => .List) _,
+               ListItem(kpair(T2::CPPType, K2:K)) _,
                Types::List,
                Cats::List,
                O::OverloadType,
+               _
+          )
+
+     rule (false => .K)
+          ~> #computeBestViable(
+               _,
+               _,
+               (ListItem(kpair(T2::CPPType, K2:K)) => .List) _,
+               _,
+               _,
+               _,
                (.List => ListItem(kpair(T2, K2))) _
           )
-          requires notBool isBetterFunctionThan(T2, K2, T1, K1, Types, Cats, O)
 
-     rule #computeBestViable(
+     rule (true => .K)
+          ~> #computeBestViable(
                (T1::CPPType => T2),
                (K1:K => K2),
                (ListItem(kpair(T2::CPPType, K2:K)) => .List) _,
@@ -519,42 +661,74 @@ module CPP-TRANSLATION-OVERLOADING
                _,
                (.List => ListItem(kpair(T1, K1))) _
           )
-          [owise]
 
      rule #computeBestViable(T::CPPType, K:K, .List, Types::List, Cats::List, O::OverloadType, Others::List)
           => checkIsBest(T, K, Types, Cats, O, Others)
 
-     rule checkIsBest(
+     rule (.K => isBetterFunctionThan(T1, K1, T2, K2, Types, Cats, O))
+          ~> checkIsBest(
                T1::CPPType,
                K1:K,
                Types::List,
                Cats::List,
                O::OverloadType,
+               ListItem(kpair(T2::CPPType, K2:K)) _
+          )
+
+     rule (true => .K)
+          ~> checkIsBest(
+               _,
+               _,
+               _,
+               _,
+               _,
                (ListItem(kpair(T2::CPPType, K2:K)) => .List) _
           )
-          requires isBetterFunctionThan(T1, K1, T2, K2, Types, Cats, O)
+
+     rule false ~> checkIsBest(...) => noBestViable [owise]
 
      rule checkIsBest(T::CPPType, K:K, _, _, _, .List)
           => bestViable(T, K)
 
-     rule checkIsBest(...) => noBestViable [owise]
+     syntax KItem ::= isBetterFunctionThan(CPPType, K, CPPType, K, List, List, OverloadType)
+                    | #isBetterFunctionThan(KItem, KItem, CPPType, K, CPPType, K, List, List, OverloadType) [strict(1,2)]
 
-     syntax Bool ::= isBetterFunctionThan(CPPType, K, CPPType, K, List, List, OverloadType) [function]
-
-     // TODO(dwightguth): n4296 13.3.3:1.4,1.5,1.7
-     rule isBetterFunctionThan(F1::CPPType, K1:K, F2::CPPType, K2:K, Types::List, Cats::List, NotConversionOverload()) =>
-          notBool hasWorseConversionSequenceThan(F1, F2, Types, Cats)
-               andBool (hasBetterConversionSequenceThan(F1, F2, Types, Cats)
-                    orBool (notBool isTemplateSpecialization(K1) andBool isTemplateSpecialization(K2)))
+     rule isBetterFunctionThan(F1::CPPType, K1:K, F2::CPPType, K2:K, Types::List, Cats::List, NotConversionOverload())
+          => #isBetterFunctionThan(
+               hasWorseConversionSequenceThan(F1, F2, Types, Cats),
+               hasBetterConversionSequenceThan(F1, F2, Types, Cats),
+               F1, K1, F2, K2, Types, Cats, NotConversionOverload()
+          )
           requires notBool (isTemplateSpecialization(K1) andBool isTemplateSpecialization(K2))
 
-     syntax Bool ::= hasWorseConversionSequenceThan(CPPType, CPPType, List, List) [function]
-                   | hasBetterConversionSequenceThan(CPPType, CPPType, List, List) [function]
-                   | #hasWorseCSThan(List, List) [function]
-                   | #hasBetterCSThan(List, List) [function]
+     // TODO(dwightguth): n4296 13.3.3:1.4,1.5,1.7
+     rule #isBetterFunctionThan(
+               HasWorseCS:Bool,
+               HasBetterCS:Bool,
+               F1::CPPType,
+               K1:K,
+               F2::CPPType,
+               K2:K,
+               Types::List,
+               Cats::List,
+               NotConversionOverload()
+          )
+          => notBool HasWorseCS andBool (HasBetterCS orBool (notBool isTemplateSpecialization(K1) andBool isTemplateSpecialization(K2)))
 
-     syntax List ::= getConversionSequences(CPPType, List, List) [function]
-                   | #getConversionSequences(List, List, List, isNonStaticRefNone: Bool, isStatic: Bool) [function]
+     syntax KItem ::= KItem "orB" KItem [strict(1)]
+                    | KItem "andB" KItem [strict(1)]
+
+     rule (true orB _) => true
+     rule (false orB K::KItem) => K
+     rule (false andB _) => false
+     rule (true andB K::KItem) => K
+
+     syntax KItem ::= hasWorseConversionSequenceThan(CPPType, CPPType, List, List)
+                   | hasBetterConversionSequenceThan(CPPType, CPPType, List, List)
+                   | #hasWorseCSThan(KItem, KItem) [strict]
+                   | #hasBetterCSThan(KItem, KItem) [strict]
+                   | #hasWorseCSThan2(List, List)
+                   | #hasBetterCSThan2(List, List)
 
      rule hasWorseConversionSequenceThan(F1::CPPType, F2::CPPType, Types::List, Cats::List)
           => #hasWorseCSThan(getConversionSequences(F1, Types, Cats), getConversionSequences(F2, Types, Cats))
@@ -562,46 +736,92 @@ module CPP-TRANSLATION-OVERLOADING
      rule hasBetterConversionSequenceThan(F1::CPPType, F2::CPPType, Types::List, Cats::List)
           => #hasBetterCSThan(getConversionSequences(F1, Types, Cats), getConversionSequences(F2, Types, Cats))
 
-     rule #hasWorseCSThan(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
-          => C2 >CS C1 orBool #hasWorseCSThan(L1, L2)
+     rule #hasWorseCSThan(krlist(L1::List), krlist(L2::List))
+          => #hasWorseCSThan2(L1, L2)
+
+     rule #hasBetterCSThan(krlist(L1::List), krlist(L2::List))
+          => #hasBetterCSThan2(L1, L2)
+
+     rule #hasWorseCSThan2(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
+          => C2 >CS C1 orB #hasWorseCSThan2(L1, L2)
           requires C1 =/=K bottomConversionSequence andBool C2 =/=K bottomConversionSequence
 
-     rule #hasBetterCSThan(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
-          => C1 >CS C2 orBool #hasBetterCSThan(L1, L2)
+     rule #hasBetterCSThan2(ListItem(C1::ConversionSequence) L1::List, ListItem(C2::ConversionSequence) L2::List)
+          => C1 >CS C2 orB #hasBetterCSThan2(L1, L2)
           requires C1 =/=K bottomConversionSequence andBool C2 =/=K bottomConversionSequence
 
-     rule #hasBetterCSThan(ListItem(bottomConversionSequence) L1::List, ListItem(_) L2::List)
-          => #hasBetterCSThan(L1, L2)
+     rule #hasBetterCSThan2(ListItem(bottomConversionSequence) L1::List, ListItem(_) L2::List)
+          => #hasBetterCSThan2(L1, L2)
 
-     rule #hasWorseCSThan(ListItem(bottomConversionSequence) L1::List, ListItem(_) L2::List)
-          => #hasWorseCSThan(L1, L2)
+     rule #hasWorseCSThan2(ListItem(bottomConversionSequence) L1::List, ListItem(_) L2::List)
+          => #hasWorseCSThan2(L1, L2)
 
-     rule #hasBetterCSThan(ListItem(_) L1::List, ListItem(bottomConversionSequence) L2::List)
-          => #hasBetterCSThan(L1, L2)
+     rule #hasBetterCSThan2(ListItem(_) L1::List, ListItem(bottomConversionSequence) L2::List)
+          => #hasBetterCSThan2(L1, L2)
 
-     rule #hasWorseCSThan(ListItem(_) L1::List, ListItem(bottomConversionSequence) L2::List)
-          => #hasWorseCSThan(L1, L2)
+     rule #hasWorseCSThan2(ListItem(_) L1::List, ListItem(bottomConversionSequence) L2::List)
+          => #hasWorseCSThan2(L1, L2)
 
-     rule #hasBetterCSThan(.List, .List) => false
+     rule #hasBetterCSThan2(.List, .List) => false
 
-     rule #hasWorseCSThan(.List, .List) => false
+     rule #hasWorseCSThan2(.List, .List) => false
+
+     syntax KItem ::= getConversionSequences(CPPType, List, List)
+                   | #getConversionSequences(List, List, List, isNonStaticRefNone: Bool, isStatic: Bool, result: List)
 
      rule getConversionSequences(T::CPPType, Types::List, Cats::List)
-          => #getConversionSequences(getParams(T), Types, Cats, isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone(), isMethodStatic(T))
+          =>
+          #getConversionSequences(
+               getParams(T),
+               Types,
+               Cats,
+               isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone(),
+               isMethodStatic(T),
+               .List
+          )
 
-     rule #getConversionSequences(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, B1::Bool, B2::Bool)
-          => ListItem(conversionSequence(P, A, C, false, false, true)) #getConversionSequences(Ps, As, Cs, B1, B2)
+     rule (.K => computeConversionSequence(P, A, C, false, false, true))
+          ~> #getConversionSequences(
+               (ListItem(P:CPPType) => .List) _,
+               (ListItem(A::CPPType) => .List) _,
+               (ListItem(C::ValueCategory) => .List) _,
+               B1::Bool,
+               B2::Bool,
+               _
+          )
 
-     rule #getConversionSequences(ListItem(implicitObjectParameter(P:CPPType)) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, IsNonStaticRefNone::Bool, false)
-          => ListItem(conversionSequence(P, A, C, IsNonStaticRefNone, true, true)) #getConversionSequences(Ps, As, Cs, IsNonStaticRefNone, false)
+     rule (.K => computeConversionSequence(P, A, C, IsNonStaticRefNone, true, true))
+          ~> #getConversionSequences(
+               (ListItem(implicitObjectParameter(P:CPPType)) => .List) _,
+               (ListItem(A::CPPType) => .List) _,
+               (ListItem(C::ValueCategory) => .List) _,
+               IsNonStaticRefNone::Bool,
+               false,
+               _
+          )
 
-     rule #getConversionSequences(ListItem(implicitObjectParameter(_)) Ps::List, ListItem(_) As::List, ListItem(_) Cs::List, IsNonStaticRefNone::Bool, true)
-          => ListItem(bottomConversionSequence) #getConversionSequences(Ps, As, Cs, IsNonStaticRefNone, true)
+     rule (CS:ConversionSequence => .K)
+          ~> #getConversionSequences(... result: (.List => ListItem(CS)) _)
 
-     rule #getConversionSequences(ListItem(variadic), ListItem(_) As::List, ListItem(_) Cs::List, B1::Bool, B2::Bool)
-          => ListItem(ellipsisConversionSequence) #getConversionSequences(ListItem(variadic), As, Cs, B1, B2)
+     rule #getConversionSequences(
+               ListItem(implicitObjectParameter(_)) Ps::List,
+               ListItem(_) As::List,
+               ListItem(_) Cs::List,
+               IsNonStaticRefNone::Bool,
+               true,
+               (.List => ListItem(bottomConversionSequence)) _
+          )
 
-     rule #getConversionSequences(_, .List, .List, _, _) => .List
+     rule #getConversionSequences(
+               ListItem(variadic),
+               (ListItem(_) => .List) As::List,
+               (ListItem(_) => .List) Cs::List,
+               B1::Bool,
+               B2::Bool,
+               (.List => ListItem(ellipsisConversionSequence)) _
+          )
+
+     rule #getConversionSequences(_, .List, .List, _, _, Result::List) => krlist(Result)
 
      syntax Bool ::= ConversionSequence ">CS" ConversionSequence [function]
                    | Conversion ">Conv" Conversion [function]
@@ -825,9 +1045,9 @@ module CPP-TRANSLATION-OVERLOADING
 
      // no viable candidates
      // normally this is ill formed, but it can be well formed in some cases such as operator overloading of certain operators
-     rule noBestViable ~> #resolveOverload(... cands: cSet(... id: X::QualId)) => notFound(getId(X))
+     rule noBestViable ~> #resolveOverload2(... cands: cSet(... id: X::QualId)) => notFound(getId(X))
 
-     rule #resolveOverload(... cands: cSet(... candidates: (T::CPPType => adjustFunctionType(T)) |-> _:TemplateInfo))
+     rule #resolveOverload2(... cands: cSet(... candidates: (T::CPPType => adjustFunctionType(T)) |-> _:TemplateInfo))
           requires isCPPFunctionType(T) andBool notBool isAdjustedType(T)
 
      // TODO(traiansf): properly resolve default arguments for templates

@@ -10,15 +10,17 @@ module CPP-TRANSLATION-INIT
 
      imports C-CONFIGURATION
 
-     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tr-tu>TU::String</curr-tr-tu> ...</generatedTop>) => TU
+     rule [[ nameOfCurrentTranslationUnit() => TU ]]
+          <curr-tr-tu>TU::String</curr-tr-tu>
 
-     syntax Bool ::= #Execution(K) [function]
 
-     rule Execution() => #Execution(#configuration)
+     rule [[ Execution() => B ]]
+          <compile-time-evaluation> B::Bool </compile-time-evaluation>
 
-     rule #Execution(<generatedTop>... <compile-time-evaluation> B::Bool </compile-time-evaluation> ...</generatedTop>) => B
+     rule isKResult(le(_, _, T::CPPType) #Or xe(_, _, T::CPPType) #Or pre(_, _, T::CPPType)) => notBool isCPPRefType(T)
 
-     rule isKResult(le(_, _, T::CPPType) #Or xe(_, _, T::CPPType) #Or pre(_, _, T::CPPType)) => Translation() andBool notBool isCPPRefType(T)
+     context alias [c]: <k> HERE:K ...</k> <compile-time-evaluation> false </compile-time-evaluation>
+     context alias [c]: <k> HERE:K ...</k> <compile-time-evaluation> true </compile-time-evaluation> [result(ExecResult)]
 
      rule <k> TranslationUnit(Tu::String, Decls::List)
                => makeTu(Tu +String Uuid)
@@ -78,7 +80,7 @@ module CPP-TRANSLATION-INIT
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
           requires Translation()
 
-     syntax Expr ::= #ExprLoc(CabsLoc, Expr) [strict(2)]
+     syntax Expr ::= #ExprLoc(CabsLoc, Expr) [strict(c; 2)]
 
      rule <k> #ExprLoc(L::CabsLoc, V:Val) => V ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>

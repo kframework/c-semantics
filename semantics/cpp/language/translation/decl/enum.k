@@ -71,7 +71,7 @@ module CPP-TRANSLATION-DECL-ENUM
           <tr-types> NT::Map => NT[X <- E] </tr-types>
 
 
-     syntax KItem ::= enumContext(CId, CPPType, List, fixed: Bool, ut: CPPType, opaque: Bool) [strict(2)]
+     syntax KItem ::= enumContext(CId, CPPType, List, fixed: Bool, ut: CPPType, opaque: Bool)
 
      rule enumContext(X::CId, E::CPPType, Enumerators:List, Fixed::Bool, UT::CPPType, Opaque:Bool)
           => newEnum(getEnumId(E), E, Fixed, Opaque)

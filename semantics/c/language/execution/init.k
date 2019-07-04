@@ -278,6 +278,7 @@ module C-EXECUTION-INIT
      rule Nop() => .K
           [structural]
 
-     rule #nameOfCurrentTranslationUnit(<generatedTop>... <curr-tu>TU::String</curr-tu> ...</generatedTop>) => TU
+     rule [[ nameOfCurrentTranslationUnit() => TU ]]
+          <curr-tu>TU::String</curr-tu>
 endmodule
 

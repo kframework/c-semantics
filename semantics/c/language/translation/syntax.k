@@ -54,7 +54,7 @@ module C-ABSTRACT-SYNTAX
      syntax TypeSpecifier ::= Unsigned() [symbol]
      syntax TypeSpecifier ::= Named(CId) [symbol]
 
-     syntax Float ::= "inf"
+     syntax Float ::= "inf" [function]
 
      /*
      (* each of the following three kinds of specifiers contains a field
@@ -456,6 +456,7 @@ module C-ABSTRACT-REWRITING
      imports C-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports COMMON-SYNTAX
+     imports FLOAT
 
      rule AnonymousName() => #NoName
 
@@ -545,5 +546,7 @@ module C-ABSTRACT-REWRITING
      row-major order (last subscript varies fastest).
      }*/
      rule ArrayIndex(E1:KItem, E2:KItem) => *(E1 + E2) [anywhere]
+
+     rule inf => 1.0 /Float 0.0
 
 endmodule

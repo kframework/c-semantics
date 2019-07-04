@@ -61,7 +61,7 @@ module CPP-TRANSLATION-CONSTANT
 
      rule checkEvaluatedConstantExpression(V::Val) => evalConstantExpression(V)
 
-     syntax KItem ::= identityContext(Expr) [strict]
+     syntax KItem ::= identityContext(Expr) [strict(c)]
 
      syntax Expr ::= evalCoreConstantExpression(Expr)
 

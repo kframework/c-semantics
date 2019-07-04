@@ -113,22 +113,22 @@ module CPP-SYNTAX
      syntax Expr ::= ResolvedExpr
 
      syntax ResolvedExpr ::= left:
-                     Expr "[" Expr "]" [strict]
-                   | Expr "++" [strict]
-                   | Expr "--" [strict]
+                     Expr "[" Expr "]" [strict(c)]
+                   | Expr "++" [strict(c)]
+                   | Expr "--" [strict(c)]
                    | BuiltinCallOp(Expr, Bool, List)
-                   | ReinterpretCast(AType, Expr) [strict]
-                   | ConstCast(AType, Expr) [strict]
+                   | ReinterpretCast(AType, Expr) [strict(c)]
+                   | ConstCast(AType, Expr) [strict(c)]
                    > right:
-                     "++" Expr [strict]
-                   | "--" Expr [strict]
+                     "++" Expr [strict(c)]
+                   | "--" Expr [strict(c)]
                    | NewOp(CPPType, Expr, K, K, Int)
                    | DeleteOp(Expr, Expr, K, Int)
                    | "*" Expr
                    | "&" Expr
 
                    // like & but applies to all objects including xvalues and class prvalues
-                   | getAddress(Expr) [strict]
+                   | getAddress(Expr) [strict(c)]
                    | "!" Expr
                    | "-" Expr
                    | "+" Expr
@@ -167,22 +167,22 @@ module CPP-SYNTAX
                    > left:
                      Expr "||" Expr
                    > right:
-                     Expr ":=" Init [strict(1)]
-                   | Expr ":=init" Init [strict(1)]
-                   | Expr "+=" Init [strict(1)]
-                   | Expr "-=" Init [strict(1)]
-                   | Expr "*=" Init [strict(1)]
-                   | Expr "/=" Init [strict(1)]
-                   | Expr "%=" Init [strict(1)]
-                   | Expr "^=" Init [strict(1)]
-                   | Expr "&=" Init [strict(1)]
-                   | Expr "|=" Init [strict(1)]
-                   | Expr "<<=" Init [strict(1)]
-                   | Expr ">>=" Init [strict(1)]
+                     Expr ":=" Init [strict(c; 1)]
+                   | Expr ":=init" Init [strict(c; 1)]
+                   | Expr "+=" Init [strict(c; 1)]
+                   | Expr "-=" Init [strict(c; 1)]
+                   | Expr "*=" Init [strict(c; 1)]
+                   | Expr "/=" Init [strict(c; 1)]
+                   | Expr "%=" Init [strict(c; 1)]
+                   | Expr "^=" Init [strict(c; 1)]
+                   | Expr "&=" Init [strict(c; 1)]
+                   | Expr "|=" Init [strict(c; 1)]
+                   | Expr "<<=" Init [strict(c; 1)]
+                   | Expr ">>=" Init [strict(c; 1)]
                    | ConditionalOp(Expr, Expr, Expr, ValueCategory, CPPType)
-                   | ThrowOp(Expr) [strict]
+                   | ThrowOp(Expr) [strict(c)]
                    > left:
-                     Comma(Expr, Expr) [strict(1)]
+                     Comma(Expr, Expr) [strict(c; 1)]
      syntax Name ::= Name(NNS, CId)
                    | Name(NNS, CId, List)
 
@@ -206,8 +206,8 @@ module CPP-SYNTAX
 
      syntax Stmt ::= LabelStmt(CId, List)
                    | GotoStmt(CId)
-                   | ExpressionStmt(Expr) [strict]
-                   | PRValExpressionStmt(Expr) [strict]
+                   | ExpressionStmt(Expr) [strict(c)]
+                   | PRValExpressionStmt(Expr) [strict(c)]
                    | BreakStmt()
                    | ReturnOp(Expr)
                    | IfStmt(Decl, Stmt, Stmt)

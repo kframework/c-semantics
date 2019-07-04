@@ -303,19 +303,29 @@ endmodule // CPP-QUALID
 
 module CPP-DYNAMIC-OTHER-SORTS
 
-     syntax LVal
+     syntax LV
 
-     syntax XVal
+     syntax LVal ::= LV
+
+     syntax XV
+
+     syntax XVal ::= XV
 
      syntax PRV
 
      syntax PRVal ::= PRV
 
-     syntax GLVal ::= LVal | XVal
+     syntax GLVal ::= LVal | XVal | GLV
 
-     syntax RVal ::= XVal | PRVal
+     syntax GLV ::= LV | XV
 
-     syntax Val ::= GLVal | RVal
+     syntax RVal ::= XVal | PRVal | RV
+
+     syntax RV ::= XV | PRV
+
+     syntax Val ::= GLVal | RVal | V
+
+     syntax V ::= GLV | RV
 
      syntax Expr ::= Val
 
@@ -356,7 +366,7 @@ endmodule // CPP-DYNAMIC-OTHER-SORTS
 
 module CPP-REVAL-SYNTAX
      imports CPP-SORTS
-     syntax Expr ::= reval(Expr) [strict, klabel(revalCpp)]
+     syntax Expr ::= reval(Expr) [strict(c), klabel(revalCpp)]
 endmodule // CPP-REVAL-SORTS
 
 module CPP-DYNAMIC-OTHER-SYNTAX
@@ -390,9 +400,9 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax CPPValue ::= "voidVal" // not technically a value, but it can be the result of an expression
 
-     syntax LVal ::= lv(v: SymLoc, tr: Trace, t: CPPType) [klabel(lvcpp)]
+     syntax LV ::= lv(v: SymLoc, tr: Trace, t: CPPType) [klabel(lvcpp)]
 
-     syntax XVal ::= xv(v: SymLoc, tr: Trace, t: CPPType)
+     syntax XV ::= xv(v: SymLoc, tr: Trace, t: CPPType)
 
      syntax PRV ::= prv(v: CPPValue, tr: Trace, t: CPPType)
 
@@ -433,7 +443,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax Expr ::= CompoundInitExpr
 
-     syntax CompoundInitExpr ::= compoundInit(Expr, Expr) [strict(1)]
+     syntax CompoundInitExpr ::= compoundInit(Expr, Expr) [strict(c; 1)]
 
      syntax Expr ::= "callTerminate"
 
@@ -510,15 +520,15 @@ module CPP-DYNAMIC-OTHER-SYNTAX
                      | showSignature(QualId, CPPType) [function]
                      | showQualId(QualId) [function]
 
-     syntax Expr ::= bindReference(Expr, Expr) [strict(2)]
+     syntax Expr ::= bindReference(Expr, Expr) [strict(c; 2)]
 
      syntax KItem ::= "discard"
 
      syntax Expr ::= "LHOLE" | "RHOLE"
 
-     syntax Expr ::= postOp(Expr, Expr, Trace) [strict(1), klabel(postOpCpp)]
+     syntax Expr ::= postOp(Expr, Expr, Trace) [strict(c; 1), klabel(postOpCpp)]
 
-     syntax Expr ::= compoundAssign(Expr, Expr, Trace) [strict(1), klabel(compoundAssignCpp)]
+     syntax Expr ::= compoundAssign(Expr, Expr, Trace) [strict(c; 1), klabel(compoundAssignCpp)]
                    | compoundOp(Expr)
 
      syntax Expr ::= makePRVal(K)
@@ -543,7 +553,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      syntax KItem ::= resolve(Expr)
 
      // used by destructors
-     syntax KItem ::= addToConstructed(Expr, CPPType) [strict(1)]
+     syntax KItem ::= addToConstructed(Expr, CPPType) [strict(c; 1)]
 
      syntax Ordering ::= K "|>" Ordering [right]
                        | ".Ordering"
@@ -569,6 +579,7 @@ module CPP-DYNAMIC-OTHER
      imports CPP-SCOPE-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
      imports CPP-TRACE-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule getOuterClass(C:Class :: _::ClassSpecifier) => C
 
@@ -694,6 +705,48 @@ module CPP-DYNAMIC-OTHER
      context HOLE:AType typeStrict:: _ [result(CPPType)]
 
      context K:KResult typeStrict:: HOLE:STypeStrictList
+
+     syntax ExecResult ::= V
+
+     syntax KItem ::= "seqstrict()"
+     rule seqstrict(list(HOLE:List)) => toSSList(HOLE) ~> seqstrict() [heat]
+     rule <k> HOLE:SSList ~> seqstrict() => seqstrict(krlist(ofSSList(HOLE))) ...</k>
+          <compile-time-evaluation> false </compile-time-evaluation> [cool]
+     rule <k> HOLE:SSList ~> seqstrict() => seqstrict(krlist(ofSSList(HOLE))) ...</k>
+          <compile-time-evaluation> true </compile-time-evaluation> [cool, result(ExecResult)]
+
+     syntax SSList ::= K "seqstrict::" SSList [seqstrict(c)]
+                     | ".SSList"
+     rule isKResult(.SSList) => true
+     rule isKResult(S1::SSList seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
+     rule isExecResult(.SSList) => true
+     rule isExecResult(S1::SSList seqstrict:: S2::SSList) => isExecResult(S1) andBool isExecResult(S2)
+     rule toSSList(ListItem(K:KItem) L::List) => K seqstrict:: toSSList(L)
+     rule toSSList(.List) => .SSList
+     rule ofSSList(krlist(L1::List) seqstrict:: L2::SSList) => L1 ofSSList(L2)
+     rule ofSSList(.SSList) => .List
+     rule ofSSList(K:KItem seqstrict:: L::SSList) => ListItem(K) ofSSList(L) [owise]
+
+     syntax KItem ::= "strict()"
+     rule list(HOLE:List) => toSList(HOLE) ~> strict() [heat]
+     rule <k> HOLE:SList ~> strict() => krlist(ofSList(HOLE)) ...</k>
+          <compile-time-evaluation> false </compile-time-evaluation> [cool]
+     rule <k> HOLE:SList ~> strict() => krlist(ofSList(HOLE)) ...</k>
+          <compile-time-evaluation> true </compile-time-evaluation> [cool, result(ExecResult)]
+
+     syntax SList ::= K "strict::" SList [strict(c)]
+                    | ".SList"
+     rule isKResult(.SList) => true
+     rule isKResult(S1::SList strict:: S2::SList) => isKResult(S1) andBool isKResult(S2)
+     rule isExecResult(.SList) => true
+     rule isExecResult(S1::SList strict:: S2::SList) => isExecResult(S1) andBool isExecResult(S2)
+     rule toSList(ListItem(K:KItem) L::List) => K strict:: toSList(L)
+     rule toSList(.List) => .SList
+     rule ofSList(krlist(L1::List) strict:: L2::SList) => L1 ofSList(L2)
+     rule ofSList(.SList) => .List
+     rule ofSList(K:KItem strict:: L::SList) => ListItem(K) ofSList(L) [owise]
+
+
 
      rule locOf(lv(L::SymLoc, _, _)) => L
 
