@@ -9,6 +9,8 @@ module CPP-REFERENCE-SYNTAX
      syntax ReferenceBindingResult ::= referenceBindingResult(Val)
      syntax ValResult ::= ReferenceBindingResult
 
+     syntax Expr ::= bindReferenceExec(Expr, Expr)
+
 endmodule
 
 module CPP-REFERENCE

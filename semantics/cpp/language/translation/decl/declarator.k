@@ -41,6 +41,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
+     imports CPP-REFERENCE-SYNTAX
      imports CPP-TRANSLATION-DECL-CLASS-SYNTAX
      imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
      imports CPP-TRANSLATION-ELABORATOR-SYNTAX
@@ -751,7 +752,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule isStaticInitialization(le(_ :=init V::Expr, _, _)) => isEvalVal(V)
 
-     rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => isEvalVal(V)
+     rule isStaticInitialization(le(bindReferenceExec(_, V::Expr), _, _)) => isEvalVal(V)
 
      rule isStaticInitialization(compoundInit(E1::Expr, E2::Expr)) => isStaticInitialization(E1) andBool isStaticInitialization(E2)
 
