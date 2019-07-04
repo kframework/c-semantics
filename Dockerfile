@@ -31,7 +31,7 @@ RUN update-locale
 
 RUN apt-get upgrade --yes -qq \
     \
-    && apt install --yes                                                             \
+    && apt-get install --yes                                                         \
         bison build-essential clang++-6.0 clang-6.0 cmake coreutils curl diffutils   \
         flex git libboost-test-dev libffi-dev libgmp-dev libjemalloc-dev libmpfr-dev \
         libstdc++6 libxml2 libyaml-cpp-dev llvm-6.0 m4 maven opam openjdk-11-jdk     \
