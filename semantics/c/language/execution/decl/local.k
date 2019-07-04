@@ -3,6 +3,7 @@ module C-DECL-LOCAL
      imports BOOL
      imports INT
      imports K-EQUAL
+     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -10,6 +11,11 @@ module C-DECL-LOCAL
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
+
+     // Extension for invasive unit testing.
+     syntax CId ::= localStaticOf(Type) [function]
+     rule localStaticOf(t(_, SetItem(SpecLocalStaticOf(X::CId)) _, _)) => X
+     rule localStaticOf(_) => #NoName [owise]
 
      rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
                => addToEnv(X, Base)
@@ -23,7 +29,8 @@ module C-DECL-LOCAL
           <external-types>...
                X |-> T':Type
           ...</external-types>
-          requires isExternType(T) orBool isFunctionType(T)
+          requires (isExternType(T) orBool isFunctionType(T))
+               andBool (localStaticOf(T) ==K #NoName)
           [structural]
      rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
                => giveType(X, T)
@@ -35,6 +42,7 @@ module C-DECL-LOCAL
           requires (isExternType(T) orBool isFunctionType(T))
                andBool notBool X in_keys(Defs)
                andBool notBool X in_keys(Types)
+               andBool (localStaticOf(T) ==K #NoName)
           [structural]
      rule <k> declareInternalVariable(X:CId, T:Type, _)
                => addToEnv(X, Base)
