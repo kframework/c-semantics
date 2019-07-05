@@ -76,7 +76,7 @@ module C-DECL-LOCAL
      rule <k> declareInternalVariable(X:CId, T:Type, Init:KResult)
                => initLocalStatic(X, toInitValue(X, T, Init))
           ...</k>
-          <elab>... .K => declareInternalVariable(X, T, Init) </elab>
+          <elab>... .K => declareInternalVariable(X, T, NoInit()) </elab>
           requires isStaticType(T)
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
