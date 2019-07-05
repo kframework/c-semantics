@@ -23,8 +23,7 @@ pipeline {
     stage('Build') {
       steps {
         sh '''
-          eval $(opam config env)
-          eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
+          . scripts/setenv
           export KOMPILE_FLAGS=-O2
           make -j4 profile-rule-parsing --output-sync=line
         '''
@@ -36,8 +35,7 @@ pipeline {
     stage('Re-Build with timeout') { steps {
       timeout(time: 8, unit: 'SECONDS') {
         sh '''
-          eval $(opam config env)
-          eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
+          . scripts/setenv
           make
         '''
       }
@@ -45,8 +43,7 @@ pipeline {
     stage('Test') {
       steps {
         sh '''
-          eval $(opam config env)
-          eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
+          . scripts/setenv
           ${K_BIN}/spawn-kserver
           make -C tests/unit-pass -j$(nproc) os-comparison
         '''
