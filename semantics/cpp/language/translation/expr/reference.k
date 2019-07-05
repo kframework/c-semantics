@@ -12,6 +12,7 @@ module CPP-TRANSLATION-EXPR-REFERENCE
      context bindReference(HOLE:Expr, _) [result(LVal)]
 
      rule bindReference(L:LVal, R:Val) => bindReference2(L, R)
+     requires isCPPRefType(type(L))
 
      syntax KItem ::= bindReference2(LVal, Val)
 
