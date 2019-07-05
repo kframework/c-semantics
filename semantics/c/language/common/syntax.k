@@ -66,6 +66,7 @@ module C-SYNTAX
      syntax Modifier ::= FunctionSpecifier
      syntax FunctionSpecifier ::= Noreturn() [symbol]
                                 | SpecExtendsTuOf(CId)
+     syntax Modifier ::= SpecLocalStaticOf(CId)
 
      /*
      | IF of expression * statement * statement * cabsloc
