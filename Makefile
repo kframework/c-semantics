@@ -116,7 +116,7 @@ check-cxx:
 
 .PHONY: check-perl
 check-perl:
-	@export STR="$$(perl scripts/checkForModules.pl)" && test ! -z "$${STR}" ] && $(LOGGER) "${STR}"
+	@export STR="$$(perl scripts/checkForModules.pl)" && test ! -z "$${STR}" && $(LOGGER) "$${STR}"
 
 
 .PHONY: check-k
