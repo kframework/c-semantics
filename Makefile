@@ -300,6 +300,7 @@ $(CDECL_BUILD_DIR)/Makefile.in: scripts/cdecl-3.6.tar.gz | $(OUTPUT_DIR)
 	@$(LOGGER) "Extracting $<"
 	-flock -w 120 $< \
 		tar xvf $< -C $(OUTPUT_DIR)
+	@touch $@
 
 $(CDECL_BUILD_DIR)/Makefile: $(CDECL_BUILD_DIR)/Makefile.in
 	@$(LOGGER) "Configuring $@"
