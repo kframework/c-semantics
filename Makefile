@@ -296,9 +296,6 @@ $(CLANG_TOOLS_BUILD_DIR)/Makefile: clang-tools/CMakeLists.txt | $(CLANG_TOOLS_BU
 	@cd $(CLANG_TOOLS_BUILD_DIR) \
 		&& test -f Makefile || cmake $(ROOT)/clang-tools
 
-.PHONY: cdecl
-cdecl: $(CDECL_BIN)/cdecl
-
 $(CDECL_BUILD_DIR)/Makefile.in: scripts/cdecl-3.6.tar.gz | $(OUTPUT_DIR)
 	@$(LOGGER) "Extracting $<"
 	-flock -w 120 $< \
