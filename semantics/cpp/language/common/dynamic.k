@@ -897,7 +897,7 @@ module CPP-DYNAMIC-OTHER
 
      rule showSignature(Q::QualId, t(_, _, functionType(... paramTypes: T::CPPTypes))) => showQualId(Q) +String "(" +String showCPPTypes(T) +String ")"
 
-     rule X:KItem, T:CPPType in_keys(M::Map) => (X in_keys(M)) andBool (T in_keys({M[X]}:>Map))
+     rule X:KItem, T:CPPType in_keys(M::Map) => (X in_keys(M)) andBool (stripType(T) in_keys({M[X]}:>Map))
 
      rule X:KItem, Y:KItem in_keys(M::Map) => (X in_keys(M)) andBool (Y in_keys({M[X] orDefault .Map}:>Map)) [owise]
 
