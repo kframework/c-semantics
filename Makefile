@@ -46,6 +46,12 @@ export LOGGER := $(ROOT)/scripts/build-logger.sh
 CLANG_TOOLS_BUILD_DIR := $(OUTPUT_DIR)/clang-tools
 CLANG_TOOLS_BIN := $(CLANG_TOOLS_BUILD_DIR)/bin
 
+PARSER_BUILD_DIR := $(OUTPUT_DIR)/parser
+PARSER_BIN := $(PARSER_BUILD_DIR)
+
+CDECL_BUILD_DIR := $(OUTPUT_DIR)/cdecl-3.6
+CDECL_BIN := $(CDECL_BUILD_DIR)/src
+
 FILES_TO_DIST := \
 	scripts/kcc \
 	scripts/k++ \
@@ -59,11 +65,11 @@ FILES_TO_DIST := \
 	scripts/ignored-flags \
 	scripts/program-runner \
 	scripts/histogram-csv \
-	parser/cparser \
+	$(PARSER_BIN)/cparser \
 	$(realpath $(K_BIN)/..) \
 	$(CLANG_TOOLS_BIN)/clang-kast \
 	$(CLANG_TOOLS_BIN)/call-sites \
-	scripts/cdecl-3.6/src/cdecl \
+	$(CDECL_BIN)/cdecl \
 	LICENSE \
 	licenses
 
@@ -116,7 +122,7 @@ check-cxx:
 
 .PHONY: check-perl
 check-perl:
-	@export STR="$$(perl scripts/checkForModules.pl)" && test ! -z "$${STR}" ] && $(LOGGER) "${STR}"
+	@export STR="$$(perl scripts/checkForModules.pl)" && test ! -z "$${STR}" && $(LOGGER) "$${STR}"
 
 
 .PHONY: check-k
@@ -276,10 +282,10 @@ test-build: $(LIBC_SO) \
             $(LIBSTDCXX_SO) \
             $(call timestamp_of,c-cpp)
 
-.PHONY: parser/cparser
-parser/cparser:
+$(PARSER_BUILD_DIR)/cparser: | $(PARSER_BUILD_DIR)
 	@$(LOGGER) "Building the C parser..."
-	@$(MAKE) -C parser
+	@cp -RLp parser/* $(PARSER_BUILD_DIR)
+	@$(MAKE) -C $(PARSER_BUILD_DIR)
 
 $(CLANG_TOOLS_BIN)/%: $(CLANG_TOOLS_BUILD_DIR)/Makefile
 	@$(LOGGER) "Entering target $@"
@@ -290,9 +296,19 @@ $(CLANG_TOOLS_BUILD_DIR)/Makefile: clang-tools/CMakeLists.txt | $(CLANG_TOOLS_BU
 	@cd $(CLANG_TOOLS_BUILD_DIR) \
 		&& test -f Makefile || cmake $(ROOT)/clang-tools
 
-scripts/cdecl-%/src/cdecl: scripts/cdecl-%.tar.gz
+$(CDECL_BUILD_DIR)/Makefile.in: scripts/cdecl-3.6.tar.gz | $(OUTPUT_DIR)
+	@$(LOGGER) "Extracting $<"
+	-flock -w 120 $< \
+		tar xvf $< -C $(OUTPUT_DIR)
+	@touch $@
+
+$(CDECL_BUILD_DIR)/Makefile: $(CDECL_BUILD_DIR)/Makefile.in
+	@$(LOGGER) "Configuring $@"
+	@cd $(CDECL_BUILD_DIR) && ./configure --without-readline
+
+$(CDECL_BIN)/cdecl: $(CDECL_BUILD_DIR)/Makefile
 	@$(LOGGER) "Entering target $@"
-	flock -w 120 $< sh -c 'cd scripts && tar xvf cdecl-$*.tar.gz && cd cdecl-$* && ./configure --without-readline && $(MAKE)' || true
+	@$(MAKE) -C $(CDECL_BUILD_DIR)
 
 
 .PHONY: all-semantics

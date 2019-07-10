@@ -88,7 +88,7 @@ module CPP-TRANSLATION-DECL-TEMPLATE
      rule <k> elaborateDone(K:K) ~> finishTemplate => .K ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
-          <templates>... Q |-> (T |-> templateInfo(... body: (_ => K))) ...</templates>
+          <templates>... Q |-> (stripType(T) |-> (_, templateInfo(... body: (_ => K)))) ...</templates>
           <curr-template-context> templateInfo(...id: Q::QualId, type: T::CPPType) </curr-template-context>
 
 
@@ -163,7 +163,7 @@ module CPP-TRANSLATION-DECL-TEMPLATE
 
      rule <k> declareTemplate(T::CPPType) => .K ...</k>
           <curr-template-context> templateInfo(X::QualId, Decls::List, Types::Map, Def::Map, (_ => T), _) </curr-template-context>
-          <templates> Temp:Map => Temp X |-> (T |-> templateInfo(X, Decls, Types, Def, T, .K)) </templates>
+          <templates> Temp:Map => Temp X |-> (stripType(T) |-> (T, templateInfo(X, Decls, Types, Def, T, .K))) </templates>
           requires notBool X, T in_keys(Temp)
 
      rule <k> declareTemplate(T::CPPType) => .K ...</k>
@@ -194,6 +194,6 @@ module CPP-TRANSLATION-DECL-TEMPLATE
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (_::TypeMap T |-> Entry::EnvEntry) ...</nenv>
+          <nenv>... X |-> (_::Map stripType(T) |-> (_, Entry::EnvEntry)) ...</nenv>
 
 endmodule

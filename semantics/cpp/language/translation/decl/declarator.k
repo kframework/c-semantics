@@ -116,9 +116,9 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax Namespace ::= getInnermostNamespace(NNSVal, Scope) [function]
 
-     rule getPreviousLinkage(X::QualId, T::CPPType, X |-> (T |-> _ _::TypeMap) _::Map, _) => ExternalLinkage
+     rule getPreviousLinkage(X::QualId, T::CPPType, X |-> (stripType(T) |-> _ _::Map) _::Map, _) => ExternalLinkage
 
-     rule getPreviousLinkage(X::QualId, T::CPPType, _, X |-> (T |-> _ _::TypeMap) _::Map) => InternalLinkage
+     rule getPreviousLinkage(X::QualId, T::CPPType, _, X |-> (stripType(T) |-> _ _::Map) _::Map) => InternalLinkage
 
      rule getPreviousLinkage(_, _, _, _) => .K [owise]
 
@@ -279,7 +279,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           rule <k> declareObjectWithLinkage(N::Namespace, LN::Namespace, X::CId, t(... st: _:CPPSimpleArrayType) #as T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set, _, ExternalLinkage) ...</k>
                <curr-tr-tu> Tu::String </curr-tr-tu>
                <tu-id> Tu </tu-id>
-               <externals>... LN :: X |-> ((T'::CPPType => T) |-> declState(Base::SymBase, _)) ...</externals>
+               <externals>... LN :: X |-> ((_::CPPType => stripType(T)) |-> (T'::CPPType => T, declState(Base::SymBase, _))) ...</externals>
                requires isCPPArrayType(T') andBool notBool isCompleteType(T') andBool innerType(T) ==Type innerType(T') andBool getQuals(T) ==K getQuals(T')
 
           // ExternalLinkage, StaticStorage, redeclare complete type
@@ -288,7 +288,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                ...</k>
                <curr-tr-tu> Tu::String </curr-tr-tu>
                <tu-id> Tu </tu-id>
-               <externals>... LN :: X |-> (T |-> declState(Base::SymBase, _) _::TypeMap) ...</externals>
+               <externals>... LN :: X |-> (stripType(T) |-> (_, declState(Base::SymBase, _)) _::Map) ...</externals>
                <curr-template-context> noTemplate </curr-template-context>
 
           // InternalLinkage, StaticStorage, redeclare complete type
@@ -297,7 +297,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                ...</k>
                <curr-tr-tu> Tu::String </curr-tr-tu>
                <tu-id> Tu </tu-id>
-               <internals>... LN :: X |-> (T::CPPType |-> declState(Base::SymBase, _) _::TypeMap) ...</internals>
+               <internals>... LN :: X |-> (stripType(T::CPPType) |-> (_, declState(Base::SymBase, _)) _::Map) ...</internals>
                <curr-template-context> noTemplate </curr-template-context>
 
           syntax KItem ::= redeclareCompleteType(Namespace, Namespace, CId, CPPType, Init, DeclarationType, Set, CId, SymBase)
@@ -461,14 +461,14 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule #computeAggArraySize(...
                            fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
-                           types: (F |-> (T::CPPType |-> _)) _,
+                           types: (F |-> (_::CPPType |-> (T::CPPType, _))) _,
                            initList: (ListItem(Init::Expr) => .List) _
                            )
           requires (notBool isAggregateType(T) orBool isBraceInit(Init))
 
      rule #computeAggArraySize(...
                            fields: (ListItem(Class.DataMember(F:CId, _)) Fields::List => Class.getNonStaticDataMembers(getClassInfo(T))),
-                           types: (((F |-> (T::CPPType |-> _)) _) #as Types::Map => Class.getDataMembersInitializers(getClassInfo(T))),
+                           types: (((F |-> (_::CPPType |-> (T::CPPType, _))) _) #as Types::Map => Class.getDataMembersInitializers(getClassInfo(T))),
                            initList: ListItem(Init::Expr) _,
                            callStack: (.List => ListItem(kpair(Fields, Types))) _
                            )
@@ -567,13 +567,13 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base:LinkBase)) ...</nenv>
+          <nenv>... X |-> (_::Map stripType(T) |-> (_, envEntry(... base: Base:LinkBase))) ...</nenv>
 
      rule <k> findLinkBase(C:Class :: X::CId, T::CPPType) => r(Base) ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base:LinkBase)) ...</cenv>
+          <cenv>... X |-> (_::Map stripType(T) |-> (_, envEntry(... base: Base:LinkBase))) ...</cenv>
 
      rule <k> allocateDecl2(Q::QualId, CName::CId, T::CPPType, S::Set, r(LBase:LinkBase))
               => allocateDecl3(Q, CName, T, S, LBase, bnew(!I:Int, T, S, static(Tu))) ...</k>
