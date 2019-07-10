@@ -5,7 +5,7 @@ module CPP-TRANSLATION-DECL-USING
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
-     imports CPP-TYPING-SORTS
+     imports CPP-TYPING-SYNTAX
 
      context UsingDecl(_, HOLE:NNS, _) [result(NNSVal)]
 
@@ -20,7 +20,7 @@ module CPP-TRANSLATION-DECL-USING
           ...</ns>
           <ns>...
             <ns-id> UsingN </ns-id>
-            <nenv>... X |-> UsingM::TypeMap ...</nenv>
+            <nenv>... X |-> UsingM::Map ...</nenv>
           ...</ns>
 
      // using a type
@@ -38,10 +38,10 @@ module CPP-TRANSLATION-DECL-USING
           ...</ns>
 
 
-     syntax TypeMap ::= makeUsing(TypeMap) [function]
+     syntax Map ::= makeUsing(Map) [function]
 
-     rule makeUsing(T::CPPType |-> envEntry(Base::SymBase, _, Args::DefaultArgumentsResult) M::TypeMap)
-          => T |-> envEntry(Base, true, Args) makeUsing(M)
+     rule makeUsing(_::CPPType |-> (T::CPPType, envEntry(Base::SymBase, _, Args::DefaultArgumentsResult)) M::Map)
+          => stripType(T) |-> (T, envEntry(Base, true, Args)) makeUsing(M)
 
      rule makeUsing(.Map) => .Map
 

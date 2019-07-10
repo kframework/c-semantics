@@ -14,6 +14,7 @@ module LINKING-CPP-RESOLUTION
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
+     imports CPP-TYPING-SYNTAX
 
      rule (.K => resolveCPPReference(Base))
           ~> resolveCPPReferences((SetItem(Base::SymBase) => .Set) _::Set)
@@ -27,7 +28,7 @@ module LINKING-CPP-RESOLUTION
           <odr-decls>...
                OdrBase |-> (SetItem(odrDecl(Tu::String, QX::QualId, _, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
-          <odr-defs>... QX |-> (T |-> _ _::TypeMap) ...</odr-defs>
+          <odr-defs>... QX |-> (stripType(T) |-> _ _::Map) ...</odr-defs>
 
      rule <k> resolveCPPReference(Base::SymBase) => .K ...</k>
           <odr-decls>...
@@ -38,20 +39,20 @@ module LINKING-CPP-RESOLUTION
           <odr-decls>...
                OdrBase |-> (SetItem(odrDecl(Tu::String, N:Namespace :: X::CId, _, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
-          <odr-defs>... N :: X |-> (T |-> Base'::SymBase _::TypeMap) ...</odr-defs>
+          <odr-defs>... N :: X |-> (stripType(T) |-> (_, Base'::SymBase) _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (T |-> envEntry(... base: Base::SymBase => Base') _::TypeMap) ...</nenv>
+          <nenv>... X |-> (stripType(T) |-> (_, envEntry(... base: Base::SymBase => Base')) _::Map) ...</nenv>
           <linkings>... .Map => Base |-> Base' ...</linkings>
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
                OdrBase |-> (SetItem(odrDecl(Tu::String, N:Namespace :: X::CId, _, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
-          <odr-defs>... N :: X |-> (T |-> _ _::TypeMap) ...</odr-defs>
+          <odr-defs>... N :: X |-> (stripType(T) |-> _ _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (T |-> envEntry(... base: Base:DirectBase) _::TypeMap) ...</nenv>
+          <nenv>... X |-> (stripType(T) |-> (_, envEntry(... base: Base:DirectBase)) _::Map) ...</nenv>
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
@@ -61,7 +62,7 @@ module LINKING-CPP-RESOLUTION
           <external-defs>... Mangled |-> Base':SymBase ...</external-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (T |-> envEntry(... base: Base:LinkBase => Base') _::TypeMap) ...</nenv>
+          <nenv>... X |-> (stripType(T) |-> (_, envEntry(... base: Base:LinkBase => Base')) _::Map) ...</nenv>
           <linkings>... .Map => Base |-> Base' ...</linkings>
           requires notBool (N :: X, T in_keys(Defs))
 
@@ -72,7 +73,7 @@ module LINKING-CPP-RESOLUTION
           <external-defs>... Mangled |-> _ ...</external-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (T |-> envEntry(... base: Base:DirectBase) _::TypeMap) ...</nenv>
+          <nenv>... X |-> (stripType(T) |-> (_, envEntry(... base: Base:DirectBase)) _::Map) ...</nenv>
 
      rule <k> (.K => ILL("TDR3",
                     "No definition for function or variable which was odr-used: "
@@ -102,7 +103,7 @@ module LINKING-CPP-RESOLUTION
      rule <k> resolveMain => .K ...</k>
           <main-tu>... (.Set => SetItem(MainTu)) </main-tu>
           (<linking-state>... .Bag ...</linking-state> => .Bag)
-          <odr-defs>... GlobalNamespace() :: Identifier("main") |-> (_::CPPType |-> obj(... d: static(MainTu:String))) ...</odr-defs>
+          <odr-defs>... GlobalNamespace() :: Identifier("main") |-> (_::CPPType |-> (_, obj(... d: static(MainTu:String)))) ...</odr-defs>
 
      // TODO(dwightguth): make this a better error message when we take the C++ semantics live
      // currently this error is both a C++ and a C error, since either C or C++ is allowed
@@ -123,19 +124,19 @@ module LINKING-CPP-RESOLUTION
           <odr-decls>...
                OdrBase |-> (SetItem(odrDecl(Tu::String, C:Class :: X::CId, _, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
-          <odr-defs>... C :: X |-> (T |-> Base'::SymBase _::TypeMap) ...</odr-defs>
+          <odr-defs>... C :: X |-> (stripType(T) |-> (_, Base'::SymBase) _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (T |-> envEntry(... base: (Base:LinkBase => Base')) _::TypeMap) ...</cenv>
+          <cenv>... X |-> (stripType(T) |-> (_, envEntry(... base: (Base:LinkBase => Base'))) _::Map) ...</cenv>
           <linkings>... .Map => Base |-> Base' ...</linkings>
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
                OdrBase |-> (SetItem(odrDecl(Tu::String, C:Class :: X::CId, _, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
-          <odr-defs>... C :: X |-> (T |-> _ _::TypeMap) ...</odr-defs>
+          <odr-defs>... C :: X |-> (stripType(T) |-> _ _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (T |-> envEntry(... base: Base:DirectBase) _::TypeMap) ...</cenv>
+          <cenv>... X |-> (stripType(T) |-> (_, envEntry(... base: Base:DirectBase)) _::Map) ...</cenv>
 
 endmodule

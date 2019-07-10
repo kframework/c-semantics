@@ -911,7 +911,7 @@ module CPP-TYPING
      rule #getDirectBaseClassOffsets(M::Map => M[B <- CurrentOffset +Int Offset],
                (ListItem(t(...st: classType(B::Class)) #as T::CPPType) => .List) _,
                CurrentOffset::Int,
-               (baseClass(B) |-> (_::TypeMap T |-> classOffset(_, Offset::Int))) _::Map)
+               (baseClass(B) |-> (_::Map stripType(T) |-> (_,classOffset(_, Offset::Int)))) _::Map)
      requires notBool (B in_keys(M))
 
      rule isProperBaseClassOf(t(_, _, classType(B::Class)), t(_, _, classType(D::Class)))

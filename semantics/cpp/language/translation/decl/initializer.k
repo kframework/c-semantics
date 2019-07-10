@@ -17,7 +17,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
 
      syntax KResult ::= "ill-formed"
 
-     syntax TypeMap ::= stripExplicit(TypeMap) [function]
+     syntax Map ::= stripExplicit(Map) [function]
 endmodule
 
 module CPP-TRANSLATION-DECL-INITIALIZER
@@ -109,7 +109,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                ~> zeroInitClass(Base:LVal, t(_, _, classType(C::Class)), .List, (ListItem(Class.DataMember(X::CId, T::CPPType)) => .List) _, _)
           ...</k>
           <class-id> C </class-id>
-          <cenv>... X |-> (_::CPPType |-> classOffset(NAOffset::Int, Offset::Int)) ...</cenv>
+          <cenv>... X |-> (_::CPPType |-> (_, classOffset(NAOffset::Int, Offset::Int))) ...</cenv>
 
      syntax KItem ::= evalMany(List, List)
 
@@ -297,11 +297,11 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax Bool ::= hasInit(CId, Map) [function]
 
-     rule hasInit(X:CId, X |-> M::TypeMap _) => notBool isNoInit(M)
+     rule hasInit(X:CId, X |-> M::Map _) => notBool isNoInit(M)
 
-     syntax Bool ::= isNoInit(TypeMap) [function]
+     syntax Bool ::= isNoInit(Map) [function]
 
-     rule isNoInit(_ |-> NoInit()) => true
+     rule isNoInit(_ |-> (_, NoInit())) => true
 
      rule isNoInit(_ |-> _) => false [owise]
 
@@ -330,7 +330,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: (ListItem(Init::Expr) => .List) _,
-                           initializers: (F |-> (T::CPPType |-> _)) _,
+                           initializers: (F |-> (_::CPPType |-> (T::CPPType, _))) _,
                            class: C::Class)
           requires (notBool isAggregateType(T) orBool isBraceInit(Init))
 
@@ -338,7 +338,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: (ListItem(Init::Expr) _) #as L::List  => .List,
-                           initializers: (F |-> (T::CPPType |-> _)) _,
+                           initializers: (F |-> (_::CPPType |-> (T::CPPType, _))) _,
                            class: C::Class)
           requires isAggregateType(T)
            andBool notBool isBraceInit(Init)
@@ -367,7 +367,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: .List,
-                           initializers: (F |-> (T::CPPType |-> Init::Expr)) _,
+                           initializers: (F |-> (_::CPPType |-> (T::CPPType, Init::Expr))) _,
                            class: C::Class)
 
      syntax Init ::= #evalBraceOrEqualInitializer(class: Class, object: Expr, initializer: Init) [function]
@@ -530,12 +530,12 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... ConstructorId(X) |-> M::TypeMap ...</cenv>
+          <cenv>... ConstructorId(X) |-> M::Map ...</cenv>
 
-     rule stripExplicit(T::CPPType |-> K1:KItem M::TypeMap) => T |-> K1 stripExplicit(M)
+     rule stripExplicit(_::CPPType |-> (T::CPPType, K1:KItem) M::Map) => stripType(T) |-> (T, K1) stripExplicit(M)
           requires notBool isMethodExplicit(T)
 
-     rule stripExplicit(_ |-> _ M::TypeMap) => stripExplicit(M) [owise]
+     rule stripExplicit(_ |-> _ M::Map) => stripExplicit(M) [owise]
 
      rule stripExplicit(.Map) => .Map
 
