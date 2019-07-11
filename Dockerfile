@@ -29,7 +29,7 @@ RUN update-locale
 # Install packages. #
 #####################
 
-RUN apt-get upgrade --yes -qq \
+RUN apt-get update -qq \
     \
     && apt install --yes                                                             \
         bison build-essential clang++-6.0 clang-6.0 cmake coreutils curl diffutils   \
