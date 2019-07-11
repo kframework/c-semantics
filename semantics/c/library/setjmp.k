@@ -106,7 +106,7 @@ module LIBC-SETJMP
           <jmp-bufs>... .Map => N |-> jmpBuf(K, C, B) </jmp-bufs>
           [structural]
 
-     syntax KItem ::= longjmp(K, RValue) [strict(1)]
+     syntax KItem ::= longjmp(KItem, RValue) [strict(1)]
      rule builtin("longjmp", V:RValue, V':RValue) => longjmp(getJmpBuf(*(V)), V')
           [structural]
 

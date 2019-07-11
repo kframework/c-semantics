@@ -100,7 +100,7 @@ module C-DYNAMIC-SYNTAX
      syntax CId ::= CompoundLiteralId
 
      syntax KItem ::= typedef(CId, Type)
-     syntax KItem ::= declareInternalVariable(CId, K, K) [strict(2,3)]
+     syntax KItem ::= declareInternalVariable(CId, KItem, KItem) [strict(2,3)]
 
      //TODO(liyili2): might not need this list in the future.
      syntax HeatItem ::= hItem(K)
@@ -125,8 +125,8 @@ module C-DYNAMIC-SYNTAX
      rule hListToList(hrItem(V:RValue) hs:: HL:HeatList) => ListItem(V) hListToList(HL)
 
      syntax KItem ::= "LHOLE" | "RHOLE"
-     syntax KItem ::= postOp(K, K) [strict(1)]
-     syntax KItem ::= compoundAssign(K, K) [strict(1)]
+     syntax KItem ::= postOp(KItem, K) [strict(1)]
+     syntax KItem ::= compoundAssign(KItem, K) [strict(1)]
      syntax KItem ::= fillLHoles(K, K) [function]
      syntax KItem ::= fillRHoles(RValue, K) [function]
 
@@ -234,7 +234,7 @@ module C-DYNAMIC
      rule seqstrict(list(HOLE:List)) => toSSList(HOLE) ~> seqstrict() [heat]
      rule HOLE:SSList ~> seqstrict() => seqstrict(krlist(ofSSList(HOLE))) [cool]
 
-     syntax SSList ::= K "seqstrict::" SSList [seqstrict]
+     syntax SSList ::= KItem "seqstrict::" SSList [seqstrict]
                      | ".SSList"
      rule isKResult(.SSList) => true
      rule isKResult(S1::SSList seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
@@ -248,7 +248,7 @@ module C-DYNAMIC
      rule list(HOLE:List) => toSList(HOLE) ~> strict() [heat]
      rule HOLE:SList ~> strict() => krlist(ofSList(HOLE)) [cool]
 
-     syntax SList ::= K "strict::" SList [strict]
+     syntax SList ::= KItem "strict::" SList [strict]
                     | ".SList"
      rule isKResult(.SList) => true
      rule isKResult(S1::SList strict:: S2::SList) => isKResult(S1) andBool isKResult(S2)

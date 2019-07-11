@@ -1,7 +1,7 @@
 module C-EXPR-SIZEOF-SYNTAX
      imports BASIC-K
 
-     syntax KItem ::= #SizeofType(K) [strict]
+     syntax KItem ::= #SizeofType(KItem) [strict]
 endmodule
 
 module C-EXPR-SIZEOF
@@ -40,7 +40,7 @@ module C-EXPR-SIZEOF
           requires isVariableLengthArrayType(T)
                andBool isCompleteType(T)
                andBool notBool isFunctionType(T)
-     rule typeof(T:Type) ~> SizeofExpression(V:KResult) => te(sizeof(stripHold(V)), utype(cfg:sizeut))
+     rule typeof(T:Type) ~> SizeofExpression(V:KResult) => te(sizeof({stripHold(V)}:>KItem), utype(cfg:sizeut))
           requires isVariableLengthArrayType(T)
                andBool isCompleteType(T)
                andBool notBool isFunctionType(T)

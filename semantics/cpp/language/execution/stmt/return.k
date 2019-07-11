@@ -1,6 +1,6 @@
 module CPP-STMT-RETURN-SYNTAX
      imports BASIC-K
-     syntax KItem ::= "Return''" "(" K ")" [strict(c)]
+     syntax KItem ::= "Return''" "(" KItem ")" [strict(c)]
 endmodule
 
 module CPP-EXECUTION-STMT-RETURN
@@ -25,13 +25,13 @@ module CPP-EXECUTION-STMT-RETURN
 
      syntax KItem ::= prepareReturn(CPPType, K)
 
-     rule prepareReturn(T::CPPType, Init:K)
+     rule prepareReturn(T::CPPType, Init:KItem)
           => Return'(Init, T)
           requires notBool isCPPVoidType(T)
 
      rule prepareReturn(t(... st: void) #as T::CPPType, V:PRVal) => Return''(V)
 
-     syntax KItem ::= "Return'" "(" K "," CPPType ")" [strict(c; 1)]
+     syntax KItem ::= "Return'" "(" KItem "," CPPType ")" [strict(c; 1)]
 
      // compute value category of result
      rule Return'(lv(Loc::SymLoc, Tr::Trace, T::CPPType), DeclT::CPPType) =>

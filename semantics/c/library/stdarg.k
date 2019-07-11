@@ -95,7 +95,7 @@ module LIBC-STDARG
           ...</call-stack>
           [structural]
 
-     syntax KItem ::= checkDead(K) [strict]
+     syntax KItem ::= checkDead(KItem) [strict]
      rule <k> (.K => UNDEF("STDARG2",
                     "'va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end."))
                ~> checkDead(tv(opaque(N:Int, _), _))

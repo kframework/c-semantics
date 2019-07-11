@@ -14,7 +14,7 @@ module C-EXPR-ALIGNOF
      rule typeof(T:Type) ~> AlignofExpression(_) => alignofType(T)
      rule AlignofType(T:Type, K:KItem) => alignofType(DeclType(T, K))
 
-     syntax KItem ::= alignofType(K) [strict]
+     syntax KItem ::= alignofType(KItem) [strict]
      rule alignofType(T:Type) => tv(getAlignas(T), ut(SetItem(IntegerConstant), cfg:sizeut))
           requires isCompleteType(T) andBool notBool isFunctionType(T)
      rule (.K => CV("TAL1", "Trying to compute alignof of a type that is incomplete or a function type."))

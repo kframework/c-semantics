@@ -37,11 +37,11 @@ module C-SYNTAX
      syntax KItem ::= Computation(K) [latex({{#1}};), symbol]
      context Computation(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     syntax KItem ::= "Initializer" "(" K ":=" K ")" [strict(1)]
+     syntax KItem ::= "Initializer" "(" KItem ":=" KItem ")" [strict(1)]
      context Initializer(_ := (HOLE:KItem => reval(HOLE))) [result(RValue)]
 
-     syntax KItem ::= Zero(K) [strict]
-     syntax KItem ::= InitPadding(K, CId) [strict(1)]
+     syntax KItem ::= Zero(KItem) [strict]
+     syntax KItem ::= InitPadding(KItem, CId) [strict(1)]
 
 
      /*
@@ -132,11 +132,11 @@ module C-SYNTAX
                          | "!" K
                          | "~" K
                          | "*" K
-                         | "&" K [strict]
-                         | "++" K [prefer, strict]
-                         | "--" K [prefer, strict, latex(\terminal{-{}-}{#1})]
-                         | K "++" [prefer, strict]
-                         | K "--" [prefer, strict, latex({#1}\terminal{-{}-})]
+                         | "&" KItem [strict]
+                         | "++" KItem [prefer, strict]
+                         | "--" KItem [prefer, strict, latex(\terminal{-{}-}{#1})]
+                         | KItem "++" [prefer, strict]
+                         | KItem "--" [prefer, strict, latex({#1}\terminal{-{}-})]
      /* | BINARY of binary_operator * expression * expression */
                          > K "*" K [left]
                          | K "/" K [left]
@@ -269,7 +269,7 @@ module C-SYNTAX
      /*
      | MEMBEROF of expression * string
      */
-     syntax KItem ::= K "." CId [left, strict(1)]
+     syntax KItem ::= KItem "." CId [left, strict(1)]
 
      syntax KItem ::= GnuBody(KItem) [symbol]
 

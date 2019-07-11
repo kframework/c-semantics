@@ -34,7 +34,7 @@ module C-TYPING-INTERPRETATION
      rule Specifier(list(L:List)) => canonicalizeType(L)
           [structural]
 
-     syntax KItem ::= BitFieldType(K, K) [strict]
+     syntax KItem ::= BitFieldType(KItem, KItem) [strict]
      rule BitFieldType(t(Qs::Quals, Mods::Set, T:BitfieldFieldType), tv(N:Int, ut(SetItem(IntegerConstant) _, _)))
           => t(Qs, Mods, bitfieldType(T, N)) [structural]
      rule BitFieldType(t(Qs::Quals, Mods::Set, T:SimpleTypedefType) => extractActualType(t(Qs, Mods, T)), _)
@@ -204,7 +204,7 @@ module C-TYPING-INTERPRETATION
      rule extractActualType(t(Qs::Quals, S::Set, typedefType(_, t(Qs'::Quals, S'::Set, T::SimpleType))))
           => extractActualType(addQualifiers(Qs, t(Qs', S S', T)))
 
-     syntax KItem ::= NameAndType(CId, K) [strict(2)]
+     syntax KItem ::= NameAndType(CId, KItem) [strict(2)]
 
      rule SingleName(T:Type, Name(X:CId, K:KItem, list(Attrs::List)))
           => NameAndType(X, addMods(Attrs, DeclType(T, K)))
@@ -230,7 +230,7 @@ module C-TYPING-INTERPRETATION
      rule Typedef(NameGroup(_:Type, list(.List))) => .K
           [structural]
 
-     syntax KItem ::= defineType(K) [strict]
+     syntax KItem ::= defineType(KItem) [strict]
      rule defineType(typedDeclaration(T:Type, X:CId))
           => typedef(X, T)
           [structural]

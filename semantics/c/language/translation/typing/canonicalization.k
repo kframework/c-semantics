@@ -4,7 +4,7 @@ module C-TYPING-CANONICALIZATION-SYNTAX
      syntax KItem ::= "canonicalizeType'" "(" List "," List "," List ")"
      syntax KItem ::= canonicalizeSpecifier(List)
      syntax Bool ::= isReducibleSpecifier(K) [function]
-     syntax KItem ::= addMods(List, K) [strict(2)]
+     syntax KItem ::= addMods(List, KItem) [strict(2)]
 endmodule
 
 module C-TYPING-CANONICALIZATION

@@ -91,7 +91,7 @@ module CPP-TRANSLATION-EXPR-NEW
                )
             )
 
-     syntax Expr ::= computeNewInit(Expr, CPPType, AExpr, Expr, Int, K) [strict(c; 6)]
+     syntax Expr ::= computeNewInit(Expr, CPPType, AExpr, Expr, Int, KItem) [strict(c; 6)]
 
      syntax K ::= ExprOrNothing(K) [function]
 

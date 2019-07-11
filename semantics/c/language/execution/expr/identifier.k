@@ -35,7 +35,7 @@ module C-EXPR-IDENTIFIER
           [structural]
 
      // From, to.
-     syntax KItem ::= transferProv(Provenance, K) [strict(2)]
+     syntax KItem ::= transferProv(Provenance, KItem) [strict(2)]
      rule transferProv(Prov::Provenance, tv(Loc:SymLoc, T::UType))
           => tv(addProv(Prov, Loc), T)
           [structural]

@@ -10,10 +10,10 @@ module C-MEMORY-READING-SYNTAX
      syntax KItem ::= readBytes(SymLoc, Int, Type)
      syntax KItem ::= readBytesForWriting(SymLoc, Int)
 
-     syntax KItem ::= concretize(UType, K) [strict(2)]
+     syntax KItem ::= concretize(UType, KItem) [strict(2)]
 
      // data, offset, size in bits
-     syntax KItem ::= extractBitsFromList(K, Int, Int) [strict(1)]
+     syntax KItem ::= extractBitsFromList(KItem, Int, Int) [strict(1)]
 
 endmodule
 

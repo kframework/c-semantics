@@ -47,7 +47,7 @@ module C-COMPOUND-LITERAL
      rule CompoundLiteral(N:Int, T:Type, K:KItem, Init:KItem)
           => #CompoundLiteral(compoundLiteral(N), DeclType(T, K), Init)
 
-     syntax KItem ::= #CompoundLiteral(CId, K, K) [strict(2)]
+     syntax KItem ::= #CompoundLiteral(CId, KItem, K) [strict(2)]
      // TODO(chathhorn): rather ugly, done this way to avoid clashes with the
      // initializer cells when a compound literal appears in an initializer.
      rule <k> (.K => elaborateInit(declare(typedDeclaration(addStorage(Static(), T), X), Init)))

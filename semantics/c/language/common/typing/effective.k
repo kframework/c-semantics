@@ -107,7 +107,7 @@ module C-TYPING-EFFECTIVE
           => setEffectiveType(Base, T)
      rule updateEffectiveType(_) => .K [owise]
 
-     syntax KItem ::= setEffectiveType(SymBase, K) [strict(2)]
+     syntax KItem ::= setEffectiveType(SymBase, KItem) [strict(2)]
      rule <k> setEffectiveType(Base::SymBase, T'::EffectiveType) => .K ...</k>
           <mem>... Base |-> object(T::EffectiveType => mergeVariants(T, T'), _, _) ...</mem>
           requires notBool isNoType(T')

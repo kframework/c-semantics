@@ -3,10 +3,10 @@ module C-BITS-SYNTAX
      imports FLOAT-SYNTAX
      imports C-TYPING-SORTS
 
-     syntax KItem ::= fillToBytes(K) [strict]
+     syntax KItem ::= fillToBytes(KItem) [strict]
      syntax KItem ::= "fillToBytes-aux" "(" K "," List ")" [function]
 
-     syntax KItem ::= makeUnknown(K) [strict]
+     syntax KItem ::= makeUnknown(KItem) [strict]
      syntax CValue ::= stripUnknown(CValue) [function]
 
      syntax Int ::= maxIntPtrValue(IntPtr) [function]

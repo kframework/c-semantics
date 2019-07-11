@@ -45,7 +45,7 @@ module C-COMMON-EXPR-MEMBERS
           => * (checkUse(tv(Loc, utype(arrayToPtrType(T)))) + tv(N, utype(int)))
           [structural]
 
-     syntax KItem ::= createLv(SymLoc, Type, CId, K, K) [strict(4, 5)]
+     syntax KItem ::= createLv(SymLoc, Type, CId, KItem, KItem) [strict(4, 5)]
      rule createLv(NullPointer => loc(obj(0, 1, nativeAddress()), 0), _, _, _, _)
      rule createLv(Loc::SymLoc, T::Type, F::CId, LAT:EffectiveType, t(...) #as T'::Type)
           => lv(updateLastAccessVariant(Loc, F, LAT) +bits findFieldOffset(F, T), addQualifiers(getQualifiers(T), T'))

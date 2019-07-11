@@ -11,7 +11,7 @@ module C-STMT-SWITCH
      imports C-TYPING-COMMON-SYNTAX
 
      // switch num, promoted value of controlling exp, int value of exp
-     syntax KItem ::= handleSwitch(Int, K) [strict(2)]
+     syntax KItem ::= handleSwitch(Int, KItem) [strict(2)]
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.4.2}{4}}}{
      A \cinline{switch} statement causes control to jump to, into, or past the
@@ -46,7 +46,7 @@ module C-STMT-SWITCH
           [structural]
 
      // K to be evaluated, val it should be, casehelper
-     syntax KItem ::= tryCase(K, RValue, CId) [strict(1)]
+     syntax KItem ::= tryCase(KItem, RValue, CId) [strict(1)]
      syntax CId ::= "nextCaseLabel"
      syntax KItem ::= "#handleSwitch-aux" "(" Int "," RValue "," K "," Map ")"
 

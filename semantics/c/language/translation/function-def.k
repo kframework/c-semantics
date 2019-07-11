@@ -4,7 +4,7 @@ module C-FUNCTION-DEF-SYNTAX
      imports C-DYNAMIC-SORTS
      imports C-TYPING-SORTS
 
-     syntax KItem ::= initFunction(K, CId, Type) [strict(1)]
+     syntax KItem ::= initFunction(KItem, CId, Type) [strict(1)]
 endmodule
 
 module C-FUNCTION-DEF

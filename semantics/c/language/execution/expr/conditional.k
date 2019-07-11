@@ -22,7 +22,7 @@ module C-EXPR-CONDITIONAL
           [structural]
      rule tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi), ut(_, int)) ? _ : _
 
-     syntax KItem ::= types(K, K) [strict]
+     syntax KItem ::= types(KItem, KItem) [strict]
      rule (.K => types(stabilizeVLA(type(E1)), stabilizeVLA(type(E2))))
           ~> _:RValue ? E1:K : E2:K
           requires isVariablyModifiedType(type(E1))

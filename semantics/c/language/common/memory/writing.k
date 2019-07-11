@@ -20,7 +20,7 @@ module C-MEMORY-WRITING-SYNTAX
      // Traps padding and unnamed bit-fields in a struct or union.
      syntax KItem ::= initPadding(SymLoc, Type, CId)
 
-     syntax KItem ::= setBytes(SymLoc, K, Int) [strict(2)]
+     syntax KItem ::= setBytes(SymLoc, KItem, Int) [strict(2)]
 
      // TODO(chathhorn): For trans/symbolic-value.k
      syntax List ::= splitBytes(RValue) [function, klabel(splitBytesC)]
@@ -112,7 +112,7 @@ module C-MEMORY-WRITING
           <mem> Mem::Map </mem>
           requires notBool (base(Loc) in_keys(Mem))
 
-     syntax KItem ::= checkVolatile(SymLoc, K, Type) [strict(2)]
+     syntax KItem ::= checkVolatile(SymLoc, KItem, Type) [strict(2)]
      rule (.K => UNDEF("EIO4", "Trying to modify an object declared with volatile type through a non-volatile lvalue."))
           ~> checkVolatile(Loc::SymLoc, ObjT:EffectiveType, T::Type)
           requires notBool isVolatileType(T)
@@ -145,7 +145,7 @@ module C-MEMORY-WRITING
      rule toBits(V:Pieces, T::Type) => explodeToBits(ListItem(piece(V, bitSizeofType(T))))
 
      syntax KItem ::= makeInactiveVariantUnknown(SymLoc, Type, Int)
-                    | makePaddingUnknown(SymBase, Int, K) [strict(3)]
+                    | makePaddingUnknown(SymBase, Int, KItem) [strict(3)]
      syntax K ::= makeStructUnionUnknown(SymBase, Int, Int, Type) [function]
 
      rule makePaddingUnknown(Base::SymBase, Offset::Int, EffT:Type)

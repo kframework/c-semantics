@@ -13,7 +13,7 @@ module CPP-TRANSLATION-NAME-SYNTAX
      syntax Expr ::= resolveOverloadedOperator(OpId, Expr, TypeExpr)
                    | resolveOverloadedOperator(OpId, Expr, TypeExpr, Init, K)
 
-     syntax KItem ::= K "orIfNotFound" K [right, strict(1)]
+     syntax KItem ::= KItem "orIfNotFound" K [right, strict(1)]
                     | guardedFind(CId, Bool, K)
 
      syntax Set ::= "defaultMask" [function]
@@ -463,7 +463,7 @@ module CPP-TRANSLATION-NAME
 
      rule NNS(Name(NoNNS(), X:CId)) => NNS(X) [anywhere]
 
-     syntax KItem ::= extractNNS(K) [strict]
+     syntax KItem ::= extractNNS(KItem) [strict]
 
      rule extractNNS(nsRef(N::Namespace)) => N
 
@@ -477,8 +477,8 @@ module CPP-TRANSLATION-NAME
                    | argDependentNameLookup(CId, StrictList, StrictList, Expr) [strict(4)]
                    | #argDependentNameLookup(CId, StrictList, List, Set, CandidateSet)
 
-     syntax AType ::= resolveElabSpecifier(Tag, K) [strict(2)]
-                    | resolveElabSpecifier(K, StrictList) [strict(1, 2), klabel(resolveElabSpecifier2)]
+     syntax AType ::= resolveElabSpecifier(Tag, KItem) [strict(2)]
+                    | resolveElabSpecifier(KItem, StrictList) [strict(1, 2), klabel(resolveElabSpecifier2)]
                     | specializeTypeTemplate(QualId, CPPType, List)
 
      rule <k> nameLookup(X::CId, Tag::Tag, Mask::Set) => nameLookupInScope(X, Tag, Mask, Scope) ...</k>

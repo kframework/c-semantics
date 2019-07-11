@@ -9,7 +9,7 @@ module C-BITSIZE-SYNTAX
      syntax Int ::= byteSizeofType(UType) [function]
      syntax Int ::= byteSizeofType(Type) [function]
 
-     syntax KItem ::= sizeof(K) [strict]
+     syntax KItem ::= sizeof(KItem) [strict]
 
      syntax Int ::= maxByteSizeofList(List) [function]
 endmodule
