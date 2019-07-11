@@ -44,7 +44,8 @@ RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/jav
 # Set up a default user. #
 ##########################
 
-RUN apt-get install --yes sudo
+RUN apt-get update -qq \
+    && apt-get install --yes sudo
 
 ARG UID=1000
 ARG GID=1000
