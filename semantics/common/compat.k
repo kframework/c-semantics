@@ -70,13 +70,6 @@ module COMPAT-SYNTAX
      // Turns a (hopefully injective!) map with {k_1 |-> v_1, ..., k_n |-> v_n} into {v_1 |-> k_1, ..., v_n |-> k_n}.
      syntax Map ::= invertMap(Map) [function]
 
-     syntax SSList ::= toSSList(List) [function]
-     syntax List ::= ofSSList(SSList) [function]
-     syntax SList ::= toSList(List) [function]
-     syntax List ::= ofSList(SList) [function]
-
-     syntax KItem ::= seqstrict(StrictList)
-
      syntax Map ::= Map "[" K "," K "<-" K "]" [function]
      syntax Map ::= Map "[" K "+=" K "]" [function]
      syntax Map ::= Map "[" K "<+" Map "]" [function]

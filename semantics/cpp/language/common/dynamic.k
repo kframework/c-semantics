@@ -563,6 +563,14 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      syntax Stmt ::= compoundStmt(Stmt, Stmt)
      syntax Stmt ::= nullStmt()
 
+     syntax SSList ::= toSSList(List) [klabel(toSSListcpp), function]
+     syntax List ::= ofSSList(SSList) [klabel(ofSSListcpp), function]
+     syntax SList ::= toSList(List) [klabel(toSListcpp), function]
+     syntax List ::= ofSList(SList) [klabel(ofSListcpp), function]
+
+     syntax KItem ::= seqstrict(StrictList) [klabel(seqstrictcpp)]
+
+
 endmodule // CPP-DYNAMIC-OTHER-SYNTAX
 
 module CPP-DYNAMIC-OTHER
@@ -706,17 +714,17 @@ module CPP-DYNAMIC-OTHER
 
      context K:KResult typeStrict:: HOLE:STypeStrictList
 
-     syntax ExecResult ::= V
+     syntax ExecResult ::= V | ValResult
 
-     syntax KItem ::= "seqstrict()"
+     syntax KItem ::= "seqstrict()" [klabel(seqstrictlist-cpp)]
      rule seqstrict(list(HOLE:List)) => toSSList(HOLE) ~> seqstrict() [heat]
      rule <k> HOLE:SSList ~> seqstrict() => seqstrict(krlist(ofSSList(HOLE))) ...</k>
           <compile-time-evaluation> false </compile-time-evaluation> [cool]
      rule <k> HOLE:SSList ~> seqstrict() => seqstrict(krlist(ofSSList(HOLE))) ...</k>
           <compile-time-evaluation> true </compile-time-evaluation> [cool, result(ExecResult)]
 
-     syntax SSList ::= KItem "seqstrict::" SSList [seqstrict(c)]
-                     | ".SSList"
+     syntax SSList ::= KItem "seqstrict::" SSList [klabel(seqstrictlist-sep-cpp), seqstrict(c)]
+                     | ".SSList" [klabel(seqstrictlist-unit-cpp)]
      rule isKResult(.SSList) => true
      rule isKResult(S1::SSList seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
      rule isExecResult(.SSList) => true
@@ -727,15 +735,15 @@ module CPP-DYNAMIC-OTHER
      rule ofSSList(.SSList) => .List
      rule ofSSList(K:KItem seqstrict:: L::SSList) => ListItem(K) ofSSList(L) [owise]
 
-     syntax KItem ::= "strict()"
+     syntax KItem ::= "strict()" [klabel(strictlist-cpp)]
      rule list(HOLE:List) => toSList(HOLE) ~> strict() [heat]
      rule <k> HOLE:SList ~> strict() => krlist(ofSList(HOLE)) ...</k>
           <compile-time-evaluation> false </compile-time-evaluation> [cool]
      rule <k> HOLE:SList ~> strict() => krlist(ofSList(HOLE)) ...</k>
           <compile-time-evaluation> true </compile-time-evaluation> [cool, result(ExecResult)]
 
-     syntax SList ::= KItem "strict::" SList [strict(c)]
-                    | ".SList"
+     syntax SList ::= KItem "strict::" SList [klabel(strictlist-sep-cpp), strict(c)]
+                    | ".SList" [klabel(strictlist-unit-cpp)]
      rule isKResult(.SList) => true
      rule isKResult(S1::SList strict:: S2::SList) => isKResult(S1) andBool isKResult(S2)
      rule isExecResult(.SList) => true
@@ -745,8 +753,6 @@ module CPP-DYNAMIC-OTHER
      rule ofSList(krlist(L1::List) strict:: L2::SList) => L1 ofSList(L2)
      rule ofSList(.SList) => .List
      rule ofSList(K:KItem strict:: L::SList) => ListItem(K) ofSList(L) [owise]
-
-
 
      rule locOf(lv(L::SymLoc, _, _)) => L
 

@@ -32,6 +32,7 @@ module C-DYNAMIC-SYNTAX
      imports C-DYNAMIC-SORTS
      imports C-REVAL-SYNTAX
      imports C-TYPING-SORTS
+     imports COMPAT-SORTS
      imports SYMLOC-SORTS
 
      syntax Agg ::= agg(List)
@@ -142,6 +143,13 @@ module C-DYNAMIC-SYNTAX
      syntax K ::= fromOpaque(CValue) [function]
 
      syntax KItem ::= "defaultCase"
+
+     syntax SSList ::= toSSList(List) [function]
+     syntax List ::= ofSSList(SSList) [function]
+     syntax SList ::= toSList(List) [function]
+     syntax List ::= ofSList(SList) [function]
+
+     syntax KItem ::= seqstrict(StrictList)
 
 endmodule
 
