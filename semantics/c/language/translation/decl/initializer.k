@@ -186,7 +186,7 @@ module C-DECL-INITIALIZER
      syntax SubObjectControl ::= "next" | "down" | "block"
 
      syntax KItem ::= "subobjectKCell"
-     rule subobjectKCell => fillInit(?_) #Or fillInit-aux(?_) #Or t(?_, ?_, ?_) [macro]
+     rule subobjectKCell => fillInit(?_) #Or fillInit-aux(?_) #Or initializeSingleInit2(?_, ?_) [macro]
 
      syntax Bool ::= isInFieldInit(KItem) [function]
      rule isInFieldInit(fillInit(InitFragment(InFieldInit(_, _), _))) => true
@@ -429,13 +429,14 @@ module C-DECL-INITIALIZER
      rule trapPadding(_:LValue) => .K
 
      syntax KItem ::= initializeSingleInit(KItem) [strict]
+                    | initializeSingleInit2(Type, KItem)
 
      rule (.K => typeof(K)) ~> initializeSingleInit(K:KResult)
           [structural]
-     rule (typeof(T:Type) => T) ~> initializeSingleInit(_)
+     rule typeof(T:Type) ~> initializeSingleInit(K:KItem) => initializeSingleInit2(T, K)
           [structural]
 
-     rule <k> T':Type ~> initializeSingleInit(K':KResult) => .K ...</k>
+     rule <k> initializeSingleInit2(T'::Type, K':KResult) => .K ...</k>
           <curr-subobject>
                (.List => ListItem(next)) ListItem(ncle(K:KItem, T::Type))
           ...</curr-subobject>
@@ -448,7 +449,7 @@ module C-DECL-INITIALIZER
           requires notBool isAggregateOrUnionType(T)
                andBool notBool isStructOrUnionType(T')
           [structural]
-     rule <k> T':Type ~> initializeSingleInit(_) ...</k>
+     rule <k> initializeSingleInit2(T'::Type, _) ...</k>
           <curr-subobject>
                (.List => ListItem(down)) ListItem(ncle(K:K, T::Type))
           ...</curr-subobject>
@@ -456,7 +457,7 @@ module C-DECL-INITIALIZER
                andBool notBool isAggregateOrUnionType(T')
           [structural]
      syntax KItem ::= initFromAggregateRHS(K, Type)
-     rule structOrUnionType #as T:Type ~> initializeSingleInit(K:KResult)
+     rule initializeSingleInit2(structOrUnionType #as T::Type, K:KResult)
           => initFromAggregateRHS(K, T)
           [structural]
 
