@@ -16,7 +16,7 @@ static inline A foo (const A* p, const A* q)
   return (A){p->i+q->i};
 }
 
-void bar (A* __restrict__ p)
+void bar (A* restrict p)
 {
   *p=foo(p,p);
   if (p->i!=2)

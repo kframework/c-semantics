@@ -1,5 +1,5 @@
 #include "fsl-header.h"
-int * __restrict__ x;
+int * restrict x;
 
 int foo (int y)
 {
