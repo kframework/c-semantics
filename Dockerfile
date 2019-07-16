@@ -110,6 +110,12 @@ RUN cd ${DEPS_DIR}/k \
 
 ENV K_BIN="${DEPS_DIR}/k/k-distribution/target/release/k/bin"
 
-RUN echo "JAVA_HOME=asdfasdfasdf" >> /home/user/.profile
+RUN JAVA_EXE=$(realpath $(which javac)) \
+  && echo "#!/bin/sh" >> /home/user/startup \
+  && echo >> /home/user/startup \
+  && echo "export JAVA_HOME=${JAVA_EXE%\/bin\/javac}" >> /home/user/startup \
+  && echo "exec \"\$@\"" >> /home/user/startup \
+  && chmod +x /home/user/startup
 
-CMD [ "/bin/sh", "-l", "-c" ]
+ENTRYPOINT [ "/home/user/startup" ]
+CMD [ "/bin/sh" ]
