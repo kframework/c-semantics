@@ -109,3 +109,5 @@ RUN cd ${DEPS_DIR}/k \
       -Dcheckstyle.skip
 
 ENV K_BIN="${DEPS_DIR}/k/k-distribution/target/release/k/bin"
+
+CMD [ "/bin/sh", "-l", "-c" ]
