@@ -110,4 +110,6 @@ RUN cd ${DEPS_DIR}/k \
 
 ENV K_BIN="${DEPS_DIR}/k/k-distribution/target/release/k/bin"
 
+RUN echo "JAVA_HOME=asdfasdfasdf" >> /home/user/.profile
+
 CMD [ "/bin/sh", "-l", "-c" ]
