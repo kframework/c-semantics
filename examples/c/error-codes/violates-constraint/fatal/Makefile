@@ -12,7 +12,7 @@ CHECK_RESULT_COMPILE_FATAL = if [ $$? -eq 1 ] ; then echo "passed $<"; mv $@.tmp
 CHECK_RESULT_RUN_FATAL = if [ $$? -eq 139 ] ; then echo "passed $<"; cat $@.tmp > $@; rm $@.tmp; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
 KCC = kcc
-KCCFLAGS =  -fno-diagnostics-color
+KCCFLAGS =  -fno-diagnostics-color -fno-native-compilation
 CFLAGS = -fno-diagnostics-color -std=c11
 
 .PHONY: clean comparison
@@ -27,7 +27,7 @@ comparison: ${TEST_COMPARISON}
 
 %-bad.kcc: %-bad.c
 	@echo -n "Compiling $<... "
-	@$(KCC) $(KCCFLAGS) -fno-native-compilation -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) $(KCCFLAGS) -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %-good.kcc: %-good.c
 	@echo -n "Compiling $<... "
 	@$(KCC) $(KCCFLAGS) -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
