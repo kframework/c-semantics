@@ -3,7 +3,8 @@ module C-TYPING-CANONICALIZATION-SYNTAX
      syntax KItem ::= canonicalizeType(List)
      syntax KItem ::= "canonicalizeType'" "(" List "," List "," List ")"
      syntax KItem ::= canonicalizeSpecifier(List)
-     syntax Bool ::= isReducibleSpecifier(K) [function]
+     syntax Bool ::= isReducibleSpecifier(KItem) [function]
+     syntax Bool ::= isReducibleModifier(KItem) [function]
      syntax KItem ::= addMods(List, KItem) [strict(2)]
 endmodule
 
@@ -31,45 +32,36 @@ module C-TYPING-CANONICALIZATION
 
      rule canonicalizeType(M::List) => canonicalizeType'(M, .List, .List)
           [structural]
-     // Sort specifiers from modifiers.
+
+     // Sort type specifiers from modifiers/qualifiers.
      rule canonicalizeType'(_::List (ListItem(S:TypeSpecifier) => .List),
                _::List (.List => ListItem(S)),
                _)
+          requires notBool isReducibleSpecifier(S)
           [structural]
-     rule canonicalizeType'(_::List (ListItem(M:Modifier) => .List),
-               _,
-               _::List (.List => ListItem(M)))
+     rule canonicalizeType'((.List => Attrs) _::List ListItem(EnumDef(_, _, list(Attrs::List => .List))), _, _)
+          requires Attrs =/=K .List
           [structural]
-     rule canonicalizeType'(_::List (ListItem(S:KItem) => .List),
-               _,
-               _)
-          requires notBool isModifier(S)
-               andBool notBool isTypeSpecifier(S)
-               andBool notBool isReducibleSpecifier(S)
+     rule canonicalizeType'((.List => Attrs) _::List ListItem(EnumRef(_, list(Attrs::List) => .K)), _, _)
           [structural]
-     rule (.K => DeclType(S, D))
-          ~> canonicalizeType'(_ ListItem(TAtomic(S:KItem, D:KItem)), _, _)
+     rule canonicalizeType'((.List => Attrs) _::List ListItem(StructDef(_, _, list(Attrs::List => .List))), _, _)
+          requires Attrs =/=K .List
           [structural]
-     rule (T:Type => .K)
-          ~> canonicalizeType'(_::List (ListItem(TAtomic(_, _)) => .List),
-               _,
-               _::List (.List => ListItem(atomic(T))))
+     rule canonicalizeType'((.List => Attrs) _::List ListItem(StructRef(_, list(Attrs::List) => .K)), _, _)
           [structural]
-     rule (.K => DeclType(S, D))
-          ~> canonicalizeType'(_ ListItem(AlignasType(S:KItem, D:KItem)), _, _)
+     rule canonicalizeType'((.List => Attrs) _::List ListItem(UnionDef(_, _, list(Attrs::List => .List))), _, _)
+          requires Attrs =/=K .List
           [structural]
-     rule (T:Type => .K)
-          ~> canonicalizeType'(_::List (ListItem(AlignasType(_, _)) => .List),
-               _,
-               _::List (.List => ListItem(alignas(byteAlignofType(T)))))
-          [structural]
-     context canonicalizeType'(_ ListItem(AlignasExpression(HOLE:KItem)), _, _)
-     rule canonicalizeType'(_::List (ListItem(AlignasExpression(tv(A:Int, _))) => .List),
-               _,
-               _::List (.List => ListItem(alignas(A))))
+     rule canonicalizeType'((.List => Attrs) _::List ListItem(UnionRef(_, list(Attrs::List) => .K)), _, _)
           [structural]
      rule (.K => CV("TCANON3", "Function declared without a return type."))
           ~> canonicalizeType'(_::List ListItem(MissingType()), _, _)
+          [structural]
+     rule canonicalizeType'(_::List (ListItem(S::KItem) => .List),
+               _,
+               _::List (.List => ListItem(S)))
+          requires notBool isTypeSpecifier(S)
+               andBool notBool isReducibleSpecifier(S)
           [structural]
      // Canonicalize the specifiers then add the modifiers.
      rule canonicalizeType'(.List, Specs::List, Mods::List)
@@ -77,40 +69,65 @@ module C-TYPING-CANONICALIZATION
           [structural]
 
      // Done like this to ignore unsupported attributes.
-     rule isReducibleSpecifier(TAtomic(_, _)) => true
-     rule isReducibleSpecifier(AlignasExpression(_)) => true
-     rule isReducibleSpecifier(AlignasType(_, _)) => true
+     rule isReducibleSpecifier(EnumDef(_, _, list(ListItem(_) _::List))) => true
+     rule isReducibleSpecifier(EnumRef(_, list(_))) => true
+     rule isReducibleSpecifier(StructDef(_, _, list(ListItem(_) _::List))) => true
+     rule isReducibleSpecifier(StructRef(_, list(_))) => true
+     rule isReducibleSpecifier(UnionDef(_, _, list(ListItem(_) _::List))) => true
+     rule isReducibleSpecifier(UnionRef(_, list(_))) => true
      rule isReducibleSpecifier(MissingType()) => true
      rule isReducibleSpecifier(_) => false [owise]
+
+     rule isReducibleModifier(TAtomic(_, _)) => true
+     rule isReducibleModifier(AlignasExpression(_)) => true
+     rule isReducibleModifier(AlignasType(_, _)) => true
+     rule isReducibleModifier(_) => false [owise]
 
      rule addMods(Mods::List ListItem(RestrictReserved(Tok:String, _)), T:Type)
           => addMods(Mods, addQualifier(Restrict(), T))
           requires cfg:reservedKeywordSupported(Tok)
           [structural]
-     rule addMods(Mods::List ListItem(RestrictReserved(Tok::String, Loc::CabsLoc)), T:Type)
-          => SE("TCANON2","Unsupported reserved identifier "+String Tok +String " (reserved variant of restrict).")
+     rule (.K => SE("TCANON2","Unsupported reserved identifier "+String Tok +String " (reserved variant of restrict)."))
+          ~> addMods(Mods::List ListItem(RestrictReserved(Tok::String, Loc::CabsLoc)), T:Type)
           requires notBool cfg:reservedKeywordSupported(Tok)
           [structural]
      rule addMods(Mods::List ListItem(Q:Qualifier), T:Type)
           => addMods(Mods, addQualifier(Q, T))
           requires RestrictReserved(...) :/=K Q
+               andBool notBool isReducibleModifier(Q)
           [structural]
      rule addMods(Mods::List ListItem(M:Modifier), T:Type)
           => addMods(Mods, addModifier(M, T))
-          requires notBool isQualifier(M)
-          [structural]
-     rule addMods(Mods::List (ListItem(S:KItem) => .List), _:KResult)
-          requires notBool isModifier(S)
-               andBool notBool isReducibleSpecifier(S)
-          [structural]
-     rule addMods(.List, T:Type) => T
-          requires notBool isCompleteType(T)
-               orBool getAlignas(T) >=Int byteAlignofType(T)
+          requires notBool isReducibleModifier(M)
           [structural]
      rule (.K => CV("TCANON1", "Alignas attribute specifying an alignment less strict than would otherwise be required."))
           ~> addMods(.List, T:Type)
           requires isCompleteType(T)
                andBool getAlignas(T) <Int byteAlignofType(T)
+          [structural]
+     rule (.K => DeclType(S, D))
+          ~> addMods(_ ListItem(TAtomic(S:KItem, D:KItem)), _)
+          [structural]
+     rule (T:Type => .K)
+          ~> addMods(_::List ListItem(TAtomic(_, _) => atomic(T)), _)
+          [structural]
+     rule (.K => DeclType(S, D))
+          ~> addMods(_ ListItem(AlignasType(S:KItem, D:KItem)), _)
+          [structural]
+     rule (T:Type => .K)
+          ~> addMods(_::List ListItem(AlignasType(_, _) => alignas(byteAlignofType(T))), _)
+          [structural]
+     context addMods(_ ListItem(AlignasExpression(HOLE:KItem)), _)
+     rule addMods(_::List ListItem(AlignasExpression(tv(A:Int, _)) => alignas(A)), _)
+          [structural]
+     rule addMods(Mods::List (ListItem(S:KItem) => .List), _:KResult)
+          requires notBool isModifier(S)
+               andBool notBool isQualifier(S)
+               andBool notBool isReducibleModifier(S)
+          [structural]
+     rule addMods(.List, T:Type) => T
+          requires notBool isCompleteType(T)
+               orBool getAlignas(T) >=Int byteAlignofType(T)
           [structural]
 
      rule <k> canonicalizeSpecifier(ListItem(Named(X:CId)))
@@ -118,16 +135,6 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <types>... typedef(X) |-> T:Type ...</types>
           requires X =/=K #NoName
-          [structural]
-
-     rule canonicalizeSpecifier(Specs::List ListItem(EnumRef(X::CId, list(Attrs::List))))
-          => canonicalizeSpecifier(Attrs Specs ListItem(EnumRef(X, .K)))
-          [structural]
-     rule canonicalizeSpecifier(Specs::List ListItem(StructRef(X::CId, list(Attrs::List))))
-          => canonicalizeSpecifier(Attrs Specs ListItem(StructRef(X, .K)))
-          [structural]
-     rule canonicalizeSpecifier(Specs::List ListItem(UnionRef(X::CId, list(Attrs::List))))
-          => canonicalizeSpecifier(Attrs Specs ListItem(UnionRef(X, .K)))
           [structural]
 
      rule <k> canonicalizeSpecifier(ListItem(EnumRef(X:CId, .K)))
@@ -263,24 +270,6 @@ module C-TYPING-CANONICALIZATION
           <curr-program-loc> L::CabsLoc </curr-program-loc>
           <unnamed-locs>... .Map => unnamed(N,TU) |-> L ...</unnamed-locs>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
-          [structural]
-
-     rule canonicalizeSpecifier((ListItem(S:KItem) => .List) _)
-          requires notBool isTypeSpecifier(S)
-               andBool notBool isReducibleSpecifier(S)
-          [structural]
-
-     rule canonicalizeSpecifier(Specs::List ListItem(EnumDef(X::CId, Fs:K, list(Attrs::List))))
-          => canonicalizeSpecifier(Attrs Specs ListItem(EnumDef(X, Fs, list(.List))))
-          requires Attrs =/=K .List
-          [structural]
-     rule canonicalizeSpecifier(Specs::List ListItem(StructDef(X::CId, Fs:K, list(Attrs::List))))
-          => canonicalizeSpecifier(Attrs Specs ListItem(StructDef(X, Fs, list(.List))))
-          requires Attrs =/=K .List
-          [structural]
-     rule canonicalizeSpecifier(Specs::List ListItem(UnionDef(X::CId, Fs:K, list(Attrs::List))))
-          => canonicalizeSpecifier(Attrs Specs ListItem(UnionDef(X, Fs, list(.List))))
-          requires Attrs =/=K .List
           [structural]
 
      rule (.K => EnumDef(X, L, list(.List)))

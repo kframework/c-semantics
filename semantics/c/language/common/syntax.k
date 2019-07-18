@@ -1,7 +1,6 @@
 module C-SORTS
      syntax StorageClassSpecifier
      syntax Qualifier
-     syntax Modifier ::= Qualifier
      syntax Modifier ::= StorageClassSpecifier
 endmodule
 

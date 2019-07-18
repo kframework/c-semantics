@@ -4,7 +4,7 @@
 extern void abort (void);
 
 void __attribute__((noinline))
-foo (int **__restrict p, int **__restrict q)
+foo (int **restrict p, int **restrict q)
 {
   *p[0] = 1;
   *q[0] = 2;

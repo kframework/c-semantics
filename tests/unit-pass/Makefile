@@ -116,7 +116,7 @@ zeroinit-class-padding.C.cmp:
 
 .PHONY: clean
 clean:
-	rm -rf *.out *.kcc *.tmp *.gcc *.ref *.cmp
+	rm -rf *.out *.kcc *.tmp *.gcc *.ref *.cmp *.log
 
 .PHONY: clean-c
 clean-c:

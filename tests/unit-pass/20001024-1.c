@@ -1,7 +1,7 @@
 #include <stdlib.h>
 struct a;
 
-extern int baz (struct a *__restrict x);
+extern int baz (struct a *restrict x);
 
 struct a {
   long v;
@@ -13,7 +13,7 @@ struct b {
   struct a d;
 };
 
-int bar (int x, const struct b *__restrict y, struct b *__restrict z)
+int bar (int x, const struct b *restrict y, struct b *restrict z)
 {
   if (y->c.v || y->c.w != 250000 || y->d.v || y->d.w != 250000)
     abort();

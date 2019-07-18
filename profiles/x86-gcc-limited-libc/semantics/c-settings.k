@@ -79,7 +79,7 @@ module C-SETTINGS
 
      rule cfg:stackSize(_, _) => 0
 
-     rule cfg:reservedKeywordSupported(_) => false
+     rule cfg:reservedKeywordSupported(_) => true
 
      // Error Recovery
      rule HALT ~> _:Error => .K
