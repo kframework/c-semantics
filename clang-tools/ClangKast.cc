@@ -37,7 +37,7 @@ namespace cl = llvm::cl;
 
 // Apply a custom category to all command-line options so that they are the
 // only ones displayed.
-static cl::OptionCategory MyToolCategory("my-tool options");
+static cl::OptionCategory MyToolCategory("K++ parser options");
 
 // CommonOptionsParser declares HelpMessage with a description of the common
 // command-line options related to the compilation database and input files.
@@ -45,7 +45,7 @@ static cl::OptionCategory MyToolCategory("my-tool options");
 static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 
 // A help message for this specific tool can be added afterwards.
-static cl::extrahelp MoreHelp("\nMore help text...");
+static cl::extrahelp MoreHelp("");
 
 enum KKind {
   KAPPLY, KSEQUENCE, LIST, KTOKEN
@@ -80,29 +80,29 @@ const char *escape(const char *str, unsigned len) {
   for(const char *ptr=str; i < len; ptr++, i++) {
     const char c = *ptr;
     switch(c) {
-    case '"':
-      *res += "\\\"";
-      break;
-    case '\\':
-      *res += "\\\\";
-      break;
-    case '\n':
-      *res += "\\n";
-      break;
-    case '\t':
-      *res += "\\t";
-      break;
-    case '\r':
-      *res += "\\r";
-      break;
-    default:
-      if (c >= 32 && c < 127) {
-        res->push_back(c);
-      } else {
-        char buf[5];
-        sprintf(buf, "\\x%02hhx", (unsigned char)c);
-        *res += buf;
-      }
+      case '"':
+        *res += "\\\"";
+        break;
+      case '\\':
+        *res += "\\\\";
+        break;
+      case '\n':
+        *res += "\\n";
+        break;
+      case '\t':
+        *res += "\\t";
+        break;
+      case '\r':
+        *res += "\\r";
+        break;
+      default:
+        if (c >= 32 && c < 127) {
+          res->push_back(c);
+        } else {
+          char buf[5];
+          sprintf(buf, "\\x%02hhx", (unsigned char)c);
+          *res += buf;
+        }
     }
   }
   res->push_back('\"');
@@ -177,10 +177,10 @@ public:
     switch (D->getKind()) {
 #define ABSTRACT_DECL(DECL)
 #define DECL(CLASS, BASE)                                                      \
-    case Decl::CLASS:                                                            \
-      if (!getDerived().Traverse##CLASS##Decl(static_cast<CLASS##Decl *>(D)))    \
-        return false;                                                            \
-      break;
+      case Decl::CLASS:                                                            \
+        if (!getDerived().Traverse##CLASS##Decl(static_cast<CLASS##Decl *>(D)))    \
+          return false;                                                            \
+        break;
 #include "clang/AST/DeclNodes.inc"
     }
 
@@ -398,31 +398,31 @@ public:
       TRY_TO(TraverseNestedNameSpecifier(NNS->getPrefix()));
     }
     switch (NNS->getKind()) {
-    case NestedNameSpecifier::Identifier:
-      AddKApplyNode("NNS", 1);
-      TRY_TO(TraverseIdentifierInfo(NNS->getAsIdentifier()));
-      break;
-    case NestedNameSpecifier::Namespace:
-      AddKApplyNode("NNS", 1);
-      TRY_TO(TraverseDeclarationName(NNS->getAsNamespace()->getDeclName()));
-      break;
-    case NestedNameSpecifier::NamespaceAlias:
-      AddKApplyNode("NNS", 1);
-      TRY_TO(TraverseDeclarationName(NNS->getAsNamespaceAlias()->getDeclName()));
-      break;
-    case NestedNameSpecifier::TypeSpec:
-      AddKApplyNode("NNS", 1);
-      TRY_TO(TraverseType(QualType(NNS->getAsType(), 0)));
-      break;
-    case NestedNameSpecifier::TypeSpecWithTemplate:
-      AddKApplyNode("TemplateNNS", 1);
-      TRY_TO(TraverseType(QualType(NNS->getAsType(), 0)));
-      break;
-    case NestedNameSpecifier::Global:
-      AddKApplyNode("GlobalNamespace", 0);
-      break;
-    default:
-      doThrow("unimplemented: nns");
+      case NestedNameSpecifier::Identifier:
+        AddKApplyNode("NNS", 1);
+        TRY_TO(TraverseIdentifierInfo(NNS->getAsIdentifier()));
+        break;
+      case NestedNameSpecifier::Namespace:
+        AddKApplyNode("NNS", 1);
+        TRY_TO(TraverseDeclarationName(NNS->getAsNamespace()->getDeclName()));
+        break;
+      case NestedNameSpecifier::NamespaceAlias:
+        AddKApplyNode("NNS", 1);
+        TRY_TO(TraverseDeclarationName(NNS->getAsNamespaceAlias()->getDeclName()));
+        break;
+      case NestedNameSpecifier::TypeSpec:
+        AddKApplyNode("NNS", 1);
+        TRY_TO(TraverseType(QualType(NNS->getAsType(), 0)));
+        break;
+      case NestedNameSpecifier::TypeSpecWithTemplate:
+        AddKApplyNode("TemplateNNS", 1);
+        TRY_TO(TraverseType(QualType(NNS->getAsType(), 0)));
+        break;
+      case NestedNameSpecifier::Global:
+        AddKApplyNode("GlobalNamespace", 0);
+        break;
+      default:
+        doThrow("unimplemented: nns");
     }
     return true;
   }
@@ -466,36 +466,36 @@ public:
 
   bool TraverseDeclarationName(DeclarationName Name, uintptr_t decl) {
     switch(Name.getNameKind()) {
-    case DeclarationName::Identifier:
-      {
-        IdentifierInfo *info = Name.getAsIdentifierInfo();
-        return TraverseIdentifierInfo(info, decl);
-      }
-    case DeclarationName::CXXConversionFunctionName:
-    case DeclarationName::CXXConstructorName:
-      {
-        AddKApplyNode("TypeId", 1);
-        TRY_TO(TraverseType(Name.getCXXNameType()));
-        return true;
-      }
-    case DeclarationName::CXXDestructorName:
-      {
-        AddKApplyNode("DestructorTypeId", 1);
-        TRY_TO(TraverseType(Name.getCXXNameType()));
-        return true;
-      }
-    case DeclarationName::CXXOperatorName:
-      {
-        VisitOperator(Name.getCXXOverloadedOperator());
-        return true;
-      }
-    case DeclarationName::CXXLiteralOperatorName:
-      {
-        IdentifierInfo *info = Name.getCXXLiteralIdentifier();
-        return TraverseIdentifierInfo(info, decl);
-      }
-    default:
-      doThrow("unimplemented: nameinfo");
+      case DeclarationName::Identifier:
+        {
+          IdentifierInfo *info = Name.getAsIdentifierInfo();
+          return TraverseIdentifierInfo(info, decl);
+        }
+      case DeclarationName::CXXConversionFunctionName:
+      case DeclarationName::CXXConstructorName:
+        {
+          AddKApplyNode("TypeId", 1);
+          TRY_TO(TraverseType(Name.getCXXNameType()));
+          return true;
+        }
+      case DeclarationName::CXXDestructorName:
+        {
+          AddKApplyNode("DestructorTypeId", 1);
+          TRY_TO(TraverseType(Name.getCXXNameType()));
+          return true;
+        }
+      case DeclarationName::CXXOperatorName:
+        {
+          VisitOperator(Name.getCXXOverloadedOperator());
+          return true;
+        }
+      case DeclarationName::CXXLiteralOperatorName:
+        {
+          IdentifierInfo *info = Name.getCXXLiteralIdentifier();
+          return TraverseIdentifierInfo(info, decl);
+        }
+      default:
+        doThrow("unimplemented: nameinfo");
     }
   }
 
@@ -597,15 +597,15 @@ public:
         if (Method->isInstance()) {
           switch(Method->getRefQualifier()) {
             case RQ_LValue:
-            AddKApplyNode("RefQualifier",2);
-            AddKApplyNode("RefLValue", 0);
-            break;
+              AddKApplyNode("RefQualifier",2);
+              AddKApplyNode("RefLValue", 0);
+              break;
             case RQ_RValue:
-            AddKApplyNode("RefQualifier",2);
-            AddKApplyNode("RefRValue", 0);
-            break;
+              AddKApplyNode("RefQualifier",2);
+              AddKApplyNode("RefRValue", 0);
+              break;
             case RQ_None: // do nothing
-            break;
+              break;
           }
           AddKApplyNode("MethodPrototype", 4);
           VisitBool(Method->isUserProvided());
@@ -754,22 +754,22 @@ public:
   void AddStorageClass(StorageClass sc) {
     const char *spec;
     switch(sc) {
-    case StorageClass::SC_None:
-      return;
-    case StorageClass::SC_Extern:
-      spec = "Extern";
-      break;
-    case StorageClass::SC_Static:
-      spec = "Static";
-      break;
-    case StorageClass::SC_Register:
-      spec = "Register";
-      break;
-    case StorageClass::SC_Auto:
-      spec = "Auto";
-      break;
-    default:
-      doThrow("unimplemented: storage class");
+      case StorageClass::SC_None:
+        return;
+      case StorageClass::SC_Extern:
+        spec = "Extern";
+        break;
+      case StorageClass::SC_Static:
+        spec = "Static";
+        break;
+      case StorageClass::SC_Register:
+        spec = "Register";
+        break;
+      case StorageClass::SC_Auto:
+        spec = "Auto";
+        break;
+      default:
+        doThrow("unimplemented: storage class");
     }
     AddSpecifier(spec);
   }
@@ -777,13 +777,13 @@ public:
   void AddThreadStorageClass(ThreadStorageClassSpecifier sc) {
     const char *spec;
     switch(sc) {
-    case ThreadStorageClassSpecifier::TSCS_unspecified:
-      return;
-    case ThreadStorageClassSpecifier::TSCS_thread_local:
-      spec = "ThreadLocal";
-      break;
-    default:
-      doThrow("unimplemented: thread storage class");
+      case ThreadStorageClassSpecifier::TSCS_unspecified:
+        return;
+      case ThreadStorageClassSpecifier::TSCS_thread_local:
+        spec = "ThreadLocal";
+        break;
+      default:
+        doThrow("unimplemented: thread storage class");
     }
     AddSpecifier(spec);
   }
@@ -791,18 +791,18 @@ public:
   void VisitAccessSpecifier(AccessSpecifier Spec) {
     const char *spec;
     switch(Spec) {
-    case AS_public:
-      spec = "Public";
-      break;
-    case AS_protected:
-      spec = "Protected";
-      break;
-    case AS_private:
-      spec = "Private";
-      break;
-    case AS_none:
-      spec = "NoAccessSpec";
-      break;
+      case AS_public:
+        spec = "Public";
+        break;
+      case AS_protected:
+        spec = "Protected";
+        break;
+      case AS_private:
+        spec = "Private";
+        break;
+      case AS_none:
+        spec = "NoAccessSpec";
+        break;
     }
     AddKApplyNode(spec, 0);
   }
@@ -831,23 +831,23 @@ public:
     unsigned i = 0;
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-      case TSK_ImplicitInstantiation:
-      case TSK_ExplicitInstantiationDeclaration:
-      case TSK_ExplicitInstantiationDefinition:
-        i++;
-      default:
-        break;
+        case TSK_ImplicitInstantiation:
+        case TSK_ExplicitInstantiationDeclaration:
+        case TSK_ExplicitInstantiationDefinition:
+          i++;
+        default:
+          break;
       }
     }
     AddListNode(i);
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-      case TSK_ImplicitInstantiation:
-      case TSK_ExplicitInstantiationDeclaration:
-      case TSK_ExplicitInstantiationDefinition:
-        TRY_TO(TraverseDecl(FD));
-      default:
-        break;
+        case TSK_ImplicitInstantiation:
+        case TSK_ExplicitInstantiationDeclaration:
+        case TSK_ExplicitInstantiationDefinition:
+          TRY_TO(TraverseDecl(FD));
+        default:
+          break;
       }
     }
     return true;
@@ -862,23 +862,23 @@ public:
     unsigned i = 0;
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-      case TSK_ImplicitInstantiation:
-      case TSK_ExplicitInstantiationDeclaration:
-      case TSK_ExplicitInstantiationDefinition:
-        i++;
-      default:
-        break;
+        case TSK_ImplicitInstantiation:
+        case TSK_ExplicitInstantiationDeclaration:
+        case TSK_ExplicitInstantiationDefinition:
+          i++;
+        default:
+          break;
       }
     }
     AddListNode(i);
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-      case TSK_ImplicitInstantiation:
-      case TSK_ExplicitInstantiationDeclaration:
-      case TSK_ExplicitInstantiationDefinition:
-        TRY_TO(TraverseDecl(FD));
-      default:
-        break;
+        case TSK_ImplicitInstantiation:
+        case TSK_ExplicitInstantiationDeclaration:
+        case TSK_ExplicitInstantiationDefinition:
+          TRY_TO(TraverseDecl(FD));
+        default:
+          break;
       }
     }
     return true;
@@ -892,23 +892,23 @@ public:
     unsigned i = 0;
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-      case TSK_ImplicitInstantiation:
-      case TSK_ExplicitInstantiationDeclaration:
-      case TSK_ExplicitInstantiationDefinition:
-        i++;
-      default:
-        break;
+        case TSK_ImplicitInstantiation:
+        case TSK_ExplicitInstantiationDeclaration:
+        case TSK_ExplicitInstantiationDefinition:
+          i++;
+        default:
+          break;
       }
     }
     AddListNode(i);
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
-      case TSK_ImplicitInstantiation:
-      case TSK_ExplicitInstantiationDeclaration:
-      case TSK_ExplicitInstantiationDefinition:
-        TRY_TO(TraverseDecl(FD));
-      default:
-        break;
+        case TSK_ImplicitInstantiation:
+        case TSK_ExplicitInstantiationDeclaration:
+        case TSK_ExplicitInstantiationDefinition:
+          TRY_TO(TraverseDecl(FD));
+        default:
+          break;
       }
     }
     return true;
@@ -969,39 +969,39 @@ public:
 
   bool TraverseTemplateArgument(const TemplateArgument &Arg) {
     switch(Arg.getKind()) {
-    case TemplateArgument::Type:
-      AddKApplyNode("TypeArg", 1);
-      return getDerived().TraverseType(Arg.getAsType());
-    case TemplateArgument::Template:
-      AddKApplyNode("TemplateArg", 1);
-      return getDerived().TraverseTemplateName(Arg.getAsTemplate());
-    case TemplateArgument::Expression:
-      AddKApplyNode("ExprArg", 1);
-      return getDerived().TraverseStmt(Arg.getAsExpr());
-    case TemplateArgument::Integral:
-      AddKApplyNode("ExprArg", 1);
-      AddKApplyNode("IntegerLiteral", 2);
-      VisitAPInt(Arg.getAsIntegral());
-      return getDerived().TraverseType(Arg.getIntegralType());
-    case TemplateArgument::Pack:
-      AddKApplyNode("PackArg", 1);
-      AddListNode(Arg.pack_size());
-      for (const TemplateArgument arg : Arg.pack_elements()) {
-        TRY_TO(TraverseTemplateArgument(arg));
-      }
-      return true;
-    default:
-      doThrow("unimplemented: template argument");
+      case TemplateArgument::Type:
+        AddKApplyNode("TypeArg", 1);
+        return getDerived().TraverseType(Arg.getAsType());
+      case TemplateArgument::Template:
+        AddKApplyNode("TemplateArg", 1);
+        return getDerived().TraverseTemplateName(Arg.getAsTemplate());
+      case TemplateArgument::Expression:
+        AddKApplyNode("ExprArg", 1);
+        return getDerived().TraverseStmt(Arg.getAsExpr());
+      case TemplateArgument::Integral:
+        AddKApplyNode("ExprArg", 1);
+        AddKApplyNode("IntegerLiteral", 2);
+        VisitAPInt(Arg.getAsIntegral());
+        return getDerived().TraverseType(Arg.getIntegralType());
+      case TemplateArgument::Pack:
+        AddKApplyNode("PackArg", 1);
+        AddListNode(Arg.pack_size());
+        for (const TemplateArgument arg : Arg.pack_elements()) {
+          TRY_TO(TraverseTemplateArgument(arg));
+        }
+        return true;
+      default:
+        doThrow("unimplemented: template argument");
     }
   }
 
   bool TraverseTemplateName(TemplateName Name) {
     switch(Name.getKind()) {
-    case TemplateName::Template:
-      TRY_TO(TraverseDeclarationName(Name.getAsTemplateDecl()->getDeclName()));
-      break;
-    default:
-      doThrow("unimplemented: template name");
+      case TemplateName::Template:
+        TRY_TO(TraverseDeclarationName(Name.getAsTemplateDecl()->getDeclName()));
+        break;
+      default:
+        doThrow("unimplemented: template name");
     }
     return true;
   }
@@ -1022,20 +1022,20 @@ public:
 
   void VisitTagKind(TagTypeKind T) {
     switch (T) {
-    case TTK_Struct:
-      AddKApplyNode("Struct", 0);
-      break;
-    case TTK_Union:
-      AddKApplyNode("Union", 0);
-      break;
-    case TTK_Class:
-      AddKApplyNode("Class", 0);
-      break;
-    case TTK_Enum:
-      AddKApplyNode("Enum", 0);
-      break;
-    default:
-      doThrow("unimplemented: tag kind");
+      case TTK_Struct:
+        AddKApplyNode("Struct", 0);
+        break;
+      case TTK_Union:
+        AddKApplyNode("Union", 0);
+        break;
+      case TTK_Class:
+        AddKApplyNode("Class", 0);
+        break;
+      case TTK_Enum:
+        AddKApplyNode("Enum", 0);
+        break;
+      default:
+        doThrow("unimplemented: tag kind");
     }
   }
 
@@ -1196,32 +1196,32 @@ public:
     }
 
     switch(T->getExceptionSpecType()) {
-    case EST_None:
-      AddKApplyNode("NoExceptionSpec", 0);
-      break;
-    case EST_BasicNoexcept:
-      AddKApplyNode("NoexceptSpec", 1);
-      AddKApplyNode("NoExpression", 0);
-      break;
-    case EST_ComputedNoexcept:
-      AddKApplyNode("NoexceptSpec", 1);
-      TRY_TO(TraverseStmt(T->getNoexceptExpr()));
-      break;
-    case EST_DynamicNone:
-      AddKApplyNode("ThrowSpec", 1);
-      AddKApplyNode("list", 1);
-      AddListNode(0);
-      break;
-    case EST_Dynamic:
-      AddKApplyNode("ThrowSpec", 1);
-      AddKApplyNode("list", 1);
-      AddListNode(T->getNumExceptions());
-      for(unsigned i = 0; i < T->getNumExceptions(); i++) {
-        TRY_TO(TraverseType(T->getExceptionType(i)));
-      }
-      break;
-    default:
-      doThrow("unimplemented: exception spec");
+      case EST_None:
+        AddKApplyNode("NoExceptionSpec", 0);
+        break;
+      case EST_BasicNoexcept:
+        AddKApplyNode("NoexceptSpec", 1);
+        AddKApplyNode("NoExpression", 0);
+        break;
+      case EST_ComputedNoexcept:
+        AddKApplyNode("NoexceptSpec", 1);
+        TRY_TO(TraverseStmt(T->getNoexceptExpr()));
+        break;
+      case EST_DynamicNone:
+        AddKApplyNode("ThrowSpec", 1);
+        AddKApplyNode("list", 1);
+        AddListNode(0);
+        break;
+      case EST_Dynamic:
+        AddKApplyNode("ThrowSpec", 1);
+        AddKApplyNode("list", 1);
+        AddListNode(T->getNumExceptions());
+        for(unsigned i = 0; i < T->getNumExceptions(); i++) {
+          TRY_TO(TraverseType(T->getExceptionType(i)));
+        }
+        break;
+      default:
+        doThrow("unimplemented: exception spec");
     }
 
     VisitBool(T->isVariadic());
@@ -1359,26 +1359,26 @@ public:
 
   void VisitTypeKeyword(ElaboratedTypeKeyword Keyword) {
     switch(Keyword) {
-    case ETK_Struct:
-      AddKApplyNode("Struct", 0);
-      break;
-    case ETK_Union:
-      AddKApplyNode("Union", 0);
-      break;
-    case ETK_Class:
-      AddKApplyNode("Class", 0);
-      break;
-    case ETK_Enum:
-      AddKApplyNode("Enum", 0);
-      break;
-    case ETK_Typename:
-      AddKApplyNode("Typename", 0);
-      break;
-    case ETK_None:
-      AddKApplyNode("NoTag", 0);
-      break;
-    default:
-      doThrow("unimplemented: type keyword");
+      case ETK_Struct:
+        AddKApplyNode("Struct", 0);
+        break;
+      case ETK_Union:
+        AddKApplyNode("Union", 0);
+        break;
+      case ETK_Class:
+        AddKApplyNode("Class", 0);
+        break;
+      case ETK_Enum:
+        AddKApplyNode("Enum", 0);
+        break;
+      case ETK_Typename:
+        AddKApplyNode("Typename", 0);
+        break;
+      case ETK_None:
+        AddKApplyNode("NoTag", 0);
+        break;
+      default:
+        doThrow("unimplemented: type keyword");
     }
   }
 
@@ -1767,89 +1767,89 @@ public:
 
   void VisitOperator(OverloadedOperatorKind Kind) {
     switch(Kind) {
-    #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
-    case OO_##Name:                                                          \
-      AddKApplyNode("operator" Spelling "_CPP-SYNTAX", 0);                                 \
-      break;
-    #include "clang/Basic/OperatorKinds.def"
-    default:
-      doThrow("unsupported overloaded operator");
+      #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
+      case OO_##Name:                                                          \
+        AddKApplyNode("operator" Spelling "_CPP-SYNTAX", 0);                                 \
+        break;
+      #include "clang/Basic/OperatorKinds.def"
+      default:
+        doThrow("unsupported overloaded operator");
     }
   }
 
   void VisitOperator(UnaryOperatorKind Kind) {
     switch(Kind) {
-    #define UNARY_OP(Name, Spelling)         \
-    case UO_##Name:                          \
-      AddKApplyNode("operator" Spelling "_CPP-SYNTAX", 0); \
-      break;
-    UNARY_OP(PostInc, "_++")
-    UNARY_OP(PostDec, "_--")
-    UNARY_OP(PreInc, "++_")
-    UNARY_OP(PreDec, "--_")
-    UNARY_OP(AddrOf, "&")
-    UNARY_OP(Deref, "*")
-    UNARY_OP(Plus, "+")
-    UNARY_OP(Minus, "-")
-    UNARY_OP(Not, "~")
-    UNARY_OP(LNot, "!")
-    case UO_Real:
-      AddKApplyNode("RealOperator", 0);
-      break;
-    case UO_Imag:
-      AddKApplyNode("ImagOperator", 0);
-      break;
-    case UO_Extension:
-      AddKApplyNode("ExtensionOperator", 0);
-      break;
-    case UO_Coawait:
-      AddKApplyNode("CoawaitOperator", 0);
-      break;
-    default:
-      doThrow("unsupported unary operator");
+      #define UNARY_OP(Name, Spelling)         \
+      case UO_##Name:                          \
+        AddKApplyNode("operator" Spelling "_CPP-SYNTAX", 0); \
+        break;
+      UNARY_OP(PostInc, "_++")
+      UNARY_OP(PostDec, "_--")
+      UNARY_OP(PreInc, "++_")
+      UNARY_OP(PreDec, "--_")
+      UNARY_OP(AddrOf, "&")
+      UNARY_OP(Deref, "*")
+      UNARY_OP(Plus, "+")
+      UNARY_OP(Minus, "-")
+      UNARY_OP(Not, "~")
+      UNARY_OP(LNot, "!")
+      case UO_Real:
+        AddKApplyNode("RealOperator", 0);
+        break;
+      case UO_Imag:
+        AddKApplyNode("ImagOperator", 0);
+        break;
+      case UO_Extension:
+        AddKApplyNode("ExtensionOperator", 0);
+        break;
+      case UO_Coawait:
+        AddKApplyNode("CoawaitOperator", 0);
+        break;
+      default:
+        doThrow("unsupported unary operator");
     }
   }
 
   void VisitOperator(BinaryOperatorKind Kind) {
     switch(Kind) {
-    #define BINARY_OP(Name, Spelling)        \
-    case BO_##Name:                          \
-      AddKApplyNode("operator" Spelling "_CPP-SYNTAX", 0); \
-      break;
-    BINARY_OP(PtrMemD, ".*")
-    BINARY_OP(PtrMemI, "->*")
-    BINARY_OP(Mul, "*")
-    BINARY_OP(Div, "/")
-    BINARY_OP(Rem, "%")
-    BINARY_OP(Add, "+")
-    BINARY_OP(Sub, "-")
-    BINARY_OP(Shl, "<<")
-    BINARY_OP(Shr, ">>")
-    BINARY_OP(LT, "<")
-    BINARY_OP(GT, ">")
-    BINARY_OP(LE, "<=")
-    BINARY_OP(GE, ">=")
-    BINARY_OP(EQ, "==")
-    BINARY_OP(NE, "!=")
-    BINARY_OP(And, "&")
-    BINARY_OP(Xor, "^")
-    BINARY_OP(Or, "|")
-    BINARY_OP(LAnd, "&&")
-    BINARY_OP(LOr, "||")
-    BINARY_OP(Assign, "=")
-    BINARY_OP(MulAssign, "*=")
-    BINARY_OP(DivAssign, "/=")
-    BINARY_OP(RemAssign, "%=")
-    BINARY_OP(AddAssign, "+=")
-    BINARY_OP(SubAssign, "-=")
-    BINARY_OP(ShlAssign, "<<=")
-    BINARY_OP(ShrAssign, ">>=")
-    BINARY_OP(AndAssign, "&=")
-    BINARY_OP(XorAssign, "^=")
-    BINARY_OP(OrAssign, "|=")
-    BINARY_OP(Comma, ",")
-    default:
-      doThrow("unsupported binary operator");
+      #define BINARY_OP(Name, Spelling)        \
+      case BO_##Name:                          \
+        AddKApplyNode("operator" Spelling "_CPP-SYNTAX", 0); \
+        break;
+      BINARY_OP(PtrMemD, ".*")
+      BINARY_OP(PtrMemI, "->*")
+      BINARY_OP(Mul, "*")
+      BINARY_OP(Div, "/")
+      BINARY_OP(Rem, "%")
+      BINARY_OP(Add, "+")
+      BINARY_OP(Sub, "-")
+      BINARY_OP(Shl, "<<")
+      BINARY_OP(Shr, ">>")
+      BINARY_OP(LT, "<")
+      BINARY_OP(GT, ">")
+      BINARY_OP(LE, "<=")
+      BINARY_OP(GE, ">=")
+      BINARY_OP(EQ, "==")
+      BINARY_OP(NE, "!=")
+      BINARY_OP(And, "&")
+      BINARY_OP(Xor, "^")
+      BINARY_OP(Or, "|")
+      BINARY_OP(LAnd, "&&")
+      BINARY_OP(LOr, "||")
+      BINARY_OP(Assign, "=")
+      BINARY_OP(MulAssign, "*=")
+      BINARY_OP(DivAssign, "/=")
+      BINARY_OP(RemAssign, "%=")
+      BINARY_OP(AddAssign, "+=")
+      BINARY_OP(SubAssign, "-=")
+      BINARY_OP(ShlAssign, "<<=")
+      BINARY_OP(ShrAssign, ">>=")
+      BINARY_OP(AndAssign, "&=")
+      BINARY_OP(XorAssign, "^=")
+      BINARY_OP(OrAssign, "|=")
+      BINARY_OP(Comma, ",")
+      default:
+        doThrow("unsupported binary operator");
     }
   }
 
@@ -1873,108 +1873,108 @@ public:
 
   bool TraverseCXXOperatorCallExpr(CXXOperatorCallExpr *E) {
     switch(E->getOperator()) {
-    case OO_Call:
+      case OO_Call:
         // TODO(chathhorn)
         AddKApplyNode("OverloadedCall", 0);
         break;
-    case OO_New:
-    case OO_Delete:
-    case OO_Array_New:
-    case OO_Array_Delete:
-    case OO_Plus:
-    case OO_Minus:
-    case OO_Star:
-    case OO_Amp:
-      if (E->getNumArgs() == 2) {
+      case OO_New:
+      case OO_Delete:
+      case OO_Array_New:
+      case OO_Array_Delete:
+      case OO_Plus:
+      case OO_Minus:
+      case OO_Star:
+      case OO_Amp:
+        if (E->getNumArgs() == 2) {
+          AddKApplyNode("BinaryOperator", 3);
+          VisitOperator(E->getOperator());
+          TRY_TO(TraverseStmt(E->getArg(0)));
+          TRY_TO(TraverseStmt(E->getArg(1)));
+          break;
+        } else if (E->getNumArgs() == 1) {
+          AddKApplyNode("UnaryOperator", 2);
+          VisitOperator(E->getOperator());
+          TRY_TO(TraverseStmt(E->getArg(0)));
+          break;
+        } else {
+          doThrow("unexpected number of arguments to operator");
+        }
+      case OO_PlusPlus:
+        if (E->getNumArgs() == 2) {
+          AddKApplyNode("UnaryOperator", 2);
+          VisitOperator(UO_PostInc);
+          TRY_TO(TraverseStmt(E->getArg(0)));
+          break;
+        } else if (E->getNumArgs() == 1) {
+          AddKApplyNode("UnaryOperator", 2);
+          VisitOperator(UO_PreInc);
+          TRY_TO(TraverseStmt(E->getArg(0)));
+          break;
+        } else {
+          doThrow("unexpected number of arguments to operator");
+        }
+      case OO_MinusMinus:
+        if (E->getNumArgs() == 2) {
+          AddKApplyNode("UnaryOperator", 2);
+          VisitOperator(UO_PostDec);
+          TRY_TO(TraverseStmt(E->getArg(0)));
+          break;
+        } else if (E->getNumArgs() == 1) {
+          AddKApplyNode("UnaryOperator", 2);
+          VisitOperator(UO_PreDec);
+          TRY_TO(TraverseStmt(E->getArg(0)));
+          break;
+        } else {
+          doThrow("unexpected number of arguments to operator");
+        }
+      case OO_Slash:
+      case OO_Percent:
+      case OO_Caret:
+      case OO_Pipe:
+      case OO_Equal:
+      case OO_Less:
+      case OO_Greater:
+      case OO_PlusEqual:
+      case OO_MinusEqual:
+      case OO_StarEqual:
+      case OO_SlashEqual:
+      case OO_PercentEqual:
+      case OO_CaretEqual:
+      case OO_AmpEqual:
+      case OO_PipeEqual:
+      case OO_LessLess:
+      case OO_GreaterGreater:
+      case OO_LessLessEqual:
+      case OO_GreaterGreaterEqual:
+      case OO_EqualEqual:
+      case OO_ExclaimEqual:
+      case OO_LessEqual:
+      case OO_GreaterEqual:
+      case OO_AmpAmp:
+      case OO_PipePipe:
+      case OO_Comma:
+      case OO_ArrowStar:
+      case OO_Subscript:
+        if (E->getNumArgs() != 2) {
+          doThrow("unexpected number of arguments to operator");
+        }
         AddKApplyNode("BinaryOperator", 3);
         VisitOperator(E->getOperator());
         TRY_TO(TraverseStmt(E->getArg(0)));
         TRY_TO(TraverseStmt(E->getArg(1)));
         break;
-      } else if (E->getNumArgs() == 1) {
+      case OO_Tilde:
+      case OO_Exclaim:
+      case OO_Coawait:
+        if (E->getNumArgs() != 1) {
+          doThrow("unexpected number of arguments to operator");
+        }
         AddKApplyNode("UnaryOperator", 2);
         VisitOperator(E->getOperator());
         TRY_TO(TraverseStmt(E->getArg(0)));
         break;
-      } else {
-        doThrow("unexpected number of arguments to operator");
-      }
-    case OO_PlusPlus:
-      if (E->getNumArgs() == 2) {
-        AddKApplyNode("UnaryOperator", 2);
-        VisitOperator(UO_PostInc);
-        TRY_TO(TraverseStmt(E->getArg(0)));
-        break;
-      } else if (E->getNumArgs() == 1) {
-        AddKApplyNode("UnaryOperator", 2);
-        VisitOperator(UO_PreInc);
-        TRY_TO(TraverseStmt(E->getArg(0)));
-        break;
-      } else {
-        doThrow("unexpected number of arguments to operator");
-      }
-    case OO_MinusMinus:
-      if (E->getNumArgs() == 2) {
-        AddKApplyNode("UnaryOperator", 2);
-        VisitOperator(UO_PostDec);
-        TRY_TO(TraverseStmt(E->getArg(0)));
-        break;
-      } else if (E->getNumArgs() == 1) {
-        AddKApplyNode("UnaryOperator", 2);
-        VisitOperator(UO_PreDec);
-        TRY_TO(TraverseStmt(E->getArg(0)));
-        break;
-      } else {
-        doThrow("unexpected number of arguments to operator");
-      }
-    case OO_Slash:
-    case OO_Percent:
-    case OO_Caret:
-    case OO_Pipe:
-    case OO_Equal:
-    case OO_Less:
-    case OO_Greater:
-    case OO_PlusEqual:
-    case OO_MinusEqual:
-    case OO_StarEqual:
-    case OO_SlashEqual:
-    case OO_PercentEqual:
-    case OO_CaretEqual:
-    case OO_AmpEqual:
-    case OO_PipeEqual:
-    case OO_LessLess:
-    case OO_GreaterGreater:
-    case OO_LessLessEqual:
-    case OO_GreaterGreaterEqual:
-    case OO_EqualEqual:
-    case OO_ExclaimEqual:
-    case OO_LessEqual:
-    case OO_GreaterEqual:
-    case OO_AmpAmp:
-    case OO_PipePipe:
-    case OO_Comma:
-    case OO_ArrowStar:
-    case OO_Subscript:
-      if (E->getNumArgs() != 2) {
-        doThrow("unexpected number of arguments to operator");
-      }
-      AddKApplyNode("BinaryOperator", 3);
-      VisitOperator(E->getOperator());
-      TRY_TO(TraverseStmt(E->getArg(0)));
-      TRY_TO(TraverseStmt(E->getArg(1)));
-      break;
-    case OO_Tilde:
-    case OO_Exclaim:
-    case OO_Coawait:
-      if (E->getNumArgs() != 1) {
-        doThrow("unexpected number of arguments to operator");
-      }
-      AddKApplyNode("UnaryOperator", 2);
-      VisitOperator(E->getOperator());
-      TRY_TO(TraverseStmt(E->getArg(0)));
-      break;
-    default:
-      doThrow("unimplemented: overloaded operator");
+      default:
+        doThrow("unimplemented: overloaded operator");
     }
     return true;
   }
@@ -2136,16 +2136,16 @@ public:
   bool TraverseLambdaCapture(LambdaExpr *E, const LambdaCapture *C, Expr*) {
     AddKApplyNode("LambdaCapture", 2);
     switch(C->getCaptureKind()) {
-    case LCK_This:
-      AddKApplyNode("This", 0);
-      break;
-    case LCK_ByRef:
-      AddKApplyNode("RefCapture", 1);
-      // fall through
-    case LCK_ByCopy:
-      break;
-    default:
-      doThrow("unimplemented: capture kind");
+      case LCK_This:
+        AddKApplyNode("This", 0);
+        break;
+      case LCK_ByRef:
+        AddKApplyNode("RefCapture", 1);
+        // fall through
+      case LCK_ByCopy:
+        break;
+      default:
+        doThrow("unimplemented: capture kind");
     }
     if(C->capturesVariable()) {
       TRY_TO(TraverseDecl(C->getCapturedVar()));
@@ -2157,15 +2157,15 @@ public:
   bool TraverseLambdaExpr(LambdaExpr *E) {
     AddKApplyNode("Lambda", 4);
     switch(E->getCaptureDefault()) {
-    case LCD_None:
-      AddKApplyNode("NoCaptureDefault", 0);
-      break;
-    case LCD_ByCopy:
-      AddKApplyNode("CopyCapture", 0);
-      break;
-    case LCD_ByRef:
-      AddKApplyNode("RefCapture", 0);
-      break;
+      case LCD_None:
+        AddKApplyNode("NoCaptureDefault", 0);
+        break;
+      case LCD_ByCopy:
+        AddKApplyNode("CopyCapture", 0);
+        break;
+      case LCD_ByRef:
+        AddKApplyNode("RefCapture", 0);
+        break;
     }
     int i = 0;
     for (LambdaExpr::capture_iterator C = E->explicit_capture_begin(),
@@ -2237,21 +2237,21 @@ public:
   bool VisitStringLiteral(StringLiteral *Constant) {
     AddKApplyNode("StringLiteral", 2);
     switch(Constant->getKind()) {
-    case StringLiteral::Ascii:
-      AddKApplyNode("Ascii", 0);
-      break;
-    case StringLiteral::Wide:
-      AddKApplyNode("Wide", 0);
-      break;
-    case StringLiteral::UTF8:
-      AddKApplyNode("UTF8", 0);
-      break;
-    case StringLiteral::UTF16:
-      AddKApplyNode("UTF16", 0);
-      break;
-    case StringLiteral::UTF32:
-      AddKApplyNode("UTF32", 0);
-      break;
+      case StringLiteral::Ascii:
+        AddKApplyNode("Ascii", 0);
+        break;
+      case StringLiteral::Wide:
+        AddKApplyNode("Wide", 0);
+        break;
+      case StringLiteral::UTF8:
+        AddKApplyNode("UTF8", 0);
+        break;
+      case StringLiteral::UTF16:
+        AddKApplyNode("UTF16", 0);
+        break;
+      case StringLiteral::UTF32:
+        AddKApplyNode("UTF32", 0);
+        break;
     }
     StringRef str = Constant->getBytes();
     VisitStringRef(str);
@@ -2261,21 +2261,21 @@ public:
   bool VisitCharacterLiteral(CharacterLiteral *Constant) {
     AddKApplyNode("CharacterLiteral", 2);
     switch(Constant->getKind()) {
-    case CharacterLiteral::Ascii:
-      AddKApplyNode("Ascii", 0);
-      break;
-    case CharacterLiteral::Wide:
-      AddKApplyNode("Wide", 0);
-      break;
-    case CharacterLiteral::UTF8:
-      AddKApplyNode("UTF8", 0);
-      break;
-    case CharacterLiteral::UTF16:
-      AddKApplyNode("UTF16", 0);
-      break;
-    case CharacterLiteral::UTF32:
-      AddKApplyNode("UTF32", 0);
-      break;
+      case CharacterLiteral::Ascii:
+        AddKApplyNode("Ascii", 0);
+        break;
+      case CharacterLiteral::Wide:
+        AddKApplyNode("Wide", 0);
+        break;
+      case CharacterLiteral::UTF8:
+        AddKApplyNode("UTF8", 0);
+        break;
+      case CharacterLiteral::UTF16:
+        AddKApplyNode("UTF16", 0);
+        break;
+      case CharacterLiteral::UTF32:
+        AddKApplyNode("UTF32", 0);
+        break;
     }
     char *buf = new char[11];
     sprintf(buf, "%d", Constant->getValue());
@@ -2326,71 +2326,74 @@ public:
 
   bool VisitTypeTraitExpr(TypeTraitExpr *E) {
     AddKApplyNode("GnuTypeTrait", 2);
-    switch(E->getTrait()) {
-    #define TRAIT(Name, Str)                  \
-    case Name:                                \
-      AddKTokenNode("\"" Str "\"", "String"); \
-      break;
-    TRAIT(UTT_HasNothrowAssign, "HasNothrowAssign")
-    TRAIT(UTT_HasNothrowMoveAssign, "HasNothrowMoveAssign")
-    TRAIT(UTT_HasNothrowCopy, "HasNothrowCopy")
-    TRAIT(UTT_HasNothrowConstructor, "HasNothrowConstructor")
-    TRAIT(UTT_HasTrivialAssign, "HasTrivialAssign")
-    TRAIT(UTT_HasTrivialMoveAssign, "HasTrivialMoveAssign")
-    TRAIT(UTT_HasTrivialCopy, "HasTrivialCopy")
-    TRAIT(UTT_HasTrivialDefaultConstructor, "HasTrivialDefaultConstructor")
-    TRAIT(UTT_HasTrivialMoveConstructor, "HasTrivialMoveConstructor")
-    TRAIT(UTT_HasTrivialDestructor, "HasTrivialDestructor")
-    TRAIT(UTT_HasVirtualDestructor, "HasVirtualDestructor")
-    TRAIT(UTT_IsAbstract, "IsAbstract")
-    TRAIT(UTT_IsArithmetic, "IsArithmetic")
-    TRAIT(UTT_IsArray, "IsArray")
-    TRAIT(UTT_IsClass, "IsClass")
-    TRAIT(UTT_IsCompleteType, "IsCompleteType")
-    TRAIT(UTT_IsCompound, "IsCompound")
-    TRAIT(UTT_IsConst, "IsConst")
-    TRAIT(UTT_IsDestructible, "IsDestructible")
-    TRAIT(UTT_IsEmpty, "IsEmpty")
-    TRAIT(UTT_IsEnum, "IsEnum")
-    TRAIT(UTT_IsFinal, "IsFinal")
-    TRAIT(UTT_IsFloatingPoint, "IsFloatingPoint")
-    TRAIT(UTT_IsFunction, "IsFunction")
-    TRAIT(UTT_IsFundamental, "IsFundamental")
-    TRAIT(UTT_IsIntegral, "IsIntegral")
-    TRAIT(UTT_IsInterfaceClass, "IsInterfaceClass")
-    TRAIT(UTT_IsLiteral, "IsLiteral")
-    TRAIT(UTT_IsLvalueReference, "IsLvalueReference")
-    TRAIT(UTT_IsMemberFunctionPointer, "IsMemberFunctionPointer")
-    TRAIT(UTT_IsMemberObjectPointer, "IsMemberObjectPointer")
-    TRAIT(UTT_IsMemberPointer, "IsMemberPointer")
-    TRAIT(UTT_IsNothrowDestructible, "IsNothrowDestructible")
-    TRAIT(UTT_IsObject, "IsObject")
-    TRAIT(UTT_IsPOD, "IsPOD")
-    TRAIT(UTT_IsPointer, "IsPointer")
-    TRAIT(UTT_IsPolymorphic, "IsPolymorphic")
-    TRAIT(UTT_IsReference, "IsReference")
-    TRAIT(UTT_IsRvalueReference, "IsRvalueReference")
-    TRAIT(UTT_IsScalar, "IsScalar")
-    TRAIT(UTT_IsSealed, "IsSealed")
-    TRAIT(UTT_IsSigned, "IsSigned")
-    TRAIT(UTT_IsStandardLayout, "IsStandardLayout")
-    TRAIT(UTT_IsTrivial, "IsTrivial")
-    TRAIT(UTT_IsTriviallyCopyable, "IsTriviallyCopyable")
-    TRAIT(UTT_IsUnion, "IsUnion")
-    TRAIT(UTT_IsUnsigned, "IsUnsigned")
-    TRAIT(UTT_IsVoid, "IsVoid")
-    TRAIT(UTT_IsVolatile, "IsVolatile")
-    TRAIT(BTT_IsBaseOf, "IsBaseOf")
-    TRAIT(BTT_IsConvertible, "IsConvertible")
-    TRAIT(BTT_IsConvertibleTo, "IsConvertibleTo")
-    TRAIT(BTT_IsSame, "IsSame")
-    TRAIT(BTT_TypeCompatible, "TypeCompatible")
-    TRAIT(BTT_IsAssignable, "IsAssignable")
-    TRAIT(BTT_IsNothrowAssignable, "IsNothrowAssignable")
-    TRAIT(BTT_IsTriviallyAssignable, "IsTriviallyAssignable")
-    TRAIT(TT_IsConstructible, "IsConstructible")
-    TRAIT(TT_IsNothrowConstructible, "IsNothrowConstructible")
-    TRAIT(TT_IsTriviallyConstructible, "IsTriviallyConstructible")
+    switch (E->getTrait()) {
+      #define TRAIT(Name, Str)                    \
+        case Name:                                \
+          AddKTokenNode("\"" Str "\"", "String"); \
+          break;
+      TRAIT(UTT_HasNothrowAssign, "HasNothrowAssign")
+      TRAIT(UTT_HasNothrowMoveAssign, "HasNothrowMoveAssign")
+      TRAIT(UTT_HasNothrowCopy, "HasNothrowCopy")
+      TRAIT(UTT_HasNothrowConstructor, "HasNothrowConstructor")
+      TRAIT(UTT_HasTrivialAssign, "HasTrivialAssign")
+      TRAIT(UTT_HasTrivialMoveAssign, "HasTrivialMoveAssign")
+      TRAIT(UTT_HasTrivialCopy, "HasTrivialCopy")
+      TRAIT(UTT_HasTrivialDefaultConstructor, "HasTrivialDefaultConstructor")
+      TRAIT(UTT_HasTrivialMoveConstructor, "HasTrivialMoveConstructor")
+      TRAIT(UTT_HasTrivialDestructor, "HasTrivialDestructor")
+      TRAIT(UTT_HasVirtualDestructor, "HasVirtualDestructor")
+      TRAIT(UTT_IsAbstract, "IsAbstract")
+      TRAIT(UTT_IsArithmetic, "IsArithmetic")
+      TRAIT(UTT_IsArray, "IsArray")
+      TRAIT(UTT_IsClass, "IsClass")
+      TRAIT(UTT_IsCompleteType, "IsCompleteType")
+      TRAIT(UTT_IsCompound, "IsCompound")
+      TRAIT(UTT_IsConst, "IsConst")
+      TRAIT(UTT_IsDestructible, "IsDestructible")
+      TRAIT(UTT_IsEmpty, "IsEmpty")
+      TRAIT(UTT_IsEnum, "IsEnum")
+      TRAIT(UTT_IsFinal, "IsFinal")
+      TRAIT(UTT_IsFloatingPoint, "IsFloatingPoint")
+      TRAIT(UTT_IsFunction, "IsFunction")
+      TRAIT(UTT_IsFundamental, "IsFundamental")
+      TRAIT(UTT_IsIntegral, "IsIntegral")
+      TRAIT(UTT_IsInterfaceClass, "IsInterfaceClass")
+      TRAIT(UTT_IsLiteral, "IsLiteral")
+      TRAIT(UTT_IsLvalueReference, "IsLvalueReference")
+      TRAIT(UTT_IsMemberFunctionPointer, "IsMemberFunctionPointer")
+      TRAIT(UTT_IsMemberObjectPointer, "IsMemberObjectPointer")
+      TRAIT(UTT_IsMemberPointer, "IsMemberPointer")
+      TRAIT(UTT_IsNothrowDestructible, "IsNothrowDestructible")
+      TRAIT(UTT_IsObject, "IsObject")
+      TRAIT(UTT_IsPOD, "IsPOD")
+      TRAIT(UTT_IsPointer, "IsPointer")
+      TRAIT(UTT_IsPolymorphic, "IsPolymorphic")
+      TRAIT(UTT_IsReference, "IsReference")
+      TRAIT(UTT_IsRvalueReference, "IsRvalueReference")
+      TRAIT(UTT_IsScalar, "IsScalar")
+      TRAIT(UTT_IsSealed, "IsSealed")
+      TRAIT(UTT_IsSigned, "IsSigned")
+      TRAIT(UTT_IsStandardLayout, "IsStandardLayout")
+      TRAIT(UTT_IsTrivial, "IsTrivial")
+      TRAIT(UTT_IsTriviallyCopyable, "IsTriviallyCopyable")
+      TRAIT(UTT_IsUnion, "IsUnion")
+      TRAIT(UTT_IsUnsigned, "IsUnsigned")
+      TRAIT(UTT_IsVoid, "IsVoid")
+      TRAIT(UTT_IsVolatile, "IsVolatile")
+      TRAIT(BTT_IsBaseOf, "IsBaseOf")
+      TRAIT(BTT_IsConvertible, "IsConvertible")
+      TRAIT(BTT_IsConvertibleTo, "IsConvertibleTo")
+      TRAIT(BTT_IsSame, "IsSame")
+      TRAIT(BTT_TypeCompatible, "TypeCompatible")
+      TRAIT(BTT_IsAssignable, "IsAssignable")
+      TRAIT(BTT_IsNothrowAssignable, "IsNothrowAssignable")
+      TRAIT(BTT_IsTriviallyAssignable, "IsTriviallyAssignable")
+      TRAIT(TT_IsConstructible, "IsConstructible")
+      TRAIT(TT_IsNothrowConstructible, "IsNothrowConstructible")
+      TRAIT(TT_IsTriviallyConstructible, "IsTriviallyConstructible")
+      #undef TRAIT
+      default:
+        doThrow("unimplemented: type trait");
     }
     AddListNode(E->getNumArgs());
     return false;
@@ -2435,6 +2438,8 @@ public:
       ATOMIC_BUILTIN(__atomic_xor_fetch, "__atomic_xor_fetch")
       ATOMIC_BUILTIN(__atomic_nand_fetch, "__atomic_nand_fetch")
       #undef ATOMIC_BUILTIN
+      default:
+        doThrow("unimplemented: atomic builtin");
     }
     AddListNode(E->getNumSubExprs());
     return false;
@@ -2474,13 +2479,13 @@ private:
     std::string mangledName;
     llvm::raw_string_ostream s(mangledName);
     if (D->hasLinkage()) {
-		if (CXXConstructorDecl *CtorDecl = dyn_cast<CXXConstructorDecl>(D))
-			mangler->mangleCXXCtor(CtorDecl, Ctor_Complete, s);
-		else if (CXXDestructorDecl *DtorDecl = dyn_cast<CXXDestructorDecl>(D))
-			mangler->mangleCXXDtor(DtorDecl, Dtor_Complete, s);
-		else
-			mangler->mangleName(D, s);
-	}
+      if (CXXConstructorDecl *CtorDecl = dyn_cast<CXXConstructorDecl>(D))
+        mangler->mangleCXXCtor(CtorDecl, Ctor_Complete, s);
+      else if (CXXDestructorDecl *DtorDecl = dyn_cast<CXXDestructorDecl>(D))
+        mangler->mangleCXXDtor(DtorDecl, Dtor_Complete, s);
+      else
+        mangler->mangleName(D, s);
+    }
     char *buf = new char[s.str().length() + 3];
     buf[0] = '\"';
     buf[s.str().length() + 1] = '\"';
@@ -2507,60 +2512,60 @@ public:
   virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
     clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
     return std::unique_ptr<clang::ASTConsumer>(
-        new GetKASTConsumer(&Compiler.getASTContext(), InFile));
+      new GetKASTConsumer(&Compiler.getASTContext(), InFile));
   }
 };
 
 void makeKast(int& idx) {
   Node *current = nodes[idx];
   if (!current) {
-        doThrow("parse error");
+    doThrow("parse error");
   }
   switch(current->kind) {
-  case KAPPLY:
-    printf("`%s`(", current->_1);
-    if (current->size == 0) {
-      printf(".KList");
-    }
-    idx++;
-    for (int i = 0; i < current->size; i++) {
-      makeKast(idx);
-      if (i != current->size - 1) printf(",");
-    }
-    printf(")");
-    break;
-  case KSEQUENCE:
-    if (current->size == 0) {
-      printf(".K");
-    }
-    idx++;
-    for (int i = 0; i < current->size; i++) {
-      makeKast(idx);
-      if (i != current->size - 1) printf("~>");
-    }
-    break;
-  case LIST:
-    printf("kSeqToList(");
-    if (current->size == 0) {
-      printf(".K");
-    }
-    idx++;
-    for (int i = 0; i < current->size; i++) {
-      makeKast(idx);
-      if (i != current->size - 1) printf("~>");
-    }
-    printf(")");
-    break;
-  case KTOKEN:
-    idx++;
-    printf("#token(");
-    printf("%s", escape(current->_1, strlen(current->_1)));
-    printf(",");
-    printf("%s", escape(current->_2, strlen(current->_2)));
-    printf(")");
-    break;
-  default:
-    doThrow("unexpected kind");
+    case KAPPLY:
+      printf("`%s`(", current->_1);
+      if (current->size == 0) {
+        printf(".KList");
+      }
+      idx++;
+      for (int i = 0; i < current->size; i++) {
+        makeKast(idx);
+        if (i != current->size - 1) printf(",");
+      }
+      printf(")");
+      break;
+    case KSEQUENCE:
+      if (current->size == 0) {
+        printf(".K");
+      }
+      idx++;
+      for (int i = 0; i < current->size; i++) {
+        makeKast(idx);
+        if (i != current->size - 1) printf("~>");
+      }
+      break;
+    case LIST:
+      printf("kSeqToList(");
+      if (current->size == 0) {
+        printf(".K");
+      }
+      idx++;
+      for (int i = 0; i < current->size; i++) {
+        makeKast(idx);
+        if (i != current->size - 1) printf("~>");
+      }
+      printf(")");
+      break;
+    case KTOKEN:
+      idx++;
+      printf("#token(");
+      printf("%s", escape(current->_1, strlen(current->_1)));
+      printf(",");
+      printf("%s", escape(current->_2, strlen(current->_2)));
+      printf(")");
+      break;
+    default:
+      doThrow("unexpected kind");
   }
 }
 
