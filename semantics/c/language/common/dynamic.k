@@ -134,8 +134,8 @@ module C-DYNAMIC-SYNTAX
 
      // Initializers.
      syntax InitLValue ::= LValue
-                         | InitLValue "[" "[" Int "]" "]" [strict(1)]
-                         | InitLValue ".init" CId [strict(1)]
+                         | KItem "[" "[" Int "]" "]" [strict(1)]
+                         | KItem ".init" CId [strict(1)]
 
      syntax EncodableValue ::= Opaque
      syntax Opaque ::= opaque(K, UType)

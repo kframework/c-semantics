@@ -80,7 +80,7 @@ module C-STMT-SWITCH
           requires SN =/=Int SN'
           [structural]
 
-     rule #handleSwitch-aux(_:Int, _:RValue, X::CId => nextCaseLabel, _)
+     rule #handleSwitch-aux(_:Int, _:RValue, X:K => nextCaseLabel, _)
           requires caseLabel(...) :/=K X
                andBool X =/=K nextCaseLabel
           [structural]
