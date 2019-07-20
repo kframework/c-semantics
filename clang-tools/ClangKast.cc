@@ -60,8 +60,6 @@ struct Node {
 
 std::vector<Node *> nodes;
 
-int dupedFd;
-
 #define TRY_TO(CALL_EXPR)                                                     \
   do {                                                                        \
     if (!getDerived().CALL_EXPR)                                              \
@@ -109,11 +107,6 @@ const char *escape(const char *str, unsigned len) {
   return res->c_str();
 }
 
-[[ noreturn ]] void doThrow(const char *str) {
-  dup2(dupedFd, STDERR_FILENO);
-  throw std::logic_error(str);
-}
-
 class GetKASTVisitor
   : public RecursiveASTVisitor<GetKASTVisitor> {
 public:
@@ -128,19 +121,16 @@ public:
 // because we don't support the node
 
   bool VisitDecl(Decl *D) {
-    dup2(dupedFd, STDERR_FILENO);
     D->dump();
     throw std::logic_error("unimplemented decl");
   }
 
   bool VisitStmt(Stmt *S) {
-    dup2(dupedFd, STDERR_FILENO);
     S->dump();
     throw std::logic_error("unimplemented stmt");
   }
 
   bool VisitType(clang::Type *T) {
-    dup2(dupedFd, STDERR_FILENO);
     T->dump();
     printf("%s", T->getTypeClassName());
     throw std::logic_error("unimplemented type");
@@ -422,7 +412,7 @@ public:
         AddKApplyNode("GlobalNamespace", 0);
         break;
       default:
-        doThrow("unimplemented: nns");
+        throw std::logic_error("unimplemented: nns");
     }
     return true;
   }
@@ -495,7 +485,7 @@ public:
           return TraverseIdentifierInfo(info, decl);
         }
       default:
-        doThrow("unimplemented: nameinfo");
+        throw std::logic_error("unimplemented: nameinfo");
     }
   }
 
@@ -525,7 +515,7 @@ public:
       AddKApplyNode("ConstructorDelegating", 1);
       TRY_TO(TraverseStmt(Init->getInit()));
     } else {
-      doThrow("unimplemented: ctor initializer");
+      throw std::logic_error("unimplemented: ctor initializer");
     }
     return true;
   }
@@ -635,7 +625,7 @@ public:
       }
       TRY_TO(TraverseType(D->getType()));
     } else {
-      doThrow("something implicit in functions??");
+      throw std::logic_error("something implicit in functions??");
     }
 
     AddListNode(D->parameters().size());
@@ -769,7 +759,7 @@ public:
         spec = "Auto";
         break;
       default:
-        doThrow("unimplemented: storage class");
+        throw std::logic_error("unimplemented: storage class");
     }
     AddSpecifier(spec);
   }
@@ -783,7 +773,7 @@ public:
         spec = "ThreadLocal";
         break;
       default:
-        doThrow("unimplemented: thread storage class");
+        throw std::logic_error("unimplemented: thread storage class");
     }
     AddSpecifier(spec);
   }
@@ -991,7 +981,7 @@ public:
         }
         return true;
       default:
-        doThrow("unimplemented: template argument");
+        throw std::logic_error("unimplemented: template argument");
     }
   }
 
@@ -1001,7 +991,7 @@ public:
         TRY_TO(TraverseDeclarationName(Name.getAsTemplateDecl()->getDeclName()));
         break;
       default:
-        doThrow("unimplemented: template name");
+        throw std::logic_error("unimplemented: template name");
     }
     return true;
   }
@@ -1035,7 +1025,7 @@ public:
         AddKApplyNode("Enum", 0);
         break;
       default:
-        doThrow("unimplemented: tag kind");
+        throw std::logic_error("unimplemented: tag kind");
     }
   }
 
@@ -1117,7 +1107,7 @@ public:
         AddKApplyNode("TemplateInstantiationDefinition", 2);
         break;
       default:
-        doThrow("unimplemented: implicit template instantiation");
+        throw std::logic_error("unimplemented: implicit template instantiation");
     }
     if (D->getTypeForDecl()) {
       TRY_TO(TraverseType(QualType(D->getTypeForDecl(), 0)));
@@ -1221,7 +1211,7 @@ public:
         }
         break;
       default:
-        doThrow("unimplemented: exception spec");
+        throw std::logic_error("unimplemented: exception spec");
     }
 
     VisitBool(T->isVariadic());
@@ -1303,7 +1293,7 @@ public:
         AddKApplyNode("NullPtr", 0);
         break;
       default:
-        doThrow("unimplemented: basic type");
+        throw std::logic_error("unimplemented: basic type");
     }
     return false;
   }
@@ -1320,7 +1310,7 @@ public:
 
   bool TraverseArrayHelper(clang::ArrayType *T) {
     if (T->getSizeModifier() != clang::ArrayType::Normal) {
-      doThrow("unimplemented: static/* array");
+      throw std::logic_error("unimplemented: static/* array");
     }
     AddKApplyNode("ArrayType", 2);
     TRY_TO(TraverseType(T->getElementType()));
@@ -1378,7 +1368,7 @@ public:
         AddKApplyNode("NoTag", 0);
         break;
       default:
-        doThrow("unimplemented: type keyword");
+        throw std::logic_error("unimplemented: type keyword");
     }
   }
 
@@ -1636,7 +1626,7 @@ public:
   bool TraverseCaseStmt(CaseStmt *S) {
     AddKApplyNode("CaseAStmt", 2);
     if (S->getRHS()) {
-      doThrow("unimplemented: gnu case stmt extensions");
+      throw std::logic_error("unimplemented: gnu case stmt extensions");
     }
     TRY_TO(TraverseStmt(S->getLHS()));
     TRY_TO(TraverseStmt(S->getSubStmt()));
@@ -1712,7 +1702,7 @@ public:
       i++;
     }
     if (i-1 != E->getNumArgs()) {
-      doThrow("unimplemented: pre_args???");
+      throw std::logic_error("unimplemented: pre_args???");
     }
     bool first = true;
     for (Stmt *SubStmt : E->children()) {
@@ -1773,7 +1763,7 @@ public:
         break;
       #include "clang/Basic/OperatorKinds.def"
       default:
-        doThrow("unsupported overloaded operator");
+        throw std::logic_error("unsupported overloaded operator");
     }
   }
 
@@ -1806,7 +1796,7 @@ public:
         AddKApplyNode("CoawaitOperator", 0);
         break;
       default:
-        doThrow("unsupported unary operator");
+        throw std::logic_error("unsupported unary operator");
     }
   }
 
@@ -1849,7 +1839,7 @@ public:
       BINARY_OP(OrAssign, "|=")
       BINARY_OP(Comma, ",")
       default:
-        doThrow("unsupported binary operator");
+        throw std::logic_error("unsupported binary operator");
     }
   }
 
@@ -1897,7 +1887,7 @@ public:
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else {
-          doThrow("unexpected number of arguments to operator");
+          throw std::logic_error("unexpected number of arguments to operator");
         }
       case OO_PlusPlus:
         if (E->getNumArgs() == 2) {
@@ -1911,7 +1901,7 @@ public:
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else {
-          doThrow("unexpected number of arguments to operator");
+          throw std::logic_error("unexpected number of arguments to operator");
         }
       case OO_MinusMinus:
         if (E->getNumArgs() == 2) {
@@ -1925,7 +1915,7 @@ public:
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else {
-          doThrow("unexpected number of arguments to operator");
+          throw std::logic_error("unexpected number of arguments to operator");
         }
       case OO_Slash:
       case OO_Percent:
@@ -1956,7 +1946,7 @@ public:
       case OO_ArrowStar:
       case OO_Subscript:
         if (E->getNumArgs() != 2) {
-          doThrow("unexpected number of arguments to operator");
+          throw std::logic_error("unexpected number of arguments to operator");
         }
         AddKApplyNode("BinaryOperator", 3);
         VisitOperator(E->getOperator());
@@ -1967,14 +1957,14 @@ public:
       case OO_Exclaim:
       case OO_Coawait:
         if (E->getNumArgs() != 1) {
-          doThrow("unexpected number of arguments to operator");
+          throw std::logic_error("unexpected number of arguments to operator");
         }
         AddKApplyNode("UnaryOperator", 2);
         VisitOperator(E->getOperator());
         TRY_TO(TraverseStmt(E->getArg(0)));
         break;
       default:
-        doThrow("unimplemented: overloaded operator");
+        throw std::logic_error("unimplemented: overloaded operator");
     }
     return true;
   }
@@ -2058,7 +2048,7 @@ public:
         AddKApplyNode("AlignofExpr", 1);
       }
     } else {
-      doThrow("unimplemented: ??? expr or type trait");
+      throw std::logic_error("unimplemented: ??? expr or type trait");
     }
     return false;
   }
@@ -2145,7 +2135,7 @@ public:
       case LCK_ByCopy:
         break;
       default:
-        doThrow("unimplemented: capture kind");
+        throw std::logic_error("unimplemented: capture kind");
     }
     if(C->capturesVariable()) {
       TRY_TO(TraverseDecl(C->getCapturedVar()));
@@ -2214,7 +2204,7 @@ public:
 
   void VisitAPFloat(llvm::APFloat f) {
     if (!f.isFinite()) {
-      doThrow("unimplemented: special floats");
+      throw std::logic_error("unimplemented: special floats");
     }
     unsigned precision = f.semanticsPrecision(f.getSemantics());
     unsigned numBytes = 6 // max length of signed short
@@ -2393,7 +2383,7 @@ public:
       TRAIT(TT_IsTriviallyConstructible, "IsTriviallyConstructible")
       #undef TRAIT
       default:
-        doThrow("unimplemented: type trait");
+        throw std::logic_error("unimplemented: type trait");
     }
     AddListNode(E->getNumArgs());
     return false;
@@ -2439,7 +2429,7 @@ public:
       ATOMIC_BUILTIN(__atomic_nand_fetch, "__atomic_nand_fetch")
       #undef ATOMIC_BUILTIN
       default:
-        doThrow("unimplemented: atomic builtin");
+        throw std::logic_error("unimplemented: atomic builtin");
     }
     AddListNode(E->getNumSubExprs());
     return false;
@@ -2519,7 +2509,7 @@ public:
 void makeKast(int& idx) {
   Node *current = nodes[idx];
   if (!current) {
-    doThrow("parse error");
+    throw std::logic_error("parse error");
   }
   switch(current->kind) {
     case KAPPLY:
@@ -2565,7 +2555,7 @@ void makeKast(int& idx) {
       printf(")");
       break;
     default:
-      doThrow("unexpected kind");
+      throw std::logic_error("unexpected kind");
   }
 }
 
@@ -2574,28 +2564,10 @@ int main(int argc, const char **argv) {
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
 
-  // nasty hacky garbage in order to gain access to the output sent to stderr
-  // so we can filter it
-  dupedFd = dup(STDERR_FILENO);
-  int master = posix_openpt(O_RDWR | O_NOCTTY);
-  grantpt(master);
-  unlockpt(master);
-  int slave = open(ptsname(master), O_RDWR | O_NOCTTY);
-  dup2(slave, STDERR_FILENO);
   int ret = Tool.run(newFrontendActionFactory<GetKASTAction>().get());
-  dup2(dupedFd, STDERR_FILENO);
-  close(dupedFd);
-  close(slave);
   char *buf = NULL;
   size_t n = 0;
-  FILE *temp = fdopen(master, "r");
-  do {
-    if (buf) fprintf(stderr, "%s", buf);
-    free(buf);
-    buf = NULL;
-    n = 0;
-  } while (getline(&buf, &n, temp) != -1);
-  close(master);
+
   if (ret != 0) {
     return ret;
   }
