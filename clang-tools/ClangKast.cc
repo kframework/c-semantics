@@ -45,7 +45,108 @@ static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 // A help message for this specific tool can be added afterwards.
 static cl::extrahelp MoreHelp("");
 
-const char *escape(const char *str, unsigned len) {
+Kast kast;
+
+enum KKind {
+  KAPPLY, KSEQUENCE, LIST, KTOKEN
+};
+
+struct Node {
+  const char *_1;
+  const char *_2;
+  int size;
+  KKind kind;
+};
+
+void Kast::AddKApplyNode(const char *label, int size) {
+  Node *node = new Node();
+  node->_1 = label;
+  node->size = size;
+  node->kind = KAPPLY;
+  nodes.push_back(node);
+}
+
+void Kast::AddListNode(int size) {
+  Node *list = new Node();
+  list->size = size;
+  list->kind = LIST;
+  nodes.push_back(list);
+}
+
+void Kast::AddKSequenceNode(int size) {
+  Node *list = new Node();
+  list->size = size;
+  list->kind = KSEQUENCE;
+  nodes.push_back(list);
+}
+
+void Kast::AddKTokenNode(const char *s, const char *sort) {
+  Node *node = new Node();
+  node->_1 = s;
+  node->_2 = sort;
+  node->kind = KTOKEN;
+  nodes.push_back(node);
+}
+
+int Kast::makeKast(int idx) {
+  Node *current = nodes[idx++];
+
+  if (!current) {
+    throw std::logic_error("parse error");
+  }
+
+  switch (current->kind) {
+
+    case KAPPLY:
+      printf("`%s`(", current->_1);
+      if (current->size == 0) {
+        printf(".KList");
+      }
+      for (int i = 0; i < current->size; i++) {
+        idx = makeKast(idx);
+        if (i != current->size - 1) printf(",");
+      }
+      printf(")");
+      break;
+
+    case KSEQUENCE:
+      if (current->size == 0) {
+        printf(".K");
+      }
+      for (int i = 0; i < current->size; i++) {
+        idx = makeKast(idx);
+        if (i != current->size - 1) printf("~>");
+      }
+      break;
+
+    case LIST:
+      printf("kSeqToList(");
+      if (current->size == 0) {
+        printf(".K");
+      }
+      for (int i = 0; i < current->size; i++) {
+        idx = makeKast(idx);
+        if (i != current->size - 1) printf("~>");
+      }
+      printf(")");
+      break;
+
+    case KTOKEN:
+      printf("#token(");
+      printf("%s", escape(current->_1, strlen(current->_1)));
+      printf(",");
+      printf("%s", escape(current->_2, strlen(current->_2)));
+      printf(")");
+      break;
+
+    default:
+      throw std::logic_error("unexpected kind");
+  }
+
+  return idx;
+}
+
+const char * Kast::escape(const char *str, unsigned len) {
   std::string *res = new std::string("\"");
   unsigned i = 0;
   for(const char *ptr=str; i < len; ptr++, i++) {
@@ -81,91 +182,52 @@ const char *escape(const char *str, unsigned len) {
 }
 
 class GetKASTConsumer : public clang::ASTConsumer {
+
 public:
+
   explicit GetKASTConsumer(ASTContext *Context, llvm::StringRef InFile)
-    : Visitor(Context, InFile) {}
+    : Visitor(kast, Context, InFile) { puts("getkastconsumer ctor");}
 
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
+        puts("handletu");
     Visitor.TraverseDecl(Context.getTranslationUnitDecl());
   }
+
 private:
+
   GetKASTVisitor Visitor;
+
 };
 
 class GetKASTAction : public clang::ASTFrontendAction {
+
 public:
+
   virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
     clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+        puts("GKA ctor");
     return std::unique_ptr<clang::ASTConsumer>(
       new GetKASTConsumer(&Compiler.getASTContext(), InFile));
   }
-};
 
-void makeKast(int& idx) {
-  Node *current = nodes[idx];
-  if (!current) {
-    throw std::logic_error("parse error");
-  }
-  switch(current->kind) {
-    case KAPPLY:
-      printf("`%s`(", current->_1);
-      if (current->size == 0) {
-        printf(".KList");
-      }
-      idx++;
-      for (int i = 0; i < current->size; i++) {
-        makeKast(idx);
-        if (i != current->size - 1) printf(",");
-      }
-      printf(")");
-      break;
-    case KSEQUENCE:
-      if (current->size == 0) {
-        printf(".K");
-      }
-      idx++;
-      for (int i = 0; i < current->size; i++) {
-        makeKast(idx);
-        if (i != current->size - 1) printf("~>");
-      }
-      break;
-    case LIST:
-      printf("kSeqToList(");
-      if (current->size == 0) {
-        printf(".K");
-      }
-      idx++;
-      for (int i = 0; i < current->size; i++) {
-        makeKast(idx);
-        if (i != current->size - 1) printf("~>");
-      }
-      printf(")");
-      break;
-    case KTOKEN:
-      idx++;
-      printf("#token(");
-      printf("%s", escape(current->_1, strlen(current->_1)));
-      printf(",");
-      printf("%s", escape(current->_2, strlen(current->_2)));
-      printf(")");
-      break;
-    default:
-      throw std::logic_error("unexpected kind");
-  }
-}
+};
 
 int main(int argc, const char **argv) {
   CommonOptionsParser OptionsParser(argc, argv, MyToolCategory);
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
 
-  int ret = Tool.run(newFrontendActionFactory<GetKASTAction>().get());
-  if (ret) {
-    return ret;
+  puts("making factory");
+  auto factory = newFrontendActionFactory<GetKASTAction>().get();
+
+  puts("running tool");
+  if (int r = Tool.run(factory)) {
+      puts("error after running tool?");
+    return r;
   }
 
-  int idx = 0;
-  makeKast(idx);
+  puts("making kast");
+  kast.makeKast(0);
   printf("\n");
 }
 
