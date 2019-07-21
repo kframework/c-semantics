@@ -31,7 +31,6 @@ public:
 
   explicit GetKASTVisitor(Kast & initKast, ASTContext *Context, llvm::StringRef InFile)
     : kast(initKast), Context(Context) {
-          puts("GKV ctor");
     this->InFile = InFile;
   }
 
@@ -101,12 +100,12 @@ public:
     PresumedLoc presumed = mgr.getPresumedLoc(loc);
     if (presumed.isValid()) {
       kast.AddKApplyNode("CabsLoc", 5);
-      kast.AddKTokenNode(Kast::escape(presumed.getFilename(), strlen(presumed.getFilename())), "String");
+      kast.AddKTokenNode(presumed.getFilename());
       StringRef filename(presumed.getFilename());
       SmallString<64> vector(filename);
       llvm::sys::fs::make_absolute(vector);
       const char *absolute = vector.c_str();
-      kast.AddKTokenNode(Kast::escape(absolute, strlen(absolute)), "String");
+      kast.AddKTokenNode(absolute);
       VisitUnsigned(presumed.getLine());
       VisitUnsigned(presumed.getColumn());
       VisitBool(mgr.isInSystemHeader(loc));
@@ -227,18 +226,18 @@ public:
     kast.AddKApplyNode("LinkageSpec", 3);
     const char *s;
     if (D->getLanguage() == LinkageSpecDecl::lang_c) {
-      s = "\"C\"";
+      s = "C";
     } else if (D->getLanguage() == LinkageSpecDecl::lang_cxx) {
-      s = "\"C++\"";
+      s = "C++";
     }
-    kast.AddKTokenNode(s, "String");
+    kast.AddKTokenNode(s);
     VisitBool(D->hasBraces());
     AddDeclContextNode(D);
     return false;
   }
 
   void VisitBool(bool b) {
-    kast.AddKTokenNode(b ? "true" : "false", "Bool");
+    kast.AddKTokenNode(b);
   }
 
   bool VisitNamespaceDecl(NamespaceDecl *D) {
@@ -320,12 +319,7 @@ public:
       return true;
     }
     kast.AddKApplyNode("Identifier", 1);
-    char *buf = new char[info->getLength() + 3];
-    buf[0] = '\"';
-    buf[info->getLength() + 1] = '\"';
-    buf[info->getLength() + 2] = 0;
-    memcpy(buf + 1, info->getNameStart(), info->getLength());
-    kast.AddKTokenNode(buf, "String");
+    kast.AddKTokenNode(info->getNameStart(), info->getLength());
     return true;
   }
 
@@ -370,17 +364,6 @@ public:
       default:
         throw std::logic_error("unimplemented: nameinfo");
     }
-  }
-
-  void AddSpecifier(const char *str) {
-    kast.AddKApplyNode("Specifier", 2);
-    kast.AddKApplyNode(str, 0);
-  }
-
-  void AddSpecifier(const char *str, unsigned n) {
-    kast.AddKApplyNode("Specifier", 2);
-    kast.AddKApplyNode(str, 1);
-    VisitUnsigned(n);
   }
 
   bool TraverseConstructorInitializer(CXXCtorInitializer *Init) {
@@ -448,10 +431,10 @@ public:
 
     AddStorageClass(D->getStorageClass());
     if (D->isInlineSpecified()) {
-      AddSpecifier("Inline");
+      kast.AddSpecifier("Inline");
     }
     if (D->isConstexpr()) {
-      AddSpecifier("Constexpr");
+      kast.AddSpecifier("Constexpr");
     }
 
     if (D->isThisDeclarationADefinition() || D->isExplicitlyDefaulted()) {
@@ -566,10 +549,10 @@ public:
     AddStorageClass(D->getStorageClass());
     AddThreadStorageClass(D->getTSCSpec());
     if (D->isConstexpr()) {
-      AddSpecifier("Constexpr");
+      kast.AddSpecifier("Constexpr");
     }
     if (unsigned align = D->getMaxAlignment()) {
-      AddSpecifier("Alignas", align / 8);
+      kast.AddSpecifier("Alignas", align / 8);
     }
     kast.AddKApplyNode("VarDecl", 6);
 
@@ -594,7 +577,7 @@ public:
 
   bool TraverseFieldDecl(FieldDecl *D) {
     if (D->isMutable()) {
-      AddSpecifier("Mutable");
+      kast.AddSpecifier("Mutable");
     }
     if (D->isBitField()) {
       kast.AddKApplyNode("BitFieldDecl", 4);
@@ -644,7 +627,7 @@ public:
       default:
         throw std::logic_error("unimplemented: storage class");
     }
-    AddSpecifier(spec);
+    kast.AddSpecifier(spec);
   }
 
   void AddThreadStorageClass(ThreadStorageClassSpecifier sc) {
@@ -658,7 +641,7 @@ public:
       default:
         throw std::logic_error("unimplemented: thread storage class");
     }
-    AddSpecifier(spec);
+    kast.AddSpecifier(spec);
   }
 
   void VisitAccessSpecifier(AccessSpecifier Spec) {
@@ -2069,42 +2052,22 @@ public:
   }
 
   void VisitStringRef(StringRef str) {
-    const char *res = Kast::escape(str.begin(), (str.end() - str.begin()));
-    kast.AddKTokenNode(res, "String");
+    kast.AddKTokenNode(str.begin(), str.end() - str.begin());
   }
 
   void VisitAPInt(llvm::APInt i) {
-    std::string *name = new std::string(i.toString(10, false));
-    kast.AddKTokenNode(name->c_str(), "Int");
+    kast.AddKTokenNode(i);
   }
 
   void VisitUnsigned(unsigned long long s) {
-    char *name = new char[21];
-    sprintf(name, "%llu", s);
-    kast.AddKTokenNode(name, "Int");
+    kast.AddKTokenNode(s);
   }
-
 
   void VisitAPFloat(llvm::APFloat f) {
     if (!f.isFinite()) {
       throw std::logic_error("unimplemented: special floats");
     }
-    unsigned precision = f.semanticsPrecision(f.getSemantics());
-    unsigned numBytes = 6 // max length of signed short
-                      + 4 //-1.E
-                      + 3 + 11 //p4294967295x16
-                      + 1 // null byte
-                      + precision;
-    SmallVector<char, 80> buf;
-    f.toString(buf, 0, 0);
-    char *data = buf.data();
-    data[buf.size()] = 0;
-    char suffix[14];
-    sprintf(suffix, "p%ux16", precision);
-    char *result = new char[numBytes];
-    strcpy(result, data);
-    strcat(result, suffix);
-    kast.AddKTokenNode(result, "Float");
+    kast.AddKTokenNode(f);
   }
 
   bool VisitStringLiteral(StringLiteral *Constant) {
@@ -2150,9 +2113,7 @@ public:
         kast.AddKApplyNode("UTF32", 0);
         break;
     }
-    char *buf = new char[11];
-    sprintf(buf, "%d", Constant->getValue());
-    kast.AddKTokenNode(buf, "Int");
+    kast.AddKTokenNode(Constant->getValue());
     return false;
   }
 
@@ -2202,7 +2163,7 @@ public:
     switch (E->getTrait()) {
       #define TRAIT(Name, Str)                    \
         case Name:                                \
-          kast.AddKTokenNode("\"" Str "\"", "String"); \
+          kast.AddKTokenNode(Str); \
           break;
       TRAIT(UTT_HasNothrowAssign, "HasNothrowAssign")
       TRAIT(UTT_HasNothrowMoveAssign, "HasNothrowMoveAssign")
@@ -2277,7 +2238,7 @@ public:
     switch(E->getOp()) {
       #define ATOMIC_BUILTIN(Name, Spelling)           \
         case AtomicExpr::AO##Name:                     \
-          kast.AddKTokenNode("\"" Spelling "\"", "String"); \
+          kast.AddKTokenNode(Spelling); \
           break;
       ATOMIC_BUILTIN(__c11_atomic_init, "__c11_atomic_init")
       ATOMIC_BUILTIN(__c11_atomic_load, "__c11_atomic_load")
@@ -2358,12 +2319,7 @@ private:
       else
         mangler->mangleName(D, s);
     }
-    char *buf = new char[s.str().length() + 3];
-    buf[0] = '\"';
-    buf[s.str().length() + 1] = '\"';
-    buf[s.str().length() + 2] = 0;
-    memcpy(buf + 1, s.str().c_str(), s.str().length());
-    kast.AddKTokenNode(buf, "String");
+    kast.AddKTokenNode(s.str().c_str());
   }
 };
 

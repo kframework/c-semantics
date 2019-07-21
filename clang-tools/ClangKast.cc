@@ -16,7 +16,7 @@
 #include "llvm/Support/CommandLine.h"
 
 #include "GetKastVisitor.h"
-#include "globs.h"
+#include "ClangKast.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
@@ -63,21 +63,21 @@ void Kast::AddKApplyNode(const char *label, int size) {
   node->_1 = label;
   node->size = size;
   node->kind = KAPPLY;
-  nodes.push_back(node);
+  nodes_.push_back(node);
 }
 
 void Kast::AddListNode(int size) {
   Node *list = new Node();
   list->size = size;
   list->kind = LIST;
-  nodes.push_back(list);
+  nodes_.push_back(list);
 }
 
 void Kast::AddKSequenceNode(int size) {
   Node *list = new Node();
   list->size = size;
   list->kind = KSEQUENCE;
-  nodes.push_back(list);
+  nodes_.push_back(list);
 }
 
 void Kast::AddKTokenNode(const char *s, const char *sort) {
@@ -85,11 +85,72 @@ void Kast::AddKTokenNode(const char *s, const char *sort) {
   node->_1 = s;
   node->_2 = sort;
   node->kind = KTOKEN;
-  nodes.push_back(node);
+  nodes_.push_back(node);
 }
 
-int Kast::makeKast(int idx) {
-  Node *current = nodes[idx++];
+void Kast::AddKTokenNode(const char *s, int len) {
+  AddKTokenNode(escape(s, len), "String");
+}
+
+void Kast::AddKTokenNode(const char *s) {
+  AddKTokenNode(escape(s, strlen(s)), "String");
+}
+
+void Kast::AddKTokenNode(llvm::APInt i) {
+  std::string *name = new std::string(i.toString(10, false));
+  kast.AddKTokenNode(name->c_str(), "Int");
+}
+
+void Kast::AddKTokenNode(unsigned i) {
+  char *buf = new char[11];
+  sprintf(buf, "%d", i);
+  kast.AddKTokenNode(buf, "Int");
+}
+
+void Kast::AddKTokenNode(unsigned long long s) {
+  char *name = new char[21];
+  sprintf(name, "%llu", s);
+  kast.AddKTokenNode(name, "Int");
+}
+
+void Kast::AddKTokenNode(llvm::APFloat f) {
+  unsigned precision = f.semanticsPrecision(f.getSemantics());
+  unsigned numBytes = 6 // max length of signed short
+                    + 4 //-1.E
+                    + 3 + 11 //p4294967295x16
+                    + 1 // null byte
+                    + precision;
+  SmallVector<char, 80> buf;
+  f.toString(buf, 0, 0);
+  char *data = buf.data();
+  data[buf.size()] = 0;
+  char suffix[14];
+  sprintf(suffix, "p%ux16", precision);
+  char *result = new char[numBytes];
+  strcpy(result, data);
+  strcat(result, suffix);
+  AddKTokenNode(result, "Float");
+}
+
+void Kast::AddKTokenNode(bool b) {
+  AddKTokenNode(b ? "true" : "false", "Bool");
+}
+
+void Kast::AddSpecifier(const char *str) {
+  AddKApplyNode("Specifier", 2);
+  AddKApplyNode(str, 0);
+}
+
+void Kast::AddSpecifier(const char *str, unsigned long long n) {
+  AddKApplyNode("Specifier", 2);
+  AddKApplyNode(str, 1);
+  AddKTokenNode(n);
+}
+
+void Kast::print() const { print(0); }
+
+int Kast::print(int idx) const {
+  Node *current = nodes_[idx++];
 
   if (!current) {
     throw std::logic_error("parse error");
@@ -103,7 +164,7 @@ int Kast::makeKast(int idx) {
         printf(".KList");
       }
       for (int i = 0; i < current->size; i++) {
-        idx = makeKast(idx);
+        idx = print(idx);
         if (i != current->size - 1) printf(",");
       }
       printf(")");
@@ -114,7 +175,7 @@ int Kast::makeKast(int idx) {
         printf(".K");
       }
       for (int i = 0; i < current->size; i++) {
-        idx = makeKast(idx);
+        idx = print(idx);
         if (i != current->size - 1) printf("~>");
       }
       break;
@@ -125,7 +186,7 @@ int Kast::makeKast(int idx) {
         printf(".K");
       }
       for (int i = 0; i < current->size; i++) {
-        idx = makeKast(idx);
+        idx = print(idx);
         if (i != current->size - 1) printf("~>");
       }
       printf(")");
@@ -186,10 +247,9 @@ class GetKASTConsumer : public clang::ASTConsumer {
 public:
 
   explicit GetKASTConsumer(ASTContext *Context, llvm::StringRef InFile)
-    : Visitor(kast, Context, InFile) { puts("getkastconsumer ctor");}
+    : Visitor(kast, Context, InFile) { }
 
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
-        puts("handletu");
     Visitor.TraverseDecl(Context.getTranslationUnitDecl());
   }
 
@@ -205,7 +265,6 @@ public:
 
   virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
     clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
-        puts("GKA ctor");
     return std::unique_ptr<clang::ASTConsumer>(
       new GetKASTConsumer(&Compiler.getASTContext(), InFile));
   }
@@ -217,17 +276,11 @@ int main(int argc, const char **argv) {
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
 
-  puts("making factory");
-  auto factory = newFrontendActionFactory<GetKASTAction>().get();
-
-  puts("running tool");
-  if (int r = Tool.run(factory)) {
-      puts("error after running tool?");
+  if (int r = Tool.run(newFrontendActionFactory<GetKASTAction>().get())) {
     return r;
   }
 
-  puts("making kast");
-  kast.makeKast(0);
+  kast.print();
   printf("\n");
 }
 
