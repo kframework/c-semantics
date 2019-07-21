@@ -35,85 +35,84 @@ namespace cl = llvm::cl;
 
 // Apply a custom category to all command-line options so that they are the
 // only ones displayed.
-static cl::OptionCategory MyToolCategory("K++ parser options");
+static cl::OptionCategory KastOptionCategory("K++ parser options");
 
 // CommonOptionsParser declares HelpMessage with a description of the common
 // command-line options related to the compilation database and input files.
 // It's nice to have this help message in all tools.
 static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 
-// A help message for this specific tool can be added afterwards.
-static cl::extrahelp MoreHelp("");
+static cl::opt<bool> Kore("kore", cl::desc("Output kore instead of kast."), cl::cat(KastOptionCategory));
 
-Kast kast;
+KastNodes kast;
 
 enum KKind {
   KAPPLY, KSEQUENCE, LIST, KTOKEN
 };
 
-struct Node {
+struct KastNodes::Node {
   const char *_1;
   const char *_2;
   int size;
   KKind kind;
 };
 
-void Kast::AddKApplyNode(const char *label, int size) {
+void KastNodes::KApply(const char *label, int size) {
   Node *node = new Node();
   node->_1 = label;
   node->size = size;
   node->kind = KAPPLY;
-  nodes_.push_back(node);
+  Nodes.push_back(node);
 }
 
-void Kast::AddListNode(int size) {
+void KastNodes::List(int size) {
   Node *list = new Node();
   list->size = size;
   list->kind = LIST;
-  nodes_.push_back(list);
+  Nodes.push_back(list);
 }
 
-void Kast::AddKSequenceNode(int size) {
+void KastNodes::KSequence(int size) {
   Node *list = new Node();
   list->size = size;
   list->kind = KSEQUENCE;
-  nodes_.push_back(list);
+  Nodes.push_back(list);
 }
 
-void Kast::AddKTokenNode(const char *s, const char *sort) {
+void KastNodes::KToken(const char *s, const char *sort) {
   Node *node = new Node();
   node->_1 = s;
   node->_2 = sort;
   node->kind = KTOKEN;
-  nodes_.push_back(node);
+  Nodes.push_back(node);
 }
 
-void Kast::AddKTokenNode(const char *s, int len) {
-  AddKTokenNode(escape(s, len), "String");
+void KastNodes::KToken(const char *s, int len) {
+  KToken(escape(s, len), "String");
 }
 
-void Kast::AddKTokenNode(const char *s) {
-  AddKTokenNode(escape(s, strlen(s)), "String");
+void KastNodes::KToken(const char *s) {
+  KToken(escape(s, strlen(s)), "String");
 }
 
-void Kast::AddKTokenNode(llvm::APInt i) {
+void KastNodes::KToken(llvm::APInt i) {
   std::string *name = new std::string(i.toString(10, false));
-  kast.AddKTokenNode(name->c_str(), "Int");
+  KToken(name->c_str(), "Int");
 }
 
-void Kast::AddKTokenNode(unsigned i) {
+void KastNodes::KToken(unsigned i) {
   char *buf = new char[11];
   sprintf(buf, "%d", i);
-  kast.AddKTokenNode(buf, "Int");
+  KToken(buf, "Int");
 }
 
-void Kast::AddKTokenNode(unsigned long long s) {
+void KastNodes::KToken(unsigned long long s) {
   char *name = new char[21];
   sprintf(name, "%llu", s);
-  kast.AddKTokenNode(name, "Int");
+  KToken(name, "Int");
 }
 
-void Kast::AddKTokenNode(llvm::APFloat f) {
+void KastNodes::KToken(llvm::APFloat f) {
   unsigned precision = f.semanticsPrecision(f.getSemantics());
   unsigned numBytes = 6 // max length of signed short
                     + 4 //-1.E
@@ -129,28 +128,17 @@ void Kast::AddKTokenNode(llvm::APFloat f) {
   char *result = new char[numBytes];
   strcpy(result, data);
   strcat(result, suffix);
-  AddKTokenNode(result, "Float");
+  KToken(result, "Float");
 }
 
-void Kast::AddKTokenNode(bool b) {
-  AddKTokenNode(b ? "true" : "false", "Bool");
+void KastNodes::KToken(bool b) {
+  KToken(b ? "true" : "false", "Bool");
 }
 
-void Kast::AddSpecifier(const char *str) {
-  AddKApplyNode("Specifier", 2);
-  AddKApplyNode(str, 0);
-}
+void KastNodes::print() const { print(0); }
 
-void Kast::AddSpecifier(const char *str, unsigned long long n) {
-  AddKApplyNode("Specifier", 2);
-  AddKApplyNode(str, 1);
-  AddKTokenNode(n);
-}
-
-void Kast::print() const { print(0); }
-
-int Kast::print(int idx) const {
-  Node *current = nodes_[idx++];
+int KastNodes::print(int idx) const {
+  Node *current = Nodes[idx++];
 
   if (!current) {
     throw std::logic_error("parse error");
@@ -207,7 +195,7 @@ int Kast::print(int idx) const {
   return idx;
 }
 
-const char * Kast::escape(const char *str, unsigned len) {
+const char * KastNodes::escape(const char *str, unsigned len) {
   std::string *res = new std::string("\"");
   unsigned i = 0;
   for(const char *ptr=str; i < len; ptr++, i++) {
@@ -242,11 +230,11 @@ const char * Kast::escape(const char *str, unsigned len) {
   return res->c_str();
 }
 
-class GetKASTConsumer : public clang::ASTConsumer {
+class GetKastConsumer : public clang::ASTConsumer {
 
 public:
 
-  explicit GetKASTConsumer(ASTContext *Context, llvm::StringRef InFile)
+  explicit GetKastConsumer(ASTContext *Context, llvm::StringRef InFile)
     : Visitor(kast, Context, InFile) { }
 
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
@@ -255,32 +243,31 @@ public:
 
 private:
 
-  GetKASTVisitor Visitor;
+  GetKastVisitor Visitor;
 
 };
 
-class GetKASTAction : public clang::ASTFrontendAction {
+class GetKastAction : public clang::ASTFrontendAction {
 
 public:
 
   virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
     clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
     return std::unique_ptr<clang::ASTConsumer>(
-      new GetKASTConsumer(&Compiler.getASTContext(), InFile));
+      new GetKastConsumer(&Compiler.getASTContext(), InFile));
   }
 
 };
 
 int main(int argc, const char **argv) {
-  CommonOptionsParser OptionsParser(argc, argv, MyToolCategory);
+  CommonOptionsParser OptionsParser(argc, argv, KastOptionCategory);
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
 
-  if (int r = Tool.run(newFrontendActionFactory<GetKASTAction>().get())) {
+  if (int r = Tool.run(newFrontendActionFactory<GetKastAction>().get())) {
     return r;
   }
 
   kast.print();
   printf("\n");
 }
-

@@ -1,42 +1,38 @@
 #ifndef CLANGKAST_H_
 #define CLANGKAST_H_
 
-struct Node;
-
-class Kast {
+class KastNodes {
 public:
-  void AddKApplyNode(const char *label, int size);
+  void KApply(const char *label, int size);
 
-  void AddListNode(int size);
+  void List(int size);
 
-  void AddKSequenceNode(int size);
+  void KSequence(int size);
 
-  void AddKTokenNode(const char *s, int len);
+  void KToken(const char *s, int len);
 
-  void AddKTokenNode(const char *);
+  void KToken(const char *);
 
-  void AddKTokenNode(bool);
+  void KToken(bool);
 
-  void AddKTokenNode(llvm::APInt);
+  void KToken(llvm::APInt);
 
-  void AddKTokenNode(unsigned);
+  void KToken(unsigned);
 
-  void AddKTokenNode(unsigned long long);
+  void KToken(unsigned long long);
 
-  void AddKTokenNode(llvm::APFloat);
-
-  void AddSpecifier(const char *str);
-
-  void AddSpecifier(const char *str, unsigned long long n);
+  void KToken(llvm::APFloat);
 
   void print() const;
 
 private:
-  std::vector<Node *> nodes_;
+  struct Node;
+
+  std::vector<Node *> Nodes;
 
   static const char * escape(const char *str, unsigned len);
 
-  void AddKTokenNode(const char *s, const char *sort);
+  void KToken(const char *s, const char *sort);
 
   int print(int idx) const;
 
