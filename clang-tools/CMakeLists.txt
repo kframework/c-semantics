@@ -19,8 +19,8 @@ add_compile_options (
   -Wno-unused-variable
 )
 
-add_executable(clang-kast ClangKast.cc)
-add_executable(call-sites CallSites.cc)
+add_executable(clang-kast ClangKast/ClangKast.cc)
+add_executable(call-sites CallSites/CallSites.cc)
 
 set_target_properties (
   clang-kast

@@ -26,13 +26,18 @@ public:
   void print() const;
 
 private:
-  struct Node;
+  class Node;
+  class KApplyNode;
+  class ListNode;
+  class KSequenceNode;
+  class KTokenNode;
 
   std::vector<Node *> Nodes;
 
   static const char * escape(const char *str, unsigned len);
+  static const char * escapeKLabel(const char *str, unsigned len);
 
-  void KToken(const char *s, const char *sort);
+  void KToken(const char *sort, const char *value);
 
   int print(int idx) const;
 
