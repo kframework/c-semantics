@@ -182,7 +182,7 @@ public:
 
   bool VisitLinkageSpecDecl(LinkageSpecDecl *D) {
     Kast.KApply("LinkageSpec", 3);
-    const char *s;
+    std::string s;
     if (D->getLanguage() == LinkageSpecDecl::lang_c) {
       s = "C";
     } else if (D->getLanguage() == LinkageSpecDecl::lang_cxx) {
@@ -277,7 +277,7 @@ public:
       return true;
     }
     Kast.KApply("Identifier", 1);
-    Kast.KToken(info->getNameStart(), info->getLength());
+    Kast.KToken(info->getName().str());
     return true;
   }
 
@@ -1958,15 +1958,15 @@ public:
   }
 
   void VisitStringRef(StringRef str) {
-    Kast.KToken(str.begin(), str.end() - str.begin());
+    Kast.KToken(str.str());
   }
 
   void VisitAPInt(llvm::APInt i) {
     Kast.KToken(i);
   }
 
-  void VisitUnsigned(unsigned long long s) {
-    Kast.KToken(s);
+  void VisitUnsigned(unsigned long long i) {
+    Kast.KToken(i);
   }
 
   void VisitAPFloat(llvm::APFloat f) {
@@ -2069,7 +2069,7 @@ public:
     switch (E->getTrait()) {
       #define TRAIT(Name, Str)                    \
         case Name:                                \
-          Kast.KToken(Str); \
+          Kast.KToken((std::string)Str); \
           break;
       TRAIT(UTT_HasNothrowAssign, "HasNothrowAssign")
       TRAIT(UTT_HasNothrowMoveAssign, "HasNothrowMoveAssign")
@@ -2144,7 +2144,7 @@ public:
     switch(E->getOp()) {
       #define ATOMIC_BUILTIN(Name, Spelling)           \
         case AtomicExpr::AO##Name:                     \
-          Kast.KToken(Spelling); \
+          Kast.KToken((std::string)Spelling); \
           break;
       ATOMIC_BUILTIN(__c11_atomic_init, "__c11_atomic_init")
       ATOMIC_BUILTIN(__c11_atomic_load, "__c11_atomic_load")
@@ -2228,12 +2228,11 @@ private:
     PresumedLoc presumed = mgr.getPresumedLoc(loc);
     if (presumed.isValid()) {
       Kast.KApply("CabsLoc", 5);
-      Kast.KToken(presumed.getFilename());
+      Kast.KToken((std::string)presumed.getFilename());
       StringRef filename(presumed.getFilename());
       SmallString<64> vector(filename);
       llvm::sys::fs::make_absolute(vector);
-      const char *absolute = vector.c_str();
-      Kast.KToken(absolute);
+      Kast.KToken(vector.str().str());
       VisitUnsigned(presumed.getLine());
       VisitUnsigned(presumed.getColumn());
       VisitBool(mgr.isInSystemHeader(loc));
@@ -2328,7 +2327,7 @@ private:
       else
         mangler->mangleName(D, s);
     }
-    Kast.KToken(s.str().c_str());
+    Kast.KToken(s.str());
   }
 };
 

@@ -3,15 +3,13 @@
 
 class KastNodes {
 public:
-  void KApply(const char *label, int size);
+  void KApply(const std::string & label, int size);
 
   void List(int size);
 
   void KSequence(int size);
 
-  void KToken(const char *s, int len);
-
-  void KToken(const char *);
+  void KToken(const std::string & str);
 
   void KToken(bool);
 
@@ -26,18 +24,55 @@ public:
   void print() const;
 
 private:
-  class Node;
-  class KApplyNode;
-  class ListNode;
-  class KSequenceNode;
-  class KTokenNode;
+  class Node {
+  public:
+    virtual void print(std::function<void (void)> printChild) const = 0;
+    static void printKLabel(const std::string & label);
+  private:
+    static std::string escapeKLabel(const std::string & label);
+  };
+
+  class KApplyNode : public Node {
+  public:
+    explicit KApplyNode(const std::string & label, int size)
+      : label(label), size(size) { }
+    void print(std::function<void (void)> printChild) const;
+  private:
+    const std::string label;
+    const int size;
+  };
+
+  class ListNode : public Node {
+  public:
+    explicit ListNode(int size) : size(size) { }
+    void print(std::function<void (void)> printChild) const;
+  private:
+    const int size;
+  };
+
+  class KSequenceNode : public Node {
+  public:
+    explicit KSequenceNode(int size) : size(size) { }
+    void print(std::function<void (void)> printChild) const;
+  private:
+    const int size;
+  };
+
+  class KTokenNode : public Node {
+  public:
+    explicit KTokenNode(const std::string & sort, const std::string & value)
+      : sort(sort), value(value) { }
+    void print(std::function<void (void)> printChild) const;
+  private:
+    const std::string sort;
+    const std::string value;
+  };
 
   std::vector<Node *> Nodes;
 
-  static const char * escape(const char *str, unsigned len);
-  static const char * escapeKLabel(const char *str, unsigned len);
+  static std::string escape(const std::string & str);
 
-  void KToken(const char *sort, const char *value);
+  void KToken(const std::string & sort, const std::string & value);
 
   int print(int idx) const;
 
