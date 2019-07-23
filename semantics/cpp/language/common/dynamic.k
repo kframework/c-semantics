@@ -638,9 +638,6 @@ module CPP-DYNAMIC-OTHER
      rule <k> xv(loc(Base::SymBase, Offset::Int), Tr::Trace, cppRefType #as T::CPPType) => xv(V, Tr, innerType(T)) ...</k>
           <references>... loc(Base, Offset) |-> V::SymLoc ...</references>
 
-     rule le(E::Expr, Tr::Trace, cppRefType #as T::CPPType) => le(E, Tr, innerType(T))
-     rule xe(E::Expr, Tr::Trace, cppRefType #as T::CPPType) => xe(E, Tr, innerType(T))
-
      rule stripHold(le(E::Expr, _, _)) => E
 
      rule stripHold(xe(E::Expr, _, _)) => E

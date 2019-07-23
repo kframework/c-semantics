@@ -18,5 +18,7 @@ module CPP-TRANSLATION-EXPR-REFERENCE
           <references>... .Map => stripProv(Loc1) |-> Loc2 ...</references>
           requires Translation() andBool isCPPLVRefType(T1) andBool notBool isCPPBitfieldType(T2) andBool isReferenceCompatible(innerType(T1), T2)
 
+     rule le(E::Expr, Tr::Trace, cppRefType #as T::CPPType) => le(E, Tr, innerType(T))
+     rule xe(E::Expr, Tr::Trace, cppRefType #as T::CPPType) => xe(E, Tr, innerType(T))
 
 endmodule
