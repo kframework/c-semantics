@@ -49,25 +49,33 @@ static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 
 static cl::opt<bool> Kore("kore", cl::desc("Output kore instead of kast."), cl::cat(KastOptionCategory));
 
-// *** Global variables ***
+// *** Kast::Nodes ***
 
-KastNodes kast;
+vector<unique_ptr<const Kast::Node>> Kast::Nodes;
 
-// *** KastNodes::Node ***
+// *** Kast::Node ***
 
-void KastNodes::Node::printKLabel(const string & label) {
+string Kast::Node::makeKLabel(const string & label) {
   if (Kore) {
-    cout << "Lbl" << escapeKLabel(label) << "{}";
+    return "Lbl" + escapeKLabel(label) + "{}";
   } else {
-    cout << "`" << label << "`";
+    return "`" + label + "`";
   }
 }
 
-string KastNodes::Node::escapeKLabel(const string & label) {
+string Kast::Node::makeKSort(const string & sort) {
+  if (Kore) {
+    return "Sort" + sort + "{}";
+  } else {
+    return sort;
+  }
+}
+
+string Kast::Node::escapeKLabel(const string & label) {
   string res;
-  for (auto i = label.cbegin(); i != label.cend(); i++) {
+  for (char c : label) {
     const char * subst = NULL;
-    switch (*i) {
+    switch (c) {
       case ' ':  subst = "Spce'"; break;
       case '!':  subst = "Bang'"; break;
       case '"':  subst = "Quot'"; break;
@@ -108,96 +116,81 @@ string KastNodes::Node::escapeKLabel(const string & label) {
       else res.push_back('\'');
       res += subst;
     } else {
-      res.push_back(*i);
+      res.push_back(c);
     }
 
   }
   return res;
 }
 
-// *** KastNodes::{KApply,List,KSequence,KToken}Node::print
+// *** Kast::KApply ***
 
-void KastNodes::KApplyNode::print(function<void (void)> printChild) const {
-   printKLabel(label);
-   cout << "(";
-   if (size == 0) {
-     cout << ".KList";
-   }
-   for (int i = 0; i < size; i++) {
-     printChild();
-     if (i != size - 1) cout << ",";
-   }
-   cout << ")";
-}
-
-void KastNodes::ListNode::print(function<void (void)> printChild) const {
-  cout << "kSeqToList(";
-  if (size == 0) {
-    printf(".K");
+template <size_t N>
+void Kast::KApply<N>::print(function<void (void)> printChild) const {
+  if (Kore && subsort != sort) {
+      if (sort == Sort::K) {
+        cout << "kseq{}(";
+        if (subsort != Sort::KITEM) {
+          // kseq [inj subsort KItem contents]
+          cout << "inj{" << makeKSort("subsort") << ", " << makeKSort("sort") << "}(";
+        }
+      } else {
+        // inj subsort sort contents
+        cout << "inj{" << makeKSort("subsort") << ", " << makeKSort("sort") << "}(";
+      }
   }
-  for (int i = 0; i < size; i++) {
+
+  size_t nchildren = N - 1;
+
+  cout << makeKLabel(label) << "(";
+  if (!Kore && nchildren == 0) {
+    cout << ".KList";
+  }
+  for (size_t i = 0; i != nchildren; i++) {
     printChild();
-    if (i != size - 1) printf("~>");
+    if (i != nchildren - 1) cout << ",";
   }
-  printf(")");
-}
+  cout << ")";
 
-void KastNodes::KSequenceNode::print(function<void (void)> printChild) const {
-  if (size == 0) {
-    printf(".K");
-  }
-  for (int i = 0; i < size; i++) {
-    printChild();
-    if (i != size - 1) printf("~>");
-  }
-}
-
-void KastNodes::KTokenNode::print(function<void (void)>) const {
-  if (Kore) {
-    cout << "\\dv{" << escape(sort) << "}(" << escape(value) << ")";
-  } else {
-    cout << "#token(" << escape(value) << "," << escape(sort) << ")";
+  if (Kore && subsort != sort) {
+    if (sort == Sort::K) {
+      if (subsort != Sort::KITEM) {
+        cout << ")";
+      }
+      cout << ", dotk{}())";
+    } else {
+      cout << ")";
+    }
   }
 }
 
-void KastNodes::KApply(const string & label, int size) {
-  Nodes.push_back(new KApplyNode(label, size));
+// *** Kast::KToken ***
+
+string Kast::KToken::toKString(const string & s) {
+  return string(Kore ? escape(s) : "\"" + escape(s) + "\"");
 }
 
-void KastNodes::List(int size) {
-  Nodes.push_back(new ListNode(size));
+string Kast::KToken::toKString(bool b) {
+  return string(b ? "true" : "false");
 }
 
-void KastNodes::KSequence(int size) {
-  Nodes.push_back(new KSequenceNode(size));
+string Kast::KToken::toKString(llvm::APInt i) {
+  return string(i.toString(10, false));
 }
 
-void KastNodes::KToken(const string & sort, const string & value) {
-  Nodes.push_back(new KTokenNode(sort, value));
-}
-
-void KastNodes::KToken(const string & s) {
-  KToken("String", escape(s));
-}
-
-void KastNodes::KToken(llvm::APInt i) {
-  string *name = new string(i.toString(10, false));
-  KToken("Int", name->c_str());
-}
-
-void KastNodes::KToken(unsigned i) {
+string Kast::KToken::toKString(unsigned i) {
   char *buf = new char[11];
   sprintf(buf, "%d", i);
-  KToken("Int", buf);
+  return string(buf);
 }
 
-void KastNodes::KToken(unsigned long long s) {
+string Kast::KToken::toKString(unsigned long long s) {
   char *name = new char[21];
   sprintf(name, "%llu", s);
-  KToken("Int", name);
+  return string(name);
 }
 
-void KastNodes::KToken(llvm::APFloat f) {
+string Kast::KToken::toKString(llvm::APFloat f) {
   unsigned precision = f.semanticsPrecision(f.getSemantics());
   unsigned numBytes = 6      // max length of signed short
                     + 4      // -1.E
@@ -213,46 +206,77 @@ void KastNodes::KToken(llvm::APFloat f) {
   char *result = new char[numBytes];
   strcpy(result, data);
   strcat(result, suffix);
-  KToken("Float", result);
+  return string(result);
 }
 
-void KastNodes::KToken(bool b) {
-  KToken("Bool", b ? "true" : "false");
+void Kast::KToken::print(function<void (void)>) const {
+  if (Kore) {
+    cout << "\\dv{" << makeKSort(sort) << "}(\"" << escape(value) << "\")";
+  } else {
+    cout << "#token(\"" << escape(value) << "\", \"" << makeKSort(sort) << "\")";
+  }
 }
 
-void KastNodes::print() const { print(0); }
-
-int KastNodes::print(int idx) const {
-  Node *current = Nodes[idx++];
-
-  if (!current) throw logic_error("parse error");
-
-  current->print([&]() { idx = print(idx); });
-
-  return idx;
-}
-
-string KastNodes::escape(const string & str) {
-  string res("\"");
-  for(auto ptr = str.cbegin(); ptr != str.cend(); ptr++) {
-    switch (*ptr) {
+string Kast::KToken::escape(const string & str) {
+  string res;
+  for(char c : str) {
+    switch (c) {
       case '"':  res += "\\\""; break;
       case '\\': res += "\\\\"; break;
       case '\n': res += "\\n";  break;
       case '\t': res += "\\t";  break;
       case '\r': res += "\\r";  break;
       default:
-        if (*ptr >= 32 && *ptr < 127) {
-          res.push_back(*ptr);
+        if (c >= 32 && c < 127) {
+          res.push_back(c);
         } else {
           char buf[5];
-          sprintf(buf, "\\x%02hhx", (unsigned char)*ptr);
+          sprintf(buf, "\\x%02hhx", (unsigned char)c);
           res += buf;
         }
     }
   }
-  res.push_back('\"');
   return res;
+}
+
+// *** Kast::KSequence
+
+void Kast::KSequence::print(function<void (void)> printChild) const {
+  if (size == 0) {
+    cout << (Kore ? "dotk{}()" : ".K");
+  }
+  for (int i = 0; i < size; i++) {
+    printChild();
+    if (i != size - 1) {
+      cout << (Kore ? ", " : "~>");
+    }
+  }
+}
+
+// *** Kast::List ***
+
+void Kast::List::print(function<void (void)> printChild) const {
+  cout << makeKLabel("kSeqToList") << "(";
+  KSequence::print(printChild);
+  cout << ")";
+}
+
+// *** Kast:: ***
+
+template <class T>
+void Kast::add(const T & node) {
+  static_assert(std::is_base_of<Kast::Node, T>::value, "type parameter must derive from Kast::Node");
+  Kast::Nodes.push_back(make_unique<T>(node));
+}
+
+void Kast::print() { print(0); }
+
+int Kast::print(int idx) {
+  if (!Nodes[idx]) throw logic_error("parse error");
+
+  Nodes[idx]->print([&]() { idx = print(idx + 1); });
+
+  return idx;
 }
 
 // *** GetKastConsumer ***
@@ -260,7 +284,7 @@ string KastNodes::escape(const string & str) {
 class GetKastConsumer : public clang::ASTConsumer {
 public:
   explicit GetKastConsumer(ASTContext *Context, llvm::StringRef InFile)
-    : Visitor(kast, Context, InFile) { }
+    : Visitor(Context, InFile) { }
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
     Visitor.TraverseDecl(Context.getTranslationUnitDecl());
   }
@@ -291,6 +315,6 @@ int main(int argc, const char **argv) {
     return r;
   }
 
-  kast.print();
-  printf("\n");
+  Kast::print();
+  cout << endl;
 }

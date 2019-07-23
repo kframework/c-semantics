@@ -29,8 +29,8 @@ class GetKastVisitor
 
 public:
 
-  explicit GetKastVisitor(KastNodes & Kast, ASTContext *Context, const llvm::StringRef InFile)
-    : Kast(Kast), Context(Context), InFile(InFile) { }
+  explicit GetKastVisitor(ASTContext *Context, const llvm::StringRef InFile)
+    : Context(Context), InFile(InFile) { }
 
   bool shouldVisitTemplateInstantiations() { return true; }
 
@@ -62,7 +62,7 @@ public:
 
     if (Expr *E = dyn_cast<Expr>(S)) {
       if (!dyn_cast<CXXDefaultArgExpr>(S)) {
-        Kast.KApply("ExprLoc", 2);
+        Kast::add(Kast::KApply("ExprLoc", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
         CabsLoc(E->getExprLoc());
       }
     }
@@ -77,7 +77,7 @@ public:
     if (excludedDecl(D))
       return true;
 
-    Kast.KApply("DeclLoc", 2);
+    Kast::add(Kast::KApply("DeclLoc", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     CabsLoc(D->getLocation());
 
     switch (D->getKind()) {
@@ -161,45 +161,45 @@ public:
   }
 
   bool VisitTranslationUnitDecl(TranslationUnitDecl *D) {
-    Kast.KApply("TranslationUnit", 2);
+    Kast::add(Kast::KApply("TranslationUnit", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitStringRef(InFile);
     DeclContext(D);
     return false;
   }
 
   bool VisitTypedefDecl(TypedefDecl *D) {
-    Kast.KApply("TypedefDecl", 2);
+    Kast::add(Kast::KApply("TypedefDecl", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
     return false;
   }
 
   bool VisitTypeAliasDecl(TypeAliasDecl *D) {
-    Kast.KApply("TypeAliasDecl", 2);
+    Kast::add(Kast::KApply("TypeAliasDecl", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
     return false;
   }
 
 
   bool VisitLinkageSpecDecl(LinkageSpecDecl *D) {
-    Kast.KApply("LinkageSpec", 3);
+    Kast::add(Kast::KApply("LinkageSpec", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     std::string s;
     if (D->getLanguage() == LinkageSpecDecl::lang_c) {
       s = "C";
     } else if (D->getLanguage() == LinkageSpecDecl::lang_cxx) {
       s = "C++";
     }
-    Kast.KToken(s);
+    Kast::add(Kast::KToken(s));
     VisitBool(D->hasBraces());
     DeclContext(D);
     return false;
   }
 
   void VisitBool(bool b) {
-    Kast.KToken(b);
+    Kast::add(Kast::KToken(b));
   }
 
   bool VisitNamespaceDecl(NamespaceDecl *D) {
-    Kast.KApply("NamespaceDecl", 3);
+    Kast::add(Kast::KApply("NamespaceDecl", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
     VisitBool(D->isInline());
     DeclContext(D);
@@ -207,7 +207,7 @@ public:
   }
 
   bool VisitNamespaceAliasDecl(NamespaceAliasDecl *D) {
-    Kast.KApply("NamespaceAliasDecl", 3);
+    Kast::add(Kast::KApply("NamespaceAliasDecl", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
     TRY_TO(TraverseDeclarationAsName(D->getNamespace()));
     TRY_TO(TraverseNestedNameSpecifier(D->getQualifier()));
@@ -220,36 +220,36 @@ public:
 
   bool TraverseNestedNameSpecifier(NestedNameSpecifier *NNS) {
     if (!NNS) {
-      Kast.KApply("NoNNS", 0);
+      Kast::add(Kast::KApply("NoNNS", {Sort::KITEM}));
       return true;
     }
     if (NNS->getPrefix()) {
-      Kast.KApply("NestedName", 2);
+      Kast::add(Kast::KApply("NestedName", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
       TRY_TO(TraverseNestedNameSpecifier(NNS->getPrefix()));
     }
     switch (NNS->getKind()) {
       case NestedNameSpecifier::Identifier:
-        Kast.KApply("NNS", 1);
+        Kast::add(Kast::KApply("NNS", {Sort::KITEM, Sort::KITEM}));
         TRY_TO(TraverseIdentifierInfo(NNS->getAsIdentifier()));
         break;
       case NestedNameSpecifier::Namespace:
-        Kast.KApply("NNS", 1);
+        Kast::add(Kast::KApply("NNS", {Sort::KITEM, Sort::KITEM}));
         TRY_TO(TraverseDeclarationName(NNS->getAsNamespace()->getDeclName()));
         break;
       case NestedNameSpecifier::NamespaceAlias:
-        Kast.KApply("NNS", 1);
+        Kast::add(Kast::KApply("NNS", {Sort::KITEM, Sort::KITEM}));
         TRY_TO(TraverseDeclarationName(NNS->getAsNamespaceAlias()->getDeclName()));
         break;
       case NestedNameSpecifier::TypeSpec:
-        Kast.KApply("NNS", 1);
+        Kast::add(Kast::KApply("NNS", {Sort::KITEM, Sort::KITEM}));
         TRY_TO(TraverseType(QualType(NNS->getAsType(), 0)));
         break;
       case NestedNameSpecifier::TypeSpecWithTemplate:
-        Kast.KApply("TemplateNNS", 1);
+        Kast::add(Kast::KApply("TemplateNNS", {Sort::KITEM, Sort::KITEM}));
         TRY_TO(TraverseType(QualType(NNS->getAsType(), 0)));
         break;
       case NestedNameSpecifier::Global:
-        Kast.KApply("GlobalNamespace", 0);
+        Kast::add(Kast::KApply("GlobalNamespace", {Sort::KITEM}));
         break;
       default:
         throw std::logic_error("unimplemented: nns");
@@ -268,16 +268,16 @@ public:
   bool TraverseIdentifierInfo(const IdentifierInfo *info, uintptr_t decl) {
     if (!info) {
       if (decl == 0) {
-        Kast.KApply("#NoName_COMMON-SYNTAX", 0);
+        Kast::add(Kast::KApply("#NoName_COMMON-SYNTAX", {Sort::KITEM}));
       } else {
-        Kast.KApply("unnamed", 2);
+        Kast::add(Kast::KApply("unnamed", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
         VisitUnsigned((unsigned long long)decl);
         VisitStringRef(InFile);
       }
       return true;
     }
-    Kast.KApply("Identifier", 1);
-    Kast.KToken(info->getName().str());
+    Kast::add(Kast::KApply("Identifier", {Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::KToken(info->getName().str()));
     return true;
   }
 
@@ -299,13 +299,13 @@ public:
       case DeclarationName::CXXConversionFunctionName:
       case DeclarationName::CXXConstructorName:
         {
-          Kast.KApply("TypeId", 1);
+          Kast::add(Kast::KApply("TypeId", {Sort::KITEM, Sort::KITEM}));
           TRY_TO(TraverseType(Name.getCXXNameType()));
           return true;
         }
       case DeclarationName::CXXDestructorName:
         {
-          Kast.KApply("DestructorTypeId", 1);
+          Kast::add(Kast::KApply("DestructorTypeId", {Sort::KITEM, Sort::KITEM}));
           TRY_TO(TraverseType(Name.getCXXNameType()));
           return true;
         }
@@ -326,17 +326,17 @@ public:
 
   bool TraverseConstructorInitializer(CXXCtorInitializer *Init) {
     if (Init->isBaseInitializer()) {
-      Kast.KApply("ConstructorBase", 4);
+      Kast::add(Kast::KApply("ConstructorBase", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
       TRY_TO(TraverseTypeLoc(Init->getTypeSourceInfo()->getTypeLoc()));
       VisitBool(Init->isBaseVirtual());
       VisitBool(Init->isPackExpansion());
       TRY_TO(TraverseStmt(Init->getInit()));
     } else if (Init->isMemberInitializer()) {
-      Kast.KApply("ConstructorMember", 2);
+      Kast::add(Kast::KApply("ConstructorMember", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
       TRY_TO(TraverseDeclarationName(Init->getMember()->getDeclName()));
       TRY_TO(TraverseStmt(Init->getInit()));
     } else if (Init->isDelegatingInitializer()) {
-      Kast.KApply("ConstructorDelegating", 1);
+      Kast::add(Kast::KApply("ConstructorDelegating", {Sort::KITEM, Sort::KITEM}));
       TRY_TO(TraverseStmt(Init->getInit()));
     } else {
       throw std::logic_error("unimplemented: ctor initializer");
@@ -350,15 +350,15 @@ public:
       if (FTSI->getTemplateSpecializationKind() == TSK_ExplicitSpecialization) {
         if (const ASTTemplateArgumentListInfo *TALI =
                 FTSI->TemplateArgumentsAsWritten) {
-          Kast.KApply("TemplateSpecialization", 2);
-          Kast.KApply("TemplateSpecializationType", 2);
+          Kast::add(Kast::KApply("TemplateSpecialization", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+          Kast::add(Kast::KApply("TemplateSpecializationType", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           TRY_TO(TraverseDeclarationName(FTSI->getTemplate()->getDeclName()));
-          Kast.List(TALI->NumTemplateArgs);
+          Kast::add(Kast::List(TALI->NumTemplateArgs));
           TRY_TO(TraverseTemplateArgumentLocs(TALI->getTemplateArgs(),
                                                     TALI->NumTemplateArgs));
         } else {
-          Kast.KApply("TemplateSpecialization", 2);
-          Kast.KApply("TemplateSpecializationType", 1);
+          Kast::add(Kast::KApply("TemplateSpecialization", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+          Kast::add(Kast::KApply("TemplateSpecializationType", {Sort::KITEM, Sort::KITEM}));
           TRY_TO(TraverseDeclarationName(FTSI->getTemplate()->getDeclName()));
         }
       } else if (FTSI->getTemplateSpecializationKind() != TSK_Undeclared &&
@@ -366,22 +366,22 @@ public:
         if (const ASTTemplateArgumentListInfo *TALI =
                 FTSI->TemplateArgumentsAsWritten) {
           if (FTSI->getTemplateSpecializationKind() == TSK_ExplicitInstantiationDefinition) {
-             Kast.KApply("TemplateInstantiationDefinition", 2);
+             Kast::add(Kast::KApply("TemplateInstantiationDefinition", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           } else {
-             Kast.KApply("TemplateInstantiationDeclaration", 2);
+             Kast::add(Kast::KApply("TemplateInstantiationDeclaration", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           }
-          Kast.KApply("TemplateSpecializationType", 2);
+          Kast::add(Kast::KApply("TemplateSpecializationType", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           TRY_TO(TraverseDeclarationName(FTSI->getTemplate()->getDeclName()));
-          Kast.List(TALI->NumTemplateArgs);
+          Kast::add(Kast::List(TALI->NumTemplateArgs));
           TRY_TO(TraverseTemplateArgumentLocs(TALI->getTemplateArgs(),
                                                     TALI->NumTemplateArgs));
         } else {
           if (FTSI->getTemplateSpecializationKind() == TSK_ExplicitInstantiationDefinition) {
-             Kast.KApply("TemplateInstantiationDefinition", 2);
+             Kast::add(Kast::KApply("TemplateInstantiationDefinition", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           } else {
-             Kast.KApply("TemplateInstantiationDeclaration", 2);
+             Kast::add(Kast::KApply("TemplateInstantiationDeclaration", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           }
-          Kast.KApply("TemplateSpecializationType", 1);
+          Kast::add(Kast::KApply("TemplateSpecializationType", {Sort::KITEM, Sort::KITEM}));
           TRY_TO(TraverseDeclarationName(FTSI->getTemplate()->getDeclName()));
         }
       }
@@ -396,9 +396,9 @@ public:
     }
 
     if (D->isThisDeclarationADefinition() || D->isExplicitlyDefaulted()) {
-      Kast.KApply("FunctionDefinition", 6);
+      Kast::add(Kast::KApply("FunctionDefinition", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     } else {
-      Kast.KApply("FunctionDecl", 5);
+      Kast::add(Kast::KApply("FunctionDecl", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     }
 
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
@@ -411,40 +411,40 @@ public:
         if (Method->isInstance()) {
           switch(Method->getRefQualifier()) {
             case RQ_LValue:
-              Kast.KApply("RefQualifier",2);
-              Kast.KApply("RefLValue", 0);
+              Kast::add(Kast::KApply("RefQualifier", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+              Kast::add(Kast::KApply("RefLValue", {Sort::KITEM}));
               break;
             case RQ_RValue:
-              Kast.KApply("RefQualifier",2);
-              Kast.KApply("RefRValue", 0);
+              Kast::add(Kast::KApply("RefQualifier", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+              Kast::add(Kast::KApply("RefRValue", {Sort::KITEM}));
               break;
             case RQ_None: // do nothing
               break;
           }
-          Kast.KApply("MethodPrototype", 4);
+          Kast::add(Kast::KApply("MethodPrototype", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           VisitBool(Method->isUserProvided());
           VisitBool(dyn_cast<CXXConstructorDecl>(D)); // converts to true if this is a constructor
           TRY_TO(TraverseType(Method->getThisType(*Context)));
           if (Method->isVirtual()) {
-            Kast.KApply("Virtual", 1);
+            Kast::add(Kast::KApply("Virtual", {Sort::KITEM, Sort::KITEM}));
           }
           if (Method->isPure()) {
-            Kast.KApply("Pure", 1);
+            Kast::add(Kast::KApply("Pure", {Sort::KITEM, Sort::KITEM}));
           }
 
           if (CXXConversionDecl *Conv = dyn_cast<CXXConversionDecl>(D)) {
             if (Conv->isExplicitSpecified()) {
-              Kast.KApply("Explicit", 1);
+              Kast::add(Kast::KApply("Explicit", {Sort::KITEM, Sort::KITEM}));
             }
           }
 
           if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
             if (Ctor->isExplicitSpecified()) {
-              Kast.KApply("Explicit", 1);
+              Kast::add(Kast::KApply("Explicit", {Sort::KITEM, Sort::KITEM}));
             }
           }
         } else {
-          Kast.KApply("StaticMethodPrototype", 1);
+          Kast::add(Kast::KApply("StaticMethodPrototype", {Sort::KITEM, Sort::KITEM}));
         }
       }
       TRY_TO(TraverseType(D->getType()));
@@ -452,21 +452,21 @@ public:
       throw std::logic_error("something implicit in functions??");
     }
 
-    Kast.List(D->parameters().size());
+    Kast::add(Kast::List(D->parameters().size()));
     for (unsigned i = 0; i < D->parameters().size(); i++) {
       TRY_TO(TraverseDecl(D->parameters()[i]));
     }
 
     if (D->isThisDeclarationADefinition()) {
       if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
-        Kast.KApply("Constructor", 2);
+        Kast::add(Kast::KApply("Constructor", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
         int i = 0;
         for (auto *I : Ctor->inits()) {
           if(I->isWritten()) {
             i++;
           }
         }
-        Kast.List(i);
+        Kast::add(Kast::List(i));
         for (auto *I : Ctor->inits()) {
           if(I->isWritten()) {
             TRY_TO(TraverseConstructorInitializer(I));
@@ -476,9 +476,9 @@ public:
       TRY_TO(TraverseStmt(D->getBody()));
     }
     if (D->isExplicitlyDefaulted()) {
-      Kast.KApply("Defaulted", 0);
+      Kast::add(Kast::KApply("Defaulted", {Sort::KITEM}));
     } else if (D->isDeleted()) {
-      Kast.KApply("Deleted", 0);
+      Kast::add(Kast::KApply("Deleted", {Sort::KITEM}));
     }
     return true;
   }
@@ -512,7 +512,7 @@ public:
     if (unsigned align = D->getMaxAlignment()) {
       Specifier("Alignas", align / 8);
     }
-    Kast.KApply("VarDecl", 6);
+    Kast::add(Kast::KApply("VarDecl", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
 
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
@@ -523,7 +523,7 @@ public:
     if (D->getInit()) {
       TRY_TO(TraverseStmt(D->getInit()));
     } else {
-      Kast.KApply("NoInit", 0);
+      Kast::add(Kast::KApply("NoInit", {Sort::KITEM}));
     }
     VisitBool(D->isDirectInit());
     return true;
@@ -538,9 +538,9 @@ public:
       Specifier("Mutable");
     }
     if (D->isBitField()) {
-      Kast.KApply("BitFieldDecl", 4);
+      Kast::add(Kast::KApply("BitFieldDecl", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     } else {
-      Kast.KApply("FieldDecl", 4);
+      Kast::add(Kast::KApply("FieldDecl", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     }
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
@@ -550,7 +550,7 @@ public:
     } else if (D->hasInClassInitializer()) {
       TRY_TO(TraverseStmt(D->getInClassInitializer()));
     } else {
-      Kast.KApply("NoInit", 0);
+      Kast::add(Kast::KApply("NoInit", {Sort::KITEM}));
     }
     return true;
   }
@@ -561,7 +561,7 @@ public:
   }
 
   bool VisitFriendDecl(FriendDecl *D) {
-    Kast.KApply("FriendDecl", 1);
+    Kast::add(Kast::KApply("FriendDecl", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
@@ -581,18 +581,18 @@ public:
         spec = "NoAccessSpec";
         break;
     }
-    Kast.KApply(spec, 0);
+    Kast::add(Kast::KApply(spec, {Sort::KITEM}));
   }
 
   #define TRAVERSE_TEMPLATE_DECL(DeclKind) \
   bool Traverse##DeclKind##TemplateDecl(DeclKind##TemplateDecl *D) { \
-    Kast.KApply("TemplateWithInstantiations", 3); \
+    Kast::add(Kast::KApply("TemplateWithInstantiations", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM})); \
     TRY_TO(TraverseDecl(D->getTemplatedDecl())); \
     TemplateParameterList *TPL = D->getTemplateParameters(); \
     if (TPL) { \
       int i = 0; \
       for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++i, ++I); \
-      Kast.List(i); \
+      Kast::add(Kast::List(i)); \
       for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++I) { \
         TRY_TO(TraverseDecl(*I)); \
       } \
@@ -616,7 +616,7 @@ public:
           break;
       }
     }
-    Kast.List(i);
+    Kast::add(Kast::List(i));
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
         case TSK_ImplicitInstantiation:
@@ -631,7 +631,7 @@ public:
   }
 
   bool TraverseTemplateInstantiations(TypeAliasTemplateDecl *D) {
-    Kast.List(0);
+    Kast::add(Kast::List(0));
     return true;
   }
 
@@ -647,7 +647,7 @@ public:
           break;
       }
     }
-    Kast.List(i);
+    Kast::add(Kast::List(i));
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
         case TSK_ImplicitInstantiation:
@@ -677,7 +677,7 @@ public:
           break;
       }
     }
-    Kast.List(i);
+    Kast::add(Kast::List(i));
     for (auto *FD : D->specializations()) {
       switch(FD->getTemplateSpecializationKind()) {
         case TSK_ImplicitInstantiation:
@@ -692,24 +692,24 @@ public:
   }
 
   bool TraverseTemplateTypeParmDecl(TemplateTypeParmDecl *D) {
-    Kast.KApply("TypeTemplateParam", 4);
+    Kast::add(Kast::KApply("TypeTemplateParam", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitBool(D->wasDeclaredWithTypename());
     VisitBool(D->isParameterPack());
     if (D->getTypeForDecl()) {
       TRY_TO(TraverseType(QualType(D->getTypeForDecl(), 0)));
     } else {
-      Kast.KApply("NoType", 0);
+      Kast::add(Kast::KApply("NoType", {Sort::KITEM}));
     }
     if(D->hasDefaultArgument() && !D->defaultArgumentWasInherited()) {
       TRY_TO(TraverseType(D->getDefaultArgumentInfo()->getType()));
     } else {
-      Kast.KApply("NoType", 0);
+      Kast::add(Kast::KApply("NoType", {Sort::KITEM}));
     }
     return true;
   }
 
   bool TraverseNonTypeTemplateParmDecl(NonTypeTemplateParmDecl *D) {
-    Kast.KApply("ValueTemplateParam", 5);
+    Kast::add(Kast::KApply("ValueTemplateParam", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitBool(D->isParameterPack());
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
@@ -717,25 +717,25 @@ public:
     if(D->hasDefaultArgument() && !D->defaultArgumentWasInherited()) {
       TRY_TO(TraverseStmt(D->getDefaultArgument()));
     } else {
-      Kast.KApply("NoExpression", 0);
+      Kast::add(Kast::KApply("NoExpression", {Sort::KITEM}));
     }
     return true;
   }
 
   bool TraverseTemplateTemplateParmDecl(TemplateTemplateParmDecl *D) {
-    Kast.KApply("TemplateTemplateParam", 4);
+    Kast::add(Kast::KApply("TemplateTemplateParam", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitBool(D->isParameterPack());
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
     if(D->hasDefaultArgument() && !D->defaultArgumentWasInherited()) {
       TRY_TO(TraverseTemplateArgumentLoc(D->getDefaultArgument()));
     } else {
-      Kast.KApply("NoType", 0);
+      Kast::add(Kast::KApply("NoType", {Sort::KITEM}));
     }
     TemplateParameterList *TPL = D->getTemplateParameters();
     if (TPL) {
       int i = 0;
       for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++i, ++I);
-      Kast.List(i);
+      Kast::add(Kast::List(i));
       for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end(); I != E; ++I) {
         TRY_TO(TraverseDecl(*I));
       }
@@ -747,22 +747,22 @@ public:
   bool TraverseTemplateArgument(const TemplateArgument &Arg) {
     switch(Arg.getKind()) {
       case TemplateArgument::Type:
-        Kast.KApply("TypeArg", 1);
+        Kast::add(Kast::KApply("TypeArg", {Sort::KITEM, Sort::KITEM}));
         return getDerived().TraverseType(Arg.getAsType());
       case TemplateArgument::Template:
-        Kast.KApply("TemplateArg", 1);
+        Kast::add(Kast::KApply("TemplateArg", {Sort::KITEM, Sort::KITEM}));
         return getDerived().TraverseTemplateName(Arg.getAsTemplate());
       case TemplateArgument::Expression:
-        Kast.KApply("ExprArg", 1);
+        Kast::add(Kast::KApply("ExprArg", {Sort::KITEM, Sort::KITEM}));
         return getDerived().TraverseStmt(Arg.getAsExpr());
       case TemplateArgument::Integral:
-        Kast.KApply("ExprArg", 1);
-        Kast.KApply("IntegerLiteral", 2);
+        Kast::add(Kast::KApply("ExprArg", {Sort::KITEM, Sort::KITEM}));
+        Kast::add(Kast::KApply("IntegerLiteral", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
         VisitAPInt(Arg.getAsIntegral());
         return getDerived().TraverseType(Arg.getIntegralType());
       case TemplateArgument::Pack:
-        Kast.KApply("PackArg", 1);
-        Kast.List(Arg.pack_size());
+        Kast::add(Kast::KApply("PackArg", {Sort::KITEM, Sort::KITEM}));
+        Kast::add(Kast::List(Arg.pack_size()));
         for (const TemplateArgument arg : Arg.pack_elements()) {
           TRY_TO(TraverseTemplateArgument(arg));
         }
@@ -800,16 +800,16 @@ public:
   void VisitTagKind(TagTypeKind T) {
     switch (T) {
       case TTK_Struct:
-        Kast.KApply("Struct", 0);
+        Kast::add(Kast::KApply("Struct", {Sort::KITEM}));
         break;
       case TTK_Union:
-        Kast.KApply("Union", 0);
+        Kast::add(Kast::KApply("Union", {Sort::KITEM}));
         break;
       case TTK_Class:
-        Kast.KApply("Class", 0);
+        Kast::add(Kast::KApply("Class", {Sort::KITEM}));
         break;
       case TTK_Enum:
-        Kast.KApply("Enum", 0);
+        Kast::add(Kast::KApply("Enum", {Sort::KITEM}));
         break;
       default:
         throw std::logic_error("unimplemented: tag kind");
@@ -818,10 +818,10 @@ public:
 
   bool TraverseCXXRecordHelper(CXXRecordDecl *D) {
     if (D->isCompleteDefinition()) {
-      Kast.KApply("ClassDef", 6);
+      Kast::add(Kast::KApply("ClassDef", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     } else {
-      Kast.KApply("TypeDecl", 1);
-      Kast.KApply("ElaboratedTypeSpecifier", 3);
+      Kast::add(Kast::KApply("TypeDecl", {Sort::KITEM, Sort::KITEM}));
+      Kast::add(Kast::KApply("ElaboratedTypeSpecifier", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     }
     VisitTagKind(D->getTagKind());
     TRY_TO(TraverseDeclarationAsName(D));
@@ -831,9 +831,9 @@ public:
       for (const auto &I : D->bases()) {
         i++;
       }
-      Kast.List(i);
+      Kast::add(Kast::List(i));
       for (const auto &I : D->bases()) {
-        Kast.KApply("BaseClass", 4);
+        Kast::add(Kast::KApply("BaseClass", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
         VisitBool(I.isVirtual());
         VisitBool(I.isPackExpansion());
         VisitAccessSpecifier(I.getAccessSpecifierAsWritten());
@@ -853,14 +853,14 @@ public:
 
   bool TraverseEnumDecl(EnumDecl *D) {
     if (!D->isCompleteDefinition()) {
-      Kast.KApply("OpaqueEnumDeclaration", 3);
+      Kast::add(Kast::KApply("OpaqueEnumDeclaration", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
       TRY_TO(TraverseDeclarationName(D->getDeclName()));
       VisitBool(D->isScoped());
       TraverseType(D->getIntegerType());
       return true;
     }
 
-    Kast.KApply("EnumDef", 6);
+    Kast::add(Kast::KApply("EnumDef", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseDeclarationAsName(D));
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     VisitBool(D->isScoped());
@@ -873,10 +873,10 @@ public:
   }
 
   bool VisitEnumConstantDecl(EnumConstantDecl *D) {
-    Kast.KApply("Enumerator", 2);
+    Kast::add(Kast::KApply("Enumerator", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TraverseDeclarationName(D->getDeclName());
     if (!D->getInitExpr()) {
-      Kast.KApply("NoExpression", 0);
+      Kast::add(Kast::KApply("NoExpression", {Sort::KITEM}));
     }
     return false;
   }
@@ -884,14 +884,14 @@ public:
   bool TraverseClassTemplateSpecializationDecl(ClassTemplateSpecializationDecl *D) {
     switch(D->getSpecializationKind()) {
       case TSK_ExplicitSpecialization:
-        Kast.KApply("TemplateSpecialization", 2);
+        Kast::add(Kast::KApply("TemplateSpecialization", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
         break;
       case TSK_ExplicitInstantiationDeclaration:
-        Kast.KApply("TemplateInstantiationDeclaration", 2);
+        Kast::add(Kast::KApply("TemplateInstantiationDeclaration", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
         break;
       case TSK_ImplicitInstantiation:
       case TSK_ExplicitInstantiationDefinition:
-        Kast.KApply("TemplateInstantiationDefinition", 2);
+        Kast::add(Kast::KApply("TemplateInstantiationDefinition", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
         break;
       default:
         throw std::logic_error("unimplemented: implicit template instantiation");
@@ -899,14 +899,14 @@ public:
     if (D->getTypeForDecl()) {
       TRY_TO(TraverseType(QualType(D->getTypeForDecl(), 0)));
     } else {
-      Kast.KApply("NoType", 0);
+      Kast::add(Kast::KApply("NoType", {Sort::KITEM}));
     }
     TRY_TO(TraverseCXXRecordHelper(D));
     return true;
   }
 
   bool TraverseClassTemplatePartialSpecializationDecl(ClassTemplatePartialSpecializationDecl *D) {
-    Kast.KApply("PartialSpecialization", 3);
+    Kast::add(Kast::KApply("PartialSpecialization", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     /* The partial specialization. */
     int i = 0;
     TemplateParameterList *TPL = D->getTemplateParameters();
@@ -914,12 +914,12 @@ public:
          I != E; ++I) {
       i++;
     }
-    Kast.List(i);
+    Kast::add(Kast::List(i));
     for (TemplateParameterList::iterator I = TPL->begin(), E = TPL->end();
          I != E; ++I) {
       TRY_TO(TraverseDecl(*I));
     }
-    Kast.List(D->getTemplateArgsAsWritten()->NumTemplateArgs);
+    Kast::add(Kast::List(D->getTemplateArgsAsWritten()->NumTemplateArgs));
     /* The args that remains unspecialized. */
     TRY_TO(TraverseTemplateArgumentLocs(
         D->getTemplateArgsAsWritten()->getTemplateArgs(),
@@ -933,66 +933,66 @@ public:
   }
 
   bool VisitAccessSpecDecl(AccessSpecDecl *D) {
-    Kast.KApply("AccessSpec", 1);
+    Kast::add(Kast::KApply("AccessSpec", {Sort::KITEM, Sort::KITEM}));
     VisitAccessSpecifier(D->getAccess());
     return false;
   }
 
   bool VisitStaticAssertDecl(StaticAssertDecl *D) {
-    Kast.KApply("StaticAssert", 2);
+    Kast::add(Kast::KApply("StaticAssert", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitUsingDecl(UsingDecl *D) {
-    Kast.KApply("UsingDecl", 3);
+    Kast::add(Kast::KApply("UsingDecl", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitBool(D->hasTypename());
     return false;
   }
 
   bool VisitUnresolvedUsingValueDecl(UnresolvedUsingValueDecl *D) {
-    Kast.KApply("UsingDecl", 3);
+    Kast::add(Kast::KApply("UsingDecl", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitBool(false);
     return false;
   }
 
   bool VisitUsingDirectiveDecl(UsingDirectiveDecl *D) {
-    Kast.KApply("UsingDirective", 2);
+    Kast::add(Kast::KApply("UsingDirective", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseDeclarationName(D->getNominatedNamespaceAsWritten()->getDeclName()));
     return false;
   }
 
   bool TraverseFunctionProtoType(FunctionProtoType *T) {
-    Kast.KApply("FunctionPrototype", 4);
+    Kast::add(Kast::KApply("FunctionPrototype", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
 
     TRY_TO(TraverseType(T->getReturnType()));
 
-    Kast.KApply("list", 1);
-    Kast.List(T->getNumParams());
+    Kast::add(Kast::KApply("list", {Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::List(T->getNumParams()));
     for(unsigned i = 0; i < T->getNumParams(); i++) {
       TRY_TO(TraverseType(T->getParamType(i)));
     }
 
     switch(T->getExceptionSpecType()) {
       case EST_None:
-        Kast.KApply("NoExceptionSpec", 0);
+        Kast::add(Kast::KApply("NoExceptionSpec", {Sort::KITEM}));
         break;
       case EST_BasicNoexcept:
-        Kast.KApply("NoexceptSpec", 1);
-        Kast.KApply("NoExpression", 0);
+        Kast::add(Kast::KApply("NoexceptSpec", {Sort::KITEM, Sort::KITEM}));
+        Kast::add(Kast::KApply("NoExpression", {Sort::KITEM}));
         break;
       case EST_ComputedNoexcept:
-        Kast.KApply("NoexceptSpec", 1);
+        Kast::add(Kast::KApply("NoexceptSpec", {Sort::KITEM, Sort::KITEM}));
         TRY_TO(TraverseStmt(T->getNoexceptExpr()));
         break;
       case EST_DynamicNone:
-        Kast.KApply("ThrowSpec", 1);
-        Kast.KApply("list", 1);
-        Kast.List(0);
+        Kast::add(Kast::KApply("ThrowSpec", {Sort::KITEM, Sort::KITEM}));
+        Kast::add(Kast::KApply("list", {Sort::KITEM, Sort::KITEM}));
+        Kast::add(Kast::List(0));
         break;
       case EST_Dynamic:
-        Kast.KApply("ThrowSpec", 1);
-        Kast.KApply("list", 1);
-        Kast.List(T->getNumExceptions());
+        Kast::add(Kast::KApply("ThrowSpec", {Sort::KITEM, Sort::KITEM}));
+        Kast::add(Kast::KApply("list", {Sort::KITEM, Sort::KITEM}));
+        Kast::add(Kast::List(T->getNumExceptions()));
         for(unsigned i = 0; i < T->getNumExceptions(); i++) {
           TRY_TO(TraverseType(T->getExceptionType(i)));
         }
@@ -1006,78 +1006,78 @@ public:
   }
 
   bool VisitBuiltinType(BuiltinType *T) {
-    Kast.KApply("BuiltinType", 1);
+    Kast::add(Kast::KApply("BuiltinType", {Sort::KITEM, Sort::KITEM}));
     switch(T->getKind()) {
       case BuiltinType::Void:
-        Kast.KApply("Void", 0);
+        Kast::add(Kast::KApply("Void", {Sort::KITEM}));
         break;
       case BuiltinType::Char_S:
       case BuiltinType::Char_U:
-        Kast.KApply("Char", 0);
+        Kast::add(Kast::KApply("Char", {Sort::KITEM}));
         break;
       case BuiltinType::WChar_S:
       case BuiltinType::WChar_U:
-        Kast.KApply("WChar", 0);
+        Kast::add(Kast::KApply("WChar", {Sort::KITEM}));
         break;
       case BuiltinType::Char16:
-        Kast.KApply("Char16", 0);
+        Kast::add(Kast::KApply("Char16", {Sort::KITEM}));
         break;
       case BuiltinType::Char32:
-        Kast.KApply("Char32", 0);
+        Kast::add(Kast::KApply("Char32", {Sort::KITEM}));
         break;
       case BuiltinType::Bool:
-        Kast.KApply("Bool", 0);
+        Kast::add(Kast::KApply("Bool", {Sort::KITEM}));
         break;
       case BuiltinType::UChar:
-        Kast.KApply("UChar", 0);
+        Kast::add(Kast::KApply("UChar", {Sort::KITEM}));
         break;
       case BuiltinType::UShort:
-        Kast.KApply("UShort", 0);
+        Kast::add(Kast::KApply("UShort", {Sort::KITEM}));
         break;
       case BuiltinType::UInt:
-        Kast.KApply("UInt", 0);
+        Kast::add(Kast::KApply("UInt", {Sort::KITEM}));
         break;
       case BuiltinType::ULong:
-        Kast.KApply("ULong", 0);
+        Kast::add(Kast::KApply("ULong", {Sort::KITEM}));
         break;
       case BuiltinType::ULongLong:
-        Kast.KApply("ULongLong", 0);
+        Kast::add(Kast::KApply("ULongLong", {Sort::KITEM}));
         break;
       case BuiltinType::SChar:
-        Kast.KApply("SChar", 0);
+        Kast::add(Kast::KApply("SChar", {Sort::KITEM}));
         break;
       case BuiltinType::Short:
-        Kast.KApply("Short", 0);
+        Kast::add(Kast::KApply("Short", {Sort::KITEM}));
         break;
       case BuiltinType::Int:
-        Kast.KApply("Int", 0);
+        Kast::add(Kast::KApply("Int", {Sort::KITEM}));
         break;
       case BuiltinType::Long:
-        Kast.KApply("Long", 0);
+        Kast::add(Kast::KApply("Long", {Sort::KITEM}));
         break;
       case BuiltinType::LongLong:
-        Kast.KApply("LongLong", 0);
+        Kast::add(Kast::KApply("LongLong", {Sort::KITEM}));
         break;
       case BuiltinType::Float:
-        Kast.KApply("Float", 0);
+        Kast::add(Kast::KApply("Float", {Sort::KITEM}));
         break;
       case BuiltinType::Double:
-        Kast.KApply("Double", 0);
+        Kast::add(Kast::KApply("Double", {Sort::KITEM}));
         break;
       case BuiltinType::LongDouble:
-        Kast.KApply("LongDouble", 0);
+        Kast::add(Kast::KApply("LongDouble", {Sort::KITEM}));
         break;
       case BuiltinType::Int128:
-        Kast.KApply("OversizedInt", 0);
+        Kast::add(Kast::KApply("OversizedInt", {Sort::KITEM}));
         break;
       case BuiltinType::UInt128:
-        Kast.KApply("OversizedUInt", 0);
+        Kast::add(Kast::KApply("OversizedUInt", {Sort::KITEM}));
         break;
       case BuiltinType::Dependent:
-        Kast.KApply("Dependent", 0);
+        Kast::add(Kast::KApply("Dependent", {Sort::KITEM}));
         break;
       case BuiltinType::NullPtr:
-        Kast.KApply("NullPtr", 0);
+        Kast::add(Kast::KApply("NullPtr", {Sort::KITEM}));
         break;
       default:
         throw std::logic_error("unimplemented: basic type");
@@ -1086,12 +1086,12 @@ public:
   }
 
   bool VisitPointerType(clang::PointerType *T) {
-    Kast.KApply("PointerType", 1);
+    Kast::add(Kast::KApply("PointerType", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitMemberPointerType(MemberPointerType *T) {
-    Kast.KApply("MemberPointerType", 2);
+    Kast::add(Kast::KApply("MemberPointerType", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
@@ -1099,7 +1099,7 @@ public:
     if (T->getSizeModifier() != clang::ArrayType::Normal) {
       throw std::logic_error("unimplemented: static/* array");
     }
-    Kast.KApply("ArrayType", 2);
+    Kast::add(Kast::KApply("ArrayType", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseType(T->getElementType()));
     return true;
   }
@@ -1124,12 +1124,12 @@ public:
 
   bool TraverseIncompleteArrayType(IncompleteArrayType *T) {
     TRY_TO(TraverseArrayHelper(T));
-    Kast.KApply("NoExpression", 0);
+    Kast::add(Kast::KApply("NoExpression", {Sort::KITEM}));
     return true;
   }
 
   bool VisitTypedefType(TypedefType *T) {
-    Kast.KApply("TypedefType", 1);
+    Kast::add(Kast::KApply("TypedefType", {Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseDeclarationName(T->getDecl()->getDeclName()));
     return false;
   }
@@ -1137,22 +1137,22 @@ public:
   void VisitTypeKeyword(ElaboratedTypeKeyword Keyword) {
     switch(Keyword) {
       case ETK_Struct:
-        Kast.KApply("Struct", 0);
+        Kast::add(Kast::KApply("Struct", {Sort::KITEM}));
         break;
       case ETK_Union:
-        Kast.KApply("Union", 0);
+        Kast::add(Kast::KApply("Union", {Sort::KITEM}));
         break;
       case ETK_Class:
-        Kast.KApply("Class", 0);
+        Kast::add(Kast::KApply("Class", {Sort::KITEM}));
         break;
       case ETK_Enum:
-        Kast.KApply("Enum", 0);
+        Kast::add(Kast::KApply("Enum", {Sort::KITEM}));
         break;
       case ETK_Typename:
-        Kast.KApply("Typename", 0);
+        Kast::add(Kast::KApply("Typename", {Sort::KITEM}));
         break;
       case ETK_None:
-        Kast.KApply("NoTag", 0);
+        Kast::add(Kast::KApply("NoTag", {Sort::KITEM}));
         break;
       default:
         throw std::logic_error("unimplemented: type keyword");
@@ -1160,21 +1160,21 @@ public:
   }
 
   bool VisitElaboratedType(ElaboratedType *T) {
-    Kast.KApply("QualifiedTypeName", 3);
+    Kast::add(Kast::KApply("QualifiedTypeName", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitTypeKeyword(T->getKeyword());
     if(!T->getQualifier()) {
-      Kast.KApply("NoNNS", 0);
+      Kast::add(Kast::KApply("NoNNS", {Sort::KITEM}));
     }
     return false;
   }
 
   bool VisitDecltypeType(DecltypeType *T) {
-    Kast.KApply("Decltype", 1);
+    Kast::add(Kast::KApply("Decltype", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitTemplateTypeParmType(TemplateTypeParmType *T) {
-    Kast.KApply("TemplateParameterType", 1);
+    Kast::add(Kast::KApply("TemplateParameterType", {Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseIdentifierInfo(T->getIdentifier()));
     return false;
   }
@@ -1186,19 +1186,19 @@ public:
 
   bool VisitTagType(TagType *T) {
     TagDecl *D = T->getDecl();
-    Kast.KApply("Name", 2);
-    Kast.KApply("NoNNS", 0);
+    Kast::add(Kast::KApply("Name", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::KApply("NoNNS", {Sort::KITEM}));
     TRY_TO(TraverseDeclarationAsName(D));
     return false;
   }
 
   bool VisitLValueReferenceType(LValueReferenceType *T) {
-    Kast.KApply("LValRefType", 1);
+    Kast::add(Kast::KApply("LValRefType", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitRValueReferenceType(RValueReferenceType *T) {
-    Kast.KApply("RValRefType", 1);
+    Kast::add(Kast::KApply("RValRefType", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
@@ -1208,32 +1208,32 @@ public:
   }
 
   bool TraverseDependentTemplateSpecializationType(DependentTemplateSpecializationType *T) {
-    Kast.KApply("TemplateSpecializationType", 2);
-    Kast.KApply("Name", 2);
+    Kast::add(Kast::KApply("TemplateSpecializationType", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::KApply("Name", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseNestedNameSpecifier(T->getQualifier()));
     TRY_TO(TraverseIdentifierInfo(T->getIdentifier()));
-    Kast.List(T->getNumArgs());
+    Kast::add(Kast::List(T->getNumArgs()));
     TRY_TO(TraverseTemplateArguments(T->getArgs(), T->getNumArgs()));
     return true;
   }
 
   bool TraverseTemplateSpecializationType(const TemplateSpecializationType *T) {
-    Kast.KApply("TemplateSpecializationType", 2);
+    Kast::add(Kast::KApply("TemplateSpecializationType", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseTemplateName(T->getTemplateName()));
-    Kast.List(T->getNumArgs());
+    Kast::add(Kast::List(T->getNumArgs()));
     TRY_TO(TraverseTemplateArguments(T->getArgs(), T->getNumArgs()));
     return true;
   }
 
   bool VisitDependentNameType(DependentNameType *T) {
-    Kast.KApply("ElaboratedTypeSpecifier", 3);
+    Kast::add(Kast::KApply("ElaboratedTypeSpecifier", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitTypeKeyword(T->getKeyword());
     TRY_TO(TraverseIdentifierInfo(T->getIdentifier()));
     return false;
   }
 
   bool VisitPackExpansionType(PackExpansionType *T) {
-    Kast.KApply("PackExpansionType", 1);
+    Kast::add(Kast::KApply("PackExpansionType", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
@@ -1241,7 +1241,7 @@ public:
     if (T->isDeduced()) {
       TRY_TO(TraverseType(T->getDeducedType()));
     } else {
-      Kast.KApply("AutoType", 1);
+      Kast::add(Kast::KApply("AutoType", {Sort::KITEM, Sort::KITEM}));
       VisitBool(T->isDecltypeAuto());
     }
     return true;
@@ -1256,20 +1256,20 @@ public:
   }
 
   bool VisitTypeOfExprType(TypeOfExprType *T) {
-    Kast.KApply("TypeofExpression", 1);
+    Kast::add(Kast::KApply("TypeofExpression", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitTypeOfType(TypeOfType *T) {
-    Kast.KApply("TypeofType", 1);
+    Kast::add(Kast::KApply("TypeofType", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitUnaryTransformType(UnaryTransformType *T) {
     if (T->isSugared()) {
-      Kast.KApply("GnuEnumUnderlyingType2", 2);
+      Kast::add(Kast::KApply("GnuEnumUnderlyingType2", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     } else {
-      Kast.KApply("GnuEnumUnderlyingType1", 1);
+      Kast::add(Kast::KApply("GnuEnumUnderlyingType1", {Sort::KITEM, Sort::KITEM}));
     }
     return false;
   }
@@ -1280,80 +1280,80 @@ public:
   }
 
   bool VisitDeclStmt(DeclStmt *S) {
-    Kast.KApply("DeclStmt", 1);
+    Kast::add(Kast::KApply("DeclStmt", {Sort::KITEM, Sort::KITEM}));
     int i = 0;
     for (auto *I : S->decls()) {
       i++;
     }
-    Kast.List(i);
+    Kast::add(Kast::List(i));
     return false;
   }
 
   bool VisitBreakStmt(BreakStmt *S) {
-    Kast.KApply("TBreakStmt", 0);
+    Kast::add(Kast::KApply("TBreakStmt", {Sort::KITEM}));
     return false;
   }
 
   bool VisitContinueStmt(ContinueStmt *S) {
-    Kast.KApply("ContinueStmt", 0);
+    Kast::add(Kast::KApply("ContinueStmt", {Sort::KITEM}));
     return false;
   }
 
   bool VisitGotoStmt(GotoStmt *S) {
-    Kast.KApply("GotoStmt", 1);
+    Kast::add(Kast::KApply("GotoStmt", {Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseDeclarationName(S->getLabel()->getDeclName()));
     return false;
   }
 
   bool VisitReturnStmt(ReturnStmt *S) {
-    Kast.KApply("ReturnStmt", 1);
+    Kast::add(Kast::KApply("ReturnStmt", {Sort::KITEM, Sort::KITEM}));
     if (!S->getRetValue()) {
-      Kast.KApply("NoInit", 0);
+      Kast::add(Kast::KApply("NoInit", {Sort::KITEM}));
     }
     return false;
   }
 
   bool VisitNullStmt(NullStmt *S) {
-    Kast.KApply("NullStmt", 0);
+    Kast::add(Kast::KApply("NullStmt", {Sort::KITEM}));
     return false;
   }
 
   bool VisitCompoundStmt(CompoundStmt *S) {
-    Kast.KApply("CompoundAStmt", 1);
+    Kast::add(Kast::KApply("CompoundAStmt", {Sort::KITEM, Sort::KITEM}));
     StmtChildren(S);
     return false;
   }
 
   bool VisitLabelStmt(LabelStmt *S) {
-    Kast.KApply("LabelAStmt", 2);
+    Kast::add(Kast::KApply("LabelAStmt", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseDeclarationName(S->getDecl()->getDeclName()));
     StmtChildren(S);
     return false;
   }
 
   bool TraverseForStmt(ForStmt *S) {
-    Kast.KApply("ForAStmt", 4);
+    Kast::add(Kast::KApply("ForAStmt", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     if (S->getInit()) {
       TRY_TO(TraverseStmt(S->getInit()));
     } else {
-      Kast.KApply("NoStatement", 0);
+      Kast::add(Kast::KApply("NoStatement", {Sort::KITEM}));
     }
     if (S->getCond()) {
       TRY_TO(TraverseStmt(S->getCond()));
     } else {
-      Kast.KApply("NoExpression", 0);
+      Kast::add(Kast::KApply("NoExpression", {Sort::KITEM}));
     }
     if (S->getInc()) {
       TRY_TO(TraverseStmt(S->getInc()));
     } else {
-      Kast.KApply("NoExpression", 0);
+      Kast::add(Kast::KApply("NoExpression", {Sort::KITEM}));
     }
     TRY_TO(TraverseStmt(S->getBody()));
     return true;
   }
 
   bool TraverseWhileStmt(WhileStmt *S) {
-    Kast.KApply("WhileAStmt", 2);
+    Kast::add(Kast::KApply("WhileAStmt", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     if (S->getConditionVariable()) {
       TRY_TO(TraverseDecl(S->getConditionVariable()));
     } else {
@@ -1364,12 +1364,12 @@ public:
   }
 
   bool VisitDoStmt(DoStmt *S) {
-    Kast.KApply("DoWhileAStmt", 2);
+    Kast::add(Kast::KApply("DoWhileAStmt", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool TraverseIfStmt(IfStmt *S) {
-    Kast.KApply("IfAStmt", 3);
+    Kast::add(Kast::KApply("IfAStmt", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     if (VarDecl *D = S->getConditionVariable()) {
       TRY_TO(TraverseDecl(D));
     } else {
@@ -1379,13 +1379,13 @@ public:
     if(Stmt *Else = S->getElse()) {
       TRY_TO(TraverseStmt(Else));
     } else {
-      Kast.KApply("NoStatement", 0);
+      Kast::add(Kast::KApply("NoStatement", {Sort::KITEM}));
     }
     return true;
   }
 
   bool TraverseSwitchStmt(SwitchStmt *S) {
-    Kast.KApply("SwitchAStmt", 2);
+    Kast::add(Kast::KApply("SwitchAStmt", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     if (VarDecl *D = S->getConditionVariable()) {
       TRY_TO(TraverseDecl(D));
     } else {
@@ -1396,7 +1396,7 @@ public:
   }
 
   bool TraverseCaseStmt(CaseStmt *S) {
-    Kast.KApply("CaseAStmt", 2);
+    Kast::add(Kast::KApply("CaseAStmt", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     if (S->getRHS()) {
       throw std::logic_error("unimplemented: gnu case stmt extensions");
     }
@@ -1406,14 +1406,14 @@ public:
   }
 
   bool VisitDefaultStmt(DefaultStmt *S) {
-    Kast.KApply("DefaultAStmt", 1);
+    Kast::add(Kast::KApply("DefaultAStmt", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool TraverseCXXTryStmt(CXXTryStmt *S) {
-    Kast.KApply("TryAStmt", 2);
+    Kast::add(Kast::KApply("TryAStmt", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseStmt(S->getTryBlock()));
-    Kast.List(S->getNumHandlers());
+    Kast::add(Kast::List(S->getNumHandlers()));
     for (unsigned i = 0; i < S->getNumHandlers(); i++) {
       TRY_TO(TraverseStmt(S->getHandler(i)));
     }
@@ -1421,9 +1421,9 @@ public:
   }
 
   bool VisitCXXCatchStmt(CXXCatchStmt *S) {
-    Kast.KApply("CatchAStmt", 2);
+    Kast::add(Kast::KApply("CatchAStmt", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     if (!S->getExceptionDecl()) {
-      Kast.KApply("Ellipsis", 0);
+      Kast::add(Kast::KApply("Ellipsis", {Sort::KITEM}));
     }
     return false;
   }
@@ -1431,14 +1431,14 @@ public:
   template<typename ExprType>
   bool TraverseMemberHelper(ExprType *E) {
     if (E->isImplicitAccess()) {
-      Kast.KApply("Name", 2);
+      Kast::add(Kast::KApply("Name", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
       TRY_TO(TraverseNestedNameSpecifierLoc(E->getQualifierLoc()));
       TRY_TO(TraverseDeclarationNameInfo(E->getMemberNameInfo()));
     } else {
-      Kast.KApply("MemberExpr", 4);
+      Kast::add(Kast::KApply("MemberExpr", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
       VisitBool(E->isArrow());
       VisitBool(E->hasTemplateKeyword());
-      Kast.KApply("Name", 2);
+      Kast::add(Kast::KApply("Name", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
       TRY_TO(TraverseNestedNameSpecifierLoc(E->getQualifierLoc()));
       TRY_TO(TraverseDeclarationNameInfo(E->getMemberNameInfo()));
       TRY_TO(TraverseStmt(E->getBase()));
@@ -1459,7 +1459,7 @@ public:
   }
 
   bool VisitArraySubscriptExpr(ArraySubscriptExpr *E) {
-    Kast.KApply("Subscript", 2);
+    Kast::add(Kast::KApply("Subscript", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
@@ -1468,7 +1468,7 @@ public:
   }
 
   bool TraverseCallExpr(CallExpr *E) {
-    Kast.KApply("CallExpr", 3);
+    Kast::add(Kast::KApply("CallExpr", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     unsigned i = 0;
     for (Stmt *SubStmt : E->children()) {
       i++;
@@ -1480,13 +1480,13 @@ public:
     for (Stmt *SubStmt : E->children()) {
       TRY_TO(TraverseStmt(SubStmt));
       if (first) {
-        Kast.KApply("list", 1);
-        Kast.List(i-1);
+        Kast::add(Kast::KApply("list", {Sort::KITEM, Sort::KITEM}));
+        Kast::add(Kast::List(i-1));
       }
       first = false;
     }
-    Kast.KApply("krlist", 1);
-    Kast.KApply(".List", 0);
+    Kast::add(Kast::KApply("krlist", {Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::KApply(".List", {Sort::KITEM}));
     return true;
   }
 
@@ -1511,17 +1511,17 @@ public:
   }
 
   bool VisitDeclRefExpr(DeclRefExpr *E) {
-    Kast.KApply("Name", 2);
+    Kast::add(Kast::KApply("Name", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitDependentScopeDeclRefExpr(DependentScopeDeclRefExpr *E) {
-    Kast.KApply("Name", 2);
+    Kast::add(Kast::KApply("Name", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool TraverseUnresolvedLookupExpr(UnresolvedLookupExpr *E) {
-    Kast.KApply("Name", 2);
+    Kast::add(Kast::KApply("Name", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseNestedNameSpecifierLoc(E->getQualifierLoc()));
     TRY_TO(TraverseDeclarationNameInfo(E->getNameInfo()));
     return true;
@@ -1531,7 +1531,7 @@ public:
     switch(Kind) {
       #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
       case OO_##Name:                                                          \
-        Kast.KApply("operator" Spelling "_CPP-SYNTAX", 0);                                 \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", {Sort::KITEM}));                                 \
         break;
       #include "clang/Basic/OperatorKinds.def"
       default:
@@ -1543,7 +1543,7 @@ public:
     switch(Kind) {
       #define UNARY_OP(Name, Spelling)         \
       case UO_##Name:                          \
-        Kast.KApply("operator" Spelling "_CPP-SYNTAX", 0); \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", {Sort::KITEM})); \
         break;
       UNARY_OP(PostInc, "_++")
       UNARY_OP(PostDec, "_--")
@@ -1556,16 +1556,16 @@ public:
       UNARY_OP(Not, "~")
       UNARY_OP(LNot, "!")
       case UO_Real:
-        Kast.KApply("RealOperator", 0);
+        Kast::add(Kast::KApply("RealOperator", {Sort::KITEM}));
         break;
       case UO_Imag:
-        Kast.KApply("ImagOperator", 0);
+        Kast::add(Kast::KApply("ImagOperator", {Sort::KITEM}));
         break;
       case UO_Extension:
-        Kast.KApply("ExtensionOperator", 0);
+        Kast::add(Kast::KApply("ExtensionOperator", {Sort::KITEM}));
         break;
       case UO_Coawait:
-        Kast.KApply("CoawaitOperator", 0);
+        Kast::add(Kast::KApply("CoawaitOperator", {Sort::KITEM}));
         break;
       default:
         throw std::logic_error("unsupported unary operator");
@@ -1576,7 +1576,7 @@ public:
     switch(Kind) {
       #define BINARY_OP(Name, Spelling)        \
       case BO_##Name:                          \
-        Kast.KApply("operator" Spelling "_CPP-SYNTAX", 0); \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", {Sort::KITEM})); \
         break;
       BINARY_OP(PtrMemD, ".*")
       BINARY_OP(PtrMemI, "->*")
@@ -1616,20 +1616,20 @@ public:
   }
 
   bool VisitUnaryOperator(UnaryOperator *E) {
-    Kast.KApply("UnaryOperator", 2);
+    Kast::add(Kast::KApply("UnaryOperator", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitOperator(E->getOpcode());
     return false;
   }
 
 
   bool VisitBinaryOperator(BinaryOperator *E) {
-    Kast.KApply("BinaryOperator", 3);
+    Kast::add(Kast::KApply("BinaryOperator", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitOperator(E->getOpcode());
     return false;
   }
 
   bool VisitConditionalOperator(ConditionalOperator *E) {
-    Kast.KApply("ConditionalOperator", 3);
+    Kast::add(Kast::KApply("ConditionalOperator", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
@@ -1637,7 +1637,7 @@ public:
     switch(E->getOperator()) {
       case OO_Call:
         // TODO(chathhorn)
-        Kast.KApply("OverloadedCall", 0);
+        Kast::add(Kast::KApply("OverloadedCall", {Sort::KITEM}));
         break;
       case OO_New:
       case OO_Delete:
@@ -1648,13 +1648,13 @@ public:
       case OO_Star:
       case OO_Amp:
         if (E->getNumArgs() == 2) {
-          Kast.KApply("BinaryOperator", 3);
+          Kast::add(Kast::KApply("BinaryOperator", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           VisitOperator(E->getOperator());
           TRY_TO(TraverseStmt(E->getArg(0)));
           TRY_TO(TraverseStmt(E->getArg(1)));
           break;
         } else if (E->getNumArgs() == 1) {
-          Kast.KApply("UnaryOperator", 2);
+          Kast::add(Kast::KApply("UnaryOperator", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           VisitOperator(E->getOperator());
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
@@ -1663,12 +1663,12 @@ public:
         }
       case OO_PlusPlus:
         if (E->getNumArgs() == 2) {
-          Kast.KApply("UnaryOperator", 2);
+          Kast::add(Kast::KApply("UnaryOperator", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           VisitOperator(UO_PostInc);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else if (E->getNumArgs() == 1) {
-          Kast.KApply("UnaryOperator", 2);
+          Kast::add(Kast::KApply("UnaryOperator", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           VisitOperator(UO_PreInc);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
@@ -1677,12 +1677,12 @@ public:
         }
       case OO_MinusMinus:
         if (E->getNumArgs() == 2) {
-          Kast.KApply("UnaryOperator", 2);
+          Kast::add(Kast::KApply("UnaryOperator", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           VisitOperator(UO_PostDec);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else if (E->getNumArgs() == 1) {
-          Kast.KApply("UnaryOperator", 2);
+          Kast::add(Kast::KApply("UnaryOperator", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
           VisitOperator(UO_PreDec);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
@@ -1720,7 +1720,7 @@ public:
         if (E->getNumArgs() != 2) {
           throw std::logic_error("unexpected number of arguments to operator");
         }
-        Kast.KApply("BinaryOperator", 3);
+        Kast::add(Kast::KApply("BinaryOperator", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
         VisitOperator(E->getOperator());
         TRY_TO(TraverseStmt(E->getArg(0)));
         TRY_TO(TraverseStmt(E->getArg(1)));
@@ -1731,7 +1731,7 @@ public:
         if (E->getNumArgs() != 1) {
           throw std::logic_error("unexpected number of arguments to operator");
         }
-        Kast.KApply("UnaryOperator", 2);
+        Kast::add(Kast::KApply("UnaryOperator", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
         VisitOperator(E->getOperator());
         TRY_TO(TraverseStmt(E->getArg(0)));
         break;
@@ -1742,27 +1742,27 @@ public:
   }
 
   bool VisitCStyleCastExpr(CStyleCastExpr *E) {
-    Kast.KApply("ParenthesizedCast", 2);
+    Kast::add(Kast::KApply("ParenthesizedCast", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitCXXReinterpretCastExpr(CXXReinterpretCastExpr *E) {
-    Kast.KApply("ReinterpretCast", 2);
+    Kast::add(Kast::KApply("ReinterpretCast", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitCXXStaticCastExpr(CXXStaticCastExpr *E) {
-    Kast.KApply("StaticCast", 2);
+    Kast::add(Kast::KApply("StaticCast", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitCXXDynamicCastExpr(CXXDynamicCastExpr *E) {
-    Kast.KApply("DynamicCast", 2);
+    Kast::add(Kast::KApply("DynamicCast", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitCXXConstCastExpr(CXXConstCastExpr *E) {
-    Kast.KApply("ConstCast", 2);
+    Kast::add(Kast::KApply("ConstCast", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
@@ -1772,7 +1772,7 @@ public:
     for (Expr **iter = begin; iter != end; ++iter) {
       i++;
     }
-    Kast.List(i);
+    Kast::add(Kast::List(i));
     for (Expr **iter = begin; iter != end; ++iter) {
       TRY_TO(TraverseStmt(*iter));
     }
@@ -1780,44 +1780,44 @@ public:
   }
 
   bool TraverseCXXUnresolvedConstructExpr(CXXUnresolvedConstructExpr *E) {
-    Kast.KApply("UnresolvedConstructorCall", 2);
+    Kast::add(Kast::KApply("UnresolvedConstructorCall", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return TraverseCXXConstructHelper(E->getTypeAsWritten(), E->arg_begin(), E->arg_end());
   }
 
   bool TraverseCXXFunctionalCastExpr(CXXFunctionalCastExpr *E) {
     Expr *arg = E->getSubExprAsWritten();
-    Kast.KApply("FunctionalCast", 2);
+    Kast::add(Kast::KApply("FunctionalCast", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return TraverseCXXConstructHelper(E->getTypeInfoAsWritten()->getType(), &arg, &arg+1);
   }
 
   bool TraverseCXXScalarValueInitExpr(CXXScalarValueInitExpr *E) {
-    Kast.KApply("FunctionalCast", 2);
+    Kast::add(Kast::KApply("FunctionalCast", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return TraverseCXXConstructHelper(E->getType(), 0, 0);
   }
 
   bool TraverseCXXConstructExpr(CXXConstructExpr *E) {
-    Kast.KApply("ConstructorCall", 3);
+    Kast::add(Kast::KApply("ConstructorCall", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitBool(E->requiresZeroInitialization());
     return TraverseCXXConstructHelper(E->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
 
   bool TraverseCXXTemporaryObjectExpr(CXXTemporaryObjectExpr *E) {
-    Kast.KApply("TemporaryObjectExpr", 2);
+    Kast::add(Kast::KApply("TemporaryObjectExpr", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     return TraverseCXXConstructHelper(E->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
 
   bool VisitUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E) {
     if (E->getKind() == UETT_SizeOf) {
       if (E->isArgumentType()) {
-        Kast.KApply("SizeofType", 1);
+        Kast::add(Kast::KApply("SizeofType", {Sort::KITEM, Sort::KITEM}));
       } else {
-        Kast.KApply("SizeofExpr", 1);
+        Kast::add(Kast::KApply("SizeofExpr", {Sort::KITEM, Sort::KITEM}));
       }
     } else if (E->getKind() == UETT_AlignOf) {
       if (E->isArgumentType()) {
-        Kast.KApply("AlignofType", 1);
+        Kast::add(Kast::KApply("AlignofType", {Sort::KITEM, Sort::KITEM}));
       } else {
-        Kast.KApply("AlignofExpr", 1);
+        Kast::add(Kast::KApply("AlignofExpr", {Sort::KITEM, Sort::KITEM}));
       }
     } else {
       throw std::logic_error("unimplemented: ??? expr or type trait");
@@ -1826,49 +1826,49 @@ public:
   }
 
   bool VisitSizeOfPackExpr(SizeOfPackExpr *E) {
-    Kast.KApply("SizeofPack", 1);
+    Kast::add(Kast::KApply("SizeofPack", {Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseDeclarationName(E->getPack()->getDeclName()));
     return false;
   }
 
   bool TraverseCXXPseudoDestructorExpr(CXXPseudoDestructorExpr *E) {
-    Kast.KApply("PseudoDestructor", 5);
+    Kast::add(Kast::KApply("PseudoDestructor", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TRY_TO(TraverseStmt(E->getBase()));
     VisitBool(E->isArrow());
     TRY_TO(TraverseNestedNameSpecifierLoc(E->getQualifierLoc()));
     if (TypeSourceInfo *ScopeInfo = E->getScopeTypeInfo()) {
       TRY_TO(TraverseTypeLoc(ScopeInfo->getTypeLoc()));
     } else {
-      Kast.KApply("NoType", 0);
+      Kast::add(Kast::KApply("NoType", {Sort::KITEM}));
     }
     if (TypeSourceInfo *DestroyedTypeInfo = E->getDestroyedTypeInfo()) {
       TRY_TO(TraverseTypeLoc(DestroyedTypeInfo->getTypeLoc()));
     } else {
-      Kast.KApply("NoType", 0);
+      Kast::add(Kast::KApply("NoType", {Sort::KITEM}));
     }
     return true;
   }
 
   bool VisitCXXNoexceptExpr(CXXNoexceptExpr *E) {
-    Kast.KApply("Noexcept", 1);
+    Kast::add(Kast::KApply("Noexcept", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool TraverseCXXNewExpr(CXXNewExpr *E) {
-    Kast.KApply("NewExpr", 5);
+    Kast::add(Kast::KApply("NewExpr", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitBool(E->isGlobalNew());
     TRY_TO(TraverseType(E->getAllocatedType()));
     if (E->isArray()) {
       TRY_TO(TraverseStmt(E->getArraySize()));
     } else {
-      Kast.KApply("NoExpression", 0);
+      Kast::add(Kast::KApply("NoExpression", {Sort::KITEM}));
     }
     if (E->hasInitializer()) {
       TRY_TO(TraverseStmt(E->getInitializer()));
     } else {
-      Kast.KApply("NoInit", 0);
+      Kast::add(Kast::KApply("NoInit", {Sort::KITEM}));
     }
-    Kast.List(E->getNumPlacementArgs());
+    Kast::add(Kast::List(E->getNumPlacementArgs()));
     for (unsigned i = 0; i < E->getNumPlacementArgs(); i++) {
       TRY_TO(TraverseStmt(E->getPlacementArg(i)));
     }
@@ -1876,33 +1876,33 @@ public:
   }
 
   bool VisitCXXDeleteExpr(CXXDeleteExpr *E) {
-    Kast.KApply("DeleteExpr", 3);
+    Kast::add(Kast::KApply("DeleteExpr", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitBool(E->isGlobalDelete());
     VisitBool(E->isArrayFormAsWritten());
     return false;
   }
 
   bool VisitCXXThisExpr(CXXThisExpr *E) {
-    Kast.KApply("This", 0);
+    Kast::add(Kast::KApply("This", {Sort::KITEM}));
     return false;
   }
 
   bool VisitCXXThrowExpr(CXXThrowExpr *E) {
-    Kast.KApply("Throw", 1);
+    Kast::add(Kast::KApply("Throw", {Sort::KITEM, Sort::KITEM}));
     if (!E->getSubExpr()) {
-      Kast.KApply("NoExpression", 0);
+      Kast::add(Kast::KApply("NoExpression", {Sort::KITEM}));
     }
     return false;
   }
 
   bool TraverseLambdaCapture(LambdaExpr *E, const LambdaCapture *C, Expr*) {
-    Kast.KApply("LambdaCapture", 2);
+    Kast::add(Kast::KApply("LambdaCapture", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     switch(C->getCaptureKind()) {
       case LCK_This:
-        Kast.KApply("This", 0);
+        Kast::add(Kast::KApply("This", {Sort::KITEM}));
         break;
       case LCK_ByRef:
-        Kast.KApply("RefCapture", 1);
+        Kast::add(Kast::KApply("RefCapture", {Sort::KITEM, Sort::KITEM}));
         // fall through
       case LCK_ByCopy:
         break;
@@ -1917,16 +1917,16 @@ public:
   }
 
   bool TraverseLambdaExpr(LambdaExpr *E) {
-    Kast.KApply("Lambda", 4);
+    Kast::add(Kast::KApply("Lambda", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     switch(E->getCaptureDefault()) {
       case LCD_None:
-        Kast.KApply("NoCaptureDefault", 0);
+        Kast::add(Kast::KApply("NoCaptureDefault", {Sort::KITEM}));
         break;
       case LCD_ByCopy:
-        Kast.KApply("CopyCapture", 0);
+        Kast::add(Kast::KApply("CopyCapture", {Sort::KITEM}));
         break;
       case LCD_ByRef:
-        Kast.KApply("RefCapture", 0);
+        Kast::add(Kast::KApply("RefCapture", {Sort::KITEM}));
         break;
     }
     int i = 0;
@@ -1937,7 +1937,7 @@ public:
         i++;
       }
     }
-    Kast.List(i);
+    Kast::add(Kast::List(i));
     for (unsigned I = 0, N = E->capture_size(); I != N; ++I) {
       const LambdaCapture *C = E->capture_begin() + I;
       if (C->isExplicit()) {
@@ -1953,46 +1953,46 @@ public:
   }
 
   bool VisitPackExpansionExpr(PackExpansionExpr *E) {
-    Kast.KApply("PackExpansionExpr", 1);
+    Kast::add(Kast::KApply("PackExpansionExpr", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   void VisitStringRef(StringRef str) {
-    Kast.KToken(str.str());
+    Kast::add(Kast::KToken(str.str()));
   }
 
   void VisitAPInt(llvm::APInt i) {
-    Kast.KToken(i);
+    Kast::add(Kast::KToken(i));
   }
 
   void VisitUnsigned(unsigned long long i) {
-    Kast.KToken(i);
+    Kast::add(Kast::KToken(i));
   }
 
   void VisitAPFloat(llvm::APFloat f) {
     if (!f.isFinite()) {
       throw std::logic_error("unimplemented: special floats");
     }
-    Kast.KToken(f);
+    Kast::add(Kast::KToken(f));
   }
 
   bool VisitStringLiteral(StringLiteral *Constant) {
-    Kast.KApply("StringLiteral", 2);
+    Kast::add(Kast::KApply("StringLiteral", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     switch(Constant->getKind()) {
       case StringLiteral::Ascii:
-        Kast.KApply("Ascii", 0);
+        Kast::add(Kast::KApply("Ascii", {Sort::KITEM}));
         break;
       case StringLiteral::Wide:
-        Kast.KApply("Wide", 0);
+        Kast::add(Kast::KApply("Wide", {Sort::KITEM}));
         break;
       case StringLiteral::UTF8:
-        Kast.KApply("UTF8", 0);
+        Kast::add(Kast::KApply("UTF8", {Sort::KITEM}));
         break;
       case StringLiteral::UTF16:
-        Kast.KApply("UTF16", 0);
+        Kast::add(Kast::KApply("UTF16", {Sort::KITEM}));
         break;
       case StringLiteral::UTF32:
-        Kast.KApply("UTF32", 0);
+        Kast::add(Kast::KApply("UTF32", {Sort::KITEM}));
         break;
     }
     StringRef str = Constant->getBytes();
@@ -2001,57 +2001,57 @@ public:
   }
 
   bool VisitCharacterLiteral(CharacterLiteral *Constant) {
-    Kast.KApply("CharacterLiteral", 2);
+    Kast::add(Kast::KApply("CharacterLiteral", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     switch(Constant->getKind()) {
       case CharacterLiteral::Ascii:
-        Kast.KApply("Ascii", 0);
+        Kast::add(Kast::KApply("Ascii", {Sort::KITEM}));
         break;
       case CharacterLiteral::Wide:
-        Kast.KApply("Wide", 0);
+        Kast::add(Kast::KApply("Wide", {Sort::KITEM}));
         break;
       case CharacterLiteral::UTF8:
-        Kast.KApply("UTF8", 0);
+        Kast::add(Kast::KApply("UTF8", {Sort::KITEM}));
         break;
       case CharacterLiteral::UTF16:
-        Kast.KApply("UTF16", 0);
+        Kast::add(Kast::KApply("UTF16", {Sort::KITEM}));
         break;
       case CharacterLiteral::UTF32:
-        Kast.KApply("UTF32", 0);
+        Kast::add(Kast::KApply("UTF32", {Sort::KITEM}));
         break;
     }
-    Kast.KToken(Constant->getValue());
+    Kast::add(Kast::KToken(Constant->getValue()));
     return false;
   }
 
   bool TraverseIntegerLiteral(IntegerLiteral *Constant) {
-    Kast.KApply("IntegerLiteral", 2);
+    Kast::add(Kast::KApply("IntegerLiteral", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitAPInt(Constant->getValue());
     TRY_TO(TraverseType(Constant->getType()));
     return true;
   }
 
   bool TraverseFloatingLiteral(FloatingLiteral *Constant) {
-    Kast.KApply("FloatingLiteral", 2);
+    Kast::add(Kast::KApply("FloatingLiteral", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     VisitAPFloat(Constant->getValue());
     TRY_TO(TraverseType(Constant->getType()));
     return true;
   }
 
   bool VisitCXXNullPtrLiteralExpr(CXXNullPtrLiteralExpr *Constant) {
-    Kast.KApply("NullPointerLiteral", 0);
+    Kast::add(Kast::KApply("NullPointerLiteral", {Sort::KITEM}));
     return false;
   }
 
   bool VisitCXXBoolLiteralExpr(CXXBoolLiteralExpr *Constant) {
-    Kast.KApply("BoolLiteral", 1);
+    Kast::add(Kast::KApply("BoolLiteral", {Sort::KITEM, Sort::KITEM}));
     VisitBool(Constant->getValue());
     return false;
   }
 
   bool TraverseInitListExpr(InitListExpr *E) {
     InitListExpr *Syntactic = E->isSemanticForm() ? E->getSyntacticForm() ? E->getSyntacticForm() : E : E;
-    Kast.KApply("BraceInit", 1);
-    Kast.List(Syntactic->getNumInits());
+    Kast::add(Kast::KApply("BraceInit", {Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::List(Syntactic->getNumInits()));
     for (Stmt *SubStmt : Syntactic->children()) {
       TRY_TO(TraverseStmt(SubStmt));
     }
@@ -2059,17 +2059,17 @@ public:
   }
 
   bool VisitImplicitValueInitExpr(ImplicitValueInitExpr *E) {
-    Kast.KApply("ExpressionList", 1);
-    Kast.List(0);
+    Kast::add(Kast::KApply("ExpressionList", {Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::List(0));
     return false;
   }
 
   bool VisitTypeTraitExpr(TypeTraitExpr *E) {
-    Kast.KApply("GnuTypeTrait", 2);
+    Kast::add(Kast::KApply("GnuTypeTrait", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     switch (E->getTrait()) {
       #define TRAIT(Name, Str)                    \
         case Name:                                \
-          Kast.KToken((std::string)Str); \
+          Kast::add(Kast::KToken((std::string)Str)); \
           break;
       TRAIT(UTT_HasNothrowAssign, "HasNothrowAssign")
       TRAIT(UTT_HasNothrowMoveAssign, "HasNothrowMoveAssign")
@@ -2135,16 +2135,16 @@ public:
       default:
         throw std::logic_error("unimplemented: type trait");
     }
-    Kast.List(E->getNumArgs());
+    Kast::add(Kast::List(E->getNumArgs()));
     return false;
   }
 
   bool VisitAtomicExpr(AtomicExpr *E) {
-    Kast.KApply("GnuAtomicExpr", 2);
+    Kast::add(Kast::KApply("GnuAtomicExpr", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     switch(E->getOp()) {
       #define ATOMIC_BUILTIN(Name, Spelling)           \
         case AtomicExpr::AO##Name:                     \
-          Kast.KToken((std::string)Spelling); \
+          Kast::add(Kast::KToken((std::string)Spelling)); \
           break;
       ATOMIC_BUILTIN(__c11_atomic_init, "__c11_atomic_init")
       ATOMIC_BUILTIN(__c11_atomic_load, "__c11_atomic_load")
@@ -2181,7 +2181,7 @@ public:
       default:
         throw std::logic_error("unimplemented: atomic builtin");
     }
-    Kast.List(E->getNumSubExprs());
+    Kast::add(Kast::List(E->getNumSubExprs()));
     return false;
   }
 
@@ -2192,52 +2192,51 @@ public:
   // the rest of these are not part of the syntax of C but we keep them and transform them later
   // in order to avoid having to deal with messy syntax transformations within the parser
   bool VisitMaterializeTemporaryExpr(MaterializeTemporaryExpr *E) {
-    Kast.KApply("MaterializeTemporaryExpr", 1);
+    Kast::add(Kast::KApply("MaterializeTemporaryExpr", {Sort::KITEM, Sort::KITEM}));
     return false;
   }
 
   bool VisitParenListExpr(ParenListExpr *E) {
-    Kast.KApply("ParenList", 1);
-    Kast.List(E->getNumExprs());
+    Kast::add(Kast::KApply("ParenList", {Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::List(E->getNumExprs()));
     return false;
   }
 
   bool VisitCXXDefaultArgExpr(CXXDefaultArgExpr *E) {
-    Kast.KSequence(0);
+    Kast::add(Kast::KSequence(0));
     return false;
   }
 
 private:
-  KastNodes & Kast;
   ASTContext * Context;
   llvm::StringRef InFile;
 
   void Specifier(const char *str) {
-    Kast.KApply("Specifier", 2);
-    Kast.KApply(str, 0);
+    Kast::add(Kast::KApply("Specifier", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::KApply(str, {Sort::KITEM}));
   }
 
   void Specifier(const char *str, unsigned long long n) {
-    Kast.KApply("Specifier", 2);
-    Kast.KApply(str, 1);
-    Kast.KToken(n);
+    Kast::add(Kast::KApply("Specifier", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::KApply(str, {Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::KToken(n));
   }
 
   void CabsLoc(SourceLocation loc) {
     SourceManager &mgr = Context->getSourceManager();
     PresumedLoc presumed = mgr.getPresumedLoc(loc);
     if (presumed.isValid()) {
-      Kast.KApply("CabsLoc", 5);
-      Kast.KToken((std::string)presumed.getFilename());
+      Kast::add(Kast::KApply("CabsLoc", {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+      Kast::add(Kast::KToken((std::string)presumed.getFilename()));
       StringRef filename(presumed.getFilename());
       SmallString<64> vector(filename);
       llvm::sys::fs::make_absolute(vector);
-      Kast.KToken(vector.str().str());
+      Kast::add(Kast::KToken(vector.str().str()));
       VisitUnsigned(presumed.getLine());
       VisitUnsigned(presumed.getColumn());
       VisitBool(mgr.isInSystemHeader(loc));
     } else {
-      Kast.KApply("UnknownCabsLoc_COMMON-SYNTAX", 0);
+      Kast::add(Kast::KApply("UnknownCabsLoc_COMMON-SYNTAX", {Sort::KITEM}));
     }
   }
 
@@ -2253,13 +2252,13 @@ private:
         i++;
       }
     }
-    Kast.List(i);
+    Kast::add(Kast::List(i));
   }
 
   void StmtChildren(Stmt *S) {
     int i = 0;
     for (Stmt::child_iterator iter = S->child_begin(), end = S->child_end(); iter != end; ++i, ++iter);
-    Kast.List(i);
+    Kast::add(Kast::List(i));
   }
 
   void StorageClass(StorageClass sc) {
@@ -2301,21 +2300,21 @@ private:
 
   void Qualifiers(QualType T) {
     if (T.isLocalConstQualified()) {
-      Kast.KApply("Qualifier", 2);
-      Kast.KApply("Const", 0);
+      Kast::add(Kast::KApply("Qualifier", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+      Kast::add(Kast::KApply("Const", {Sort::KITEM}));
     }
     if (T.isLocalVolatileQualified()) {
-      Kast.KApply("Qualifier", 2);
-      Kast.KApply("Volatile", 0);
+      Kast::add(Kast::KApply("Qualifier", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+      Kast::add(Kast::KApply("Volatile", {Sort::KITEM}));
     }
     if (T.isLocalRestrictQualified()) {
-      Kast.KApply("Qualifier", 2);
-      Kast.KApply("Restrict", 0);
+      Kast::add(Kast::KApply("Qualifier", {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+      Kast::add(Kast::KApply("Restrict", {Sort::KITEM}));
     }
   }
 
   void mangledIdentifier(NamedDecl * D) {
-    Kast.KApply("Identifier", 1);
+    Kast::add(Kast::KApply("Identifier", {Sort::KITEM, Sort::KITEM}));
     auto mangler = Context->createMangleContext();
     std::string mangledName;
     llvm::raw_string_ostream s(mangledName);
@@ -2327,7 +2326,7 @@ private:
       else
         mangler->mangleName(D, s);
     }
-    Kast.KToken(s.str());
+    Kast::add(Kast::KToken(s.str()));
   }
 };
 
