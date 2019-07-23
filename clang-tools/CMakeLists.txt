@@ -26,7 +26,7 @@ set_target_properties (
   clang-kast
   call-sites
   PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 17
     CXX_EXTENSIONS OFF
     CXX_STANDARD_REQUIRED ON 
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
