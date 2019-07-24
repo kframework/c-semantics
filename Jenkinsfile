@@ -35,6 +35,7 @@ pipeline {
           }
         } }
         stage ( 'Build docker image' ) { steps {
+          sh 'docker pull 10.0.0.21:5201/ubuntu-rv:bionic'
           script {
             img = docker.build "${IMG_PR_TAG}"
           }
