@@ -61,7 +61,6 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax ConstructorType ::= "NoConstructorInit" | ConstructorInit(Bool)
 
-     context #figureInit(... base: HOLE:Expr) [result(LVal)]
 
      context #valueInit(HOLE:Expr, _, _) [result(LVal)]
 
@@ -72,6 +71,23 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      context #figureInit(... srcT: HOLE:TypeExpr => typeof(HOLE)) [result(CPPType)]
 
      context #figureInit(... srcCat: HOLE:CatExpr => catof(HOLE)) [result(ValueCategory)]
+
+     rule <k> #figureInit(Base::Expr, DestT::CPPType, IType::InitType,
+               I::Init, SrcType::CPPType, SrcCat::ValueCategory, CT::ConstructorType)
+          =>
+          Base ~> #figureInitHeatBase(DestT, IType, I, SrcType, SrcCat, CT)
+          ...</k>
+          <unreference> _ => false </unreference>
+          requires notBool isLVal(Base)
+
+     rule <k> Base:LVal ~> #figureInitHeatBase(DestT::CPPType, IType::InitType,
+               I::Init, SrcType::CPPType, SrcCat::ValueCategory, CT::ConstructorType)
+          =>
+          #figureInit(Base, DestT, IType, I, SrcType, SrcCat, CT)
+          ...</k>
+          <unreference> _ => true </unreference>
+
+     syntax KItem ::= #figureInitHeatBase(destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType)
 
      rule <k> #figureInit(... init: ExprLoc(L::CabsLoc, I::Init) => I) ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>

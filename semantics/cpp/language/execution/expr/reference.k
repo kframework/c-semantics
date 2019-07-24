@@ -11,12 +11,14 @@ module CPP-EXECUTION-EXPR-REFERENCE
 
      rule bindReferenceExec(E1::Expr, E2::Expr)
           => bindReferenceExec2(E1, E2)
-          requires Execution()
 
      syntax Expr ::= bindReferenceExec2(Expr, Expr) [strict(c; 2)]
 
      // we need this result tag because lvalues of reference type aren't KResults
-     context bindReferenceExec2(HOLE:Expr, _) [result(LVal)]
+     // In Translation(), the unreference rewrite might apply,
+     // so we restrict this context to Execution().
+     context bindReferenceExec2(HOLE:Expr, _)
+          requires Execution() [result(LVal)]
 
      rule <k> bindReferenceExec2(
                lv(Loc1::SymLoc, _, T1::CPPType) #as L1::LVal,
@@ -28,7 +30,6 @@ module CPP-EXECUTION-EXPR-REFERENCE
           <references>...
           .Map => stripProv(Loc1) |-> referenceTarget(innerType(T1), Loc2, T2)
           ...</references>
-          requires Execution()
 
      syntax SymLoc ::= referenceTarget(t1: CPPType, loc: SymLoc, t2: CPPType) [function]
 

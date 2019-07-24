@@ -19,7 +19,7 @@ module CPP-TRANSLATION-EXPR-REFERENCE
      // @ref n4296 8.5.3:5.1.1
      // @ref n4800 9.3.3:5.1
      rule bindReference2(V1::LVal, V2::Val)
-          => bindReferenceExec(V1, V2)
+          => bindReference'(V1, V2)
           requires isCPPLVRefType(type(V1))
           andBool notBool isCPPBitfieldType(type(V2))
           andBool isReferenceCompatible(innerType(type(V1)), type(V2))
@@ -27,7 +27,7 @@ module CPP-TRANSLATION-EXPR-REFERENCE
 
      // @ref n4800 9.3.3:5.3 - converted initializer is NOT a prvalue
      rule bindReference2(V1::LVal, V2::Val)
-          => bindReferenceExec(V1, V2)
+          => bindReference'(V1, V2)
           requires notBool isCPPBitfieldType(type(V2))
           andBool isReferenceCompatible(innerType(type(V1)), type(V2))
           andBool isValidReferenceType(type(V1))
@@ -52,9 +52,18 @@ module CPP-TRANSLATION-EXPR-REFERENCE
           =>
           TExpressionStmt(figureInit(le(Temp, noTrace, T), T, V2, CopyInit())) // TODO copy or direct?
           ~>
-          bindReferenceExec(V1, le(Temp, noTrace, T))
+          bindReference'(V1, le(Temp, noTrace, T))
 
-     rule bindReferenceExec(L:LVal, R:Val) => le(bindReferenceExec(L, R), trace(L), type(L))
-          requires Translation()
+     syntax Expr ::= "bindReference'" "(" Expr "," Expr ")" [function]
+
+     rule bindReference'(L:LVal, R:Val) => le(bindReferenceExec(L, R), trace(L), type(L))
+
+     rule <k> le(E::Expr, Tr::Trace, cppRefType #as T::CPPType => innerType(T)) ...</k>
+          <unreference> true </unreference>
+          <compile-time-evaluation> false </compile-time-evaluation>
+
+     rule <k> xe(E::Expr, Tr::Trace, cppRefType #as T::CPPType => innerType(T)) ...</k>
+          <unreference> true </unreference>
+          <compile-time-evaluation> false </compile-time-evaluation>
 
 endmodule
