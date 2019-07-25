@@ -49,6 +49,37 @@ static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 
 static cl::opt<bool> Kore("kore", cl::desc("Output kore instead of kast."), cl::cat(KastOptionCategory));
 
+// *** Sort to string ***
+
+// Could do this at compile time instead I guess.
+std::ostream& operator<<(std::ostream & os, const Sort & sort) {
+  if (Kore) os << "Sort";
+  switch (sort) {
+    case Sort::K:         os << "K"; break;
+    case Sort::KITEM:     os << "KItem"; break;
+    case Sort::STRING:    os << "String"; break;
+    case Sort::BOOL:      os << "Bool"; break;
+    case Sort::INT:       os << "Int"; break;
+    case Sort::FLOAT:     os << "Float"; break;
+    case Sort::LIST:      os << "List"; break;
+    case Sort::DECL:      os << "Decl"; break;
+    case Sort::EXPR:      os << "Expr"; break;
+    case Sort::INIT:      os << "Init"; break;
+    case Sort::ASTMT:     os << "AStmt"; break;
+    case Sort::CATCHDECL: os << "CatchDecl"; break;
+    case Sort::CID:       os << "CId"; break;
+    case Sort::ATYPE:     os << "AType"; break;
+    case Sort::NNS:       os << "NNS"; break;
+    case Sort::TAG:       os << "Tag"; break;
+    case Sort::SPECIFIER: os << "Specifier"; break;
+    case Sort::CHARKIND:  os << "CharKind"; break;
+    case Sort::CABSLOC:   os << "CabsLoc"; break;
+  }
+  if (Kore) os << "{}";
+  return os;
+}
+
+
 // *** Kast::Nodes ***
 
 vector<unique_ptr<const Kast::Node>> Kast::Nodes;
@@ -60,14 +91,6 @@ string Kast::Node::makeKLabel(const string & label) {
     return "Lbl" + escapeKLabel(label) + "{}";
   } else {
     return "`" + label + "`";
-  }
-}
-
-string Kast::Node::makeKSort(const string & sort) {
-  if (Kore) {
-    return "Sort" + sort + "{}";
-  } else {
-    return sort;
   }
 }
 
@@ -125,36 +148,36 @@ string Kast::Node::escapeKLabel(const string & label) {
 
 // *** Kast::KApply ***
 
-template <size_t N>
-void Kast::KApply<N>::print(function<void (void)> printChild) const {
-  if (Kore && subsort != sort) {
-      if (sort == Sort::K) {
+void Kast::KApply::print(Sort parentSort, function<void (Sort)> printChild) const {
+  if (Kore && sort != parentSort) {
+      if (parentSort == Sort::K) {
         cout << "kseq{}(";
-        if (subsort != Sort::KITEM) {
-          // kseq [inj subsort KItem contents]
-          cout << "inj{" << makeKSort("subsort") << ", " << makeKSort("sort") << "}(";
+        if (sort != Sort::KITEM) {
+          // kseq [inj sort KItem contents]
+          cout << "inj{" << sort << ", " << Sort::KITEM << "}(";
         }
       } else {
-        // inj subsort sort contents
-        cout << "inj{" << makeKSort("subsort") << ", " << makeKSort("sort") << "}(";
+        // inj sort parentSort contents
+        cout << "inj{" << sort << ", " << parentSort << "}(";
       }
   }
 
-  size_t nchildren = N - 1;
-
   cout << makeKLabel(label) << "(";
-  if (!Kore && nchildren == 0) {
+  if (!Kore && sig.size() == 0) {
     cout << ".KList";
   }
-  for (size_t i = 0; i != nchildren; i++) {
-    printChild();
-    if (i != nchildren - 1) cout << ",";
+
+  bool first = true;
+  for (Sort s : sig) {
+    if (!first) cout << ",";
+    first = false;
+    printChild(s);
   }
   cout << ")";
 
-  if (Kore && subsort != sort) {
-    if (sort == Sort::K) {
-      if (subsort != Sort::KITEM) {
+  if (Kore && sort != parentSort) {
+    if (parentSort == Sort::K) {
+      if (sort != Sort::KITEM) {
         cout << ")";
       }
       cout << ", dotk{}())";
@@ -209,11 +232,12 @@ string Kast::KToken::toKString(llvm::APFloat f) {
   return string(result);
 }
 
-void Kast::KToken::print(function<void (void)>) const {
+void Kast::KToken::print(Sort parentSort, function<void (Sort)>) const {
+  // TODO: inject?
   if (Kore) {
-    cout << "\\dv{" << makeKSort(sort) << "}(\"" << escape(value) << "\")";
+    cout << "\\dv{" << sort << "}(\"" << escape(value) << "\")";
   } else {
-    cout << "#token(\"" << escape(value) << "\", \"" << makeKSort(sort) << "\")";
+    cout << "#token(\"" << escape(value) << "\", \"" << sort << "\")";
   }
 }
 
@@ -241,12 +265,12 @@ string Kast::KToken::escape(const string & str) {
 
 // *** Kast::KSequence
 
-void Kast::KSequence::print(function<void (void)> printChild) const {
+void Kast::KSequence::print(Sort parentSort, function<void (Sort)> printChild) const {
   if (size == 0) {
     cout << (Kore ? "dotk{}()" : ".K");
   }
   for (int i = 0; i < size; i++) {
-    printChild();
+    printChild(Sort::KITEM);
     if (i != size - 1) {
       cout << (Kore ? ", " : "~>");
     }
@@ -255,13 +279,13 @@ void Kast::KSequence::print(function<void (void)> printChild) const {
 
 // *** Kast::List ***
 
-void Kast::List::print(function<void (void)> printChild) const {
+void Kast::List::print(Sort parentSort, function<void (Sort)> printChild) const {
   cout << makeKLabel("kSeqToList") << "(";
-  KSequence::print(printChild);
+  KSequence::print(Sort::KITEM, printChild);
   cout << ")";
 }
 
-// *** Kast:: ***
+// *** Kast ***
 
 template <class T>
 void Kast::add(const T & node) {
@@ -269,12 +293,12 @@ void Kast::add(const T & node) {
   Kast::Nodes.push_back(make_unique<T>(node));
 }
 
-void Kast::print() { print(0); }
+void Kast::print() { print(Sort::K, 0); }
 
-int Kast::print(int idx) {
+int Kast::print(Sort parentSort, int idx) {
   if (!Nodes[idx]) throw logic_error("parse error");
 
-  Nodes[idx]->print([&]() { idx = print(idx + 1); });
+  Nodes[idx]->print(parentSort, [&idx](Sort sort) { idx = print(sort, idx + 1); });
 
   return idx;
 }
