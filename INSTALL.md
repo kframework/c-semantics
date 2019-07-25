@@ -1,4 +1,4 @@
-## Installation
+# Installation
 
 **NOTE**: A more powerful version of the C semantics capable of recovering from 
 errors and detecting a broader range of undefined and undesirable behaviors 
@@ -9,18 +9,61 @@ can be found at https://runtimeverification.com/match.
 Please let us know if these instructions are insufficient or if you needed to
 do any installation steps not listed explicitly.
 
+## Quickly, using Docker
+
+For convenience, we provide a docker image containing all build
+dependencies:
+
+- Install docker (see <https://docs.docker.com/get-started/>)
+- Clone this repository:
+  ```sh
+  git clone git@github.com:kframework/c-semantics
+  cd c-semantics
+  git submodule update --init --recursive
+  ```
+- From within the cloned repository, run
+  ```sh
+  docker run -it --rm \
+    -v $(pwd -P):/home/user/mounted \
+    -w /home/user/mounted \
+    runtimeverificationinc/c-semantics:latest
+  ```
+- You are now inside a docker container with the project
+  directory mounted at `/home/user/mounted`. To build
+  the semantics, issue the following commands inside
+  that same directory:
+  ```sh
+  eval $(opam config env)
+  eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
+  make -j4 --output-sync=line
+  ```
+- The build artifacts will be placed inside the `dist` directory.
+
+
+## From scratch
+
 We recommend using Linux or OSX on a computer with at least 1 GB of memory.
 
 On Ubuntu 18.04, the installation process for our C semantics can be summarized as:
+```sh
+sudo apt-get install --yes \
+  maven git openjdk-8-jdk flex libgmp-dev \
+  libmpfr-dev build-essential cmake zlib1g-dev \
+  libclang-3.9-dev llvm-3.9 diffutils libuuid-tiny-perl \
+  libstring-escape-perl libstring-shellquote-perl \
+  libgetopt-declare-perl opam pkg-config \
+  libapp-fatpacker-perl
+git clone https://github.com/kframework/c-semantics.git
+cd c-semantics
+git submodule update --init --recursive
+eval $(opam config env)
+eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
+make -j4 --output-sync=line
 ```
-$ sudo apt-get install maven git openjdk-8-jdk flex libgmp-dev libmpfr-dev build-essential cmake zlib1g-dev libclang-3.9-dev llvm-3.9 diffutils libuuid-tiny-perl libstring-escape-perl libstring-shellquote-perl libgetopt-declare-perl opam pkg-config libapp-fatpacker-perl
-$ git clone --depth=1 https://github.com/kframework/c-semantics.git
-$ cd c-semantics
-$ make ocaml-deps
-$ eval $(opam config env)
-$ make -j4
-$ export PATH=$PATH:`pwd`/dist
-```
+The build artifacts will be placed inside the `dist` directory.
+
+
+## Detailed instructions
 
 ### 1. Install basic dependencies.
 - The GNU C compiler (GCC), Make, diff, and patch. On OSX, these programs are generally part
