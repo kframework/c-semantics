@@ -520,7 +520,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
                      | showSignature(QualId, CPPType) [function]
                      | showQualId(QualId) [function]
 
-     syntax Expr ::= bindReference(Expr, Expr) [strict(c; 2)]
+     syntax Expr ::= bindReference(Expr, Expr, Duration) [strict(c; 2)]
 
      syntax KItem ::= "discard"
 

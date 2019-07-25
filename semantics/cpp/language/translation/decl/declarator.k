@@ -335,7 +335,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                requires Constexpr() in S
 
           rule prepareDeclareNonStaticObject(X::CId, T::CPPType, Init::Init, Type::InitType, S::Set)
-               => declareNonStaticObject(X, T, figureInit(le(ExecName(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, Init, Type), Var(Type), AutoStorage, S)
+               => declareNonStaticObject(X, T, figureInit(le(ExecName(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, Init, Type, AutoStorage), Var(Type), AutoStorage, S)
 
           // NoLinkage, StaticStorage, not previously declared
           rule <k> declareObject(NoNamespace(), _, X::CId, _, T::CPPType, Init::Init, Type::DeclarationType, NoLinkage, StaticStorage, Set::Set)
@@ -522,7 +522,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      syntax Decl ::= defineObject3(NNSVal, CId, CId, CPPType, DeclarationType, Set, init: Init, type: InitType)
 
      rule defineObject3(N::NNSVal, X::CId, CName::CId, T::CPPType, Type::DeclarationType, S::Set, Init::Init, InitType::InitType)
-          => initializeObject(N, X, T, figureInit(allocateDecl(N :: X, CName, T, S), T, Init, InitType), Type)
+          => initializeObject(N, X, T, figureInit(allocateDecl(N :: X, CName, T, S), T, Init, InitType, StaticStorage), Type)
 
 
      syntax InitType ::= getInitType(DeclarationType) [function]
@@ -546,7 +546,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           ~> allocNrObject(Base, T)
           ~> initializeObject(NoNamespace(), X, T, figureInit(
                lv(lnew(Base), noTrace, T),
-               T, Init, Type), Var(Type))
+               T, Init, Type, StaticStorage), Var(Type))
 
      syntax Expr ::= allocateDecl(QualId, CId, CPPType, Set)
 
@@ -803,7 +803,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      // This part is very similar to bindParams
      rule #computeDefaultArgs(ListItem(T:CPPType) P::List, ListItem(Init::Init) A::List, false)
-          => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, Init, CopyInit())) #computeDefaultArgs(P, A, false)
+          => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, Init, CopyInit(), AutoStorage)) #computeDefaultArgs(P, A, false)
           requires notBool (isCPPRefType(T) andBool isExpr(Init))
            andBool Init =/=K NoInit()
 

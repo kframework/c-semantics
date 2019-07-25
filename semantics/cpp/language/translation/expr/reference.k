@@ -7,18 +7,19 @@ module CPP-TRANSLATION-EXPR-REFERENCE
      imports CPP-REFERENCE-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
 
-     context bindReference(HOLE:Expr, _) [result(LVal)]
+     context bindReference(HOLE:Expr, _, _) [result(LVal)]
 
-     rule bindReference(L:LVal, R:Val) => bindReference2(L, R)
+     rule bindReference(L:LVal, R:Val, D::Duration) => bindReference2(L, R, D)
      requires isCPPRefType(type(L))
 
-     syntax KItem ::= bindReference2(LVal, Val)
+     syntax KItem ::= bindReference2(LVal, Val, Duration)
 
      // @ref n4296 8.5.3:5.1.1
      // @ref n4800 9.3.3:5.1
-     rule bindReference2(V1::LVal, V2::Val)
+     rule bindReference2(V1::LVal, V2::Val, _)
           => bindReference'(V1, V2)
           requires isCPPLVRefType(type(V1))
           andBool notBool isCPPBitfieldType(type(V2))
@@ -26,7 +27,7 @@ module CPP-TRANSLATION-EXPR-REFERENCE
           andBool cat(V2) ==K lvalue
 
      // @ref n4800 9.3.3:5.3 - converted initializer is NOT a prvalue
-     rule bindReference2(V1::LVal, V2::Val)
+     rule bindReference2(V1::LVal, V2::Val, _)
           => bindReference'(V1, V2)
           requires notBool isCPPBitfieldType(type(V2))
           andBool isReferenceCompatible(innerType(type(V1)), type(V2))
@@ -34,27 +35,27 @@ module CPP-TRANSLATION-EXPR-REFERENCE
           andBool cat(V2) ==K xvalue
 
      // @ref n4800 9.3.3:5.3 - converted initializer IS a prvalue
-     rule bindReference2(V1::LVal, V2::Val)
+     rule bindReference2(V1::LVal, V2::Val, D::Duration)
           =>
           bindReferenceToTemporary(
                V1,
-               temp(!I:Int, innerType(type(V1))),
                innerType(type(V1)),
-               V2
+               V2,
+               D
           )
           requires cat(V2) ==K prvalue
           andBool notBool isCPPArrayType(type(V2))
 
 
-     syntax KItem ::= bindReferenceToTemporary(LVal, Expr, CPPType, Val)
+     syntax KItem ::= bindReferenceToTemporary(LVal, CPPType, Val, Duration)
 
-     rule bindReferenceToTemporary(V1::LVal, Temp::Expr, T::CPPType, V2::Val)
+     rule bindReferenceToTemporary(V1::LVal, T::CPPType, V2::Val, D::Duration)
           =>
-          TExpressionStmt(figureInit(le(Temp, noTrace, T), T, V2, CopyInit())) // TODO copy or direct?
+          declareObject(NoNamespace(), NoNamespace(), #NoName(!I:Int), Identifier(""), T, V2, Var(CopyInit()), NoLinkage, D, .Set)
           ~>
-          bindReference'(V1, le(Temp, noTrace, T))
+          bindReference'(V1, Name(NoNNS(), #NoName(!I:Int)))
 
-     syntax Expr ::= "bindReference'" "(" Expr "," Expr ")" [function]
+     syntax Expr ::= "bindReference'" "(" Expr "," Expr ")" [strict(c; 2)]
 
      rule bindReference'(L:LVal, R:Val) => le(bindReferenceExec(L, R), trace(L), type(L))
 
