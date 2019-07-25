@@ -5,7 +5,7 @@ def img
 def publicRegistry = "runtimeverificationinc/c-semantics"
 
 // Our internal registry.
-def privateRegistry = "10.0.0.21:5201/c-semantics"
+def privateRegistry = "office.runtimeverification.com:5201/c-semantics"
 
 // Image tag for the private registry.
 def IMG_PR_TAG = privateRegistry + ":${env.CHANGE_ID}"
