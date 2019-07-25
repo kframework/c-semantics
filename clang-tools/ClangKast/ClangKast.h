@@ -2,19 +2,61 @@
 #define CLANGKAST_H_
 
 enum class Sort {
-  K, KITEM,
-  STRING, BOOL, INT, FLOAT,
-  LIST,
-  DECL, EXPR, INIT, ASTMT, CATCHDECL,
-  CID, ATYPE, NNS, TAG, SPECIFIER,
-  CHARKIND, CABSLOC,
-
+  ACCESSSPECIFIER,
+  AEXPR,
+  ASTMT,
+  ATYPE,
+  ATYPERESULT,
+  AUTOSPECIFIER,
+  BASESPECIFIER,
+  BOOL,
+  BRACEINIT,
+  CABSLOC,
+  CAPTURE,
+  CAPTUREDEFAULT,
+  CAPTUREKIND,
+  CATCHDECL,
+  CHARKIND,
+  CID,
+  CLASSKEY,
+  CTORINIT,
+  DECL,
+  DECLARATOR,
+  DESTRUCTORID,
+  ENUMERATOR,
+  EXCEPTIONSPEC,
+  EXPR,
+  EXPRESSIONLIST,
   EXPRLOC,
-  NNSSPECIFIER,
+  FLOAT,
+  FUNCTIONSPECIFIER,
+  INIT,
+  INT,
+  K,
+  KITEM,
+  LIST,
+  NAME,
   NAMESPACE,
+  NNS,
+  NNSSPECIFIER,
   NONAME,
+  OPID,
+  QUALIFIER,
+  REFQUALIFIER,
+  RESOLVEDEXPR,
+  SPECIFIER,
+  STMT,
+  STORAGECLASSSPECIFIER,
+  STRICTLIST,
+  STRICTLISTRESULT,
+  STRING,
+  TAG,
+  TEMPLATEARGUMENT,
+  TEMPLATEPARAMETER,
+  THIS,
+  TYPEID,
+  TYPESPECIFIER,
   UNNAMEDCID,
-
 };
 
 std::ostream& operator<<(std::ostream & os, const Sort & sort);
@@ -86,12 +128,6 @@ public:
     virtual void print(Sort parentSort, std::function<void (Sort)> printChild) const;
   private:
     const int size;
-  };
-
-  class List : public KSequence {
-  public:
-    explicit List(int size) : KSequence(size) { }
-    void print(Sort parentSort, std::function<void (Sort)> printChild) const;
   };
 
 private:

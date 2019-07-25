@@ -51,29 +51,64 @@ static cl::opt<bool> Kore("kore", cl::desc("Output kore instead of kast."), cl::
 
 // *** Sort to string ***
 
-// Could do this at compile time instead I guess.
 std::ostream& operator<<(std::ostream & os, const Sort & sort) {
   if (Kore) os << "Sort";
   switch (sort) {
-    case Sort::K:         os << "K"; break;
-    case Sort::KITEM:     os << "KItem"; break;
-    case Sort::STRING:    os << "String"; break;
-    case Sort::BOOL:      os << "Bool"; break;
-    case Sort::INT:       os << "Int"; break;
-    case Sort::FLOAT:     os << "Float"; break;
-    case Sort::LIST:      os << "List"; break;
-    case Sort::DECL:      os << "Decl"; break;
-    case Sort::EXPR:      os << "Expr"; break;
-    case Sort::INIT:      os << "Init"; break;
-    case Sort::ASTMT:     os << "AStmt"; break;
-    case Sort::CATCHDECL: os << "CatchDecl"; break;
-    case Sort::CID:       os << "CId"; break;
-    case Sort::ATYPE:     os << "AType"; break;
-    case Sort::NNS:       os << "NNS"; break;
-    case Sort::TAG:       os << "Tag"; break;
-    case Sort::SPECIFIER: os << "Specifier"; break;
-    case Sort::CHARKIND:  os << "CharKind"; break;
-    case Sort::CABSLOC:   os << "CabsLoc"; break;
+    case Sort::ACCESSSPECIFIER:       os << "AccessSpecifier"; break;
+    case Sort::AEXPR:                 os << "AExpr"; break;
+    case Sort::ASTMT:                 os << "AStmt"; break;
+    case Sort::ATYPE:                 os << "AType"; break;
+    case Sort::ATYPERESULT:           os << "ATypeResult"; break;
+    case Sort::AUTOSPECIFIER:         os << "AutoSpecifier"; break;
+    case Sort::BASESPECIFIER:         os << "BaseSpecifier"; break;
+    case Sort::BOOL:                  os << "Bool"; break;
+    case Sort::BRACEINIT:             os << "BraceInit"; break;
+    case Sort::CABSLOC:               os << "CabsLoc"; break;
+    case Sort::CAPTUREDEFAULT:        os << "CaptureDefault"; break;
+    case Sort::CAPTUREKIND:           os << "CaptureKind"; break;
+    case Sort::CAPTURE:               os << "Capture"; break;
+    case Sort::CATCHDECL:             os << "CatchDecl"; break;
+    case Sort::CHARKIND:              os << "CharKind"; break;
+    case Sort::CID:                   os << "CId"; break;
+    case Sort::CLASSKEY:              os << "ClassKey"; break;
+    case Sort::CTORINIT:              os << "CtorInit"; break;
+    case Sort::DECLARATOR:            os << "Declarator"; break;
+    case Sort::DECL:                  os << "Decl"; break;
+    case Sort::DESTRUCTORID:          os << "DestructorId"; break;
+    case Sort::ENUMERATOR:            os << "Enumerator"; break;
+    case Sort::EXCEPTIONSPEC:         os << "ExceptionSpec"; break;
+    case Sort::EXPRESSIONLIST:        os << "ExpressionList"; break;
+    case Sort::EXPRLOC:               os << "ExprLoc"; break;
+    case Sort::EXPR:                  os << "Expr"; break;
+    case Sort::FLOAT:                 os << "Float"; break;
+    case Sort::FUNCTIONSPECIFIER:     os << "FunctionSpecifier"; break;
+    case Sort::INIT:                  os << "Init"; break;
+    case Sort::INT:                   os << "Int"; break;
+    case Sort::KITEM:                 os << "KItem"; break;
+    case Sort::K:                     os << "K"; break;
+    case Sort::LIST:                  os << "List"; break;
+    case Sort::NAME:                  os << "Name"; break;
+    case Sort::NAMESPACE:             os << "Namespeace"; break;
+    case Sort::NNS:                   os << "NNS"; break;
+    case Sort::NNSSPECIFIER:          os << "NNSSpecifier"; break;
+    case Sort::NONAME:                os << "NoName"; break;
+    case Sort::OPID:                  os << "OpId"; break;
+    case Sort::QUALIFIER:             os << "Qualifier"; break;
+    case Sort::REFQUALIFIER:          os << "RefQualifier"; break;
+    case Sort::RESOLVEDEXPR:          os << "ResolvedExpr"; break;
+    case Sort::SPECIFIER:             os << "Specifier"; break;
+    case Sort::STMT:                  os << "Stmt"; break;
+    case Sort::STORAGECLASSSPECIFIER: os << "StorageClassSpecifier"; break;
+    case Sort::STRICTLIST:            os << "StrictList"; break;
+    case Sort::STRICTLISTRESULT:      os << "StrictListResult"; break;
+    case Sort::STRING:                os << "String"; break;
+    case Sort::TAG:                   os << "Tag"; break;
+    case Sort::TEMPLATEARGUMENT:      os << "TemplateArgument"; break;
+    case Sort::TEMPLATEPARAMETER:     os << "TemplateParameter"; break;
+    case Sort::THIS:                  os << "This"; break;
+    case Sort::TYPEID:                os << "TypeId"; break;
+    case Sort::TYPESPECIFIER:         os << "TypeSpecifier"; break;
+    case Sort::UNNAMEDCID:            os << "UnnamedCId"; break;
   }
   if (Kore) os << "{}";
   return os;
@@ -275,14 +310,6 @@ void Kast::KSequence::print(Sort parentSort, function<void (Sort)> printChild) c
       cout << (Kore ? ", " : "~>");
     }
   }
-}
-
-// *** Kast::List ***
-
-void Kast::List::print(Sort parentSort, function<void (Sort)> printChild) const {
-  cout << makeKLabel("kSeqToList") << "(";
-  KSequence::print(Sort::KITEM, printChild);
-  cout << ")";
 }
 
 // *** Kast ***
