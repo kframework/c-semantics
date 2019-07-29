@@ -1,17 +1,8 @@
 // Object holding the docker image.
 def img
 
-// The dockerhub registry.
-def publicRegistry = "runtimeverificationinc/c-semantics"
-
 // Our internal registry.
-def privateRegistry = "10.0.0.21:5201/c-semantics"
-
-// Image tag for the private registry.
-def IMG_PR_TAG = privateRegistry + ":${env.CHANGE_ID}"
-
-// Image tag for dockerhub.
-def IMG_RELEASE_TAG = publicRegistry + ":latest"
+def PRIVATE_REGISTRY = "https://10.0.0.21:5201"
 
 pipeline {
   agent none 
@@ -35,14 +26,15 @@ pipeline {
           }
         } }
         stage ( 'Build docker image' ) { steps {
-          sh 'docker pull 10.0.0.21:5201/ubuntu-rv:bionic'
           script {
-            img = docker.build "${IMG_PR_TAG}"
+            img = docker.build "c-semantics:${env.CHANGE_ID}"
           }
         } }
         stage ( 'Push to private registry' ) { steps {
           script {
-            img.push()
+            docker.withRegistry ( "${PRIVATE_REGISTRY}", 'rvdockerhub' ) {
+              img.push()
+            }
           }
         } }
         stage ( 'Compile' ) {
@@ -104,13 +96,13 @@ pipeline {
       stages {
         stage ( 'Build docker image' ) { steps {
           script {
-            img = docker.build "${IMG_RELEASE_TAG}"
+            img = docker.build 'runtimeverificationinc/c-semantics:latest'
           }
         } }
         stage ( 'Push to dockerhub' ) { steps {
           script {
-            docker.withRegistry( '', 'rvdockerhub' ) {
-              sh "docker push ${IMG_RELEASE_TAG}"
+            docker.withRegistry ( '', 'rvdockerhub' ) {
+              img.push()
             }
           }
         } }
