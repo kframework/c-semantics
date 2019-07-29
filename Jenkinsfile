@@ -16,9 +16,6 @@ pipeline {
         changeRequest()
         beforeAgent true
       }
-      options {
-        timeout(time: 155, unit: 'MINUTES')
-      }
       stages {
         stage ( 'Set title' ) { steps {
           script {
@@ -38,6 +35,9 @@ pipeline {
           }
         } }
         stage ( 'Compile' ) {
+          options {
+            timeout(time: 25, unit: 'MINUTES')
+          }
           steps {
             script { img.inside {
               sh '''
@@ -64,6 +64,9 @@ pipeline {
           }
         } }
         stage ( 'Test' ) {
+          options {
+            timeout(time: 120, unit: 'MINUTES')
+          }
           steps {
             script { img.inside {
               sh '''
