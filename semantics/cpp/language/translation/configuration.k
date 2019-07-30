@@ -24,6 +24,8 @@ module C-CONFIGURATION
           </goto-calc>
      </goto-map-calc>
 
+     <unreference> true </unreference>
+
      <k color="green">
           $PGM:K
           ~> reportSuccess

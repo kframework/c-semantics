@@ -8,7 +8,7 @@ module CPP-TRANSLATION-STMT-RETURN
 
      context TReturnOp(HOLE:Expr) [result(Val)]
 
-     rule <k> ReturnStmt(I::Init) => TReturnOp(figureInit(le(temp(!I:Int, Ret), noTrace, Ret), Ret, I, CopyInit())) ...</k>
+     rule <k> ReturnStmt(I::Init) => TReturnOp(figureInit(le(temp(!I:Int, Ret), noTrace, Ret), Ret, I, CopyInit(), AutoStorage)) ...</k>
           <curr-function> Base::SymBase </curr-function>
           <functions>... Base |-> functionObject(_, t(_, _, functionType(... returnType: Ret::CPPType)), _, _) ...</functions>
           requires I =/=K NoInit()

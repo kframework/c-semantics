@@ -32,7 +32,7 @@ module CPP-TRANSLATION-EXPR-CAST
      rule FunctionalCast(T:CPPType, ListItem(E::Expr)) => ParenthesizedCast(T, E)
 
      rule FunctionalCast(T:CPPType, ListItem(E1::Expr) ListItem(E2::Expr) L::List)
-          => makePRVal(figureInit(le(temp(!I:Int, T), noTrace, T), T, ExpressionList(ListItem(E1) ListItem(E2) L), DirectInit()))
+          => makePRVal(figureInit(le(temp(!I:Int, T), noTrace, T), T, ExpressionList(ListItem(E1) ListItem(E2) L), DirectInit(), AutoStorage))
 
      // @ref n4296 5.2.3:2
      rule FunctionalCast(T:CPPType, .List)
@@ -96,7 +96,7 @@ module CPP-TRANSLATION-EXPR-CAST
 
      // @ref n4800 7.6.1.8:4
      rule convertStatic(T::CPPType, V::Val, Tr::Trace)
-          => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, V, DirectInit())) [owise]
+          => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, V, DirectInit(), AutoStorage)) [owise]
 
      rule tryInit(_, _, V:Val) => V
 
