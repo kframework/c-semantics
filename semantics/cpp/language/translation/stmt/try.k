@@ -41,7 +41,7 @@ module CPP-TRANSLATION-STMT-TRY
 
      rule Throw.prepare(E::Expr, T:CPPType)
           => Throw.potentiallyInvokeDestructor(T)
-          ~> Throw.eval(figureInit(le(temp(!I:Int, utype(T)), noTrace, utype(T)), utype(T), E, CopyInit()), E)
+          ~> Throw.eval(figureInit(le(temp(!I:Int, utype(T)), noTrace, utype(T)), utype(T), E, CopyInit(), /* will never be used: */ AutoStorage), E)
 
      rule Throw.prepare(NoExpression(), NoExpression())
           => pre(ThrowOp(exceptionObject(type(no-type))), hasTrace(Throw(NoExpression())), type(void))

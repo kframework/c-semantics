@@ -15,6 +15,7 @@ module CPP-EXECUTION-STMT-RETURN
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-EXECUTION-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
+     imports CPP-REFERENCE-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
@@ -32,6 +33,8 @@ module CPP-EXECUTION-STMT-RETURN
      rule prepareReturn(t(... st: void) #as T::CPPType, V:PRVal) => Return''(V)
 
      syntax KItem ::= "Return'" "(" KItem "," CPPType ")" [strict(c; 1)]
+
+     rule Return'(referenceBindingResult(V::Val) => V, _)
 
      // compute value category of result
      rule Return'(lv(Loc::SymLoc, Tr::Trace, T::CPPType), DeclT::CPPType) =>

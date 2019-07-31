@@ -65,7 +65,8 @@ module CPP-TRANSLATION-EXPR-NEW
                  le(ExecName(NoNNS(), #NoName(I)), noTrace, t(noQuals, .Set, dynamicArrayType(T, newSize(I)))),
                  t(noQuals, .Set, dynamicArrayType(T, newSize(I))),
                  Init,
-                 DirectInit()
+                 DirectInit(),
+                 DynamicStorage
                )
              )
 
@@ -76,7 +77,8 @@ module CPP-TRANSLATION-EXPR-NEW
                  le(ExecName(NoNNS(), #NoName(I)), noTrace, t(noQuals, .Set, arrayType(T, Size))),
                  t(noQuals, .Set, arrayType(T, Size)),
                  Init,
-                 DirectInit()
+                 DirectInit(),
+                 DynamicStorage
                )
              )
 
@@ -87,7 +89,8 @@ module CPP-TRANSLATION-EXPR-NEW
                  le(ExecName(NoNNS(), #NoName(!I:Int)), noTrace, T),
                  T,
                  Init,
-                 DirectInit()
+                 DirectInit(),
+                 DynamicStorage
                )
             )
 

@@ -520,7 +520,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
                      | showSignature(QualId, CPPType) [function]
                      | showQualId(QualId) [function]
 
-     syntax Expr ::= bindReference(Expr, Expr) [strict(c; 2)]
+     syntax Expr ::= bindReference(Expr, Expr, Duration) [strict(c; 2)]
 
      syntax KItem ::= "discard"
 
@@ -637,9 +637,6 @@ module CPP-DYNAMIC-OTHER
           <references>... loc(Base, Offset) |-> V::SymLoc ...</references>
      rule <k> xv(loc(Base::SymBase, Offset::Int), Tr::Trace, cppRefType #as T::CPPType) => xv(V, Tr, innerType(T)) ...</k>
           <references>... loc(Base, Offset) |-> V::SymLoc ...</references>
-
-     rule le(E::Expr, Tr::Trace, cppRefType #as T::CPPType) => le(E, Tr, innerType(T))
-     rule xe(E::Expr, Tr::Trace, cppRefType #as T::CPPType) => xe(E, Tr, innerType(T))
 
      rule stripHold(le(E::Expr, _, _)) => E
 
