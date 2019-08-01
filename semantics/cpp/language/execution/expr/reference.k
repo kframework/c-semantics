@@ -22,7 +22,9 @@ module CPP-EXECUTION-EXPR-REFERENCE
 
      rule <k> bindReferenceExec2(
                lv(Loc1::SymLoc, _, T1::CPPType) #as L1::LVal,
-               lv(Loc2::SymLoc, _, T2::CPPType) #Or xv(Loc2::SymLoc, _, T2::CPPType)
+               lv(Loc2::SymLoc, _, T2::CPPType) #Or
+               xv(Loc2::SymLoc, _, T2::CPPType) #Or
+               prv(Loc2:SymLoc, _, T2::CPPType)
           )
           =>
           referenceBindingResult(L1)
