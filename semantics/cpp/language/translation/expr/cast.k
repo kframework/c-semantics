@@ -1,6 +1,7 @@
 module CPP-TRANSLATION-EXPR-CAST
      imports CPP-EXPR-CAST-SYNTAX
      imports BOOL
+     imports LIST
      imports K-EQUAL
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
@@ -28,16 +29,72 @@ module CPP-TRANSLATION-EXPR-CAST
                andBool isSimilar(type(pointerType(innerType(T2))),
                                  type(pointerType(type(V))))
 
-     // @ref n4296 5.2.3:1
-     rule FunctionalCast(T:CPPType, ListItem(E::Expr)) => ParenthesizedCast(T, E)
+     // @ref n4296 5.2.3:1-2
+     // <quote>
+     // A simple-type-specifier (7.1.6.2) or typename-specifier (14.6)
+     // followed by a parenthesized expression-list constructs a value
+     // of the specified type given the expression list.
+     // </quote>
+     rule FunctionalCast(T:CPPType, L::List)
+          =>
+          // <quote>
+          // If the expression list is a single expression,
+          // </quote>
+          #if size(L) ==Int 1
+          #then
+               // <quote>
+               // the type conversion expression is equivalent (in definedness,
+               // and if defined in meaning) to the corresponding cast expres-
+               // sion (5.4). If the type specified is a class type, the class
+               // type shall be complete.
+               // </quote>
+               #if isCPPClassType(T) andBool notBool isCompleteType(T)
+               #then ill-formed
+               #else ParenthesizedCast(T, {L[0]}:>Expr)
+               #fi
+          #else
+               // <quote>
+               // If the expression list specifies more than a single value,
+               // </quote>
+          #if size(L) >Int 1
+          #then
+               // <quote>
+               // the type shall be a class with a suitably declared constructor
+               // (8.5, 12.1), and the expression `T(x1, x2, ...)` is equivalent
+               // in effect to the declaration `T t(x1, x2, ...);` for some
+               // invented temporary variable t, with the result being the value
+               // of t as a prvalue.
+               // </quote>
+               #if notBool isCPPClassType(T)
+               #then ill-formed
+               #else makePRVal(figureInit(le(temp(!I:Int, T), noTrace, T),
+                         T, ExpressionList(L), DirectInit(), AutoStorage))
+               #fi
+          #else
+          // <quote>
+          // The expression T(), where T is a simple-type-specifier or
+          // typename-specifier for a non-array complete object type or the
+          // (possibly cv-qualified) void type,
+          // </quote>
+          #if size(L) ==Int 0 andBool
+               ((notBool isCPPArrayType(T) andBool isCompleteType(T))
+                    orBool isCPPVoidType(T))
+          #then
+               // <quote>
+               // creates a prvalue of the
+               // specified type, whose value is that produced by value-initi-
+               // alizing (8.5) an object of type T; no initialization is done
+               // for the void() case. [ Note: if T is a non-class type that is
+               // cv-qualified, the cv-qualifiers are discarded when determining
+               // the type of the resulting prvalue (Clause 5). -- end note ]
+               // </quote>
+               #if isCPPVoidType(T)
+               #then prv(voidVal, noTrace, T)
+               #else makePRVal(valueInit(le(temp(!I:Int, T), noTrace, T), T))
+               #fi
+          #else ill-formed
+          #fi #fi #fi
 
-     rule FunctionalCast(T:CPPType, ListItem(E1::Expr) ListItem(E2::Expr) L::List)
-          => makePRVal(figureInit(le(temp(!I:Int, T), noTrace, T), T, ExpressionList(ListItem(E1) ListItem(E2) L), DirectInit(), AutoStorage))
-
-     // @ref n4296 5.2.3:2
-     rule FunctionalCast(T:CPPType, .List)
-          => makePRVal(valueInit(le(temp(!I:Int, T), noTrace, T), T))
-          requires notBool isCPPArrayType(T)
 
      // TODO(dwightguth): 5.4:4.3-5
      rule ParenthesizedCast(T:CPPType, V:Val)
