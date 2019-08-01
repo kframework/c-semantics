@@ -34,6 +34,7 @@ module CPP-TRANSLATION-EXPR-REFERENCE
           #if
                isCPPLVRefType(T1) andBool
                C2 ==K lvalue andBool
+               notBool isCPPBitfieldType(T2) andBool
                isReferenceCompatible(innerType(T1), T2)
           #then
                bindReference'(V1, V2)
