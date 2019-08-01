@@ -34,7 +34,17 @@ void test2() {
 	assert(d.n == 0);
 }
 
+// zero initialize empty class
+struct E{};
+
+void test3() {
+	// @ref n4296 5.2.3/2
+	// value/zero initialization
+	E();
+}
+
 int main() {
 	test1();
 	test2();
+	test3();
 }

@@ -101,7 +101,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule #zeroInit(Base:LVal, cppScalarType #as T::CPPType, _) => le(Base, trace(Base), T) :=init interpret(prv(0, noTrace, T))
 
      // @ref n4296 8.5:6.2
-     rule <k> #zeroInit(Base:LVal, t(_, _, classType(C::Class)) #as T::CPPType, _) => zeroInitClass(Base, T, Bases, NSDM, noExpr /* Base*/) ...</k>
+     rule <k> #zeroInit(Base:LVal, t(_, _, classType(C::Class)) #as T::CPPType, _) => zeroInitClass(Base, T, Bases, NSDM, noExpr) ...</k>
           <class-id> C </class-id>
           <base-classes> Bases::List </base-classes>
           <non-static-data-members> NSDM::List </non-static-data-members>
@@ -115,7 +115,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax KItem ::= zeroInitClass(LVal, CPPType, bases: List, nsdm: List, init: MaybeExpr)
 
-     rule zeroInitClass(Base:LVal, _, .List, .List, noExpr) => .K
+     rule zeroInitClass(Base:LVal, _, .List, .List, noExpr) => Base
 
      rule zeroInitClass(Base:LVal, _, .List, .List, E:Expr) => E
 
