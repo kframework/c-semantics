@@ -12,7 +12,6 @@ module CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
 
      syntax Expr ::= valueInit(base: Expr, CPPType)
                    | defaultConstructorInit(base: Expr, CPPType, constructorType: Bool)
-                   | zeroInit(base: Expr, type: CPPType)
 
      syntax KResult ::= functionDef(SymBase, Stmt)
 
@@ -52,6 +51,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax Expr ::= #figureInit(base: Expr, destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType, Duration)
                    | constructorInit(LVal, InitType, Class, List, ConstructorType)
+                   | zeroInit(base: Expr, type: CPPType)
                    | InitStyle "(" Expr "," CPPType "," ConstructorType ")"
 
      syntax InitStyle ::= "defaultInit" | "#valueInit" | "#zeroInit"
@@ -117,7 +117,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule zeroInitClass(Base:LVal, _, .List, .List, noExpr) => Base
 
-     rule zeroInitClass(Base:LVal, _, .List, .List, E:Expr) => E
+     rule zeroInitClass(Base:LVal, _, .List, .List, E:Expr) => compoundInit(E, Base)
 
      rule (.K => evalMany(ListItem(zeroInitBaseClass(Base, type(classType(BaseCl::Class)))), .List))
           ~> zeroInitClass(Base:LVal, _, (ListItem(BaseCl::Class) => .List) _, _, _)
