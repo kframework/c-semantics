@@ -1,4 +1,4 @@
-FROM 10.0.0.21:5201/ubuntu-rv:bionic
+FROM runtimeverificationinc/ubuntu:bionic
 
 #####################
 # Install packages. #
