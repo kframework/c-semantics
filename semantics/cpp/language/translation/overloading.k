@@ -379,7 +379,15 @@ module CPP-TRANSLATION-OVERLOADING
                     | #computeUDCTo(Class, List, CPPType, ValueCategory, List)
 
      rule computeUDCTo(_ :: Class(_, X::CId, _) #as P::Class, <class>... <cenv>... ConstructorId(X) |-> M::Map ...</cenv> ...</class>, A::CPPType, C::ValueCategory)
-          => #computeUDCTo(P, keys_list(stripExplicit(M)), A, C, .List)
+          => #computeUDCTo(P, singleParamFunctions(keys_list(stripExplicit(M))), A, C, .List)
+
+     syntax List ::= singleParamFunctions(List) [function]
+
+     rule singleParamFunctions(ListItem(t(... st: ST::CPPSimpleFunctionType) #as FuncT::CPPType) L::List)
+          => #if paramCount(ST) ==Int 1 #then ListItem(FuncT) #else .List #fi
+             singleParamFunctions(L)
+
+     rule singleParamFunctions(.List) => .List
 
      rule (.K => computeUserDefinedConversionSequence(
                computeConversionSequence(Param, A, C, false, false, false),
