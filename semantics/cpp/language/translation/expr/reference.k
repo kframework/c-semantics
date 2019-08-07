@@ -16,38 +16,88 @@ module CPP-TRANSLATION-EXPR-REFERENCE
      requires isCPPRefType(type(L))
 
      syntax KItem ::= bindReference2(LVal, Val, Duration)
+                    | bindReference3(LVal, CPPType, Val, CPPType, ValueCategory, Duration)
 
-     // @ref n4296 8.5.3:5.1.1
-     // @ref n4800 9.3.3:5.1
-     rule bindReference2(V1::LVal, V2::Val, _)
-          => bindReference'(V1, V2)
-          requires isCPPLVRefType(type(V1))
-          andBool notBool isCPPBitfieldType(type(V2))
-          andBool isReferenceCompatible(innerType(type(V1)), type(V2))
-          andBool cat(V2) ==K lvalue
+     syntax Bool ::= isCPP14() [function]
+     rule isCPP14() => true
 
-     // @ref n4800 9.3.3:5.3 - converted initializer is NOT a prvalue
-     rule bindReference2(V1::LVal, V2::Val, _)
-          => bindReference'(V1, V2)
-          requires notBool isCPPBitfieldType(type(V2))
-          andBool isReferenceCompatible(innerType(type(V1)), type(V2))
-          andBool isValidReferenceType(type(V1))
-          andBool cat(V2) ==K xvalue
-
-     // @ref n4800 9.3.3:5.3 - converted initializer IS a prvalue
      rule bindReference2(V1::LVal, V2::Val, D::Duration)
+          => bindReference3(V1, type(V1), V2, type(V2), cat(V2), D)
+
+     rule bindReference3(V1::LVal, T1::CPPType, V2::Val, T2::CPPType, C2::ValueCategory, D::Duration)
           =>
-          bindReferenceToTemporary(
-               V1,
-               innerType(type(V1)),
-               V2,
-               D
-          )
-          requires cat(V2) ==K prvalue
-          andBool notBool isCPPArrayType(type(V2))
+          // @ref n4296 8.5.3/5.1
+          // <quote>
+          // If the reference is an lvalue reference and the initializer expression is an lvalue
+          // (but is not a bit-field), and "cv1 T1" is reference-compatible with "cv2 T2,"
+          // </quote>
+          #if
+               isCPPLVRefType(T1) andBool
+               C2 ==K lvalue andBool
+               notBool isCPPBitfieldType(T2) andBool
+               isReferenceCompatible(innerType(T1), T2)
+          #then
+               bindReference'(V1, V2)
+          #else
+          // 5.2
+          // <quote>
+          // Otherwise, the reference shall be an lvalue reference to a non-volatile const type
+          // (i.e., cv1 shall be const), or the reference shall be an rvalue reference.
+          // </quote>
+          #if
+               isCPPLVRefType(T1) andBool
+               notBool isConstType(innerType(T1))
+          #then
+               ill-formed
+          #else
+          // 5.2.1
+          // <quote>
+          // If the initializer expression is an xvalue (but not a bit-field),
+          // class prvalue, array prvalue or function lvalue
+          // and "cv1 T1" is reference-compatible with "cv2 T2
+          // </quote>
+          #if
+          (
+               (C2 ==K xvalue andBool notBool isCPPBitfieldType(T2)) orBool
+               (C2 ==K prvalue andBool isCPPClassType(T2)) orBool
+               (C2 ==K prvalue andBool isCPPArrayType(T2)) orBool
+               (C2 ==K lvalue andBool isCPPFunctionType(T2))
+          ) andBool isReferenceCompatible(innerType(T1), T2)
+          #then
+               // <quote>
+               // then the reference is bound to the value of the initializer expression
+               // </quote>
+               bindReference'(V1, V2)
+          #else
+          // 5.2.2.1
+          // <quote>
+          // If T1 or T2 is a class type and T1 is not reference-related to T2,
+          // <quote>
+          #if (isCPPClassType(innerType(T1)) orBool isCPPClassType(T2))
+               andBool notBool isReferenceRelated(innerType(T1), T2)
+          #then
+               // <quote>
+               // user-defined conversions are considered using the rules
+               // for copy-initialization of an object of type "cv1 T1"
+               // by user-defined conversion; the program is ill-formed
+               // if the corresponding non-reference copy-initialization
+               // would be ill-formed. The result of the call to the conversion
+               // function, as described for the non-reference copy-initialization,
+               // is then used to direct-initialize the reference. For this
+               // direct-initialization, user-defined conversions are not considered.
+               // </quote>
+               not-implemented
+          #else
+               // 5.2.2.2
+               // Otherwise, a temporary of type "cv1 T1" is created
+               // and copy-initialized from the initializer expression.
+               // The reference is then bound to the temporary.
+               bindReferenceToTemporary(V1, innerType(T1), V2, D)
+          #fi #fi #fi #fi
+          requires isCPP14()
 
 
-     syntax KItem ::= bindReferenceToTemporary(LVal, CPPType, Val, Duration)
+     syntax Expr ::= bindReferenceToTemporary(LVal, CPPType, Val, Duration)
 
      rule bindReferenceToTemporary(V1::LVal, T::CPPType, V2::Val, D::Duration)
           =>
@@ -55,7 +105,7 @@ module CPP-TRANSLATION-EXPR-REFERENCE
           ~>
           bindReference'(V1, Name(NoNNS(), #NoName(!I:Int)))
 
-     syntax Expr ::= "bindReference'" "(" Expr "," Expr ")" [strict(c; 2)]
+     syntax Expr ::= "bindReference'" "(" Expr "," Expr ")" [strict(2)]
 
      rule bindReference'(L:LVal, R:Val) => le(bindReferenceExec(L, R), trace(L), type(L))
 
