@@ -24,12 +24,12 @@ module LIBC-CTYPE
      rule isCTypeFun(_) => false [owise]
 
      rule builtin("isdigit", tv(V::Int, T::UType))
-          => tv(1, int)
+          => tv(1, utype(int))
           requires (V ==K value(eof) orBool withinRange(V, unsigned-char))
                andBool (V >=Int 48 andBool V <=Int 57)
           [native-call]
      rule builtin("isdigit", tv(V::Int, T::UType))
-          => tv(0, int)
+          => tv(0, utype(int))
           requires (V ==K value(eof) orBool withinRange(V, unsigned-char))
                andBool notBool (V >=Int 48 andBool V <=Int 57)
           [native-call]
