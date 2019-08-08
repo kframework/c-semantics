@@ -58,6 +58,9 @@ module C-TYPING-MISC
      rule intInRange(V::Int, T::UType)
           => (V <=Int max(T)) andBool (V >=Int min(T))
 
+     rule withinRange(V::Int, T::SimpleIntegerType)
+          => (V <=Int imax(T)) andBool (V >=Int imin(T))
+
      rule floatInRange(V::Float, T::UType)
           => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
                orBool isInfinite(V) orBool isNaN(V)
