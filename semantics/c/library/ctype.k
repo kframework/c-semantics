@@ -23,10 +23,22 @@ module LIBC-CTYPE
      rule isCTypeFun("toupper") => true
      rule isCTypeFun(_) => false [owise]
 
+     rule builtin("isdigit", tv(V::Int, T::UType))
+          => tv(1, int)
+          requires (V ==K value(eof) orBool withinRange(V, unsigned-char))
+               andBool (V >=Int 48 andBool V <=Int 57)
+          [native-call]
+     rule builtin("isdigit", tv(V::Int, T::UType))
+          => tv(0, int)
+          requires (V ==K value(eof) orBool withinRange(V, unsigned-char))
+               andBool notBool (V >=Int 48 andBool V <=Int 57)
+          [native-call]
+
      rule builtin(F::String, tv(V::Int, T::UType))
           => nativeCall(F, ListItem(tv(V, T)), .List)
           requires (V ==K value(eof) orBool withinRange(V, unsigned-char))
                andBool isCTypeFun(F)
+               andBool F =/=String "isdigit"
           [native-call]
      rule (.K => outsideRange())
           ~> builtin(F::String, tv(V::Int, T::UType))
