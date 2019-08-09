@@ -34,16 +34,16 @@ module LIBC-CTYPE
                andBool notBool (V >=Int 48 andBool V <=Int 57)
           [native-call]
 
-     rule builtin(F::String, tv(V::Int, T::UType))
+     rule builtin(F::String, tv(V:Int, T::UType))
           => nativeCall(F, ListItem(tv(V, T)), .List)
-          requires (V ==K value(eof) orBool withinRange(V, unsigned-char))
-               andBool isCTypeFun(F)
+          requires isCTypeFun(F)
                andBool F =/=String "isdigit"
+               andBool (V ==K value(eof) orBool withinRange(V, unsigned-char))
           [native-call]
      rule (.K => outsideRange())
           ~> builtin(F::String, tv(V::Int, T::UType))
-          requires notBool (V ==K value(eof) orBool withinRange(V, unsigned-char))
-               andBool isCTypeFun(F)
+          requires isCTypeFun(F)
+               andBool notBool (V ==K value(eof) orBool withinRange(V, unsigned-char))
 
      syntax KItem ::= outsideRange()
      rule (.K => UNDEF("CTYPE1", "Argument to " +String F +String " outside range representable by unsigned char (and not EOF)."))
