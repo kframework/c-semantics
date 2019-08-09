@@ -6,38 +6,26 @@ module LIBC-CTYPE
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
 
-     syntax Bool ::= isCTypeFun(String) [function]
-     rule isCTypeFun("isalnum") => true
-     rule isCTypeFun("isalpha") => true
-     rule isCTypeFun("isblank") => true
-     rule isCTypeFun("iscntrl") => true
-     rule isCTypeFun("isdigit") => true
-     rule isCTypeFun("isgraph") => true
-     rule isCTypeFun("islower") => true
-     rule isCTypeFun("isprint") => true
-     rule isCTypeFun("ispunct") => true
-     rule isCTypeFun("isspace") => true
-     rule isCTypeFun("isupper") => true
-     rule isCTypeFun("isxdigit") => true
-     rule isCTypeFun("tolower") => true
-     rule isCTypeFun("toupper") => true
-     rule isCTypeFun(_) => false [owise]
-
-     rule builtin("isdigit", tv(V::Int, T::UType))
-          => tv(1, utype(int))
-          requires (V ==K value(eof) orBool withinRange(V, unsigned-char))
-               andBool (V >=Int 48 andBool V <=Int 57)
-          [native-call]
-     rule builtin("isdigit", tv(V::Int, T::UType))
-          => tv(0, utype(int))
-          requires (V ==K value(eof) orBool withinRange(V, unsigned-char))
-               andBool notBool (V >=Int 48 andBool V <=Int 57)
-          [native-call]
+     syntax Bool ::= isNativeCTypeFun(String) [function]
+     rule isNativeCTypeFun("isalnum") => true
+     rule isNativeCTypeFun("isalpha") => true
+     rule isNativeCTypeFun("isblank") => true
+     rule isNativeCTypeFun("iscntrl") => true
+     rule isNativeCTypeFun("isdigit") => true
+     rule isNativeCTypeFun("isgraph") => true
+     rule isNativeCTypeFun("islower") => true
+     rule isNativeCTypeFun("isprint") => true
+     rule isNativeCTypeFun("ispunct") => true
+     rule isNativeCTypeFun("isspace") => true
+     rule isNativeCTypeFun("isupper") => true
+     rule isNativeCTypeFun("isxdigit") => true
+     rule isNativeCTypeFun("tolower") => true
+     rule isNativeCTypeFun("toupper") => true
+     rule isNativeCTypeFun(_) => false [owise]
 
      rule builtin(F::String, tv(V:Int, T::UType))
           => nativeCall(F, ListItem(tv(V, T)), .List)
-          requires isCTypeFun(F)
-               andBool F =/=String "isdigit"
+          requires isNativeCTypeFun(F)
                andBool (V ==K value(eof) orBool withinRange(V, unsigned-char))
           [native-call]
      rule (.K => outsideRange())
