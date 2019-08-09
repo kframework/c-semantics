@@ -30,7 +30,7 @@ module LIBC-CTYPE
           [native-call]
      rule (.K => outsideRange())
           ~> builtin(F::String, tv(V::Int, T::UType))
-          requires isCTypeFun(F)
+          requires isNativeCTypeFun(F)
                andBool notBool (V ==K value(eof) orBool withinRange(V, unsigned-char))
 
      syntax KItem ::= outsideRange()
