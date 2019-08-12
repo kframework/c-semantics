@@ -19,20 +19,14 @@ RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/jav
 # This user is set up in the runtimeverificationinc/ubuntu:* images.
 USER user:user
 
-
 ##################
 # Perl packages. #
 ##################
 
-RUN cpanm --local-lib=~/perl5 local::lib \
-  && eval $(perl -I "~/perl5/lib/perl5/" -Mlocal::lib) \
-  && cpanm -L ~/perl5 \
-        App::FatPacker \
-        Getopt::Declare \
-        String::Escape \
-        String::ShellQuote \
-        UUID::Tiny
-
+COPY --from=runtimeverificationinc/perl:ubuntu-bionic \
+     --chown=user:user \
+     /home/user/perl5 \
+     /home/user/perl5
 
 # This is where the rest of the dependencies go.
 ENV DEPS_DIR="/home/user/c-semantics-deps"
