@@ -12,10 +12,6 @@ module C-LITERAL
 
      syntax Constant ::= RValue
 
-     syntax Bool ::= withinRange(Int, SimpleIntegerType) [function]
-     rule withinRange(V::Int, T::SimpleIntegerType)
-          => (V <=Int imax(T)) andBool (V >=Int imin(T))
-
      syntax String ::= simplifyForHex(String) [function]
      rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S))
           requires (firstChar(S) ==String "0")

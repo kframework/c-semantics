@@ -1,3 +1,4 @@
+require "ctype.k"
 require "builtin.k"
 require "types.k"
 require "io.k"
@@ -19,7 +20,7 @@ module C-LIBRARY
      imports LIBC-BUILTIN
      imports LIBC-IO
 
-     imports LIBC-TYPES
+     imports LIBC-CTYPE
      imports LIBC-LOCALE
      imports LIBC-MATH
      imports LIBC-SETJMP
@@ -30,6 +31,7 @@ module C-LIBRARY
      imports LIBC-STRING
      imports LIBC-THREADS
      imports LIBC-TIME
+     imports LIBC-TYPES
 
      imports C-NATIVE-BRIDGE
 endmodule
