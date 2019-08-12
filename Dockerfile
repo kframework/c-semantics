@@ -9,6 +9,8 @@ RUN     apt-get update -q \
           openjdk-8-jdk   \
           libstdc++6 
 
+# TODO (Minas)
+# We should not need jdk-8. The base image has jdk-11 installed.
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
 
