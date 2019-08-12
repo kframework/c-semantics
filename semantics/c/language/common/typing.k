@@ -276,6 +276,7 @@ module C-TYPING-SYNTAX
      syntax Float ::= fmax(UType) [function]
      syntax Float ::= fmin(UType) [function]
      syntax Bool ::= intInRange(Int, UType) [function]
+     syntax Bool ::= withinRange(Int, SimpleIntegerType) [function]
      syntax Bool ::= floatInRange(Float, UType) [function]
 
      syntax Modifier ::= Packed()

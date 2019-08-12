@@ -94,6 +94,7 @@ UB-FD9,Function main must have zero or two parameters.,"5.1.2.2.1:1, J.2:1 item 
 UB-IO1,"Stream input operation followed by an output operation without an intervening call to a file positioning function.","7.21.5.3:7, J.2:1 item 151",Undefined Behavior,
 UB-IO2,"Stream output operation followed by an input operation without an intervening call to fflush or a file positioning function.","7.21.5.3:7, J.2:1 item 151",Undefined Behavior,
 UB-CTI1,Arrays must have integer length.,"6.6:6, J.2:1 item 55",Undefined Behavior,
+UB-CTYPE1,Argument to outside range representable by unsigned char (and not EOF).,"7.4:1, J.2:1 item 114",Undefined Behavior,
 UB-SETJMP1,'longjmp' invoked to restore a nonexistent environment.,"7.13.2.1:2, J.2:1 item 126",Undefined Behavior,
 UB-SETJMP2,'longjmp' invoked to restore the environment of a function that has since terminated.,"7.13.2.1:2, J.2:1 item 126",Undefined Behavior,
 UB-STDARG1,'va_start' used in a function with fixed args.,"6.9.1:8, J.2:1 item 87",Undefined Behavior,

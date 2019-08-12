@@ -55,6 +55,8 @@ typedef unsigned __int128 __uint128_t;
 
 #define _DEFAULT_SOURCE
 
+#define __NO_CTYPE
+
 /* This should not affect semantics on 64 bit machine and violates a constraint
  * if you do not have gcc. */
 #undef _FILE_OFFSET_BITS

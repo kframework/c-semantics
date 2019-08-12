@@ -43,6 +43,22 @@ module LIBC-TYPES
           (id("strtof") |-> fun(float, ptr(const(char)), ptr(ptr(char)))
           (id("strtold") |-> fun(long-double, ptr(const(char)), ptr(ptr(char)))
 
+          // ctype
+          (id("isalnum") |-> fun(int, int)
+          (id("isalpha") |-> fun(int, int)
+          (id("isblank") |-> fun(int, int)
+          (id("iscntrl") |-> fun(int, int)
+          (id("isdigit") |-> fun(int, int)
+          (id("isgraph") |-> fun(int, int)
+          (id("islower") |-> fun(int, int)
+          (id("isprint") |-> fun(int, int)
+          (id("ispunct") |-> fun(int, int)
+          (id("isspace") |-> fun(int, int)
+          (id("isupper") |-> fun(int, int)
+          (id("isxdigit") |-> fun(int, int)
+          (id("tolower") |-> fun(int, int)
+          (id("toupper") |-> fun(int, int)
+
           // locale
           (id("setlocale") |-> fun(ptr(char), int, ptr(const(char)))
           (id("localeconv") |-> fun(ptr(lconv))
@@ -157,7 +173,7 @@ module LIBC-TYPES
           extensionBuiltins
           // we need these parentheses to avoid an exponential explosion of parsing time;
           // really should look further into true priorities in the parser kernel.
-          ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+          ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
      rule mtx_t => typeref("__kcc_typeref_mtx_t")
      rule jmp_buf => typeref("__kcc_typeref_jmp_buf")

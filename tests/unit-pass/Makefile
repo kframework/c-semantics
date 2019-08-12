@@ -15,6 +15,7 @@ OS_EXCLUDES := $(OS_STDIO_EXCLUDES) \
                ./struct-ini-1.c \
                ./20051113-1.c \
                ./20050502-1.c \
+               ./991112-1.c \
                ./string-opt-5.c \
                ./inst-check.c \
                ./include-time.C \

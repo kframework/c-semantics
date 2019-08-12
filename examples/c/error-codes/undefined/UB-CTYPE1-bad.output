@@ -1,0 +1,140 @@
+Argument to isalnum outside range representable by unsigned char (and not EOF):
+      > in isalnum at UB-CTYPE1-bad.c:4:7
+        in main at UB-CTYPE1-bad.c:4:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to isalpha outside range representable by unsigned char (and not EOF):
+      > in isalpha at UB-CTYPE1-bad.c:5:7
+        in main at UB-CTYPE1-bad.c:5:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to isblank outside range representable by unsigned char (and not EOF):
+      > in isblank at UB-CTYPE1-bad.c:6:7
+        in main at UB-CTYPE1-bad.c:6:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to iscntrl outside range representable by unsigned char (and not EOF):
+      > in iscntrl at UB-CTYPE1-bad.c:7:7
+        in main at UB-CTYPE1-bad.c:7:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to isdigit outside range representable by unsigned char (and not EOF):
+      > in isdigit at UB-CTYPE1-bad.c:8:7
+        in main at UB-CTYPE1-bad.c:8:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to isgraph outside range representable by unsigned char (and not EOF):
+      > in isgraph at UB-CTYPE1-bad.c:9:7
+        in main at UB-CTYPE1-bad.c:9:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to islower outside range representable by unsigned char (and not EOF):
+      > in islower at UB-CTYPE1-bad.c:10:7
+        in main at UB-CTYPE1-bad.c:10:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to isprint outside range representable by unsigned char (and not EOF):
+      > in isprint at UB-CTYPE1-bad.c:11:7
+        in main at UB-CTYPE1-bad.c:11:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to ispunct outside range representable by unsigned char (and not EOF):
+      > in ispunct at UB-CTYPE1-bad.c:12:7
+        in main at UB-CTYPE1-bad.c:12:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to isspace outside range representable by unsigned char (and not EOF):
+      > in isspace at UB-CTYPE1-bad.c:13:7
+        in main at UB-CTYPE1-bad.c:13:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to isupper outside range representable by unsigned char (and not EOF):
+      > in isupper at UB-CTYPE1-bad.c:14:7
+        in main at UB-CTYPE1-bad.c:14:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to isxdigit outside range representable by unsigned char (and not EOF):
+      > in isxdigit at UB-CTYPE1-bad.c:15:7
+        in main at UB-CTYPE1-bad.c:15:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to tolower outside range representable by unsigned char (and not EOF):
+      > in tolower at UB-CTYPE1-bad.c:16:7
+        in main at UB-CTYPE1-bad.c:16:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
+Argument to toupper outside range representable by unsigned char (and not EOF):
+      > in toupper at UB-CTYPE1-bad.c:17:7
+        in main at UB-CTYPE1-bad.c:17:7
+
+    Undefined behavior (UB-CTYPE1):
+        see C11 section 7.4:1 http://rvdoc.org/C11/7.4
+        see C11 section J.2:1 item 114 http://rvdoc.org/C11/J.2
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
