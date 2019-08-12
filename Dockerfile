@@ -24,10 +24,6 @@ COPY --from=runtimeverificationinc/perl:ubuntu-bionic \
      /home/user/perl5 \
      /home/user/perl5
 
-# This is where the rest of the dependencies go.
-ENV DEPS_DIR="/home/user/c-semantics-deps"
-
-
 ###################
 # Configure opam. #
 ###################
@@ -36,6 +32,10 @@ COPY --from=runtimeverificationinc/ocaml:ubuntu-bionic \
      --chown=user:user \
      /home/user/.opam \
      /home/user/.opam
+
+
+# This is where the rest of the dependencies go.
+ENV DEPS_DIR="/home/user/c-semantics-deps"
 
 ############
 # Build K. #
