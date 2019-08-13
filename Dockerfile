@@ -16,7 +16,7 @@ RUN apt-get update -qq \
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
 
-# This user is set up in the ubuntu-rv:* images.
+# This user is set up in the runtimeverificationinc/ubuntu:* images.
 USER user:user
 
 
@@ -42,20 +42,10 @@ ENV DEPS_DIR="/home/user/c-semantics-deps"
 # Configure opam. #
 ###################
 
-# Copy the necessary things.
-COPY --chown=user:user \
-  .build/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev \
-  ${DEPS_DIR}/opam-config/bin/k-configure-opam-dev
-COPY --chown=user:user \
-  .build/k/k-distribution/src/main/scripts/bin/k-configure-opam-common \
-  ${DEPS_DIR}/opam-config/bin/k-configure-opam-common
-COPY --chown=user:user \
-  .build/k/k-distribution/src/main/scripts/lib/opam \
-  ${DEPS_DIR}/opam-config/lib/opam
-
-# Run the scripts.
-RUN ${DEPS_DIR}/opam-config/bin/k-configure-opam-dev
-
+COPY --from=runtimeverificationinc/ocaml:ubuntu-bionic \
+     --chown=user:user \
+     /home/user/.opam \
+     /home/user/.opam
 
 ############
 # Build K. #
