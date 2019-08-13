@@ -6,16 +6,10 @@ FROM runtimeverificationinc/kframework:ubuntu-bionic
 
 RUN     apt-get update -q \
     &&  apt install --yes \
-          openjdk-8-jdk   \
           libstdc++6      \
           llvm-6.0        \
           clang++-6.0     \
           clang-6.0
-
-# TODO (Minas)
-# We should not need jdk-8. The base image has jdk-11 installed.
-RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
-
 
 # This user is set up in the runtimeverificationinc/kframework:* images.
 USER user:user
