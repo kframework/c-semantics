@@ -1,6 +1,6 @@
 Argument to isalnum outside range representable by unsigned char (and not EOF):
-      > in isalnum at ctype.c:8:13
-        in main at ctype.c:8:13
+      > in isalnum at ctype.c:7:13
+        in main at ctype.c:7:13
 
     Undefined behavior (UB-CTYPE1):
         see C11 section 7.4:1 http://rvdoc.org/C11/7.4
@@ -9,8 +9,8 @@ Argument to isalnum outside range representable by unsigned char (and not EOF):
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Argument to isalpha outside range representable by unsigned char (and not EOF):
-      > in isalpha at ctype.c:9:13
-        in main at ctype.c:9:13
+      > in isalpha at ctype.c:8:13
+        in main at ctype.c:8:13
 
     Undefined behavior (UB-CTYPE1):
         see C11 section 7.4:1 http://rvdoc.org/C11/7.4
@@ -19,8 +19,8 @@ Argument to isalpha outside range representable by unsigned char (and not EOF):
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Argument to iscntrl outside range representable by unsigned char (and not EOF):
-      > in iscntrl at ctype.c:10:13
-        in main at ctype.c:10:13
+      > in iscntrl at ctype.c:9:13
+        in main at ctype.c:9:13
 
     Undefined behavior (UB-CTYPE1):
         see C11 section 7.4:1 http://rvdoc.org/C11/7.4
@@ -29,8 +29,8 @@ Argument to iscntrl outside range representable by unsigned char (and not EOF):
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Argument to isdigit outside range representable by unsigned char (and not EOF):
-      > in isdigit at ctype.c:11:13
-        in main at ctype.c:11:13
+      > in isdigit at ctype.c:10:13
+        in main at ctype.c:10:13
 
     Undefined behavior (UB-CTYPE1):
         see C11 section 7.4:1 http://rvdoc.org/C11/7.4
@@ -39,8 +39,8 @@ Argument to isdigit outside range representable by unsigned char (and not EOF):
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Argument to isgraph outside range representable by unsigned char (and not EOF):
-      > in isgraph at ctype.c:12:13
-        in main at ctype.c:12:13
+      > in isgraph at ctype.c:11:13
+        in main at ctype.c:11:13
 
     Undefined behavior (UB-CTYPE1):
         see C11 section 7.4:1 http://rvdoc.org/C11/7.4
@@ -49,8 +49,8 @@ Argument to isgraph outside range representable by unsigned char (and not EOF):
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Argument to islower outside range representable by unsigned char (and not EOF):
-      > in islower at ctype.c:13:13
-        in main at ctype.c:13:13
+      > in islower at ctype.c:12:13
+        in main at ctype.c:12:13
 
     Undefined behavior (UB-CTYPE1):
         see C11 section 7.4:1 http://rvdoc.org/C11/7.4
@@ -59,8 +59,8 @@ Argument to islower outside range representable by unsigned char (and not EOF):
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Argument to isprint outside range representable by unsigned char (and not EOF):
-      > in isprint at ctype.c:14:13
-        in main at ctype.c:14:13
+      > in isprint at ctype.c:13:13
+        in main at ctype.c:13:13
 
     Undefined behavior (UB-CTYPE1):
         see C11 section 7.4:1 http://rvdoc.org/C11/7.4
@@ -69,8 +69,8 @@ Argument to isprint outside range representable by unsigned char (and not EOF):
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Argument to ispunct outside range representable by unsigned char (and not EOF):
-      > in ispunct at ctype.c:15:13
-        in main at ctype.c:15:13
+      > in ispunct at ctype.c:14:13
+        in main at ctype.c:14:13
 
     Undefined behavior (UB-CTYPE1):
         see C11 section 7.4:1 http://rvdoc.org/C11/7.4
@@ -79,8 +79,8 @@ Argument to ispunct outside range representable by unsigned char (and not EOF):
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Argument to isspace outside range representable by unsigned char (and not EOF):
-      > in isspace at ctype.c:16:13
-        in main at ctype.c:16:13
+      > in isspace at ctype.c:15:13
+        in main at ctype.c:15:13
 
     Undefined behavior (UB-CTYPE1):
         see C11 section 7.4:1 http://rvdoc.org/C11/7.4
@@ -89,8 +89,8 @@ Argument to isspace outside range representable by unsigned char (and not EOF):
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Argument to isupper outside range representable by unsigned char (and not EOF):
-      > in isupper at ctype.c:17:13
-        in main at ctype.c:17:13
+      > in isupper at ctype.c:16:13
+        in main at ctype.c:16:13
 
     Undefined behavior (UB-CTYPE1):
         see C11 section 7.4:1 http://rvdoc.org/C11/7.4
@@ -99,8 +99,8 @@ Argument to isupper outside range representable by unsigned char (and not EOF):
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Argument to isxdigit outside range representable by unsigned char (and not EOF):
-      > in isxdigit at ctype.c:18:13
-        in main at ctype.c:18:13
+      > in isxdigit at ctype.c:17:13
+        in main at ctype.c:17:13
 
     Undefined behavior (UB-CTYPE1):
         see C11 section 7.4:1 http://rvdoc.org/C11/7.4
@@ -108,262 +108,3 @@ Argument to isxdigit outside range representable by unsigned char (and not EOF):
         see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
--2 (0)
--1 (0)
-0 (4)
-1 (4)
-2 (4)
-3 (4)
-4 (4)
-5 (4)
-6 (4)
-7 (4)
-8 (4)
-9 (104)
-10 (104)
-11 (104)
-12 (104)
-13 (104)
-14 (4)
-15 (4)
-16 (4)
-17 (4)
-18 (4)
-19 (4)
-20 (4)
-21 (4)
-22 (4)
-23 (4)
-24 (4)
-25 (4)
-26 (4)
-27 (4)
-28 (4)
-29 (4)
-30 (4)
-31 (4)
-32 (140)
-33 (d0)
-34 (d0)
-35 (d0)
-36 (d0)
-37 (d0)
-38 (d0)
-39 (d0)
-40 (d0)
-41 (d0)
-42 (d0)
-43 (d0)
-44 (d0)
-45 (d0)
-46 (d0)
-47 (d0)
-48 (459)
-49 (459)
-50 (459)
-51 (459)
-52 (459)
-53 (459)
-54 (459)
-55 (459)
-56 (459)
-57 (459)
-58 (d0)
-59 (d0)
-60 (d0)
-61 (d0)
-62 (d0)
-63 (d0)
-64 (d0)
-65 (653)
-66 (653)
-67 (653)
-68 (653)
-69 (653)
-70 (653)
-71 (253)
-72 (253)
-73 (253)
-74 (253)
-75 (253)
-76 (253)
-77 (253)
-78 (253)
-79 (253)
-80 (253)
-81 (253)
-82 (253)
-83 (253)
-84 (253)
-85 (253)
-86 (253)
-87 (253)
-88 (253)
-89 (253)
-90 (253)
-91 (d0)
-92 (d0)
-93 (d0)
-94 (d0)
-95 (d0)
-96 (d0)
-97 (473)
-98 (473)
-99 (473)
-100 (473)
-101 (473)
-102 (473)
-103 (73)
-104 (73)
-105 (73)
-106 (73)
-107 (73)
-108 (73)
-109 (73)
-110 (73)
-111 (73)
-112 (73)
-113 (73)
-114 (73)
-115 (73)
-116 (73)
-117 (73)
-118 (73)
-119 (73)
-120 (73)
-121 (73)
-122 (73)
-123 (d0)
-124 (d0)
-125 (d0)
-126 (d0)
-127 (4)
-128 (0)
-129 (0)
-130 (0)
-131 (0)
-132 (0)
-133 (0)
-134 (0)
-135 (0)
-136 (0)
-137 (0)
-138 (0)
-139 (0)
-140 (0)
-141 (0)
-142 (0)
-143 (0)
-144 (0)
-145 (0)
-146 (0)
-147 (0)
-148 (0)
-149 (0)
-150 (0)
-151 (0)
-152 (0)
-153 (0)
-154 (0)
-155 (0)
-156 (0)
-157 (0)
-158 (0)
-159 (0)
-160 (0)
-161 (0)
-162 (0)
-163 (0)
-164 (0)
-165 (0)
-166 (0)
-167 (0)
-168 (0)
-169 (0)
-170 (0)
-171 (0)
-172 (0)
-173 (0)
-174 (0)
-175 (0)
-176 (0)
-177 (0)
-178 (0)
-179 (0)
-180 (0)
-181 (0)
-182 (0)
-183 (0)
-184 (0)
-185 (0)
-186 (0)
-187 (0)
-188 (0)
-189 (0)
-190 (0)
-191 (0)
-192 (0)
-193 (0)
-194 (0)
-195 (0)
-196 (0)
-197 (0)
-198 (0)
-199 (0)
-200 (0)
-201 (0)
-202 (0)
-203 (0)
-204 (0)
-205 (0)
-206 (0)
-207 (0)
-208 (0)
-209 (0)
-210 (0)
-211 (0)
-212 (0)
-213 (0)
-214 (0)
-215 (0)
-216 (0)
-217 (0)
-218 (0)
-219 (0)
-220 (0)
-221 (0)
-222 (0)
-223 (0)
-224 (0)
-225 (0)
-226 (0)
-227 (0)
-228 (0)
-229 (0)
-230 (0)
-231 (0)
-232 (0)
-233 (0)
-234 (0)
-235 (0)
-236 (0)
-237 (0)
-238 (0)
-239 (0)
-240 (0)
-241 (0)
-242 (0)
-243 (0)
-244 (0)
-245 (0)
-246 (0)
-247 (0)
-248 (0)
-249 (0)
-250 (0)
-251 (0)
-252 (0)
-253 (0)
-254 (0)
-255 (0)
-256 (0)

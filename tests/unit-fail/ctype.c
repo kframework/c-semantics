@@ -1,5 +1,4 @@
 #include <ctype.h>
-#include <stdio.h>
 
 int main() {
       for (int c = -2; c != 257; ++c) {
@@ -16,7 +15,5 @@ int main() {
             x |= (_Bool) isspace(c)  << 8;
             x |= (_Bool) isupper(c)  << 9;
             x |= (_Bool) isxdigit(c) << 10;
-
-            printf("%d (%x)\n", c, x);
       }
 }
