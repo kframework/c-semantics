@@ -8,7 +8,9 @@ RUN     apt-get update -q \
     &&  apt install --yes \
           openjdk-8-jdk   \
           libstdc++6      \
-          llvm-6.0
+          llvm-6.0        \
+          clang++-6.0     \
+          clang-6.0
 
 # TODO (Minas)
 # We should not need jdk-8. The base image has jdk-11 installed.
