@@ -31,7 +31,7 @@ module CPP-EXECUTION-STMT-TRY
           <block-history> ListItem(Num::Int) ...</block-history>
           <call-stack> Funcs::List </call-stack>
           <loop-stack> Loops::List </loop-stack>
-          requires canUnwindStack(.List, ListItem(B) Blocks, Funcs, type(V))
+          requires canUnwindStack(V)
                andBool canPopBlock(Num, Loops)
 
      // if we are at the root of a loop, pop it before popping further blocks
@@ -41,22 +41,26 @@ module CPP-EXECUTION-STMT-TRY
           <block-history> ListItem(Num::Int) ...</block-history>
           <call-stack> Funcs::List </call-stack>
           <loop-stack> ListItem(kpair(Num, K:K)) => .List ...</loop-stack>
-          requires canUnwindStack(.List, ListItem(B) Blocks, Funcs, type(V))
+          requires canUnwindStack(V)
 
      // if there are still functions in the stack trace, pop them
      rule <k> (.K => unwindFunction) ~> throw(V::LVal) ...</k>
           <catch-handlers> .List </catch-handlers>
           <block-stack> .List </block-stack>
           <call-stack> ListItem(F::KItem) Funcs::List </call-stack>
-          requires canUnwindStack(.List, .List, ListItem(F) Funcs, type(V))
+          requires canUnwindStack(V)
 
      // handles calling terminate on uncaught exception or when an exception
      // cannot safely be thrown
-     rule <k> (.K => catchAndCallTerminate) ~> throw(V::LVal) ...</k>
+     rule (.K => catchAndCallTerminate) ~> throw(V::LVal)
+          requires notBool canUnwindStack(V)
+
+     syntax Bool ::= canUnwindStack(LVal) [function]
+
+     rule [[ canUnwindStack(V::LVal) => #canUnwindStack(Catchs, Blocks, Funcs, type(V)) ]]
           <catch-handlers> Catchs::List </catch-handlers>
           <block-stack> Blocks::List </block-stack>
           <call-stack> Funcs::List </call-stack>
-          requires notBool canUnwindStack(Catchs, Blocks, Funcs, type(V))
 
      syntax KItem ::= "unwindFunction" | tryMark(Int)
 
@@ -192,28 +196,28 @@ module CPP-EXECUTION-STMT-TRY
      rule <k> catchAndCallTerminate => callTerminate ...</k>
           <uncaught-exception> _ => false </uncaught-exception>
 
-     syntax Bool ::= canUnwindStack(List, List, List, CPPType) [function]
+     syntax Bool ::= #canUnwindStack(List, List, List, CPPType) [function]
                    | canPopBlock(Int, List) [function]
                    | handlerMatches(CPPType, CPPType) [function]
                    | canThrowException(CPPType, CPPType) [function]
                    | canThrowException(ExceptionSet, CPPType) [function, klabel(canThrowExceptionSet)]
                    | isDynamicExceptionSpec(CPPType) [function]
 
-     rule canUnwindStack((.List => L), (ListItem(<block-control>... <catch-handlers> L::List </catch-handlers> ...</block-control>) => .List) _, _, _)
+     rule #canUnwindStack((.List => L), (ListItem(<block-control>... <catch-handlers> L::List </catch-handlers> ...</block-control>) => .List) _, _, _)
 
-     rule canUnwindStack((.List => L2), (.List => L), (ListItem(<call-stack-frame>... <stack-function-control> <function-control>... <uncaught-exception> false </uncaught-exception> <block-stack> L::List </block-stack> <catch-handlers> L2::List </catch-handlers> ...</function-control> </stack-function-control> ...</call-stack-frame>) => .List) _, _)
+     rule #canUnwindStack((.List => L2), (.List => L), (ListItem(<call-stack-frame>... <stack-function-control> <function-control>... <uncaught-exception> false </uncaught-exception> <block-stack> L::List </block-stack> <catch-handlers> L2::List </catch-handlers> ...</function-control> </stack-function-control> ...</call-stack-frame>) => .List) _, _)
 
-     rule canUnwindStack(.List, .List, ListItem(<call-stack-frame>... <stack-function-control> <function-control>... <uncaught-exception> true </uncaught-exception> ...</function-control> </stack-function-control> ...</call-stack-frame>) _, _) => false
+     rule #canUnwindStack(.List, .List, ListItem(<call-stack-frame>... <stack-function-control> <function-control>... <uncaught-exception> true </uncaught-exception> ...</function-control> </stack-function-control> ...</call-stack-frame>) _, _) => false
 
-     rule canUnwindStack(ListItem(CatchAnyOp(_)) _, _, _, _) => true
+     rule #canUnwindStack(ListItem(CatchAnyOp(_)) _, _, _, _) => true
 
-     rule canUnwindStack(ListItem(CatchOp(T::CPPType, _)) _, _, _, E::CPPType) => true
+     rule #canUnwindStack(ListItem(CatchOp(T::CPPType, _)) _, _, _, E::CPPType) => true
           requires handlerMatches(T, E)
 
-     rule canUnwindStack((ListItem(CatchOp(T::CPPType, _)) => .List) _, _, _, E::CPPType)
+     rule #canUnwindStack((ListItem(CatchOp(T::CPPType, _)) => .List) _, _, _, E::CPPType)
           requires notBool handlerMatches(T, E)
 
-     rule canUnwindStack(.List, .List, .List, _) => false
+     rule #canUnwindStack(.List, .List, .List, _) => false
 
      rule canPopBlock(Num::Int, ListItem(kpair(Num, _)) _) => false
 
