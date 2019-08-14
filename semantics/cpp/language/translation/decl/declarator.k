@@ -666,7 +666,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
               => Comp ~> restoreThreadLocal1(TL)
           ...</k> <thread-local> TL::Bag </thread-local>
 
-     rule restoreThreadLocal1(TL::K) => popBlock ~> restoreThreadLocal2(TL)
+     rule restoreThreadLocal1(TL::K) => popBlock(false) ~> restoreThreadLocal2(TL)
 
      rule <k> restoreThreadLocal2(TL:Bag) => .K  ... </k>
           <thread-local> _ => TL </thread-local>

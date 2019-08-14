@@ -49,7 +49,11 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule figureConstructorInit(Base::Expr, DestT::CPPType, Init::Init, Type::Bool)
           => #figureInit(Base, DestT, DirectInit(), Init, Init, Init, ConstructorInit(Type), /* will not be used */ AutoStorage)
 
-     syntax Expr ::= #figureInit(base: Expr, destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType, Duration)
+     rule #figureInit0(Base::Expr, DestT::CPPType, IType::InitType, Init::Init, CType::ConstructorType, D::Duration)
+          => #figureInit(Base, DestT, IType, Init, Init, Init, CType, D)
+
+     syntax Expr ::= #figureInit0(base: Expr, destT: CPPType, type: InitType, init: Init, ConstructorType, Duration)
+                   | #figureInit(base: Expr, destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType, Duration)
                    | constructorInit(LVal, InitType, Class, List, ConstructorType)
                    | zeroInit(base: Expr, type: CPPType)
                    | InitStyle "(" Expr "," CPPType "," ConstructorType ")"
@@ -347,7 +351,8 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // semantics for narrowing conversions are not currently needed.
      // thus we elide them for now in order to avoid having to implement
      // semantics for constant expressions.
-     rule (.K => figureInit(Base . no-template Name(C, F), T, Init, CopyInit(), D))
+     rule (.K => #figureInit0(Base . no-template Name(C, F), T,
+                    CopyInit(), Init, ConstructorInit(false), D))
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: (ListItem(Init::Expr) => .List) _,
@@ -356,7 +361,8 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                            duration: D::Duration)
           requires (notBool isAggregateType(T) orBool isBraceInit(Init))
 
-     rule (.K => figureInit(Base . no-template Name(C, F), T, BraceInit(L), CopyInit(), D))
+     rule (.K => #figureInit0(Base . no-template Name(C, F), T,
+                    CopyInit(), BraceInit(L), ConstructorInit(false), D))
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: (ListItem(Init::Expr) _) #as L::List  => .List,
@@ -386,7 +392,8 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule (V:Val => .K) ~> classAggInit(... initExp: (E::MaybeExpr => compoundInitJoin(E, V)))
 
-     rule (.K => figureInit(Base . no-template Name(C, F), T, #evalBraceOrEqualInitializer(C, Base, Init), CopyInit(), D))
+     rule (.K => #figureInit0(Base . no-template Name(C, F), T,
+                    CopyInit(), #evalBraceOrEqualInitializer(C, Base, Init), ConstructorInit(false), D))
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: .List,

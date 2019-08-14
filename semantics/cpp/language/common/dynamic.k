@@ -480,8 +480,8 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax TemplateInfo ::= "noTemplate"
 
-     syntax KItem ::= "pushBlock" "(" Int ")"
-                    | "popBlock"
+     syntax KItem ::= pushBlock(Int)
+                    | popBlock(isException: Bool)
 
      syntax Stmt ::= "loopMarked"
 

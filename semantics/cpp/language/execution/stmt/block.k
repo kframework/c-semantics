@@ -43,9 +43,7 @@ module CPP-EXECUTION-STMT-BLOCK
           <curr-scope> blockScope(_, _, (_ => 0)) </curr-scope>
           <block-history> .List </block-history>
 
-     // isException is true only for the top-level block of a constructor, which is destructed
-     // in execution/stmt/try.k instead of here.
-     rule <k> popBlock => destructLocals(false) ~> unfoldBlockStack ~> deleteObjects(Locals) ~> exitRestrictBlock(Locals) ~> updateScope ...</k>
+     rule <k> popBlock(IsException::Bool) => destructLocals(IsException) ~> unfoldBlockStack ~> deleteObjects(Locals) ~> exitRestrictBlock(Locals) ~> updateScope ...</k>
           <local-addresses> Locals::Set </local-addresses>
           [structural]
 

@@ -25,7 +25,7 @@ module CPP-EXECUTION-STMT-TRY
           <uncaught-exception> _ => true </uncaught-exception>
 
      // if there are still blocks in this function, pop them
-     rule <k> (.K => popBlock) ~> throw(V::LVal) ...</k>
+     rule <k> (.K => popBlock(true)) ~> throw(V::LVal) ...</k>
           <catch-handlers> .List </catch-handlers>
           <block-stack> ListItem(_) _ </block-stack>
           <block-history> ListItem(Num::Int) ...</block-history>
@@ -142,7 +142,7 @@ module CPP-EXECUTION-STMT-TRY
 
      rule <k> catchWithHandler(CatchAnyOp(pushBlock(N::Int) ~> Rest:K), V::LVal)
               ~> tryMark(I::Int)
-              => popBlock
+              => popBlock(true)
               ~> pushBlock(N)
               ~> setCurrentException(V)
               ~> activateHandler
@@ -153,7 +153,7 @@ module CPP-EXECUTION-STMT-TRY
 
      rule <k> catchWithHandler(CatchOp(_, pushBlock(N::Int) ~> declareNonStaticObjectExec(... id: X::CId) #as D:KItem ~> Rest:K), V::LVal)
               ~> tryMark(I::Int)
-              => popBlock
+              => popBlock(true)
               ~> pushBlock(N)
               ~> setCurrentException(V)
               ~> #if X ==K #NoName #then .K #else D #fi

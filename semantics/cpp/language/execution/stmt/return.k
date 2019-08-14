@@ -54,7 +54,7 @@ module CPP-EXECUTION-STMT-RETURN
           => makePRVal(lv(Loc, Tr, T)) [owise]
 
      /* recursively exits each Block wrapped in BlockStatement */
-     rule <k> (.K => popBlock) ~> Return''(_:Val) ...</k>
+     rule <k> (.K => popBlock(false)) ~> Return''(_:Val) ...</k>
           <block-history> ListItem(_) ...</block-history>
           <block-stack> ListItem(_) ...</block-stack>
 
