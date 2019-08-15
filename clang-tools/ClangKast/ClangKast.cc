@@ -188,11 +188,9 @@ void Kast::KApply::print(Sort parentSort, function<void (Sort)> printChild) cons
       if (parentSort == Sort::K) {
         cout << "kseq{}(";
         if (sort != Sort::KITEM) {
-          // kseq [inj sort KItem contents]
           cout << "inj{" << sort << ", " << Sort::KITEM << "}(";
         }
       } else {
-        // inj sort parentSort contents
         cout << "inj{" << sort << ", " << parentSort << "}(";
       }
   }
@@ -237,13 +235,13 @@ string Kast::KToken::toKString(llvm::APInt i) {
 }
 
 string Kast::KToken::toKString(unsigned i) {
-  char *buf = new char[11];
+  char buf[11];
   sprintf(buf, "%d", i);
   return string(buf);
 }
 
 string Kast::KToken::toKString(unsigned long long s) {
-  char *name = new char[21];
+  char name[21];
   sprintf(name, "%llu", s);
   return string(name);
 }
@@ -257,18 +255,17 @@ string Kast::KToken::toKString(llvm::APFloat f) {
                     + precision;
   SmallVector<char, 80> buf;
   f.toString(buf, 0, 0);
-  char *data = buf.data();
-  data[buf.size()] = 0;
   char suffix[14];
   sprintf(suffix, "p%ux16", precision);
   char *result = new char[numBytes];
-  strcpy(result, data);
+  strncpy(result, buf.data(), buf.size());
   strcat(result, suffix);
-  return string(result);
+  string s = string(result);
+  delete [] result;
+  return s;
 }
 
 void Kast::KToken::print(Sort parentSort, function<void (Sort)>) const {
-  // TODO: inject?
   if (Kore) {
     cout << "\\dv{" << sort << "}(\"" << escape(value) << "\")";
   } else {
