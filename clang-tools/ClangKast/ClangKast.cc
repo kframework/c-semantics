@@ -247,22 +247,18 @@ string Kast::KToken::toKString(unsigned long long s) {
 }
 
 string Kast::KToken::toKString(llvm::APFloat f) {
-  unsigned precision = f.semanticsPrecision(f.getSemantics());
-  unsigned numBytes = 6      // max length of signed short
-                    + 4      // -1.E
-                    + 3 + 11 // p4294967295x16
-                    + 1      // null byte
-                    + precision;
+  const unsigned numBytes = 6      // max length of signed short
+                          + 4      // -1.E
+                          + 3 + 11 // p4294967295x16
+                          + 1      // null byte
+                          + f.semanticsPrecision(f.getSemantics());
+  char result[numBytes], suffix[14];
   SmallVector<char, 80> buf;
   f.toString(buf, 0, 0);
-  char suffix[14];
-  sprintf(suffix, "p%ux16", precision);
-  char *result = new char[numBytes];
+  sprintf(suffix, "p%ux16", f.semanticsPrecision(f.getSemantics()));
   strncpy(result, buf.data(), buf.size());
   strcat(result, suffix);
-  string s = string(result);
-  delete [] result;
-  return s;
+  return string(result);
 }
 
 void Kast::KToken::print(Sort parentSort, function<void (Sort)>) const {
