@@ -36,7 +36,7 @@ pipeline {
         } }
         stage ( 'Compile' ) {
           options {
-            timeout(time: 60, unit: 'MINUTES')
+            timeout(time: 70, unit: 'MINUTES')
           }
           steps {
             script { img.inside {
@@ -65,7 +65,7 @@ pipeline {
         } }
         stage ( 'Test' ) {
           options {
-            timeout(time: 200, unit: 'MINUTES')
+            timeout(time: 300, unit: 'MINUTES')
           }
           steps {
             script { img.inside {
