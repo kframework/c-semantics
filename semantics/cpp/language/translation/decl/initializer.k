@@ -339,7 +339,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                            ctype: CT::ConstructorType)
           =>
           compoundInitJoin(
-               compoundInitJoin(E, Base),
+               le(inBlock(!I:Int, {compoundInitJoin(E, Base)}:>Expr), trace(Base), type(Base)),
                le(finishConstruction(Base, CT.isCtorInit(CT)), trace(Base), type(Base))
           )
 

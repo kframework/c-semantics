@@ -12,6 +12,16 @@ module CPP-EXECUTION-STMT-BLOCK
      imports CPP-CLASS-BASIC-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
 
+     rule inBlock(Tag::Int, E::Expr)
+          =>
+          pushBlock(Tag) ~> E ~> popInBlock()
+
+     syntax KItem ::= popInBlock()
+
+     rule V:Val ~> popInBlock()
+          =>
+          popBlock(false) ~> V
+
      rule <k> pushBlock(Tag:Int)
                => addToHistory(Tag) ~> enterRestrictBlock(blockScope(F, Base, Tag))
           ...</k>
