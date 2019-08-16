@@ -4,7 +4,7 @@ module COMMON-INIT-SYNTAX
 
      syntax KItem ::= loadObj(K)
      // this takes input from a file which is not split by thread, so we don't want to split this rule.
-     syntax K ::= unwrapObj(K) [function, noThread]
+     syntax KItem ::= unwrapObj(GeneratedTopCell) [function, noThread, symbol]
 
      syntax CId ::= "mainArguments"
 
@@ -31,8 +31,6 @@ module COMMON-INIT
                <global> G::Bag </global>
           ...</generatedTop>)
           => <global> G </global>
-
-     rule unwrapObj(.K) => .K
 
      rule <k> removeUnusedIdentifiers(Tu::String) => removeFromExternalDecls(Set2List(keys(Env) -Set Uses), Tu) ...</k>
           <tu-id> Tu </tu-id>

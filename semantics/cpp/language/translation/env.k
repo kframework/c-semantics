@@ -139,24 +139,24 @@ module CPP-TRANSLATION-ENV
             defArgs(krlist((ListItem(_) => .List) _),
                     krlist((ListItem(_) => .List) _),
                     krlist((ListItem(_) => .List) _)),
-            defArgs(krlist((ListItem(I::Init) => .List) _),
-                    krlist((ListItem(C::ValueCategory) => .List) _),
-                    krlist((ListItem(T::CPPDType) => .List) _)),
-            defArgs(krlist(_::List (.List => ListItem(I::Init))),
-                    krlist(_::List (.List => ListItem(C::ValueCategory))),
-                    krlist(_::List (.List => ListItem(T::CPPDType)))))
+            defArgs(krlist((ListItem(I:KItem) => .List) _),
+                    krlist((ListItem(T::CPPDType) => .List) _),
+                    krlist((ListItem(C::ValueCategory) => .List) _)),
+            defArgs(krlist(_::List (.List => ListItem(I:KItem))),
+                    krlist(_::List (.List => ListItem(T::CPPDType))),
+                    krlist(_::List (.List => ListItem(C::ValueCategory)))))
           requires I =/=K NoArg()
 
      rule #updateDefaultArgs(
-            defArgs(krlist((ListItem(I::Init) => .List) _),
-                    krlist((ListItem(C::ValueCategory) => .List) _),
-                    krlist((ListItem(T::CPPDType) => .List) _)),
+            defArgs(krlist((ListItem(I:KItem) => .List) _),
+                    krlist((ListItem(T::CPPDType) => .List) _),
+                    krlist((ListItem(C::ValueCategory) => .List) _)),
             defArgs(krlist((ListItem(NoArg()) => .List) _),
                     krlist((ListItem(_) => .List) _),
                     krlist((ListItem(_) => .List) _)),
-            defArgs(krlist(_::List (.List => ListItem(I::Init))),
-                    krlist(_::List (.List => ListItem(C::ValueCategory))),
-                    krlist(_::List (.List => ListItem(T::CPPDType)))))
+            defArgs(krlist(_::List (.List => ListItem(I:KItem))),
+                    krlist(_::List (.List => ListItem(T::CPPDType))),
+                    krlist(_::List (.List => ListItem(C::ValueCategory)))))
 
      rule #updateDefaultArgs(
             defArgs(krlist(.List), krlist(.List), krlist(.List)),

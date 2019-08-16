@@ -1,7 +1,7 @@
 module LINKING-INIT-SYNTAX
      imports BASIC-K
 
-     syntax KItem ::= load(K)
+     syntax KItem ::= load(K) [symbol]
      syntax KItem ::= "link"
 
 endmodule

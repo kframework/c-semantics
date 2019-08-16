@@ -14,7 +14,7 @@ module C-EXPR-MEMBERS
 
      rule te(K:KItem, structOrUnionUType #as T::UType) . F:CId => te(K . F, rvalType(findFieldType(F, type(T))))
 
-     rule ncle(K::InitLValue, t(... st: _:SimpleArrayType) #as T::Type) [[ N::Int ]]
+     rule ncle(K:KItem, t(... st: _:SimpleArrayType) #as T::Type) [[ N::Int ]]
           => le(K [[ N ]], addQualifiers(getQualifiers(T), getElementType(N, T)))
 
 endmodule

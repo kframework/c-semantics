@@ -1,8 +1,5 @@
 module OPTIONS-SORTS
      syntax Opt
-     syntax TransOpt
-     syntax ExecOpt
-     syntax Opt ::= TransOpt | ExecOpt
 endmodule
 
 module OPTIONS-SYNTAX
@@ -10,21 +7,19 @@ module OPTIONS-SYNTAX
      imports INT
      imports STRING
 
-     syntax TransOpt ::= Debug()
-                       | Link()                       // Resolve uses to definitions.
-                       | NoNativeFallback()           // Don't attempt linking with native defs.
-
-     syntax ExecOpt ::= EntryPoint(String)            // Set the program entry point symbol.
-                      | NoIO()                        // Disable IO.
-                      | UseNativeStdLib()             // Prefer the native standard library
-                      | Stack(Int) | Heap(Int)        // Stack/heap bounds checking.
-                      | Breakpoint(String, Int)       // Set a breakpoint at a certain file/line.
-                      | ActiveBreakpoint(String, Int) // Flags the active breakpoint.
-
-     syntax Opt ::= RecoverAll()                      // Attempt recovery on all errors.
-                  | InteractiveFail()                 // Enter interactive mode when recovery fails.
-                  | FatalErrors()                     // Don't attempt any error recovery.
-                  | Lint()                            // Enable extra warnings.
+     syntax Opt ::= Debug() [symbol]
+                  | Link() [symbol]                         // Resolve uses to definitions.
+                  | NoNativeFallback() [symbol]             // Don't attempt linking with native defs.
+                  | EntryPoint(String) [symbol]              // Set the program entry point symbol.
+                  | NoIO() [symbol]                          // Disable IO.
+                  | UseNativeStdLib() [symbol]               // Prefer the native standard library
+                  | Stack(Int) [symbol] | Heap(Int) [symbol] // Stack/heap bounds checking.
+                  | Breakpoint(String, Int) [symbol]         // Set a breakpoint at a certain file/line.
+                  | ActiveBreakpoint(String, Int) [symbol]   // Flags the active breakpoint.
+                  | RecoverAll() [symbol]                        // Attempt recovery on all errors.
+                  | InteractiveFail() [symbol]                   // Enter interactive mode when recovery fails.
+                  | FatalErrors() [symbol]                       // Don't attempt any error recovery.
+                  | Lint() [symbol]                              // Enable extra warnings.
 
      syntax String ::= showOpt(Opt) [function]
 
