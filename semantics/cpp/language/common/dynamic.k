@@ -507,6 +507,8 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      syntax TemplateArgs ::= toTemplateArgs(List) [function]
                            | toTemplateArgs(CPPTypes) [function, klabel(CPPTypesToTemplateArgs)]
 
+     syntax Int ::= CPPTypesSize(CPPTypes) [function]
+
      syntax List ::= toList(CPPTypes) [function]
                    | toList(TemplateArgs) [function]
 
@@ -778,6 +780,8 @@ module CPP-DYNAMIC-OTHER
      rule toCPPTypes(.List) => .CPPTypes
 
      rule toCPPTypes(T::TemplateArgs) => toCPPTypes(toList(T))
+
+     rule CPPTypesSize(Ts::CPPTypes) => size(toList(Ts))
 
      rule toList(T::CPPType, Ts::CPPTypes) => ListItem(T) toList(Ts)
 

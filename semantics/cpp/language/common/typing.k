@@ -162,6 +162,8 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPSimpleFunctionType ::= functionType(returnType: CPPType, paramTypes: CPPTypes, methodInfo: MethodInfo, linkage: LanguageLinkage, exceptions: ExceptionSet) [klabel(cppFunctionType)]
 
+     syntax Int ::= paramCount(CPPSimpleFunctionType) [function]
+
      syntax CPPSimpleClassType ::= classType(Class)
 
      syntax CPPSimpleDependentType ::= dependentType(String, Int)
@@ -399,6 +401,8 @@ module CPP-TYPING
      imports CPP-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
+
+     rule paramCount(functionType(... paramTypes: Ts::CPPTypes)) => CPPTypesSize(Ts)
 
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: noMethod))) => toList(L)
 
