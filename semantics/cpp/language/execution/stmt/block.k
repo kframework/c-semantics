@@ -81,7 +81,7 @@ module CPP-EXECUTION-STMT-BLOCK
      // as the type of the address taken unless the function is virtual, which is handled elsewhere.
      rule <k> destruct(lv(_, _, t(... st: classType(_ :: Class(_, X::CId, _) #as C::Class)) #as T::CPPType) #as V::LVal, CanBeVirtual:Bool)
               => ExpressionStmt(BuiltinCallOp(lv(lnew(Base), noTrace, FuncT),
-                   CanBeVirtual andBool isMethodVirtual(FuncT),
+                   false,
                    ListItem(getAddress(V))))
           ...</k>
           <curr-tu> Tu::String </curr-tu>
