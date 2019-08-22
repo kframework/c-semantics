@@ -121,7 +121,7 @@ module C-TYPING-COMMON
      rule hasNoName(_) => false [owise]
 
      rule [[ getTagInfo(tag(X::CId, Tu::String, B::BlockRef))
-          => extractTagInfo({M[Tu] orDefault .Map}:>Map[tag(X, Tu, B)]) ]]
+          => extractTagInfo({M[Tu] orDefault .Map}:>Map[tag(X, Tu, B)] orDefault #incomplete) ]]
           <global>... <tags> M::Map </tags> ...</global>
 
      syntax TagInfo ::= extractTagInfo(K) [function]

@@ -1029,11 +1029,11 @@ module LIBC-STDIO
           [structural]
      rule str(C::String)
           ~> fscanf'(_, _,
-               (ListItem(D:String) => .List) _,
+               (ListItem(stringDir(D:String)) => .List) _,
                _,
                Item::String => "",
                _)
-          requires notBool inScanSet(C, D, Item) andBool Item =/=String ""
+          requires notBool inScanSet(C, stringDir(D), Item) andBool Item =/=String ""
           [structural]
      rule str(C::String)
           ~> fscanf'(_, _,
@@ -1081,7 +1081,7 @@ module LIBC-STDIO
           ~> #if (Matched ==Int 0) andBool (C ==K "")
                #then eof #else tv(Matched, utype(int)) #fi
           requires notBool inScanSet(C, D, Item)
-               andBool notBool isWhitespace(D)
+               andBool D =/=K whitespace
                andBool notBool isCompleteItem(Item, D)
           [structural]
      rule str(C::String)
@@ -1204,14 +1204,15 @@ module LIBC-STDIO
 
      syntax Directive ::= "%" "(" WriteBehavior "," Int "," String "," String ")"
                         | "%%"
-                        | String
+                        | "whitespace"
+                        | stringDir(String)
      syntax WriteBehavior ::= "dirWrite" | "dirAlloc" | "dirRead"
 
      // (Input char, current directive, item read so far.)
      syntax Bool ::= inScanSet(String, Directive, String) [function]
-     rule inScanSet(C::String, C, "") => true
+     rule inScanSet(C::String, stringDir(C), "") => true
      rule inScanSet("%", %%, "") => true
-     rule inScanSet(C::String, " ", _) => isWhitespace(C)
+     rule inScanSet(C::String, whitespace, _) => isWhitespace(C)
      rule inScanSet(C::String, %(_, _, _, "c"), _) => C =/=String ""
      rule inScanSet(C::String, %(_, _, _, "s"), _) => C =/=String "" andBool notBool isWhitespace(C)
 
@@ -1350,7 +1351,7 @@ module LIBC-STDIO
 
      // Given that all characters are in the scan set, is this a complete item?
      syntax Bool ::= isCompleteItem(String, Directive) [function]
-     rule isCompleteItem("", D::Directive) => isReadCountDirective(D) orBool isWhitespace(D)
+     rule isCompleteItem("", D::Directive) => isReadCountDirective(D) orBool D ==K whitespace
      rule isCompleteItem(Item::String, D::Directive) => false
           requires isNumericDirective(D) andBool notBool hasDigit(strip0xPrefix(Item))
                andBool toUpperCase(Item) =/=String "(NIL)"
@@ -1454,12 +1455,13 @@ module LIBC-STDIO
           => ListItem(normalizeDirective(D))
           requires notBool isSpaceSkipDirective(D)
      rule parseFormat'(parseResult(D::Directive, L::List), _)
-          => ListItem(normalizeDirective(D)) parseFormat'(parseDirective(L), isWhitespace(D))
+          => ListItem(normalizeDirective(D)) parseFormat'(parseDirective(L), D ==K whitespace)
           [owise]
 
      // Does this directive require skipping leading whitespace?
      syntax Bool ::= isSpaceSkipDirective(Directive) [function]
-     rule isSpaceSkipDirective(_:String) => false
+     rule isSpaceSkipDirective(stringDir(_)) => false
+     rule isSpaceSkipDirective(whitespace) => false
      rule isSpaceSkipDirective(%(_, _, _, D::String)) => false
           requires firstChar(D) ==String "["
      rule isSpaceSkipDirective(%(_, _, _, "c")) => false
@@ -1483,10 +1485,10 @@ module LIBC-STDIO
 
      syntax ParseResult ::= parseDirective(List) [function]
      rule parseDirective(ListItem(C:String) L::List)
-          => parseResult(" ", eatWhitespace(L))
+          => parseResult(whitespace, eatWhitespace(L))
           requires isWhitespace(C)
      rule parseDirective(ListItem(C:String) L::List)
-          => parseResult(C, L)
+          => parseResult(stringDir(C), L)
           requires C =/=String "%" andBool notBool isWhitespace(C)
      rule parseDirective(ListItem("%") ListItem("%") L::List)
           => parseResult(%%, L)
@@ -1513,8 +1515,8 @@ module LIBC-STDIO
                ), eatConvSpec(eatLengthMod(eatDigits(L))))
           [owise]
 
-     syntax Bool ::= isWhitespace(Directive) [function]
-     rule isWhitespace(C:String)
+     syntax Bool ::= isWhitespace(String) [function]
+     rule isWhitespace(C::String)
           => (ordChar(C) >=Int 9 andBool ordChar(C) <=Int 13)
                orBool C ==String " "
           requires C =/=String ""
@@ -1696,6 +1698,13 @@ module LIBC-STDIO
                ...</formatting>
           )
           [structural]
+
+     syntax String ::= ifEmpty(String, String) [function]
+     rule ifEmpty("", S::String) => S
+     rule ifEmpty(S::String, _)  => S [owise]
+
+     syntax String ::= defaultOne(String) [function]
+     rule defaultOne(S::String) => ifEmpty(S, "1")
 
      syntax RValue ::= formattedResult(K)
 
@@ -1949,9 +1958,9 @@ module LIBC-STDIO
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(showInt(D),
-                                             String2Int(P),
+                                             String2Int(defaultOne(P)),
                                              Z, "",
-                                             String2Int(W)))
+                                             String2Int(defaultOne(W))))
           </format-result>
           <format-state> "%d" => "reset" </format-state>
           [structural]
@@ -1987,9 +1996,9 @@ module LIBC-STDIO
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(Base2String(D, 8),
-                                             String2Int(P),
+                                             String2Int(defaultOne(P)),
                                              Z, #if Hash #then "0" #else "" #fi,
-                                             String2Int(W)))
+                                             String2Int(defaultOne(W))))
           </format-result>
           <format-state> "%o" => "reset" </format-state>
           [structural]
@@ -2010,9 +2019,9 @@ module LIBC-STDIO
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(showInt(D),
-                                             String2Int(P),
+                                             String2Int(defaultOne(P)),
                                              Z, "",
-                                             String2Int(W)))
+                                             String2Int(defaultOne(W))))
           </format-result>
           <format-state> "%u" => "reset" </format-state>
           [structural]
@@ -2033,9 +2042,9 @@ module LIBC-STDIO
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(Base2String(D, 16),
-                                             String2Int(P),
+                                             String2Int(defaultOne(P)),
                                              Z, #if Hash #then "0x" #else "" #fi,
-                                             String2Int(W)))
+                                             String2Int(defaultOne(W))))
           </format-result>
           <format-state> "%x" => "reset" </format-state>
           [structural]
@@ -2056,9 +2065,9 @@ module LIBC-STDIO
           <format-result>...
                .List => ListItem(
                         toUpperCase(formatPrecisionWidth(Base2String(D, 16),
-                                             String2Int(P),
+                                             String2Int(defaultOne(P)),
                                              Z, #if Hash #then "0X" #else "" #fi,
-                                             String2Int(W))))
+                                             String2Int(defaultOne(W)))))
           </format-result>
           <format-state> "%X" => "reset" </format-state>
           [structural]
@@ -2103,8 +2112,8 @@ module LIBC-STDIO
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(padString(
-                    showFloat(setPrecision(D, #if P ==K "" #then 6 #else String2Int(P) #fi)),
-                    String2Int(W),
+                    showFloat(setPrecision(D, String2Int(ifEmpty(P, "6")))),
+                    String2Int(defaultOne(W)),
                     #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%f" => "reset" </format-state>
@@ -2122,8 +2131,8 @@ module LIBC-STDIO
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(padString(
-                    toUpperCase(showFloat(setPrecision(D, #if P ==K "" #then 6 #else String2Int(P) #fi))),
-                    String2Int(W),
+                    toUpperCase(showFloat(setPrecision(D, String2Int(ifEmpty(P, "6"))))),
+                    String2Int(defaultOne(W)),
                     #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%F" => "reset" </format-state>
@@ -2191,8 +2200,8 @@ module LIBC-STDIO
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(padString(
-                    showFloat(setPrecision(D, String2Int(P))),
-                    String2Int(W),
+                    showFloat(setPrecision(D, String2Int(ifEmpty(P, "6")))),
+                    String2Int(defaultOne(W)),
                     #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%g" => "reset" </format-state>
@@ -2210,8 +2219,8 @@ module LIBC-STDIO
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(padString(
-                    toUpperCase(showFloat(setPrecision(D, String2Int(P)))),
-                    String2Int(W),
+                    toUpperCase(showFloat(setPrecision(D, String2Int(ifEmpty(P, "6"))))),
+                    String2Int(defaultOne(W)),
                     #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%G" => "reset" </format-state>
@@ -2289,7 +2298,7 @@ module LIBC-STDIO
           <format-state> "%" => "%s" </format-state>
           [structural]
      rule [format-%s]:
-          <k> (.K => #if P ==String "" #then getString'(Loc) #else getString'(Loc, String2Int(P)) #fi)
+          <k> (.K => getString'(Loc, String2Int(ifEmpty(P, "-1"))))
                ~> formatter'(_)
           ...</k>
           <format-length> Len::String </format-length>
@@ -2301,7 +2310,7 @@ module LIBC-STDIO
           requires Len =/=String "l"
           [structural]
      rule [format-%ls]:
-          <k> (.K => #if P ==String "" #then getWString'(Loc) #else getWString'(Loc, String2Int(P)) #fi)
+          <k> (.K => getWString'(Loc, String2Int(ifEmpty(P, "-1"))))
                ~> formatter'(_)
           ...</k>
           <format-length> "l" </format-length>
@@ -2342,7 +2351,7 @@ module LIBC-STDIO
           <format-pad-zero> false </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(padString(pointerToString(Loc), String2Int(W), " "))
+               .List => ListItem(padString(pointerToString(Loc), String2Int(defaultOne(W)), " "))
           </format-result>
           <format-state> "%p" => "reset" </format-state>
           [structural]

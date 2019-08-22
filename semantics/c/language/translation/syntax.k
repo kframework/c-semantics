@@ -7,6 +7,7 @@ endmodule
 
 module C-ABSTRACT-SYNTAX
      imports C-ABSTRACT-SORTS
+     imports COMPAT-SORTS
      imports SET
      imports BOOL-SYNTAX
      imports INT-SYNTAX
@@ -70,13 +71,13 @@ module C-ABSTRACT-SYNTAX
      */
      syntax TypeSpecifier ::= StructRef(CId, K) [symbol]
      // new // CId, List
-     syntax TypeSpecifier ::= StructDef(CId, K, KItem) [symbol]
+     syntax TypeSpecifier ::= StructDef(CId, K, StrictList) [symbol]
      syntax TypeSpecifier ::= UnionRef(CId, K) [symbol] // new
      // new // CId, List
-     syntax TypeSpecifier ::= UnionDef(CId, K, KItem) [symbol]
+     syntax TypeSpecifier ::= UnionDef(CId, K, StrictList) [symbol]
      syntax TypeSpecifier ::= EnumRef(CId, K) [symbol] // new
      // new // CId, List
-     syntax TypeSpecifier ::= EnumDef(CId, K, KItem) [symbol]
+     syntax TypeSpecifier ::= EnumDef(CId, K, StrictList) [symbol]
 
      syntax TypeSpecifier ::= Complex() [symbol]
      syntax TypeSpecifier ::= Imaginary() [symbol]
@@ -104,7 +105,7 @@ module C-ABSTRACT-SYNTAX
      /*
      and specifier = spec_elem list
      */
-     syntax Specifier ::= Specifier(KItem) [avoid, symbol]
+     syntax Specifier ::= Specifier(StrictList) [avoid, symbol]
 
      // Represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
@@ -137,8 +138,8 @@ module C-ABSTRACT-SYNTAX
      syntax KItem ::= ArrayType(KItem, K, KItem) [strict(1), symbol]
      syntax KItem ::= PointerType(Specifier, KItem) [strict(2), symbol]
      // K, List, Bool
-     syntax KItem ::= Prototype(KItem, KItem, Bool) [strict(1), symbol]
-     syntax KItem ::= NoPrototype(KItem, KItem, Bool) [strict(1, 2), symbol]
+     syntax KItem ::= Prototype(KItem, StrictList, Bool) [strict(1), symbol]
+     syntax KItem ::= NoPrototype(KItem, StrictList, Bool) [strict(1, 2), symbol]
 
      syntax KItem ::= "NotVariadic"
      syntax KItem ::= "Variadic"
@@ -146,13 +147,13 @@ module C-ABSTRACT-SYNTAX
      /*
      and name_group = specifier * name list
      */ // K, List
-     syntax KItem ::= NameGroup(KItem, KItem) [strict, symbol]
+     syntax KItem ::= NameGroup(KItem, StrictList) [strict, symbol]
 
      /*
      (* The optional expression is the bitfield *)
      and field_group = specifier * (name * expression option) list
      */ // K, List
-     syntax KItem ::= FieldGroup(KItem, KItem) [strict(1), symbol]
+     syntax KItem ::= FieldGroup(KItem, StrictList) [strict(1), symbol]
      syntax KItem ::= FieldName(KItem) [symbol]
      syntax KItem ::= BitFieldName(KItem, KItem) [symbol]
 
@@ -163,7 +164,7 @@ module C-ABSTRACT-SYNTAX
      and init_name_group = specifier * init_name list
      */
      // K, List
-     syntax KItem ::= InitNameGroup(KItem, KItem) [strict(1), symbol]
+     syntax KItem ::= InitNameGroup(KItem, StrictList) [strict(1), symbol]
 
      /*
      The decl_type is in the order in which they are printed. Only the name of
@@ -222,7 +223,7 @@ module C-ABSTRACT-SYNTAX
      syntax KItem ::= GlobAsm(String) [symbol]
      syntax KItem ::= Pragma(KItem) [symbol]
      syntax KItem ::= PragmaKccRule(String) [symbol]
-     syntax KItem ::= Linkage(String, KItem) [symbol]
+     syntax KItem ::= Linkage(String, StrictList) [symbol]
      syntax KItem ::= StaticAssert(K, KItem) [symbol]
 
      /*
@@ -231,7 +232,7 @@ module C-ABSTRACT-SYNTAX
      */
      // name, code, source
      // new: Filename, strings, ast, code
-     syntax KItem ::= TranslationUnit(String, KItem, KItem) [symbol]
+     syntax KItem ::= TranslationUnit(String, StrictList, StrictList) [symbol]
 
      /*
      and statement =
@@ -241,7 +242,7 @@ module C-ABSTRACT-SYNTAX
      | SEQUENCE of statement * statement * cabsloc
      */
      syntax KItem ::= BlockStatement(KItem) [symbol]
-     syntax KItem ::= Block(Int, KItem, KItem)  [klabel(Block3), symbol]
+     syntax KItem ::= Block(Int, StrictList, StrictList)  [klabel(Block3), symbol]
      syntax KItem ::= Sequence(KItem, KItem)
 
      /*
@@ -299,7 +300,7 @@ module C-ABSTRACT-SYNTAX
      | COMMA of expression list
      */
      // List
-     syntax KItem ::= Comma(KItem) [symbol]
+     syntax KItem ::= Comma(StrictList) [symbol]
      /*
      | CONSTANT of constant
      | PAREN of expression
@@ -316,7 +317,7 @@ module C-ABSTRACT-SYNTAX
      syntax KItem ::= SizeofType(KItem, K) [strict(1), symbol]
      syntax KItem ::= AlignofExpression(KItem) [symbol]
      syntax KItem ::= AlignofType(KItem, KItem) [strict(1), symbol]
-     syntax KItem ::= Generic(K, KItem) [symbol]
+     syntax KItem ::= Generic(K, StrictList) [symbol]
      syntax KItem ::= GenericPair(KItem, KItem, KItem) [symbol]
      syntax KItem ::= GenericDefault(KItem) [symbol]
      /*
@@ -356,7 +357,7 @@ module C-ABSTRACT-SYNTAX
      syntax Constant ::= WCharLiteral(Int) [function, symbol]
      syntax Constant ::= StringLiteral
      syntax StringLiteral ::= StringLiteral(String) [symbol]
-     syntax StringLiteral ::= WStringLiteral(KItem) [symbol]
+     syntax StringLiteral ::= WStringLiteral(StrictList) [symbol]
 
      /*
      and init_expression =
@@ -366,7 +367,7 @@ module C-ABSTRACT-SYNTAX
 
      syntax KItem ::= SingleInit(KItem) [strict, symbol] 
      // List
-     syntax KItem ::= CompoundInit(KItem) [strict, symbol]
+     syntax KItem ::= CompoundInit(StrictList) [strict, symbol]
      // new; (initwhat * init_expression)
      syntax KItem ::= InitFragment(KItem, KItem) [symbol]
 
