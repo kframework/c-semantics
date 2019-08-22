@@ -4,8 +4,8 @@ module C-EXPR-EVAL
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule reval(ncle(K:K, T::Type) => te(K, rvalType(T)))
+     rule reval(ncle(K:KItem, T::Type) => te(K, rvalType(T)))
 
-     rule le(K:K, T::Type) => ncle(K, T)
+     rule le(K:KItem, T::Type) => ncle(K, T)
 
 endmodule

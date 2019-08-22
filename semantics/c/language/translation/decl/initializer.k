@@ -41,9 +41,9 @@ module C-DECL-INITIALIZER
           [structural]
 
      // aggregates
-     rule figureInit(X:CId, aggregateOrUnionType #as T::Type, CompoundInit(L:KItem))
+     rule figureInit(X:CId, aggregateOrUnionType #as T::Type, CompoundInit(list(L::List)))
           => giveType(X, T)
-          ~> figureInit-aux(X, T, startInit(T, X, CompoundInit(L)))
+          ~> figureInit-aux(X, T, startInit(T, X, L))
           requires notBool (isIncompleteStringType(T) andBool isCompoundStringInit(L))
           [structural]
 
@@ -126,8 +126,8 @@ module C-DECL-INITIALIZER
      rule isIncompleteStringType(t(_, _, incompleteArrayType(charType))) => true
      rule isIncompleteStringType(_) => false [owise]
 
-     syntax Bool ::= isCompoundStringInit(KItem) [function]
-     rule isCompoundStringInit(list(ListItem(InitFragment(NextInit(), SingleInit(StringLiteral(_)))))) => true
+     syntax Bool ::= isCompoundStringInit(List) [function]
+     rule isCompoundStringInit(ListItem(InitFragment(NextInit(), SingleInit(StringLiteral(_))))) => true
      rule isCompoundStringInit(_) => false [owise]
 
      // id, type, initializer
@@ -163,8 +163,8 @@ module C-DECL-INITIALIZER
           <curr-object> _:List => .List </curr-object>
           <saved-init> K:K => .K </saved-init>
 
-     syntax KItem ::= startInit(Type, CId, K)
-     rule <k> startInit(aggregateOrUnionType #as T::Type, X:CId, CompoundInit(list(L:List)))
+     syntax KItem ::= startInit(Type, CId, List)
+     rule <k> startInit(aggregateOrUnionType #as T::Type, X:CId, L:List)
                => fillInits(L) ~> getInit
           ...</k>
           <incomplete-length> _ => 0 </incomplete-length>
@@ -225,7 +225,7 @@ module C-DECL-INITIALIZER
      rule <k> subobjectKCell #as Init:KItem ...</k>
           <curr-subobject>
                (ListItem(down) => ListItem(firstField(K, findFieldNames(T), T)))
-               ListItem(ncle(K:K, structOrUnionType #as T::Type))
+               ListItem(ncle(K:KItem, structOrUnionType #as T::Type))
           ...</curr-subobject>
           <curr-object> Obj::List </curr-object>
           requires notBool (isInFieldInit(Init) andBool structOrUnionAtTop(Obj))
@@ -341,7 +341,7 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                (.List => ListItem(down))
-               ListItem(ncle(K:K, aggregateOrUnionType #as T::Type))
+               ListItem(ncle(K:KItem, aggregateOrUnionType #as T::Type))
                Remainder::List
           </curr-subobject>
           <curr-object>
@@ -377,7 +377,7 @@ module C-DECL-INITIALIZER
           <curr-subobject>
                _:List => ListItem(block) ListItem(ncle(K, T))
           </curr-subobject>
-          <curr-object> ListItem(ncle(K:K, structOrUnionType #as T::Type)) ...</curr-object>
+          <curr-object> ListItem(ncle(K:KItem, structOrUnionType #as T::Type)) ...</curr-object>
           [structural]
      // fixme does this need to worry about incompleteLength_
      rule <k> fillInit(InitFragment(AtIndexInit(Index:KItem, K':KItem), Exp:KItem))
@@ -387,7 +387,7 @@ module C-DECL-INITIALIZER
           <curr-subobject>
                _:List => ListItem(block) ListItem(ncle(K, T))
           </curr-subobject>
-          <curr-object> ListItem(ncle(K:K, t(... st: _:SimpleArrayType) #as T::Type)) ...</curr-object>
+          <curr-object> ListItem(ncle(K:KItem, t(... st: _:SimpleArrayType) #as T::Type)) ...</curr-object>
           [structural]
 
      syntax KItem ::= buildDesignator(K)
@@ -396,7 +396,7 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                ListItem(block) (.List => ListItem(thisField(K, F, findFieldNames(T), T)))
-                    ListItem(ncle(K:K, structOrUnionType #as T::Type))
+                    ListItem(ncle(K:KItem, structOrUnionType #as T::Type))
           ...</curr-subobject>
           [structural]
 
@@ -451,7 +451,7 @@ module C-DECL-INITIALIZER
           [structural]
      rule <k> initializeSingleInit2(T'::Type, _) ...</k>
           <curr-subobject>
-               (.List => ListItem(down)) ListItem(ncle(K:K, T::Type))
+               (.List => ListItem(down)) ListItem(ncle(K:KItem, T::Type))
           ...</curr-subobject>
           requires isAggregateOrUnionType(T)
                andBool notBool isAggregateOrUnionType(T')

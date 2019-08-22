@@ -6,6 +6,7 @@ endmodule
 
 module C-SYNTAX
      imports C-SORTS
+     imports COMPAT-SORTS
      imports C-REVAL-SYNTAX
      imports INT-SYNTAX
      imports STRING-SYNTAX
@@ -13,7 +14,7 @@ module C-SYNTAX
 
      syntax KResult ::= SpecifierElem
 
-     syntax KItem ::= Block(Int, KItem) [avoid]
+     syntax KItem ::= Block(Int, StrictList) [avoid]
 
      /*
      type cabsloc = {
@@ -263,7 +264,7 @@ module C-SYNTAX
         should be printed as just T *)
      | CALL of expression * expression list
      */
-     syntax KItem ::= Call(K, K) [symbol]
+     syntax KItem ::= Call(KItem, KItem) [symbol]
      context Call((HOLE:KItem => reval(HOLE)), _) [ndheat, result(RValue)]
      /*
      | MEMBEROF of expression * string
@@ -276,6 +277,6 @@ module C-SYNTAX
      and attribute = String * expression list
      */
      // String, List
-     syntax KItem ::= Attribute(String, KItem) [symbol]
+     syntax KItem ::= Attribute(String, StrictList) [symbol]
 
 endmodule

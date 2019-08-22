@@ -6,7 +6,7 @@ module C-EXPR-MEMBERS
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule ncle(K::InitLValue, structOrUnionType #as T::Type) .init F::CId
+     rule ncle(K:KItem, structOrUnionType #as T::Type) .init F::CId
           => le(K .init F, addQualifiers(getQualifiers(T), findFieldType(F, T)))
      rule ncle(K:KItem, structOrUnionType #as T::Type) . F:CId
           => le(K . F, addQualifiers(getQualifiers(T), findFieldType(F, T)))
