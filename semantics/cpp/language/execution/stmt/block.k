@@ -12,15 +12,14 @@ module CPP-EXECUTION-STMT-BLOCK
      imports CPP-CLASS-BASIC-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
 
-     rule inBlock(Tag::Int, E::Expr)
-          =>
-          pushBlock(Tag) ~> E ~> popInBlock()
+     rule <k> saveLocallyConstructed(E::Expr) => E ~> restoreLocallyConstructed(L) ...</k>
+          <locally-constructed> L::List </locally-constructed>
 
-     syntax KItem ::= popInBlock()
+     syntax KItem ::= restoreLocallyConstructed(List)
 
-     rule V:Val ~> popInBlock()
-          =>
-          popBlock(false) ~> V
+     rule <k> V:Val ~> restoreLocallyConstructed(L::List) => V ...</k>
+          <locally-constructed> _ => L </locally-constructed>
+          requires isEvalVal(V)
 
      rule <k> pushBlock(Tag:Int)
                => addToHistory(Tag) ~> enterRestrictBlock(blockScope(F, Base, Tag))

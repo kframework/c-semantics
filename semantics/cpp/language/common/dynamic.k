@@ -483,7 +483,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      syntax KItem ::= pushBlock(Int)
                     | popBlock(isException: Bool)
 
-     syntax Expr ::= inBlock(Int, Expr)
+     syntax Expr ::= saveLocallyConstructed(Expr)
 
      syntax Stmt ::= "loopMarked"
 

@@ -750,6 +750,10 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule isStaticInitialization(le(endConstruction(...), _, _)) => true
 
+     rule isStaticInitialization(le(finishConstruction(...), _, _)) => true
+
+     rule isStaticInitialization(le(saveLocallyConstructed(E::Expr) => E , _, _))
+
      rule isStaticInitialization(le(_ :=init V::Expr, _, _)) => isEvalVal(V)
 
      rule isStaticInitialization(le(bindReferenceExec(_, V::Expr), _, _)) => isEvalVal(V)
@@ -770,6 +774,8 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule stripInitHolds(le(compoundInit(E1::Expr, E2::Expr), _, _)) => stripInitHolds(compoundInit(E1, E2))
 
      rule stripInitHolds(compoundInit(E1::Expr, E2::Expr)) => compoundInit(stripInitHolds(E1), stripInitHolds(E2))
+
+     rule stripInitHolds(le(saveLocallyConstructed(E::Expr), _, _)) => saveLocallyConstructed(stripInitHolds(E))
 
      rule stripInitHolds(le(E::Expr, _, _)) => E [owise]
 
