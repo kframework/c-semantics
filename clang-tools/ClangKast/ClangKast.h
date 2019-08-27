@@ -64,7 +64,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort);
 class Kast {
 public:
 
-  // Add a Kast::Node to the KAST. The next nodes added should be the children (bredth-first).
+  // Add a Kast::Node to the KAST. The next nodes added should be the children (breadth-first).
   template <class T>
   static void add(const T & node);
 
@@ -74,6 +74,7 @@ public:
   class Node {
   public:
     explicit Node(Sort sort) : sort(sort) { }
+    virtual ~Node() { }
     virtual void print(Sort parentSort, std::function<void (Sort)> printChild) const = 0;
     static std::string makeKLabel(const std::string & label);
   protected:
