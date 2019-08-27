@@ -252,7 +252,7 @@ string Kast::KToken::toKString(llvm::APFloat f) {
                           + 3 + 11 // p4294967295x16
                           + 1      // null byte
                           + f.semanticsPrecision(f.getSemantics());
-  char result[numBytes], suffix[14];
+  char result[numBytes] = {0}, suffix[14] = {0};
   SmallVector<char, 80> buf;
   f.toString(buf, 0, 0);
   sprintf(suffix, "p%ux16", f.semanticsPrecision(f.getSemantics()));

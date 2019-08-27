@@ -30,7 +30,7 @@ class GetKastVisitor
 public:
 
   explicit GetKastVisitor(ASTContext *Context, const llvm::StringRef InFile)
-    : Context(Context), InFile(InFile) { }
+    : Context(Context), InFile(InFile.str()) { }
 
   bool shouldVisitTemplateInstantiations() { return true; }
 
@@ -159,7 +159,7 @@ public:
 
   bool VisitTranslationUnitDecl(TranslationUnitDecl *D) {
     Kast::add(Kast::KApply("TranslationUnit", Sort::DECL, {Sort::STRING, Sort::LIST}));
-    VisitStringRef(InFile);
+    Kast::add(Kast::KToken(InFile));
     DeclContext(D);
     return false;
   }
@@ -270,7 +270,7 @@ public:
       } else {
         Kast::add(Kast::KApply("unnamed", Sort::UNNAMEDCID, {Sort::INT, Sort::STRING}));
         VisitUnsigned((unsigned long long)decl);
-        VisitStringRef(InFile);
+        Kast::add(Kast::KToken(InFile));
       }
       return true;
     }
@@ -2175,7 +2175,7 @@ public:
 
 private:
   ASTContext * Context;
-  llvm::StringRef InFile;
+  const std::string InFile;
 
   void NoNNS() {
     Kast::add(Kast::KApply("NoNNS", Sort::NNS));
@@ -2330,6 +2330,7 @@ private:
         mangler->mangleName(D, s);
     }
     Identifier(s.str());
+    delete mangler;
   }
 };
 
