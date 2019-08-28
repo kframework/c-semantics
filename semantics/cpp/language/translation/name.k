@@ -261,7 +261,7 @@ module CPP-TRANSLATION-NAME
           <enumerators>... X |-> V::PRVal </enumerators>
           requires variable in Mask
 
-     rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set, C:K) => #if C ==K .K #then prv(V, Tr, ET) #else classSet(prv(V, Tr, ET), {C}:>Class :: X, SetItem({C}:>Class)) #fi ... </k>
+     rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set, C:K) => #if C ==K .K #then {prv(V, Tr, ET)}:>KItem #else {classSet(prv(V, Tr, ET), {C}:>Class :: X, SetItem({C}:>Class))}:>KItem #fi ... </k>
           <curr-tr-scope> Sc::Scope </curr-tr-scope>
           <enum-id> E </enum-id>
           <enum-type> ET::CPPType </enum-type>

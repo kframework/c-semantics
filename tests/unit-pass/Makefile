@@ -4,7 +4,7 @@ Makefile: $(ROOT)/../check-results.mk ;
 
 include $(ROOT)/../check-results.mk
 
-TUS := $(wildcard ./*.c) $(wildcard ./*.C)
+TUS := $(wildcard ./*.c)
 EXCLUDES :=
 OS_STDIO_EXCLUDES := $(wildcard ./stdio-*.c)
 OS_EXCLUDES := $(OS_STDIO_EXCLUDES) \

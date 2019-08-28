@@ -18,12 +18,6 @@ module CPP-TRANSLATION-ENV-SYNTAX
 
      syntax KItem ::= updateDefaultArguments(QualId, CPPType, DefaultArguments) [strict(3)]
 
-     syntax DefaultArguments ::= defArgs(vals: StrictList, types: StrictList, cats: StrictList) [strict(1)]
-
-     syntax DefaultArguments ::= DefaultArgumentsResult
-
-     syntax DefaultArgumentsResult ::= defArgs(vals: StrictListResult, types: StrictListResult, cats: StrictListResult)
-
      syntax KResult ::= DefaultArgumentsResult
 
      syntax List ::= getDefaultArgsVals(DefaultArgumentsResult) [function]

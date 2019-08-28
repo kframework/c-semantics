@@ -362,6 +362,11 @@ module CPP-DYNAMIC-OTHER-SORTS
      syntax TemplateArg
 
      syntax CPPValue
+
+     syntax DefaultArguments
+
+     syntax DefaultArgumentsResult
+
 endmodule // CPP-DYNAMIC-OTHER-SORTS
 
 module CPP-REVAL-SYNTAX
@@ -374,6 +379,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      imports CPP-CLASS-BASIC-SORTS
      imports CPP-DYNAMIC-OTHER-SORTS
      imports BITS-SORTS
+     imports COMPAT-SORTS
      imports CPP-SYMLOC-SORTS
      imports CPP-TYPING-SORTS
      imports CPP-DEPENDENT-SYNTAX
@@ -575,6 +581,12 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      syntax List ::= ofSList(SList) [klabel(ofSListcpp), function]
 
      syntax KItem ::= seqstrict(StrictList) [klabel(seqstrictcpp)]
+
+     syntax DefaultArguments ::= defArgs(vals: StrictList, types: StrictList, cats: StrictList)
+
+     syntax DefaultArguments ::= DefaultArgumentsResult
+
+     syntax DefaultArgumentsResult ::= defArgs(vals: StrictListResult, types: StrictListResult, cats: StrictListResult)
 
 endmodule // CPP-DYNAMIC-OTHER-SYNTAX
 
