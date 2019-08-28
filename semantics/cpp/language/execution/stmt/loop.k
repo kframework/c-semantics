@@ -32,7 +32,7 @@ module CPP-EXECUTION-STMT-LOOP
           <block-history> ListItem(Num::Int) ...</block-history>
           <loop-stack> ListItem(kpair(Num, K:K)) => .List ...</loop-stack>
 
-     rule <k> (.K => popBlock) ~> popLoop ...</k>
+     rule <k> (.K => popBlock(false)) ~> popLoop ...</k>
           <block-history> ListItem(Num::Int) ...</block-history>
           <loop-stack> ListItem(kpair(Num'::Int, _)) ...</loop-stack>
           requires Num' =/=Int Num

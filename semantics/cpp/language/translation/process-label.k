@@ -52,7 +52,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
           <goto-block-history> .List => ListItem(Tag) ...</goto-block-history>
 
      rule <k> waitingOnGotoMap ...</k>
-          <computation> popBlock => .K ...</computation>
+          <computation> popBlock(_) => .K ...</computation>
           <goto-nesting-depth> I::Int => I -Int 1 </goto-nesting-depth>
           <goto-block-history> ListItem(_) => .List ...</goto-block-history>
           requires I >Int 0

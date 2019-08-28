@@ -11,7 +11,7 @@ module CPP-TRANSLATION-STMT-BLOCK
 
      rule toExecution(TpushBlock(Tag::Int)) => pushBlock(Tag)
 
-     rule toExecution(TpopBlock) => popBlock
+     rule toExecution(TpopBlock) => popBlock(false)
 
      rule <k> TpushBlock(Tag::Int) #as It:KItem => elaborateThen(It) ~> pushLocals ...</k>
           <curr-tr-scope> blockScope(_, _, (_ => Tag)) </curr-tr-scope>

@@ -188,6 +188,8 @@ module CPP-CLASS-SYNTAX
 
      syntax Expr ::= endConstruction(Expr, isConstructor: Bool) [strict(c; 1)]
 
+     syntax Expr ::= finishConstruction(Expr, isConstructor: Bool) [strict(c; 1)]
+
      syntax BaseClass ::= baseClass(Class)
 
      syntax CId ::= BaseClass
