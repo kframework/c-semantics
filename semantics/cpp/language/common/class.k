@@ -186,9 +186,9 @@ module CPP-CLASS-SYNTAX
 
      syntax Expr ::= beginConstruction(Expr, isBaseClassSubobject: Bool) [strict(c; 1)]
 
-     syntax Expr ::= endConstruction(Expr, isConstructor: Bool) [strict(c; 1)]
+     syntax Expr ::= endConstruction(Expr, isConstructor: Bool, isDynamic: Bool) [strict(c; 1)]
 
-     syntax Expr ::= finishConstruction(Expr, isConstructor: Bool) [strict(c; 1)]
+     syntax Expr ::= finishConstruction(Expr, isConstructor: Bool, isDynamic: Bool) [strict(c; 1)]
 
      syntax BaseClass ::= baseClass(Class)
 

@@ -58,11 +58,17 @@ module CPP-EXECUTION-BINDING
           <constructing> _ => Obj </constructing>
           <most-derived-class> MostDerived:K => #if IsBaseClassSubobject #then MostDerived #else type(Obj) #fi </most-derived-class>
 
-     rule <k> endConstruction(Obj:LVal, IsConstructor::Bool) => finishConstruction(Obj, IsConstructor) ...</k>
+     rule <k> endConstruction(Obj:LVal, IsConstructor::Bool, IsDynamic::Bool)
+              => finishConstruction(Obj, IsConstructor, IsDynamic)
+          ...</k>
           <constructing> _ => .K </constructing>
 
-     rule <k> finishConstruction(Obj:LVal, IsConstructor::Bool) => Obj ...</k>
-          <locally-constructed> .List => ListItem(ktriple(Obj, true, IsConstructor)) ...</locally-constructed>
+     rule <k> finishConstruction(Obj:LVal, IsConstructor:Bool, IsDynamic:Bool) => Obj ...</k>
+          <locally-constructed> .List =>
+               #if notBool IsDynamic orBool IsConstructor #then
+                    ListItem(ktriple(Obj, true, IsConstructor))
+               #else .List #fi
+          ...</locally-constructed>
 
      rule <k> writeVTables => write(Loc, prv(vtable(MDC), noTrace, type(pointerType(type(void)))), type(pointerType(type(void)))) ...</k>
           <curr-scope> blockScope(C::Class :: _, _, _) </curr-scope>

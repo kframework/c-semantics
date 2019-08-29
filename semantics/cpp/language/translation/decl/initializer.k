@@ -161,7 +161,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule zeroInitClassPadding2(Base::LVal, NAOffset::Int, T::CPPType) => zeroInit(fieldExp(Base, T, NAOffset), T)
 
      // @ref n4296 8.5:12
-     rule #figureInit(Base:LVal, DestT::CPPType, _, NoInit(), _, _, IsConstructor::ConstructorType, _)
+     rule #figureInit(Base:LVal, DestT::CPPType, _, NoInit(), _, _, IsConstructor::ConstructorType)
           => defaultInit(Base, DestT, IsConstructor)
 
      // @ref n4296 8.5:7.1 (class type)
@@ -347,7 +347,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           =>
           compoundInit(
                le(saveLocallyConstructed({compoundInitJoin(E, Base)}:>Expr), trace(Base), type(Base)),
-               le(finishConstruction(Base, CT.isCtorInit(CT)), trace(Base), type(Base))
+               le(finishConstruction(Base, CT.isCtorInit(CT), CT.isDynamic(CT)), trace(Base), type(Base))
           )
 
      // technically this should reject programs where Init is a narrowing
@@ -584,11 +584,14 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax Bool ::= "CT.isBaseClass" "(" ConstructorType ")" [function]
                    | "CT.isCtorInit" "(" ConstructorType ")" [function]
+                   | "CT.isDynamic" "(" ConstructorType ")" [function]
 
      rule CT.isCtorInit(NoConstructorInit(_)) => false
      rule CT.isCtorInit(ConstructorInit(_)) => true
      rule CT.isBaseClass(NoConstructorInit(_)) => false
      rule CT.isBaseClass(ConstructorInit(B::Bool)) => B
+     rule CT.isDynamic(NoConstructorInit(D::Duration)) => D ==K DynamicStorage
+     rule CT.isDynamic(ConstructorInit(_)) => false
 
      rule V:Val ~> constructorInit(Base::LVal, _, _, _, CT::ConstructorType)
           =>
@@ -597,7 +600,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                     le(beginConstruction(Base, CT.isBaseClass(CT)), trace(Base), type(Base)),
                     V
                ),
-               le(endConstruction(Base, CT.isCtorInit(CT)), trace(Base), type(Base))
+               le(endConstruction(Base, CT.isCtorInit(CT), CT.isDynamic(CT)), trace(Base), type(Base))
           )
 
      rule (.K => figureInit(Base[I], innerType(T), CharacterLiteral(C, ordChar(firstChar(S))), CopyInit(), /* will never be used */ AutoStorage)) ~> strInit(Base:LVal, T::CPPType, C::CharKind, (S::String => butFirstChar(S)), (I::Int => I +Int 1), _)
