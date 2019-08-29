@@ -44,29 +44,30 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      imports C-SETTINGS
 
      rule figureInit(Base::Expr, DestT::CPPType, Init::Init, Type::InitType, D::Duration)
-          => #figureInit(Base, DestT, Type, Init, Init, Init, NoConstructorInit, D)
+          => #figureInit(Base, DestT, Type, Init, Init, Init, NoConstructorInit(D))
 
      rule figureConstructorInit(Base::Expr, DestT::CPPType, Init::Init, Type::Bool)
-          => #figureInit(Base, DestT, DirectInit(), Init, Init, Init, ConstructorInit(Type), /* will not be used */ AutoStorage)
+          => #figureInit(Base, DestT, DirectInit(), Init, Init, Init, ConstructorInit(Type))
 
-     rule #figureInit0(Base::Expr, DestT::CPPType, IType::InitType, Init::Init, CType::ConstructorType, D::Duration)
-          => #figureInit(Base, DestT, IType, Init, Init, Init, CType, D)
+     rule #figureInit0(Base::Expr, DestT::CPPType, IType::InitType, Init::Init, CType::ConstructorType)
+          => #figureInit(Base, DestT, IType, Init, Init, Init, CType)
 
-     syntax Expr ::= #figureInit0(base: Expr, destT: CPPType, type: InitType, init: Init, ConstructorType, Duration)
-                   | #figureInit(base: Expr, destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType, Duration)
+     syntax Expr ::= #figureInit0(base: Expr, destT: CPPType, type: InitType, init: Init, ConstructorType)
+                   | #figureInit(base: Expr, destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType)
                    | constructorInit(LVal, InitType, Class, List, ConstructorType)
                    | zeroInit(base: Expr, type: CPPType)
                    | InitStyle "(" Expr "," CPPType "," ConstructorType ")"
 
      syntax InitStyle ::= "defaultInit" | "#valueInit" | "#zeroInit"
 
-     rule valueInit(Base::Expr, T::CPPType) => #valueInit(Base, T, NoConstructorInit)
+     rule valueInit(Base::Expr, T::CPPType) => #valueInit(Base, T, NoConstructorInit(AutoStorage))
 
-     rule zeroInit(E::Expr, T::CPPType) => #zeroInit(E, T, NoConstructorInit)
+     rule zeroInit(E::Expr, T::CPPType) => #zeroInit(E, T, NoConstructorInit(AutoStorage) /* will not be used */)
 
      rule defaultConstructorInit(Base::Expr, T::CPPType, IsBaseClass::Bool) => defaultInit(Base, T, ConstructorInit(IsBaseClass))
 
-     syntax ConstructorType ::= "NoConstructorInit" | ConstructorInit(Bool)
+     syntax ConstructorType ::= NoConstructorInit(Duration)
+                              | ConstructorInit(Bool)
 
 
      context #valueInit(HOLE:Expr, _, _) [result(LVal)]
@@ -81,22 +82,22 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule <k> #figureInit(Base::Expr, DestT::CPPType, IType::InitType,
                I::Init, SrcType::CPPType, SrcCat::ValueCategory,
-               CT::ConstructorType, D::Duration)
+               CT::ConstructorType)
           =>
-          Base ~> #figureInitHeatBase(DestT, IType, I, SrcType, SrcCat, CT, D)
+          Base ~> #figureInitHeatBase(DestT, IType, I, SrcType, SrcCat, CT)
           ...</k>
           <unreference> _ => false </unreference>
           requires notBool isLVal(Base)
 
      rule <k> Base:LVal ~> #figureInitHeatBase(DestT::CPPType, IType::InitType,
                I::Init, SrcType::CPPType, SrcCat::ValueCategory,
-               CT::ConstructorType, D::Duration)
+               CT::ConstructorType)
           =>
-          #figureInit(Base, DestT, IType, I, SrcType, SrcCat, CT, D)
+          #figureInit(Base, DestT, IType, I, SrcType, SrcCat, CT)
           ...</k>
           <unreference> _ => true </unreference>
 
-     syntax KItem ::= #figureInitHeatBase(destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType, Duration)
+     syntax KItem ::= #figureInitHeatBase(destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType)
 
      rule <k> #figureInit(... init: ExprLoc(L::CabsLoc, I::Init) => I) ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
@@ -215,35 +216,41 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule initEachElement(Base::LVal, t(... st: arrayType(_, N::Int)), _, _, N, E::MaybeExpr) => compoundInitJoin(E, Base)
 
      // @ref n4296 8.5:17.1 (list initializer)
-     rule #figureInit(Base:LVal, DestT::CPPType, Type::InitType, BraceInit(L::List), _, _, CT::ConstructorType, D::Duration)
-          => listInit(Base, DestT, Type, L, CT, D)
+     rule #figureInit(Base:LVal, DestT::CPPType, Type::InitType, BraceInit(L::List), _, _, CT::ConstructorType)
+          => listInit(Base, DestT, Type, L, CT)
 
      // @ref n4296 8.5:17.2 (reference destination type)
-     rule #figureInit(Base:LVal, cppRefType #as DestT::CPPType, _, E:Expr, _, _, _, D::Duration)
-          => bindReference(Base, E, D)
+     rule #figureInit(Base:LVal, cppRefType #as DestT::CPPType, _, E:Expr, _, _, CT::ConstructorType)
+          => bindReference(Base, E, CT.getDuration(CT))
+
+     syntax Duration ::= "CT.getDuration" "(" ConstructorType ")" [function]
+
+     rule CT.getDuration(NoConstructorInit(D::Duration)) => D
+
+     rule CT.getDuration(ConstructorInit(_)) => AutoStorage
 
      // @ref n4296 8.5:17.3 (string literal)
-     rule #figureInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as DestT::CPPType, _, StringLiteral(Kind::CharKind, S::String), _, _, _, _)
+     rule #figureInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as DestT::CPPType, _, StringLiteral(Kind::CharKind, S::String), _, _, _)
           => strInit(Base, DestT, Kind, S, 0, noExpr)
           requires isCPPCharType(innerType(DestT))
                orBool isCPPWideCharType(innerType(DestT))
 
      // @ref n4296 8.5:17.4 (value init)
-     rule #figureInit(Base:LVal, DestT::CPPType, _, ExpressionList(.List), _, _, IsConstructor::ConstructorType, _)
+     rule #figureInit(Base:LVal, DestT::CPPType, _, ExpressionList(.List), _, _, IsConstructor::ConstructorType)
           => #valueInit(Base, DestT, IsConstructor)
 
      // @ref n4296 8.5:17.6.1 (direct init or copy init from derived class)
-     rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)) #as DestT::CPPType, Type::InitType, E:Expr, SrcT::CPPType, _, IsConstructor::ConstructorType, _)
+     rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)) #as DestT::CPPType, Type::InitType, E:Expr, SrcT::CPPType, _, IsConstructor::ConstructorType)
           => constructorInit(Base, Type, DestC, ListItem(E), IsConstructor)
           requires Type ==K DirectInit() orBool (isCPPClassType(SrcT) andBool isBaseClassOf(DestT, SrcT))
 
-     rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)), DirectInit(), ExpressionList(L::List), _, _, IsConstructor::ConstructorType, _)
+     rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)), DirectInit(), ExpressionList(L::List), _, _, IsConstructor::ConstructorType)
           => constructorInit(Base, DirectInit(), DestC, L, IsConstructor)
           requires size(L) >Int 0
 
 
      // expression initializer, non-class type
-     rule #figureInit(Base:LVal, DestT::CPPType, _, E:Expr, SrcT:CPPType, SrcCat:ValueCategory, _, _)
+     rule #figureInit(Base:LVal, DestT::CPPType, _, E:Expr, SrcT:CPPType, SrcCat:ValueCategory, _)
           => #if canConvertWithStandardConversion(DestT, SrcT, SrcCat) #then le(Base, trace(Base), DestT) :=init E #else ill-formed #fi
           requires notBool isCPPRefType(DestT) andBool notBool isCPPArrayType(DestT) andBool notBool isCPPClassType(DestT) andBool notBool isCPPClassType(SrcT)
 
@@ -258,53 +265,53 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax NoExpr ::= "noExpr"
 
-     syntax KItem ::= listInit(LVal, CPPType, InitType, List, ConstructorType, Duration)
-                    | aggInit(LVal, CPPType, List, ConstructorType, Duration)
-                    | arrayInit(base: LVal, type: CPPType, current: Int, initList: List, result: MaybeExpr, ctype: ConstructorType, duration: Duration)
+     syntax KItem ::= listInit(LVal, CPPType, InitType, List, ConstructorType)
+                    | aggInit(LVal, CPPType, List, ConstructorType)
+                    | arrayInit(base: LVal, type: CPPType, current: Int, initList: List, result: MaybeExpr, ctype: ConstructorType)
                     | strInit(LVal, CPPType, CharKind, String, Int, MaybeExpr)
 
      // @ref n4296 8.5.4:3.1 (aggregate init)
-     rule listInit(Base::LVal, T::CPPType, _, L::List, CT::ConstructorType, D::Duration)
-          => aggInit(Base, T, L, CT, D)
+     rule listInit(Base::LVal, T::CPPType, _, L::List, CT::ConstructorType)
+          => aggInit(Base, T, L, CT)
           requires isAggregateType(T)
 
      // @ref n4296 8.5.4:3.2 (empty init list, default-constructible class)
-     rule listInit(Base::LVal, t(... st: classType(...)) #as T::CPPType, _, .List, CT::ConstructorType, _)
+     rule listInit(Base::LVal, t(... st: classType(...)) #as T::CPPType, _, .List, CT::ConstructorType)
           => #valueInit(Base, T, CT)
           requires notBool isAggregateType(T)
                andBool hasConstructorThat(T, isDefaultConstructor)
 
      // @ref n4296 8.5.4:3.5 (single element, non-aggregate, non-class, non-reference)
      // see comment below about narrowing conversions in classAggInit
-     rule listInit(Base::LVal, T::CPPType, Type::InitType, ListItem(Init::Init), CT::ConstructorType, D::Duration)
-          => #figureInit(Base, T, Type, Init, Init, Init, CT, D)
+     rule listInit(Base::LVal, T::CPPType, Type::InitType, ListItem(Init::Init), CT::ConstructorType)
+          => #figureInit(Base, T, Type, Init, Init, Init, CT)
           requires notBool isAggregateType(T)
                andBool notBool isCPPClassType(T)
                andBool notBool isCPPRefType(T)
 
      // @ref n4296 8.5.4:3.7 (empty init list, non-aggregate, non-class, non-reference)
-     rule listInit(Base::LVal, T::CPPType, _, .List, CT::ConstructorType, _)
+     rule listInit(Base::LVal, T::CPPType, _, .List, CT::ConstructorType)
           => #valueInit(Base, T, CT)
           requires notBool isAggregateType(T)
                andBool notBool isCPPClassType(T)
                andBool notBool isCPPRefType(T)
 
-     rule aggInit(_, (t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)) => t(Q, Mods, arrayType(T, size(L)))), L::List, _, _)
+     rule aggInit(_, (t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)) => t(Q, Mods, arrayType(T, size(L)))), L::List, _)
 
-     rule aggInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), L::List, CT::ConstructorType, D::Duration)
-          => arrayInit(Base, t(Q, Mods, arrayType(T, N)), 0, L, noExpr, CT, D)
+     rule aggInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), L::List, CT::ConstructorType)
+          => arrayInit(Base, t(Q, Mods, arrayType(T, N)), 0, L, noExpr, CT)
 
-     rule <k> aggInit(Base::LVal, t(_, _, classType(C::Class)), L::List, CT::ConstructorType, D::Duration)
-               => classAndUnionAggInit(getTag(C), Base, NSDM, L, Inits, C, CT, D)
+     rule <k> aggInit(Base::LVal, t(_, _, classType(C::Class)), L::List, CT::ConstructorType)
+               => classAndUnionAggInit(getTag(C), Base, NSDM, L, Inits, C, CT)
           ...</k>
           <class-id> C </class-id>
           <non-static-data-members> NSDM::List </non-static-data-members>
           <initializers> Inits::Map </initializers>
 
-     syntax Expr ::= classAndUnionAggInit(tag: Tag, base: LVal, fields: List, initList: List, initializers: Map, class: Class, ctype: ConstructorType, duration: Duration) [function]
+     syntax Expr ::= classAndUnionAggInit(tag: Tag, base: LVal, fields: List, initList: List, initializers: Map, class: Class, ctype: ConstructorType) [function]
 
-     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(X:KItem) _, ListItem(XInit::Init), InitMap::Map, C::Class, CT::ConstructorType, D::Duration)
-       => classAggInit(Base, ListItem(X), ListItem(XInit), InitMap, C, noExpr, CT, D)
+     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(X:KItem) _, ListItem(XInit::Init), InitMap::Map, C::Class, CT::ConstructorType)
+       => classAggInit(Base, ListItem(X), ListItem(XInit), InitMap, C, noExpr, CT)
 
      rule classAndUnionAggInit(... tag: Union(),
                                    fields: (ListItem(Class.DataMember(X:CId, _)) => .List) _::List,
@@ -312,12 +319,12 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                                    initializers: InitMap::Map)
          requires notBool hasInit(X, InitMap)
 
-     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(Class.DataMember(X::CId, T::CPPType)) _::List, .List, InitMap::Map, C::Class, CT::ConstructorType, D::Duration)
-       => classAggInit(Base, ListItem(Class.DataMember(X, T)), .List, InitMap, C, noExpr, CT, D)
+     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(Class.DataMember(X::CId, T::CPPType)) _::List, .List, InitMap::Map, C::Class, CT::ConstructorType)
+       => classAggInit(Base, ListItem(Class.DataMember(X, T)), .List, InitMap, C, noExpr, CT)
        requires hasInit(X, InitMap)
 
-     rule classAndUnionAggInit(T::Tag, Base::LVal, Fields::List, InitL::List, InitMap::Map, C::Class, CT::ConstructorType, D::Duration)
-       => classAggInit(Base, Fields, InitL, InitMap, C, noExpr, CT, D)
+     rule classAndUnionAggInit(T::Tag, Base::LVal, Fields::List, InitL::List, InitMap::Map, C::Class, CT::ConstructorType)
+       => classAggInit(Base, Fields, InitL, InitMap, C, noExpr, CT)
        requires T =/=K Union()
 
      syntax Bool ::= hasInit(CId, Map) [function]
@@ -330,7 +337,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule isNoInit(_ |-> _) => false [owise]
 
-     syntax Expr ::= classAggInit(base: LVal, fields: List, initList: List, initializers: Map, class: Class, initExp: K, ctype: ConstructorType, duration: Duration)
+     syntax Expr ::= classAggInit(base: LVal, fields: List, initList: List, initializers: Map, class: Class, initExp: K, ctype: ConstructorType)
 
      rule classAggInit(... base: Base::LVal,
                            fields: .List,
@@ -357,23 +364,21 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // thus we elide them for now in order to avoid having to implement
      // semantics for constant expressions.
      rule (.K => #figureInit0(Base . no-template Name(C, F), T,
-                    CopyInit(), Init, ConstructorInit(false), D))
+                    CopyInit(), Init, ConstructorInit(false)))
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: (ListItem(Init::Expr) => .List) _,
                            initializers: (F |-> (_::CPPType |-> (T::CPPType, _))) _,
-                           class: C::Class,
-                           duration: D::Duration)
+                           class: C::Class)
           requires (notBool isAggregateType(T) orBool isBraceInit(Init))
 
      rule (.K => #figureInit0(Base . no-template Name(C, F), T,
-                    CopyInit(), BraceInit(L), ConstructorInit(false), D))
+                    CopyInit(), BraceInit(L), ConstructorInit(false)))
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: (ListItem(Init::Expr) _) #as L::List  => .List,
                            initializers: (F |-> (_::CPPType |-> (T::CPPType, _))) _,
-                           class: C::Class,
-                           duration: D::Duration)
+                           class: C::Class)
           requires isAggregateType(T)
            andBool notBool isBraceInit(Init)
 
@@ -398,13 +403,12 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule (V:Val => .K) ~> classAggInit(... initExp: (E::MaybeExpr => compoundInitJoin(E, V)))
 
      rule (.K => #figureInit0(Base . no-template Name(C, F), T,
-                    CopyInit(), #evalBraceOrEqualInitializer(C, Base, Init), ConstructorInit(false), D))
+                    CopyInit(), #evalBraceOrEqualInitializer(C, Base, Init), ConstructorInit(false)))
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: .List,
                            initializers: (F |-> (_::CPPType |-> (T::CPPType, Init::Expr))) _,
-                           class: C::Class,
-                           duration: D::Duration)
+                           class: C::Class)
 
      syntax Init ::= #evalBraceOrEqualInitializer(class: Class, object: Expr, initializer: Init) [function]
 
@@ -436,14 +440,13 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      // No initializers left, but we still need to initialize
      // the rest of the array.
-     rule (.K => #figureInit0(Base[I], T, CopyInit(), BraceInit(.List), CT, D)) ~>
+     rule (.K => #figureInit0(Base[I], T, CopyInit(), BraceInit(.List), CT)) ~>
           arrayInit(...
                base:     Base::LVal,
                type:     t(... st: arrayType(T::CPPType, Size::Int)),
                current:  (I::Int => I +Int 1),
                initList: .List,
-               ctype:    CT::ConstructorType,
-               duration:  D::Duration
+               ctype:    CT::ConstructorType
           )
           requires Size >Int I
 
@@ -506,14 +509,13 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      // Ordinary initialization of an array member.
      // No brace elision happens.
-     rule (braceElisionNo() => #figureInit0(Base[I], T, CopyInit(), Init, CT, D)) ~>
+     rule (braceElisionNo() => #figureInit0(Base[I], T, CopyInit(), Init, CT)) ~>
           arrayInit(...
                base:     Base::LVal,
                type:     t(... st: arrayType(T::CPPType, Size::Int)),
                current:  (I::Int => I +Int 1),
                initList: (ListItem(Init::Init) => .List) _,
-               ctype:    CT::ConstructorType,
-               duration: D::Duration
+               ctype:    CT::ConstructorType
           )
 
      // Assuming brace elision.
@@ -522,14 +524,13 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // all the remaining initializer-list.
      // The initializers not used for member initialization
      // will be later used to initialize the rest of current array.
-     rule (braceElisionYes() => #figureInit0(Base[I], T, CopyInit(), BraceInit(L), CT, D)) ~>
+     rule (braceElisionYes() => #figureInit0(Base[I], T, CopyInit(), BraceInit(L), CT)) ~>
           arrayInit(...
                base:     Base::LVal,
                type:     t(... st: arrayType(T::CPPType, Size::Int)),
                current:  (I::Int => I +Int 1),
                initList: (ListItem(Init::Init) _) #as L::List => .List,
-               ctype:    CT::ConstructorType,
-               duration: D::Duration
+               ctype:    CT::ConstructorType
           )
 
      // Use the initializers that remained after brace-elision
@@ -584,9 +585,9 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      syntax Bool ::= "CT.isBaseClass" "(" ConstructorType ")" [function]
                    | "CT.isCtorInit" "(" ConstructorType ")" [function]
 
-     rule CT.isCtorInit(NoConstructorInit) => false
+     rule CT.isCtorInit(NoConstructorInit(_)) => false
      rule CT.isCtorInit(ConstructorInit(_)) => true
-     rule CT.isBaseClass(NoConstructorInit) => false
+     rule CT.isBaseClass(NoConstructorInit(_)) => false
      rule CT.isBaseClass(ConstructorInit(B::Bool)) => B
 
      rule V:Val ~> constructorInit(Base::LVal, _, _, _, CT::ConstructorType)
