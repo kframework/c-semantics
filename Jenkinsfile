@@ -34,13 +34,13 @@ pipeline {
                 eval $(opam config env)
                 eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
                 export KOMPILE_FLAGS=-O2
-                make -j4 profile-rule-parsing --output-sync=line
+                make -j4 --output-sync=line
               '''
             } }
           }
-          post { success {
-            archiveArtifacts 'dist/timelogs.d/timelogs.csv'
-          } }
+          // post { success {
+          //   archiveArtifacts 'dist/timelogs.d/timelogs.csv'
+          // } }
         }
         stage ( 'Re-compile w/ timeout' ) { steps {
           timeout(time: 8, unit: 'SECONDS' ) {
