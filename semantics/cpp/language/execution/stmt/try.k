@@ -63,11 +63,10 @@ module CPP-EXECUTION-STMT-TRY
      syntax KItem ::= "unwindFunction" | tryMark(Int)
 
      // delete locals when function body is not wrapped in Block
-     rule <k> (.K => destructLocals(true) ~> deleteObjects(S)) ~> unwindFunction ...</k>
+     rule <k> (.K => destructLocals(true)) ~> unwindFunction ...</k>
           <block-stack> .List </block-stack>
-          <local-addresses> S::Set => .Set </local-addresses>
           <locally-constructed> L::List </locally-constructed>
-          requires size(S) >Int 0 orBool size(L) >Int 0
+          requires size(L) >Int 0
 
      rule <k> unwindFunction ~> throw(V::LVal) ~> _
               => exitRestrictBlock(.Set)
@@ -79,7 +78,6 @@ module CPP-EXECUTION-STMT-TRY
                <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
                <live-va-lists> .Set </live-va-lists>
                <block-control>...
-                    <local-addresses> .Set </local-addresses>
                     <locally-constructed> .List </locally-constructed>
                ...</block-control>
                <block-stack> .List </block-stack>
@@ -107,7 +105,7 @@ module CPP-EXECUTION-STMT-TRY
      rule <k> (.K => catchAndCallTerminate) ~> unwindFunction ~> throw(V::LVal) ...</k>
           <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
-          <local-addresses> .Set </local-addresses>
+          <locally-constructed> .List </locally-constructed>
           requires notBool canThrowException(FuncT, type(V)) andBool notBool isDynamicExceptionSpec(FuncT)
 
      // TODO(dwightguth): call std::unexpected if isDynamicExceptionSpec

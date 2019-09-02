@@ -574,6 +574,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KItem ::= seqstrict(StrictList) [klabel(seqstrictcpp)]
 
+     syntax SymBase ::= baseOfLoc(SymLoc) [function]
 
 endmodule // CPP-DYNAMIC-OTHER-SYNTAX
 
@@ -1075,6 +1076,8 @@ module CPP-DYNAMIC-OTHER
      rule idOf(Class(_, X::CId, _)) => X
 
      rule idOf(_ :: S::ClassSpecifier) => idOf(S)
+
+     rule baseOfLoc(loc(Base::SymBase, _) #Or loc(Base::SymBase, _, _)) => Base
 
 endmodule // CPP-DYNAMIC-OTHER
 

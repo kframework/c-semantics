@@ -29,7 +29,6 @@ module CPP-EXECUTION-STMT-BLOCK
                C::Bag
                <catch-handlers> Catch::List => .List </catch-handlers>
                <local-vars> Vars::Set => .Set </local-vars>
-               <local-addresses> Addresses::Set => .Set </local-addresses>
                <locally-constructed> Constructed::List => .List </locally-constructed>
           </block-control>
           <block-stack> .List
@@ -37,7 +36,6 @@ module CPP-EXECUTION-STMT-BLOCK
                     C
                     <catch-handlers> Catch </catch-handlers>
                     <local-vars> Vars </local-vars>
-                    <local-addresses> Addresses </local-addresses>
                     <locally-constructed> Constructed </locally-constructed>
                </block-control>)
           ...</block-stack>
@@ -52,9 +50,20 @@ module CPP-EXECUTION-STMT-BLOCK
           <curr-scope> blockScope(_, _, (_ => 0)) </curr-scope>
           <block-history> .List </block-history>
 
-     rule <k> popBlock(IsException::Bool) => destructLocals(IsException) ~> unfoldBlockStack ~> deleteObjects(Locals) ~> exitRestrictBlock(Locals) ~> updateScope ...</k>
-          <local-addresses> Locals::Set </local-addresses>
+     rule popBlock(IsException::Bool) => destructLocals(IsException) ~> unfoldBlockStack ~> exitRestrictBlock(getLocalAddresses()) ~> updateScope
           [structural]
+
+     syntax Set ::= getLocalAddresses() [function]
+                  | #getLocalAddresses(List, Set)
+
+     rule [[ getLocalAddresses() => #getLocalAddresses(LC, .Set) ]]
+          <locally-constructed> LC::List </locally-constructed>
+
+     rule #getLocalAddresses(.List, S::Set) => S
+     rule #getLocalAddresses(
+               (ListItem(ktriple(lv(Loc::SymLoc, _, _), _, _)) => .List) _,
+               (.Set => SetItem(baseOfLoc(Loc))) _
+          )
 
      rule <k> addToConstructed(L:LVal, t(... st: classType(...)) #as T::CPPType) => .K ...</k>
           <locally-constructed> .List => ListItem(ktriple(L, false, false)) ...</locally-constructed>
@@ -68,13 +77,36 @@ module CPP-EXECUTION-STMT-BLOCK
      // we have to atomically remove the item from locally-constructed and call the destructor as a single operation
      // because the destructor could throw an exception that unwinds back through this block, in which case the
      // destructor should not be called again. See http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#2176
-     rule <k> (.K => #if IsConstructor andBool notBool IsException #then .K #else destruct(V, CanBeVirtual) ~> fullExpression #fi)
+
+     rule <k> (.K => destructLocal(IsException, Entry))
               ~> destructLocals(IsException:Bool)
           ...</k>
-          <locally-constructed> ListItem(ktriple(lv(Loc::SymLoc, _, _) #as V::LVal, CanBeVirtual::Bool, IsConstructor:Bool)) => .List ...</locally-constructed>
+          <locally-constructed> ListItem(Entry::KTuple) => .List ...</locally-constructed>
 
      rule <k> destructLocals(...) => .K ...</k>
           <locally-constructed> .List </locally-constructed>
+
+     syntax KItem ::= destructLocal(isException: Bool, entry: KTuple)
+
+     rule destructLocal(IsException:Bool,
+               ktriple(
+                    lv(Loc::SymLoc, _, _) #as V::LVal,
+                    CanBeVirtual::Bool,
+                    IsConstructor:Bool
+               )
+          )
+          =>
+          #if IsConstructor andBool notBool IsException #then
+               .K
+          #else
+               destruct(V, CanBeVirtual) ~> fullExpression
+          #fi
+          ~>
+          #if IsConstructor #then
+               .K
+          #else
+               deleteObject(baseOfLoc(Loc))
+          #fi
 
      syntax KItem ::= "unfoldBlockStack"
 
@@ -95,5 +127,8 @@ module CPP-EXECUTION-STMT-BLOCK
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <cenv>... DestructorId(X) |-> (_::CPPType |-> (FuncT::CPPType, envEntry(... base: Base::SymBase))) ...</cenv>
+
+     rule destruct(lv(_, _, T::CPPType), _) => .K
+          requires notBool isCPPClassType(T)
 
 endmodule

@@ -58,8 +58,7 @@ module CPP-EXECUTION-STMT-RETURN
           <block-history> ListItem(_) ...</block-history>
           <block-stack> ListItem(_) ...</block-stack>
 
-     rule <k> Return''(V:Val) => fullExpression ~> destructLocals(false) ~> deleteObjects(Locals) ~> return(V) ...</k>
-          <local-addresses> Locals::Set </local-addresses>
+     rule <k> Return''(V:Val) => fullExpression ~> destructLocals(false) ~> return(V) ...</k>
           <block-history> .List </block-history>
           <block-stack> .List </block-stack>
 

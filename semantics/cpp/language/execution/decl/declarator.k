@@ -16,11 +16,18 @@ module CPP-EXECUTION-DECL-DECLARATOR
               => #if notBool isCPPRefType(T) #then allocObject(bnew(!I:Int, T, Mods, D), T, byteSizeofType(T)) #else .K #fi
               ~> addToExecEnv(X, T, bnew(!I:Int, T, Mods, D), false)
               ~> initializeObjectExec(Init)
+              ~> registerForDestruction(ExecName(NoNNS(), X))
           ...</k>
           <duration> D::Duration </duration>
           <local-vars> Vars:Set (.Set => SetItem(X)) </local-vars>
-          <local-addresses>... .Set => SetItem(bnew(!I:Int, T, Mods, D)) ...</local-addresses>
           requires notBool X in Vars andBool X =/=K #NoName
+
+     syntax KItem ::= registerForDestruction(Expr) [strict(1)]
+
+     rule <k> registerForDestruction(Obj:LVal) => .K ...</k>
+          <locally-constructed> .List =>
+               ListItem(ktriple(Obj, true, false))
+          ...</locally-constructed>
 
      rule declareNonStaticObjectExec(#NoName, _, Init::Expr, _, _, _) => ExpressionStmt(Init)
 
