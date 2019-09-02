@@ -7,6 +7,7 @@ module CPP-EXECUTION-STMT-TRY
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-EXECUTION-ENV-SYNTAX
+     imports CPP-EXECUTION-TEMPORARY-SYNTAX
      imports CPP-ERROR-SYNTAX
      imports CPP-SETTINGS-SYNTAX
      imports CPP-SYNTAX
@@ -24,9 +25,15 @@ module CPP-EXECUTION-STMT-TRY
      rule <k> ThrowOp(V:LVal) => throw(V) ...</k>
           <uncaught-exception> _ => true </uncaught-exception>
 
+     rule <k> (.K => destructTemporaries(true)) ~> throw(V::LVal) ...</k>
+          <catch-handlers> .List </catch-handlers>
+          <constructed-temporaries> ListItem(_) _ </constructed-temporaries>
+          requires canUnwindStack(V)
+
      // if there are still blocks in this function, pop them
      rule <k> (.K => popBlock(true)) ~> throw(V::LVal) ...</k>
           <catch-handlers> .List </catch-handlers>
+          <constructed-temporaries> .List </constructed-temporaries>
           <block-stack> ListItem(_) _ </block-stack>
           <block-history> ListItem(Num::Int) ...</block-history>
           <loop-stack> Loops::List </loop-stack>
@@ -36,6 +43,7 @@ module CPP-EXECUTION-STMT-TRY
      // if we are at the root of a loop, pop it before popping further blocks
      rule <k> throw(V::LVal) ~> (_ => K) </k>
           <catch-handlers> .List </catch-handlers>
+          <constructed-temporaries> .List </constructed-temporaries>
           <block-stack> ListItem(_) _ </block-stack>
           <block-history> ListItem(Num::Int) ...</block-history>
           <loop-stack> ListItem(kpair(Num, K:K)) => .List ...</loop-stack>
@@ -44,6 +52,7 @@ module CPP-EXECUTION-STMT-TRY
      // if there are still functions in the stack trace, pop them
      rule <k> (.K => unwindFunction) ~> throw(V::LVal) ...</k>
           <catch-handlers> .List </catch-handlers>
+          <constructed-temporaries> .List </constructed-temporaries>
           <block-stack> .List </block-stack>
           <call-stack> ListItem(_) _ </call-stack>
           requires canUnwindStack(V)
@@ -140,7 +149,8 @@ module CPP-EXECUTION-STMT-TRY
 
      rule <k> catchWithHandler(CatchAnyOp(pushBlock(N::Int) ~> Rest:K), V::LVal)
               ~> tryMark(I::Int)
-              => popBlock(true)
+              => destructTemporaries(true)
+              ~> popBlock(true)
               ~> pushBlock(N)
               ~> setCurrentException(V)
               ~> activateHandler

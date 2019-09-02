@@ -20,11 +20,11 @@ module CPP-EXECUTION-DECL-DECLARATOR
                  #else .K #fi
               ~> addToExecEnv(X, T, bnew(!I:Int, T, Mods, D), false)
               ~> #if notBool isCPPRefType(T) #then
-                    registerForDestruction(ExecName(NoNNS(), X))
+                    LCregisterForDestruction(ExecName(NoNNS(), X))
                  #else .K #fi
               ~> initializeObjectExec(Init)
               ~> #if notBool isCPPRefType(T) #then
-                    updateRegisteredForDestruction(size(LC))
+                    LCupdateRegisteredForDestruction(size(LC))
                  #else .K #fi
           ...</k>
           <duration> D::Duration </duration>
@@ -32,29 +32,29 @@ module CPP-EXECUTION-DECL-DECLARATOR
           <locally-constructed> LC::List </locally-constructed>
           requires notBool X in Vars andBool X =/=K #NoName
 
-     syntax KItem ::= registerForDestruction(Expr) [strict(1)]
+     syntax KItem ::= LCregisterForDestruction(Expr) [strict(1)]
 
      // we register the object for destruction before
      // its initializer runs (but with the `initialized` flag cleared)
      // so that if an exception is thrown in the initializer,
      // the allocated object gets deleted.
      // The `initialized` flag is set later
-     // in `updateRegisteredForDestruction()`.
-     rule <k> registerForDestruction(Obj:LVal) => .K ...</k>
+     // in `LCupdateRegisteredForDestruction()`.
+     rule <k> LCregisterForDestruction(Obj:LVal) => .K ...</k>
           <locally-constructed> .List =>
                ListItem(lcentry(Obj, false, true, false))
           ...</locally-constructed>
 
-     syntax KItem ::= updateRegisteredForDestruction(Int)
-                    | updateRegisteredForDestruction2(idx: Int, entry: KItem)
+     syntax KItem ::= LCupdateRegisteredForDestruction(Int)
+                    | LCupdateRegisteredForDestruction2(idx: Int, entry: KItem)
 
      // `-1 -Int Size` from the end is the index of the newly-added entry
-     rule <k> updateRegisteredForDestruction(Size::Int)
-          => updateRegisteredForDestruction2(-1 -Int Size, LC[-1 -Int Size])
+     rule <k> LCupdateRegisteredForDestruction(Size::Int)
+          => LCupdateRegisteredForDestruction2(-1 -Int Size, LC[-1 -Int Size])
           ...</k>
           <locally-constructed> LC::List </locally-constructed>
 
-     rule <k> updateRegisteredForDestruction2(Idx::Int,
+     rule <k> LCupdateRegisteredForDestruction2(Idx::Int,
                lcentry(Obj::LVal, false, CanBeVirtual::Bool, IsConstructor::Bool)) => .K
           ...</k>
           <locally-constructed>

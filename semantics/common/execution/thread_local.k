@@ -52,6 +52,8 @@ module COMMON-THREAD-LOCAL
             // most derived class being constructed
             <most-derived-class> .K </most-derived-class>
 
+            <constructed-temporaries> .List </constructed-temporaries>
+
             // stack of block-control cells
             <block-stack color="violet"> .List </block-stack>
             <block-control>

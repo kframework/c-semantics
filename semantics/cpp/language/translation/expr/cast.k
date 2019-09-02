@@ -8,6 +8,7 @@ module CPP-TRANSLATION-EXPR-CAST
      imports CPP-COMMON-STMT-EXPR-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
+     imports CPP-TRANSLATION-TEMPORARY-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-REFERENCE-SYNTAX
@@ -67,8 +68,9 @@ module CPP-TRANSLATION-EXPR-CAST
                // </quote>
                #if notBool isCPPClassType(T)
                #then ill-formed
-               #else makePRVal(figureInit(le(temp(!I:Int, T), noTrace, T),
-                         T, ExpressionList(L), DirectInit(), AutoStorage))
+               #else makePRVal(createTemporary(temp(!I:Int, T), T,
+                         figureInit(le(temp(!I:Int, T), noTrace, T),
+                              T, ExpressionList(L), DirectInit(), AutoStorage)))
                #fi
           #else
           // <quote>
@@ -90,7 +92,8 @@ module CPP-TRANSLATION-EXPR-CAST
                // </quote>
                #if isCPPVoidType(T)
                #then prv(voidVal, noTrace, T)
-               #else makePRVal(valueInit(le(temp(!I:Int, T), noTrace, T), T))
+               #else makePRVal(createTemporary(temp(!I:Int, T), T,
+                         valueInit(le(temp(!I:Int, T), noTrace, T), T)))
                #fi
           #else ill-formed
           #fi #fi #fi
@@ -153,7 +156,8 @@ module CPP-TRANSLATION-EXPR-CAST
 
      // @ref n4800 7.6.1.8:4
      rule convertStatic(T::CPPType, V::Val, Tr::Trace)
-          => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, V, DirectInit(), AutoStorage)) [owise]
+          => tryInit(T, V, createTemporary(temp(!I:Int, T), T,
+               figureInit(le(temp(!I:Int, T), Tr, T), T, V, DirectInit(), AutoStorage))) [owise]
 
      rule tryInit(_, _, V:Val) => V
 
