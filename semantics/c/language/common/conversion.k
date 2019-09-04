@@ -81,6 +81,11 @@ module C-CONVERSION
           requires notBool isBoolUType(T')
                andBool M -Int N <=Int bitSizeofType(T')
 
+     rule cast(integerUType #as T'::UType, tv(encodedValue(V::EncodableValue, N::Int, M::Int), integerUType))
+          => tv(encodedValue(V, N, M), T')
+          requires notBool isBoolUType(T')
+               andBool M -Int N <=Int bitSizeofType(T')
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
      Otherwise, if the new type is unsigned, the value is converted by
      repeatedly adding or subtracting one more than the maximum value that can
