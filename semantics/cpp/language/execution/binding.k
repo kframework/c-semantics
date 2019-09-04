@@ -17,6 +17,7 @@ module CPP-EXECUTION-BINDING
      imports INT
      imports CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-EXECUTION-STMT-BLOCK-SYNTAX
      imports CPP-EXPR-MEMBERS-SYNTAX
      imports CPP-MEMORY-WRITING-SYNTAX
      imports CPP-SYNTAX
@@ -64,7 +65,7 @@ module CPP-EXECUTION-BINDING
      rule <k> finishConstruction(Obj:LVal, IsConstructor:Bool) => Obj ...</k>
           <locally-constructed> .List =>
           #if IsConstructor #then
-               ListItem(ktriple(Obj, true, true))
+               ListItem(lcentry(Obj, true, true, true))
           #else .List #fi
           ...</locally-constructed>
 

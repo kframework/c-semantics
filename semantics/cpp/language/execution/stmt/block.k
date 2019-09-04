@@ -1,3 +1,15 @@
+module CPP-EXECUTION-STMT-BLOCK-SYNTAX
+     imports BOOL
+
+     syntax LVal
+
+     syntax KItem ::= lcentry(
+                         val: LVal,
+                         initialized: Bool,
+                         canBeVirtual: Bool,
+                         isConstructor: Bool)
+endmodule
+
 module CPP-EXECUTION-STMT-BLOCK
      imports C-CONFIGURATION
      imports INT
@@ -7,6 +19,7 @@ module CPP-EXECUTION-STMT-BLOCK
      imports CPP-BUILTIN-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-EXECUTION-ENV-SYNTAX
+     imports CPP-EXECUTION-STMT-BLOCK-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-CLASS-BASIC-SYNTAX
@@ -54,19 +67,19 @@ module CPP-EXECUTION-STMT-BLOCK
           [structural]
 
      syntax Set ::= getLocalAddresses() [function]
-                  | #getLocalAddresses(List, Set)
+                  | #getLocalAddresses(List, Set) [function]
 
      rule [[ getLocalAddresses() => #getLocalAddresses(LC, .Set) ]]
           <locally-constructed> LC::List </locally-constructed>
 
      rule #getLocalAddresses(.List, S::Set) => S
      rule #getLocalAddresses(
-               (ListItem(ktriple(lv(Loc::SymLoc, _, _), _, _)) => .List) _,
+               (ListItem(lcentry(lv(Loc::SymLoc, _, _), _, _, _)) => .List) _,
                (.Set => SetItem(baseOfLoc(Loc))) _
           )
 
      rule <k> addToConstructed(L:LVal, t(... st: classType(...)) #as T::CPPType) => .K ...</k>
-          <locally-constructed> .List => ListItem(ktriple(L, false, false)) ...</locally-constructed>
+          <locally-constructed> .List => ListItem(lcentry(L, true, false, false)) ...</locally-constructed>
 
      rule (.K => addToConstructed(L [ prv(N -Int 1, noTrace, type(size_t)) ], T))
           ~> addToConstructed(L:LVal, t(... st: arrayType(T::CPPType, N::Int => N -Int 1)))
@@ -86,17 +99,18 @@ module CPP-EXECUTION-STMT-BLOCK
      rule <k> destructLocals(...) => .K ...</k>
           <locally-constructed> .List </locally-constructed>
 
-     syntax KItem ::= destructLocal(isException: Bool, entry: KTuple)
+     syntax KItem ::= destructLocal(isException: Bool, entry: KItem)
 
      rule destructLocal(IsException:Bool,
-               ktriple(
+               lcentry(
                     lv(Loc::SymLoc, _, _) #as V::LVal,
+                    Initialized:Bool,
                     CanBeVirtual::Bool,
                     IsConstructor:Bool
                )
           )
           =>
-          #if IsConstructor andBool notBool IsException #then
+          #if notBool Initialized orBool (IsConstructor andBool notBool IsException) #then
                .K
           #else
                destruct(V, CanBeVirtual) ~> fullExpression
