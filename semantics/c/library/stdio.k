@@ -1703,6 +1703,9 @@ module LIBC-STDIO
      rule ifEmpty("", S::String) => S
      rule ifEmpty(S::String, _)  => S [owise]
 
+     syntax String ::= defaultZero(String) [function]
+     rule defaultZero(S::String) => ifEmpty(S, "0")
+
      syntax String ::= defaultOne(String) [function]
      rule defaultOne(S::String) => ifEmpty(S, "1")
 
@@ -1960,7 +1963,7 @@ module LIBC-STDIO
                         formatPrecisionWidth(showInt(D),
                                              String2Int(defaultOne(P)),
                                              Z, "",
-                                             String2Int(defaultOne(W))))
+                                             String2Int(defaultZero(W))))
           </format-result>
           <format-state> "%d" => "reset" </format-state>
           [structural]
@@ -1998,7 +2001,7 @@ module LIBC-STDIO
                         formatPrecisionWidth(Base2String(D, 8),
                                              String2Int(defaultOne(P)),
                                              Z, #if Hash #then "0" #else "" #fi,
-                                             String2Int(defaultOne(W))))
+                                             String2Int(defaultZero(W))))
           </format-result>
           <format-state> "%o" => "reset" </format-state>
           [structural]
@@ -2021,7 +2024,7 @@ module LIBC-STDIO
                         formatPrecisionWidth(showInt(D),
                                              String2Int(defaultOne(P)),
                                              Z, "",
-                                             String2Int(defaultOne(W))))
+                                             String2Int(defaultZero(W))))
           </format-result>
           <format-state> "%u" => "reset" </format-state>
           [structural]
@@ -2044,7 +2047,7 @@ module LIBC-STDIO
                         formatPrecisionWidth(Base2String(D, 16),
                                              String2Int(defaultOne(P)),
                                              Z, #if Hash #then "0x" #else "" #fi,
-                                             String2Int(defaultOne(W))))
+                                             String2Int(defaultZero(W))))
           </format-result>
           <format-state> "%x" => "reset" </format-state>
           [structural]
@@ -2067,7 +2070,7 @@ module LIBC-STDIO
                         toUpperCase(formatPrecisionWidth(Base2String(D, 16),
                                              String2Int(defaultOne(P)),
                                              Z, #if Hash #then "0X" #else "" #fi,
-                                             String2Int(defaultOne(W)))))
+                                             String2Int(defaultZero(W)))))
           </format-result>
           <format-state> "%X" => "reset" </format-state>
           [structural]
@@ -2113,7 +2116,7 @@ module LIBC-STDIO
           <format-result>...
                .List => ListItem(padString(
                     showFloat(setPrecision(D, String2Int(ifEmpty(P, "6")))),
-                    String2Int(defaultOne(W)),
+                    String2Int(defaultZero(W)),
                     #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%f" => "reset" </format-state>
@@ -2132,7 +2135,7 @@ module LIBC-STDIO
           <format-result>...
                .List => ListItem(padString(
                     toUpperCase(showFloat(setPrecision(D, String2Int(ifEmpty(P, "6"))))),
-                    String2Int(defaultOne(W)),
+                    String2Int(defaultZero(W)),
                     #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%F" => "reset" </format-state>
@@ -2201,7 +2204,7 @@ module LIBC-STDIO
           <format-result>...
                .List => ListItem(padString(
                     showFloat(setPrecision(D, String2Int(ifEmpty(P, "6")))),
-                    String2Int(defaultOne(W)),
+                    String2Int(defaultZero(W)),
                     #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%g" => "reset" </format-state>
@@ -2220,7 +2223,7 @@ module LIBC-STDIO
           <format-result>...
                .List => ListItem(padString(
                     toUpperCase(showFloat(setPrecision(D, String2Int(ifEmpty(P, "6"))))),
-                    String2Int(defaultOne(W)),
+                    String2Int(defaultZero(W)),
                     #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%G" => "reset" </format-state>
@@ -2351,7 +2354,7 @@ module LIBC-STDIO
           <format-pad-zero> false </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(padString(pointerToString(Loc), String2Int(defaultOne(W)), " "))
+               .List => ListItem(padString(pointerToString(Loc), String2Int(defaultZero(W)), " "))
           </format-result>
           <format-state> "%p" => "reset" </format-state>
           [structural]
