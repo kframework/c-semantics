@@ -1,6 +1,6 @@
 module CPP-EXECUTION-STMT-EXPR
      imports CPP-COMMON-STMT-EXPR-SYNTAX
-     imports C-SEQUENCE-POINT-SYNTAX
+     imports CPP-EXECUTION-FULL-EXPRESSION-SYNTAX
      imports BOOL
      imports COMPAT-SYNTAX
      imports CPP-SYNTAX

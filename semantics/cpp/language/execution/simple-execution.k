@@ -6,6 +6,7 @@
 
 require "binding.k"
 require "env.k"
+require "full-expression.k"
 require "io.k"
 
 require "decl/declarator.k"
@@ -20,6 +21,7 @@ module CPP-SIMPLE-EXECUTION
 
      imports CPP-EXECUTION-BINDING
      imports CPP-EXECUTION-ENV
+     imports CPP-EXECUTION-FULL-EXPRESSION
      imports CPP-EXECUTION-DECL-DECLARATOR
      imports CPP-EXECUTION-DECL-INITIALIZER
      imports CPP-EXECUTION-IO
