@@ -34,10 +34,10 @@ module CPP-EXECUTION-DECL-DECLARATOR
      syntax KItem ::= registerForDestruction(Expr) [strict(1)]
 
      // we register the object for destruction before
-     // its initializer runs (but with the `IsConstructor` flag set)
+     // its initializer runs (but with the `initialized` flag cleared)
      // so that if an exception is thrown in the initializer,
      // the allocated object gets deleted.
-     // The `IsConstructor` flag is cleared later
+     // The `initialized` flag is set later
      // in `updateRegisteredForDestruction()`.
      rule <k> registerForDestruction(Obj:LVal) => .K ...</k>
           <locally-constructed> .List =>
