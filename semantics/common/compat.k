@@ -75,6 +75,9 @@ module COMPAT-SYNTAX
      syntax Map ::= Map "[" K "<+" Map "]" [function]
      syntax Bool ::= K "," K "in_keys" "(" Map ")" [function]
 
+     // implements List[Idx <- Val]
+     syntax List ::= myListUpdate(List, Int, KItem) [function]
+
 endmodule
 
 module COMPAT-KAST [kast]
@@ -273,4 +276,22 @@ module COMPAT
 
      rule invertMap(K::KItem |-> V::KItem M::Map) => (V |-> K) invertMap(M)
      rule invertMap(.Map) => .Map
+
+
+     syntax List ::= #myListUpdate(List, List, Int, KItem) [function]
+
+     rule myListUpdate(L::List, Idx::Int, V::KItem)
+          => #myListUpdate(.List, L, Idx, V)
+
+     rule #myListUpdate(L1::List, ListItem(_) L2::List, 0, V::KItem)
+          => L1 ListItem(V) L2
+
+     rule #myListUpdate(
+               _::List (.List => ListItem(V)),
+               (ListItem(V::KItem) => .List) _,
+               N::Int => N -Int 1,
+               _
+          )
+          requires N >Int 0
+
 endmodule
