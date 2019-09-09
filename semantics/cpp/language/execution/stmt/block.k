@@ -75,7 +75,7 @@ module CPP-EXECUTION-STMT-BLOCK
      rule #getLocalAddresses(.List, S::Set) => S
      rule #getLocalAddresses(
                (ListItem(lcentry(lv(Loc::SymLoc, _, _), _, _, _)) => .List) _,
-               (.Set => SetItem(baseOfLoc(Loc))) _
+               (.Set => SetItem(base(Loc))) _
           )
 
      rule <k> addToConstructed(L:LVal, t(... st: classType(...)) #as T::CPPType) => .K ...</k>
@@ -119,7 +119,7 @@ module CPP-EXECUTION-STMT-BLOCK
           #if IsConstructor #then
                .K
           #else
-               deleteObject(baseOfLoc(Loc))
+               deleteObject(base(Loc))
           #fi
 
      syntax KItem ::= "unfoldBlockStack"

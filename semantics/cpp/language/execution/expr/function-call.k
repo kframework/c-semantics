@@ -163,7 +163,7 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
      syntax SymBase ::= getBaseOfVal(Val) [function]
 
      rule getBaseOfVal(lv(...v: L::SymLoc) #Or xv(...v: L::SymLoc) #Or prv(...v: L::SymLoc))
-          => baseOfLoc(L)
+          => base(L)
 
      rule getBaseOfVal(referenceBindingResult(V::Val))
           => getBaseOfVal(V)
