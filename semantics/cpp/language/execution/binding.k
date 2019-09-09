@@ -17,6 +17,7 @@ module CPP-EXECUTION-BINDING
      imports INT
      imports CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-EXECUTION-STMT-BLOCK-SYNTAX
      imports CPP-EXPR-MEMBERS-SYNTAX
      imports CPP-MEMORY-WRITING-SYNTAX
      imports CPP-SYNTAX
@@ -61,8 +62,12 @@ module CPP-EXECUTION-BINDING
      rule <k> endConstruction(Obj:LVal, IsConstructor::Bool) => finishConstruction(Obj, IsConstructor) ...</k>
           <constructing> _ => .K </constructing>
 
-     rule <k> finishConstruction(Obj:LVal, IsConstructor::Bool) => Obj ...</k>
-          <locally-constructed> .List => ListItem(ktriple(Obj, true, IsConstructor)) ...</locally-constructed>
+     rule <k> finishConstruction(Obj:LVal, IsConstructor:Bool) => Obj ...</k>
+          <locally-constructed> .List =>
+          #if IsConstructor #then
+               ListItem(lcentry(Obj, true, true, true))
+          #else .List #fi
+          ...</locally-constructed>
 
      rule <k> writeVTables => write(Loc, prv(vtable(MDC), noTrace, type(pointerType(type(void)))), type(pointerType(type(void)))) ...</k>
           <curr-scope> blockScope(C::Class :: _, _, _) </curr-scope>

@@ -163,14 +163,10 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
      syntax SymBase ::= getBaseOfVal(Val) [function]
 
      rule getBaseOfVal(lv(...v: L::SymLoc) #Or xv(...v: L::SymLoc) #Or prv(...v: L::SymLoc))
-          => baseOfLoc(L)
+          => base(L)
 
      rule getBaseOfVal(referenceBindingResult(V::Val))
           => getBaseOfVal(V)
-
-     syntax SymBase ::= baseOfLoc(SymLoc) [function]
-
-     rule baseOfLoc(loc(Base::SymBase, _)) => Base
 
      rule <k> bindParam(X::CId, T::CPPType, V:Val)
               => addToExecEnv(X, T, getBaseOfVal(V), false)
