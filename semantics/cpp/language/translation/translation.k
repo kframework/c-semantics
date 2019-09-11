@@ -14,6 +14,7 @@ require "overloading.k"
 require "process-label.k"
 require "promotion.k"
 require "syntax.k"
+require "temporary.k"
 require "value-category.k"
 
 require "decl/alias.k"
@@ -78,6 +79,7 @@ module CPP-LANGUAGE-TRANSLATION
      imports CPP-TRANSLATION-OVERLOADING
      imports CPP-TRANSLATION-PROCESS-LABEL
      imports CPP-TRANSLATION-PROMOTION
+     imports CPP-TRANSLATION-TEMPORARY
      imports CPP-TRANSLATION-ABSTRACT-REWRITING
      imports CPP-TRANSLATION-VALUE-CATEGORY
 

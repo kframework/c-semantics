@@ -8,6 +8,9 @@ module CPP-EXECUTION-STMT-BLOCK-SYNTAX
                          initialized: Bool,
                          canBeVirtual: Bool,
                          isConstructor: Bool)
+
+     syntax KItem ::= destructLocal(isException: Bool, entry: KItem)
+
 endmodule
 
 module CPP-EXECUTION-STMT-BLOCK
@@ -19,6 +22,7 @@ module CPP-EXECUTION-STMT-BLOCK
      imports CPP-BUILTIN-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-EXECUTION-ENV-SYNTAX
+     imports CPP-EXECUTION-FULL-EXPRESSION-SYNTAX
      imports CPP-EXECUTION-STMT-BLOCK-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
@@ -99,7 +103,6 @@ module CPP-EXECUTION-STMT-BLOCK
      rule <k> destructLocals(...) => .K ...</k>
           <locally-constructed> .List </locally-constructed>
 
-     syntax KItem ::= destructLocal(isException: Bool, entry: KItem)
 
      rule destructLocal(IsException:Bool,
                lcentry(

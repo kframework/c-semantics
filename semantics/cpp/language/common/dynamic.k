@@ -439,6 +439,8 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KItem ::= frozenDeclaration(Int, Int, Decl) [klabel(frozenDeclarationCpp)]
 
+     syntax Expr ::= createTemporaryExec(temporary: Expr, init: Expr)
+
      syntax Expr ::= "not-implemented"
 
      syntax Expr ::= CompoundInitExpr
