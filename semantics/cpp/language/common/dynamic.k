@@ -574,7 +574,6 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KItem ::= seqstrict(StrictList) [klabel(seqstrictcpp)]
 
-
 endmodule // CPP-DYNAMIC-OTHER-SYNTAX
 
 module CPP-DYNAMIC-OTHER
