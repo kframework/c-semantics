@@ -22,6 +22,7 @@ module CPP-EXECUTION-STMT-BLOCK
      imports CPP-BUILTIN-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-EXECUTION-ENV-SYNTAX
+     imports CPP-EXECUTION-EXPR-REFERENCE-SYNTAX
      imports CPP-EXECUTION-FULL-EXPRESSION-SYNTAX
      imports CPP-EXECUTION-STMT-BLOCK-SYNTAX
      imports CPP-SYMLOC-SYNTAX
@@ -124,6 +125,10 @@ module CPP-EXECUTION-STMT-BLOCK
           #else
                deleteObject(base(Loc))
           #fi
+          ~>
+          #if isCPPRefType(T) #then
+               deleteReference(Loc)
+          #else .K #fi
 
      syntax KItem ::= "unfoldBlockStack"
 
