@@ -106,7 +106,7 @@ module CPP-EXECUTION-STMT-BLOCK
 
      rule destructLocal(IsException:Bool,
                lcentry(
-                    lv(Loc::SymLoc, _, _) #as V::LVal,
+                    lv(Loc::SymLoc, _, T::CPPType) #as V::LVal,
                     Initialized:Bool,
                     CanBeVirtual::Bool,
                     IsConstructor:Bool
@@ -119,7 +119,7 @@ module CPP-EXECUTION-STMT-BLOCK
                destruct(V, CanBeVirtual) ~> fullExpression
           #fi
           ~>
-          #if IsConstructor #then
+          #if IsConstructor orBool isCPPRefType(T) #then
                .K
           #else
                deleteObject(base(Loc))

@@ -19,20 +19,22 @@ module CPP-EXECUTION-DECL-DECLARATOR
                     allocObject(bnew(!I:Int, T, Mods, D), T, byteSizeofType(T))
                  #else .K #fi
               ~> addToExecEnv(X, T, bnew(!I:Int, T, Mods, D), false)
-              ~> #if notBool isCPPRefType(T) #then
-                    LCregisterForDestruction(ExecName(NoNNS(), X))
-                 #else .K #fi
+              ~> LCregisterForDestruction(ExecName(NoNNS(), X))
               ~> initializeObjectExec(Init)
-              ~> #if notBool isCPPRefType(T) #then
-                    LCupdateRegisteredForDestruction(size(LC))
-                 #else .K #fi
+              ~> LCupdateRegisteredForDestruction(size(LC))
           ...</k>
           <duration> D::Duration </duration>
           <local-vars> Vars:Set (.Set => SetItem(X)) </local-vars>
           <locally-constructed> LC::List </locally-constructed>
           requires notBool X in Vars andBool X =/=K #NoName
 
-     syntax KItem ::= LCregisterForDestruction(Expr) [strict(1)]
+     syntax KItem ::= LCregisterForDestruction(Expr)
+
+     // This works even if the declared variable is a reference.
+     // The rule for reference rewriting (from dynamic.k)
+     // can not apply, because the reference was not
+     // initialized yet.
+     context LCregisterForDestruction(HOLE:Expr) [result(LV)]
 
      // we register the object for destruction before
      // its initializer runs (but with the `initialized` flag cleared)
@@ -40,7 +42,7 @@ module CPP-EXECUTION-DECL-DECLARATOR
      // the allocated object gets deleted.
      // The `initialized` flag is set later
      // in `LCupdateRegisteredForDestruction()`.
-     rule <k> LCregisterForDestruction(Obj:LVal) => .K ...</k>
+     rule <k> LCregisterForDestruction(Obj:LV) => .K ...</k>
           <locally-constructed> .List =>
                ListItem(lcentry(Obj, false, true, false))
           ...</locally-constructed>
