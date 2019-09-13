@@ -7,8 +7,8 @@ module CPP-SETTINGS
      rule underlyingType(char32_t) => unsigned
      rule underlyingType(wchar_t) => int
 
-     rule size_t => unsigned
-     rule ptrdiff_t => int
+     rule size_t => unsigned-long
+     rule ptrdiff_t => long
 
      rule cfg:refsize => 4
      rule cfg:memberDataPtrSize => 4
