@@ -2,7 +2,7 @@ module CPP-EXECUTION-STMT-IF
      imports INT
      imports K-EQUAL
      imports BITS-SYNTAX
-     imports C-SEQUENCE-POINT-SYNTAX
+     imports CPP-EXECUTION-FULL-EXPRESSION-SYNTAX
      imports CPP-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-TYPING-SYNTAX
