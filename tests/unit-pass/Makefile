@@ -18,9 +18,7 @@ OS_EXCLUDES := $(OS_STDIO_EXCLUDES) \
                ./991112-1.c \
                ./string-opt-5.c \
                ./inst-check.c \
-               ./include-time.C \
-               ./new23.C \
-               ./new41.C
+               ./include-time.C
 TESTS := $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
 OS_TESTS := $(filter-out $(OS_EXCLUDES), $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS}))))
 CPP_TESTS := $(filter-out %.c, ${TESTS})
