@@ -171,7 +171,8 @@ module CPP-EXECUTION-STMT-TRY
 
      rule <k> catchWithHandler(CatchOp(_, pushBlock(N::Int) ~> declareNonStaticObjectExec(... id: X::CId) #as D:KItem ~> Rest:K), V::LVal)
               ~> tryMark(I::Int)
-              => popBlock(true)
+              => destructTemporaries(true)
+              ~> popBlock(true)
               ~> pushBlock(N)
               ~> setCurrentException(V)
               ~> #if X ==K #NoName #then .K #else D #fi
