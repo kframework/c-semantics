@@ -692,7 +692,14 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      syntax Stmt ::= getFunDefBody(TemplateInfo, QualId, CPPType, Stmt) [function]
 
      rule getFunDefBody(noTemplate, QX::QualId, T::CPPType, Body::Stmt)
-          => TLabelStmt(funLabel(getId(QX)), #if isDestructorId(getId(QX)) #then ListItem(Destructor()) #else .List #fi ListItem(Body) ListItem(TReturnOp(getDefaultReturnOp(QX, getReturnType(T)))))
+          =>
+          TLabelStmt(funLabel(getId(QX)),
+               #if isDestructorId(getId(QX)) #then ListItem(Destructor()) #else .List #fi
+               ListItem(Body)
+               ListItem(TReturnOp(
+                    getDefaultReturnOp(!I:Int, QX, getReturnType(T)),
+                    temp(!I:Int, type(int))))
+          )
 
      rule getFunDefBody(_, _, _, Body::Stmt) => Body [owise]
 
@@ -707,12 +714,12 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule <k> setTrThis(C:Class :: _, methodInfo(... cvQuals: Q::Quals)) => .K ...</k>
           <tr-this> _ => pre(This(), hasTrace(This()), type(pointerType(t(Q::Quals, .Set, classType(C))))) </tr-this>
 
-     syntax Expr ::= getDefaultReturnOp(QualId, CPPType) [function]
+     syntax Expr ::= getDefaultReturnOp(Int, QualId, CPPType) [function]
 
-     rule getDefaultReturnOp(GlobalNamespace() :: Identifier("main"), T::CPPType)
-          => le(temp(!I:Int, type(int)), noTrace, T) :=init prv(0, noTrace, type(int))
+     rule getDefaultReturnOp(I::Int, GlobalNamespace() :: Identifier("main"), T::CPPType)
+          => le(temp(I, type(int)), noTrace, T) :=init prv(0, noTrace, type(int))
 
-     rule getDefaultReturnOp(_, _) => prv(voidVal, noTrace, type(void)) [owise]
+     rule getDefaultReturnOp(_, _, _) => prv(voidVal, noTrace, type(void)) [owise]
 
      syntax KItem ::= dummyBind(List)
 

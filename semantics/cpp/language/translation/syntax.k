@@ -224,7 +224,7 @@ module CPP-ABSTRACT-SYNTAX
                    | Noexcept(Expr)
                    | NewExpr(Bool, AType, AExpr, Init, List) [strict(2)]
                    | DeleteExpr(Bool, Bool, Expr)
-                   | TReturnOp(Expr)
+                   | TReturnOp(init: Expr, obj: K)
 
      syntax ResolvedExpr ::= CallExpr(Expr, StrictList, StrictListResult)
 
