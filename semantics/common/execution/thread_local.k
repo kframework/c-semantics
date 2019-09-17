@@ -49,6 +49,7 @@ module COMMON-THREAD-LOCAL
             <this> .K </this>
             // object being constructed
             <constructing> .K </constructing>
+            <constructing-history> .List </constructing-history>
             // most derived class being constructed
             <most-derived-class> .K </most-derived-class>
 
