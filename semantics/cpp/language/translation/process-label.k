@@ -64,7 +64,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
           <computation> BreakStmt() => .K ...</computation>
 
      rule <k> waitingOnGotoMap ...</k>
-          <computation> ReturnOp(_) => .K ...</computation>
+          <computation> ReturnOp(_, _) => .K ...</computation>
 
      rule <k> waitingOnGotoMap ...</k>
           <computation> GotoStmt(_) => .K ...</computation>

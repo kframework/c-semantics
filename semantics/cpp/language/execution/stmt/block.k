@@ -22,6 +22,7 @@ module CPP-EXECUTION-STMT-BLOCK
      imports CPP-BUILTIN-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-EXECUTION-ENV-SYNTAX
+     imports CPP-EXECUTION-EXPR-REFERENCE-SYNTAX
      imports CPP-EXECUTION-FULL-EXPRESSION-SYNTAX
      imports CPP-EXECUTION-STMT-BLOCK-SYNTAX
      imports CPP-SYMLOC-SYNTAX
@@ -106,7 +107,7 @@ module CPP-EXECUTION-STMT-BLOCK
 
      rule destructLocal(IsException:Bool,
                lcentry(
-                    lv(Loc::SymLoc, _, _) #as V::LVal,
+                    lv(Loc::SymLoc, _, T::CPPType) #as V::LVal,
                     Initialized:Bool,
                     CanBeVirtual::Bool,
                     IsConstructor:Bool
@@ -119,11 +120,15 @@ module CPP-EXECUTION-STMT-BLOCK
                destruct(V, CanBeVirtual) ~> fullExpression
           #fi
           ~>
-          #if IsConstructor #then
+          #if IsConstructor orBool isCPPRefType(T) #then
                .K
           #else
                deleteObject(base(Loc))
           #fi
+          ~>
+          #if isCPPRefType(T) #then
+               deleteReference(Loc)
+          #else .K #fi
 
      syntax KItem ::= "unfoldBlockStack"
 

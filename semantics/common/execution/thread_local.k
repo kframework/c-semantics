@@ -53,6 +53,7 @@ module COMMON-THREAD-LOCAL
             <most-derived-class> .K </most-derived-class>
 
             <constructed-temporaries> .List </constructed-temporaries>
+            <ret-constructed-temporary> .K </ret-constructed-temporary>
 
             // stack of block-control cells
             <block-stack color="violet"> .List </block-stack>

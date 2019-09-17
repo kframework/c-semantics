@@ -9,6 +9,7 @@ module CPP-EXECUTION-TEMPORARY
      imports C-CONFIGURATION
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-EXECUTION-STMT-BLOCK-SYNTAX
+     imports CPP-REFERENCE-SYNTAX
      imports COMPAT-SYNTAX
 
      // This code works similarly to the code
@@ -21,9 +22,12 @@ module CPP-EXECUTION-TEMPORARY
           ...</k>
           <constructed-temporaries> CT::List </constructed-temporaries>
 
-     syntax KItem ::= CTregisterForDestruction(Expr) [strict(1)]
+     syntax KItem ::= CTregisterForDestruction(Expr)
 
-     rule <k> CTregisterForDestruction(Obj:LVal) => .K ...</k>
+     // see LCregisterForDestruction in declarator.k
+     context CTregisterForDestruction(HOLE:Expr) [result(LV)]
+
+     rule <k> CTregisterForDestruction(Obj:LV) => .K ...</k>
           <constructed-temporaries> .List =>
                ListItem(lcentry(Obj, false, true, false))
           ...</constructed-temporaries>
@@ -31,13 +35,15 @@ module CPP-EXECUTION-TEMPORARY
      syntax KItem ::= CTupdateRegisteredForDestruction(Int)
                     | CTupdateRegisteredForDestruction2(idx: Int, entry: KItem)
 
+     syntax LVorRBR ::= LV | ReferenceBindingResult
+
      // `-1 -Int Size` from the end is the index of the newly-added entry
-     rule <k> V:LVal ~> CTupdateRegisteredForDestruction(Size::Int)
+     rule <k> V:LVorRBR ~> CTupdateRegisteredForDestruction(Size::Int)
           => CTupdateRegisteredForDestruction2(-1 -Int Size, CT[-1 -Int Size])
           ~> V
           ...</k>
           <constructed-temporaries> CT::List </constructed-temporaries>
-          requires isEvalVal(V)
+          requires isEvalVal(V) orBool isReferenceBindingResult(V)
 
      rule <k> CTupdateRegisteredForDestruction2(Idx::Int,
                lcentry(Obj::LVal, false, CanBeVirtual::Bool, IsConstructor::Bool)) => .K

@@ -103,7 +103,7 @@ zeroinit-class-padding.C.cmp:
 	@$(CC) $(LDFLAGS) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.gcc: %.C
 	@echo -n "Compiling $< (reference)... "
-	@$(CXX) -std=c++14 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CXX) -std=c++14 -fno-elide-constructors -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.ref: %.gcc
 	@echo -n "Running $<... "
