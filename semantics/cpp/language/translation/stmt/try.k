@@ -25,7 +25,7 @@ module CPP-TRANSLATION-STMT-TRY
      rule <k> elaborateDone(S:K) ~> TCatchAnyOp(_) => .K ...</k>
           <elab>... .K => CatchAnyOp(S) </elab>
 
-     context Throw.eval(HOLE:Expr, _) [result(Val)]
+     context Throw.eval(HOLE:Expr, _, _) [result(Val)]
 
      rule Throw(E::Expr)
        => Odr.newUse(obj(0, 0, builtinCppSymbol("::std::terminate()")))
@@ -41,14 +41,14 @@ module CPP-TRANSLATION-STMT-TRY
 
      rule Throw.prepare(E::Expr, T:CPPType)
           => Throw.potentiallyInvokeDestructor(T)
-          ~> Throw.eval(figureInit(le(temp(!I:Int, utype(T)), noTrace, utype(T)), utype(T), E, CopyInit(), /* will never be used: */ AutoStorage), E)
+          ~> Throw.eval(figureInit(le(temp(!I:Int, utype(T)), noTrace, utype(T)), utype(T), E, CopyInit(), /* will never be used: */ AutoStorage), E, temp(!I:Int, utype(T)))
 
      rule Throw.prepare(NoExpression(), NoExpression())
-          => pre(ThrowOp(exceptionObject(type(no-type))), hasTrace(Throw(NoExpression())), type(void))
+          => pre(ThrowOp(exceptionObject(type(no-type)), .K), hasTrace(Throw(NoExpression())), type(void))
 
-     syntax Expr ::= "Throw.eval" "(" Expr "," Expr ")"
+     syntax Expr ::= "Throw.eval" "(" Expr "," Expr "," Expr ")"
 
-     rule Throw.eval(V:Val, E::Expr) => pre(ThrowOp(V), hasTrace(E), type(void))
+     rule Throw.eval(V:Val, E::Expr, Obj::Expr) => pre(ThrowOp(V, Obj), hasTrace(E), type(void))
 
      // @ref n4778 13.1/5
      // <quote>
