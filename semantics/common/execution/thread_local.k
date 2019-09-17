@@ -83,7 +83,6 @@ module COMMON-THREAD-LOCAL
                  // used to store the catch handlers if this
                  // block is a try block in C++
                  <catch-handlers> .List </catch-handlers>
-                 <current-exception> .K </current-exception>
             </block-control>
 
             // used to control initialization when gotoing
@@ -100,6 +99,7 @@ module COMMON-THREAD-LOCAL
             // Used to catch potential stack size overflows.
             <stack-depth> 0 </stack-depth>
 
+            <current-exception> .K </current-exception>
             <uncaught-exception> false </uncaught-exception>
 
             // stdarg

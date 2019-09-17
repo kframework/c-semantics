@@ -196,8 +196,9 @@ module CPP-EXECUTION-STMT-TRY
      rule <k> activateHandler => .K ...</k>
           <uncaught-exception> _ => false </uncaught-exception>
 
-     rule <k> deactivateHandler => .K ...</k>
-          <current-exception> _ => .K </current-exception>
+     // @ref n4296 15.1/4
+     rule <k> deactivateHandler => destructLocal(false, lcentry(V, true, true, false)) ...</k>
+          <current-exception> V::LVal => .K </current-exception>
 
      rule tryMark(_) => .K
 
