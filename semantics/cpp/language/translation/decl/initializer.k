@@ -7,8 +7,10 @@ module CPP-TRANSLATION-DECL-INITIALIZER-SYNTAX
      imports CPP-TYPING-SORTS
 
      // The 'duration' parameter is only passed to `bindReference`
-     syntax Expr ::= figureInit(base: Expr, destT: CPPType, init: Init, type: InitType, duration: Duration)
-                   | figureConstructorInit(base: Expr, destT: CPPType, init: Init, constructorType: Bool)
+     syntax Expr ::= figureConstructorInit(base: Expr, destT: CPPType, init: Init, constructorType: Bool)
+
+     syntax Expr ::= FigureInit
+     syntax FigureInit ::= figureInit(base: Expr, destT: CPPType, init: Init, type: InitType, duration: Duration)
 
      syntax Expr ::= valueInit(base: Expr, CPPType)
                    | defaultConstructorInit(base: Expr, CPPType, constructorType: Bool)
@@ -55,8 +57,10 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      syntax Expr ::= #figureInit0(base: Expr, destT: CPPType, type: InitType, init: Init, ConstructorType, Duration)
                    | #figureInit(base: Expr, destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType, Duration)
                    | constructorInit(LVal, InitType, Class, List, ConstructorType)
-                   | zeroInit(base: Expr, type: CPPType)
                    | InitStyle "(" Expr "," CPPType "," ConstructorType ")"
+
+     syntax Expr ::= ZeroInit
+     syntax ZeroInit ::= zeroInit(base: Expr, type: CPPType)
 
      syntax InitStyle ::= "defaultInit" | "#valueInit" | "#zeroInit"
 
@@ -260,8 +264,8 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax KItem ::= listInit(LVal, CPPType, InitType, List, ConstructorType, Duration)
                     | aggInit(LVal, CPPType, List, ConstructorType, Duration)
-                    | arrayInit(base: LVal, type: CPPType, current: Int, initList: List, result: MaybeExpr, ctype: ConstructorType, duration: Duration)
                     | strInit(LVal, CPPType, CharKind, String, Int, MaybeExpr)
+     syntax ArrayInit ::= arrayInit(base: LVal, type: CPPType, current: Int, initList: List, result: MaybeExpr, ctype: ConstructorType, duration: Duration)
 
      // @ref n4296 8.5.4:3.1 (aggregate init)
      rule listInit(Base::LVal, T::CPPType, _, L::List, CT::ConstructorType, D::Duration)
