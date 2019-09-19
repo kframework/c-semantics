@@ -1,6 +1,8 @@
 #ifndef CLANGKAST_H_
 #define CLANGKAST_H_
 
+bool cparser();
+
 enum class Sort {
   ACCESSSPECIFIER,
   AEXPR,

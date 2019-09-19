@@ -48,6 +48,11 @@ static cl::OptionCategory KastOptionCategory("K++ parser options");
 static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 
 static cl::opt<bool> Kore("kore", cl::desc("Output kore instead of kast."), cl::cat(KastOptionCategory));
+static cl::opt<bool> Cparser("cparser", cl::desc("Parse C instead of C++."), cl::cat(KastOptionCategory));
+
+bool cparser() {
+  return Cparser;
+};
 
 // *** Sort to string ***
 
@@ -354,9 +359,18 @@ int main(int argc, const char **argv) {
   CommonOptionsParser OptionsParser(argc, argv, KastOptionCategory);
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
-
-  if (int r = Tool.run(newFrontendActionFactory<GetKastAction>().get())) {
-    return r;
+  try {
+    if (int r = Tool.run(newFrontendActionFactory<GetKastAction>().get())) {
+      return r;
+    }
+  }catch(...){
+    cout << "Caught exception. The output will be incomplete\n";
+    try {
+      Kast::print();
+    } catch(...) {
+      std::cout << std::endl;
+    }
+    throw;
   }
 
   Kast::print();
