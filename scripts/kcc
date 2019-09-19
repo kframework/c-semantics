@@ -453,6 +453,11 @@ sub getLinkingCommand {
 
       my @krun = getKRunCommand($output, $symbols, 'c-cpp-linking-kompiled');
 
+      if (arg('-flinking-depth=')) {
+            push(@krun, '--depth');
+            push(@krun, arg('-flinking-depth='));
+      }
+
       my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
       my $json = "#token($rvErrorJson, $string)";
 
