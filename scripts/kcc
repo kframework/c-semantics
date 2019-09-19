@@ -611,6 +611,19 @@ sub parse {
 
             return $kast;
       }
+      # Yes, it is a duplication, but only temporary one
+      if (arg('--use-clang')) {
+            my $std = getStd('c11');
+            my $cppParser = distDir('clang-kast');
+            my @cppParserArgs = ('-x', 'c');
+            if (arg('-fno-diagnostics-color')) {
+                  push(@cppParserArgs, '-fno-diagnostics-color');
+            }
+
+            shell($cppParser, $ppResult, '-cparser', '-extra-arg=-std=c11', '--', @cppParserArgs)->verbose()->stdout($kast)->run();
+
+            return $kast;
+      }
       my $cparser = distDir('cparser');
       shell($cparser, $ppResult, '--trueName', $inputFile)->verbose()->stdout($kast)->run();
 

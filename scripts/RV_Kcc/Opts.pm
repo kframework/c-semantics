@@ -582,6 +582,9 @@ sub parseOpts {
                   exit 1;
             }
       }
+  --use-clang	[undocumented]
+      { RV_Kcc::Opts::pushArg('cppArgs', '-DCLANG_BASED_PARSER'); }
+
   --use-profile <name>	Use a KCC profile for this run, but do not make it the current profile. [undocumented]
       {
             if ( grep( /^$name$/, RV_Kcc::Files::getProfiles() ) ) {
