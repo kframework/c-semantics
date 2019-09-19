@@ -582,7 +582,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KItem ::= seqstrict(StrictList) [klabel(seqstrictcpp)]
 
-     syntax DefaultArguments ::= defArgs(vals: StrictList, types: StrictList, cats: StrictList)
+     syntax DefaultArguments ::= defArgs(vals: StrictList, types: StrictList, cats: StrictList) [strict(1)]
 
      syntax DefaultArguments ::= DefaultArgumentsResult
 
