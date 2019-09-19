@@ -444,7 +444,6 @@ module C-COMMON-EXPR-RELATIONAL
           requires Loc  =/=K NullPointer
                andBool Loc' =/=K NullPointer
                andBool notBool sameBase(Loc, Loc')
-               andBool notBool isAdjacent(stripProv(Loc), stripProv(Loc'))
                andBool isCompatibleEqualityTypes(T, T', Loc, Loc')
           [structural]
      rule tv(Loc:SymLoc, T::UType) != tv(Loc':SymLoc, T'::UType)
@@ -452,18 +451,8 @@ module C-COMMON-EXPR-RELATIONAL
           requires Loc  =/=K NullPointer
                andBool Loc' =/=K NullPointer
                andBool notBool sameBase(Loc, Loc')
-               andBool notBool isAdjacent(stripProv(Loc), stripProv(Loc'))
                andBool isCompatibleEqualityTypes(T, T', Loc, Loc')
           [structural]
-
-     rule tv(Loc:SymLoc, T::UType) == tv(Loc':SymLoc, T'::UType)
-          => tv(unknown(1), makeTruthType(T, T'))
-          requires isAdjacent(stripProv(Loc), stripProv(Loc'))
-               andBool isCompatibleEqualityTypes(T, T', Loc, Loc')
-     rule tv(Loc:SymLoc, T::UType) != tv(Loc':SymLoc, T'::UType)
-          => tv(unknown(0), makeTruthType(T, T'))
-          requires isAdjacent(stripProv(Loc), stripProv(Loc'))
-               andBool isCompatibleEqualityTypes(T, T', Loc, Loc')
 
      // arithmetic types
      rule isCompatibleEqualityTypes(T1::UType, T2::UType, _, _) => true
@@ -498,11 +487,4 @@ module C-COMMON-EXPR-RELATIONAL
                andBool notBool (isPointerType(type(L)) andBool isNullPointerConstant(R))
                andBool notBool (isPointerType(type(R)) andBool isNullPointerConstant(L))
 
-     syntax Bool ::= isAdjacent(SymLoc, SymLoc) [function, withConfig]
-     rule [[ isAdjacent(loc(S::SymBase, Size:Int), loc(_, 0)) => true ]]
-          <mem>... S |-> object(_, Size, _) ...</mem>
-          
-     rule [[ isAdjacent(loc(_, 0), loc(S::SymBase, Size:Int)) => true ]]
-          <mem>... S |-> object(_, Size, _) ...</mem>
-     rule isAdjacent(_, _) => false [owise]
 endmodule

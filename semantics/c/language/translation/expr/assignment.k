@@ -91,11 +91,11 @@ module C-EXPR-ASSIGNMENT
           => te(lv(Loc, T) := checkUse(tv(V, T')), stripConstants(utype(T')))
           requires notBool isConstType(T)
                andBool (utype(T) ==Type T')
-     rule nclv(Loc:SymLoc, T::Type) := te(K:K, T'::UType)
+     rule nclv(Loc:SymLoc, T::Type) := te(K:KItem, T'::UType)
           => te(lv(Loc, T) := K, stripConstants(utype(T')))
           requires notBool isConstType(T)
                andBool (utype(T) ==Type T')
-     rule ncle(L:K, T::Type) := R:RValue
+     rule ncle(L:KItem, T::Type) := R:RValue
           => te(L := stripHold(R), stripConstants(utype(R)))
           requires notBool isConstType(T)
                andBool (utype(T) ==Type utype(R))

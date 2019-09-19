@@ -67,8 +67,8 @@ module C-TYPE-BUILDER
      rule restrict(T:FlexType) => addQualifier(Restrict(), expand(T))
 
      rule typeref(S:String) => #typeref(Identifier(S))
-     syntax Type ::= #typeref(CId) [function, withConfig]
 
+     syntax Type ::= #typeref(CId) [function, withConfig]
      rule [[ #typeref(X:CId) => T ]]
           <external-defs>... X |-> Base:SymBase ...</external-defs>
           <mem>... Base |-> object(T:Type, _, _) ...</mem> 

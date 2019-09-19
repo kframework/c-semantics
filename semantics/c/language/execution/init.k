@@ -5,7 +5,7 @@ module C-EXECUTION-INIT-SYNTAX
      imports COMMON-SORTS
      syntax KItem ::= pgmArgs(List) [function]
      syntax KItem ::= incomingArguments(List)
-     syntax KItem ::= callEntryPoint(String, Int, K)
+     syntax KItem ::= callEntryPoint(String, Int, KItem)
      syntax KItem ::= initMainThread(String)
      syntax KItem ::= "initMainThread'" "(" String ")"
      syntax KItem ::= "callAtExit" | "callAtQuickExit"
@@ -85,23 +85,21 @@ module C-EXECUTION-INIT
           => tv(NullPointer, utype(pointerType(type(void))))
 
      syntax Type ::= strType(String) [function]
-     rule strType(S:String)
+     rule strType(S::String)
           => type(arrayType(type(char), lengthString(S) +Int 1))
 
-     syntax KItem ::= "incomingArguments-aux" "(" List "," Int ")"
-
-     rule incomingArguments(L:List) => incomingArguments-aux(L, 0)
+     rule incomingArguments(L::List) => #incomingArguments(L, 0)
           [structural]
-     rule incomingArguments-aux(ListItem(S:String) L:List, N:Int)
+
+     syntax KItem ::= #incomingArguments(List, Int)
+     rule #incomingArguments(ListItem(S:String) L::List, N::Int)
           => allocObject(bnew(N +Int 1, strType(S), argv), strType(S))
           ~> writeString(lnew(bnew(N +Int 1, strType(S), argv)), S)
-          ~> Initializer(*(mainArguments + tv(N, utype(int)))
-               := lv(lnew(bnew(N +Int 1, strType(S), argv)), strType(S)))
-          ~> incomingArguments-aux(L:List, N:Int +Int 1)
+          ~> Initializer(*(mainArguments + tv(N, utype(int))) := lv(lnew(bnew(N +Int 1, strType(S), argv)), strType(S)))
+          ~> #incomingArguments(L, N +Int 1)
           [structural]
-     rule incomingArguments-aux(.List, N:Int)
-          => Initializer(*(mainArguments + tv(N, utype(int)))
-               := NullPointerConstant)
+     rule #incomingArguments(.List, N::Int)
+          => Initializer(*(mainArguments + tv(N, utype(int))) := NullPointerConstant)
           [structural]
 
      rule pgmArgs(L:List)
@@ -193,9 +191,9 @@ module C-EXECUTION-INIT
 
      /*@ this bit of indirection is used to check that the main prototype is
       correct, and to call it with the appropriate arguments */
-     rule <k> callEntryPoint(EP::String, N::Int, Args:K)
+     rule <k> callEntryPoint(EP::String, N::Int, Args::KItem)
                => enterRestrictTU
-               ~> reval(#callEntryPoint(EP, N, mainArguments, Args, T))
+               ~> reval(#callEntryPoint(EP, N, Args, T))
                ~> callAtExit
           ...</k>
           <types>... Identifier(EP) |-> T::Type ...</types>
@@ -206,14 +204,14 @@ module C-EXECUTION-INIT
      rule getEntryPoint(_) => "main" [owise]
 
      // int main(void) -- also, int main() gets normalized to main(void)
-     syntax K ::= #callEntryPoint(String, Int, CId, K, Type) [function]
-     rule #callEntryPoint(Entry::String, _, _, _,
+     syntax K ::= #callEntryPoint(String, Int, KItem, Type) [function]
+     rule #callEntryPoint(Entry::String, _, _,
                t(quals(.Set), _, functionType(ut(.Set, int),
                     ListItem(typedDeclaration(t(quals(.Set), .Set, void), _)))))
           => Call(Identifier(Entry), list(.List))
      // int main(int argc, char* argv[]), int main(int argc, char** argv), and old style (no prototype).
-     rule #callEntryPoint(Entry::String, N::Int, X::CId, Args:K, _)
-          => Args ~> Call(Identifier(Entry), list(ListItem(tv(N, utype(int))) ListItem(X)))
+     rule #callEntryPoint(Entry::String, N::Int, Args::KItem, _)
+          => Args ~> Call(Identifier(Entry), list(ListItem(tv(N, utype(int))) ListItem(mainArguments)))
           [owise]
 
      rule <k> reval(V:RValue) ~> callAtExit => AtExit ~> reval(V) ~> callAtExit ...</k>
@@ -231,8 +229,7 @@ module C-EXECUTION-INIT
           <status> _ => mainExited </status>
 
      // fixme I'm not sure threads clean up their memory
-     rule [terminate]:
-          <exec>...
+     rule <exec>...
                (<thread>...
                     // main's thread, not the global "thread"
                     <thread-id> 0 </thread-id>

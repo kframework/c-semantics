@@ -41,13 +41,13 @@ module C-DYNAMIC-SYNTAX
 
      // These hold typed frozen computations -- one each for lvalues, rvalues,
      // and non-converted lvalues.
-     syntax LHold ::= le(K, Type)
-     syntax RHold ::= te(K, UType)
-     syntax NCLHold ::= ncle(K, Type)
+     syntax LHold ::= le(KItem, Type)
+     syntax RHold ::= te(KItem, UType)
+     syntax NCLHold ::= ncle(KItem, Type)
      syntax CompoundExpression ::= compoundExp(K)
      syntax Hold ::= HoldLValue | HoldResult | CompoundExpression
 
-     syntax K ::= stripHold(K) [function]
+     syntax KItem ::= stripHold(KItem) [function]
 
      syntax RValue ::= "voidVal" [klabel(voidVal)]
      syntax RValue ::= "emptyValue"
@@ -93,8 +93,7 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= "comma"
      // these are semantic
 
-     syntax KResult ::= initValue(CId, Type, K)
-     syntax NoInit
+     syntax NoInit ::= initValue(CId, Type, K)
      syntax KResult ::= NoInit
 
      syntax CompoundLiteralId ::= compoundLiteral(Int)
@@ -168,18 +167,18 @@ module C-DYNAMIC
 
      context toRVal(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     rule stripHold(te(K:K, _)) => K
-     rule stripHold(le(K:K, _)) => K
-     rule stripHold(ncle(K:K, _)) => K
+     rule stripHold(te(K:KItem, _)) => K
+     rule stripHold(le(K:KItem, _)) => K
+     rule stripHold(ncle(K:KItem, _)) => K
      rule stripHold(tv(_, _) #as V::RValue) => checkUse(V)
      rule stripHold(nclv(Loc::SymLoc, T::Type)) => lv(Loc, T)
-     rule stripHold(K:K) => K [owise]
+     rule stripHold(K:KItem) => K [owise]
 
      rule value(tv(V:CValue, _)) => V
      rule value(nclv(Loc:SymLoc, _)) => Loc
-     rule value(te(K:K, _)) => K
-     rule value(le(K:K, _)) => K
-     rule value(ncle(K:K, _)) => K
+     rule value(te(K:KItem, _)) => K
+     rule value(le(K:KItem, _)) => K
+     rule value(ncle(K:KItem, _)) => K
      rule value(compoundExp(K:K)) => K
 
      rule type(tv(_, T::UType)) => type(T)
@@ -208,8 +207,6 @@ module C-DYNAMIC
 
      rule N:Int => tv(N, utype(cfg:largestUnsigned))
           [structural] // for internal computations
-
-     rule isNoInit(initValue(_, _, .K)) => true
 
      rule fillRHoles(V:RValue, te(L:K := E:K, T::UType)) => te(L := fillRHoles(V, E), T)
      rule fillRHoles(V:RValue, Cast(T::Type, E:K)) => Cast(T, fillRHoles(V, E))

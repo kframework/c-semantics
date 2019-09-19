@@ -52,11 +52,11 @@ module C-EXPR-FUNCTION-CALL
           requires P =/=K .List
 
      syntax KItem ::= elabCall(RValue, List, UType, List)
-     rule elabCall(te(K:K, _), L::List, T::UType, .List)
+     rule elabCall(te(K:KItem, _), L::List, T::UType, .List)
           => te(Call(K, list(L)), T)
      rule elabCall(tv(V::CValue, T::UType), L::List, T'::UType, .List)
           => te(Call(checkUse(tv(V, T)), list(L)), T')
-     rule elabCall(te(K:K, _), _, T::UType, L::List)
+     rule elabCall(te(K:KItem, _), _, T::UType, L::List)
           => te(Call(K, list(L)), T)
           requires L =/=K .List
      rule elabCall(tv(V::CValue, T::UType), _, T'::UType, L::List)
