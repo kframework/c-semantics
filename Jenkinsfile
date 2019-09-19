@@ -38,9 +38,6 @@ pipeline {
               '''
             } }
           }
-          // post { success {
-          //   archiveArtifacts 'dist/timelogs.d/timelogs.csv'
-          // } }
         }
         stage ( 'Re-compile w/ timeout' ) { steps {
           timeout(time: 8, unit: 'SECONDS' ) {
