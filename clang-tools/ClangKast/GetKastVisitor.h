@@ -77,8 +77,11 @@ public:
     if (excludedDecl(D))
       return true;
 
-    Kast::add(Kast::KApply("DeclLoc", Sort::DECL, {Sort::CABSLOC, Sort::DECL}));
-    CabsLoc(D->getLocation());
+    // For TranslationUnit, getLocation() is empty.
+    if (D->getKind() != Decl::TranslationUnit) {
+      Kast::add(Kast::KApply("DeclLoc", Sort::DECL, {Sort::CABSLOC, Sort::DECL}));
+      CabsLoc(D->getLocation());
+    }
 
     switch (D->getKind()) {
 #define ABSTRACT_DECL(DECL)
@@ -158,8 +161,15 @@ public:
   }
 
   bool VisitTranslationUnitDecl(TranslationUnitDecl *D) {
-    Kast::add(Kast::KApply("TranslationUnit", Sort::DECL, {Sort::STRING, Sort::LIST}));
+    if (cparser())
+      Kast::add(Kast::KApply("TranslationUnit", Sort::KITEM, {Sort::STRING, Sort::LIST, Sort::LIST}));
+    else
+      Kast::add(Kast::KApply("TranslationUnit", Sort::DECL, {Sort::STRING, Sort::LIST}));
+
     Kast::add(Kast::KToken(InFile));
+    if (cparser())
+      Kast::add(Kast::KApply(".List", Sort::LIST));
+
     DeclContext(D);
     return false;
   }
