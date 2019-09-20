@@ -20,7 +20,6 @@ typedef long unsigned int __kcc_size_t;
 #define __SIZE_TYPE__ __kcc_size_t
 
 #if !defined(__cplusplus) && !defined(CLANG_BASED_PARSER)
-#warning HERE
 /* We don't use the C parser for C++, so we need clang to recognize these
  * primitives. */
 
