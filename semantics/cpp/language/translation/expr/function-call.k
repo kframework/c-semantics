@@ -8,6 +8,7 @@ module CPP-TRANSLATION-EXPR-FUNCTION-CALL
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-TRANSLATION-ELABORATOR-SYNTAX
      imports CPP-TRANSLATION-OVERLOADING-SYNTAX
+     imports CPP-TRANSLATION-TEMPORARY-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
@@ -38,7 +39,7 @@ module CPP-TRANSLATION-EXPR-FUNCTION-CALL
      syntax List ::= bindParams(List, List, List) [function]
 
      rule bindParams(ListItem(T:CPPType) P::List, ListItem(Init::Init) A::List, ListItem(_) DArgs::List)
-          => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, Init, CopyInit(), AutoStorage)) bindParams(P, A, DArgs)
+          => ListItem(createTemporary(temp(!I:Int, T), T, figureInit(le(temp(!I:Int, T), noTrace, T), T, Init, CopyInit(), AutoStorage))) bindParams(P, A, DArgs)
 
      // ignore implicit object parameter for static function member
      rule bindParams(ListItem(implicitObjectParameter(t(... st: no-type))) P::List,

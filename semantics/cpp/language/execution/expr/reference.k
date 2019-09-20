@@ -1,4 +1,12 @@
+module CPP-EXECUTION-EXPR-REFERENCE-SYNTAX
+     imports SYMLOC-SORTS
+
+     syntax KItem ::= deleteReference(SymLoc)
+
+endmodule
+
 module CPP-EXECUTION-EXPR-REFERENCE
+     imports CPP-EXECUTION-EXPR-REFERENCE-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
      imports CPP-BITSIZE-SYNTAX
@@ -40,5 +48,8 @@ module CPP-EXECUTION-EXPR-REFERENCE
           requires isBaseClassOf(T1, T2)
 
      rule referenceTarget(... loc: Loc::SymLoc) => Loc [owise]
+
+     rule <k> deleteReference(Loc::SymLoc) => .K ...</k>
+     <references> R::Map => R[stripProv(Loc) <- undef] </references>
 
 endmodule

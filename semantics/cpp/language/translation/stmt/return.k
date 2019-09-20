@@ -6,9 +6,9 @@ module CPP-TRANSLATION-STMT-RETURN
      imports CPP-TYPING-SYNTAX
      imports C-CONFIGURATION
 
-     context TReturnOp(HOLE:Expr) [result(Val)]
+     context TReturnOp(HOLE:Expr, _) [result(Val)]
 
-     rule <k> ReturnStmt(I::Init) => TReturnOp(figureInit(le(temp(!I:Int, Ret), noTrace, Ret), Ret, I, CopyInit(), AutoStorage)) ...</k>
+     rule <k> ReturnStmt(I::Init) => TReturnOp(figureInit(le(temp(!I:Int, Ret), noTrace, Ret), Ret, I, CopyInit(), AutoStorage), temp(!I:Int, Ret)) ...</k>
           <curr-function> Base::SymBase </curr-function>
           <functions>... Base |-> functionObject(_, t(_, _, functionType(... returnType: Ret::CPPType)), _, _) ...</functions>
           requires I =/=K NoInit()
@@ -18,10 +18,10 @@ module CPP-TRANSLATION-STMT-RETURN
           <curr-function> dependent </curr-function>
           requires I =/=K NoInit()
 
-     rule ReturnStmt(NoInit()) => TReturnOp(prv(voidVal, noTrace, type(void)))
+     rule ReturnStmt(NoInit()) => TReturnOp(prv(voidVal, noTrace, type(void)), .K)
 
-     rule <k> TReturnOp(V:Val) => .K ...</k>
-          <elab>... .K => ReturnOp(V) </elab>
+     rule <k> TReturnOp(V:Val, Obj::K) => .K ...</k>
+          <elab>... .K => ReturnOp(V, Obj) </elab>
 
 endmodule
 

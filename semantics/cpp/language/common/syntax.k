@@ -209,7 +209,7 @@ module CPP-SYNTAX
                    | ExpressionStmt(Expr) [strict(c)]
                    | PRValExpressionStmt(Expr) [strict(c)]
                    | BreakStmt()
-                   | ReturnOp(Expr)
+                   | ReturnOp(init: Expr, obj: K)
                    | IfStmt(Decl, Stmt, Stmt)
                    | IfStmt(Expr, K, K)
                    | WhileStmt(Decl, Stmt)

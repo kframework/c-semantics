@@ -15,23 +15,30 @@ module CPP-EXECUTION-STMT-RETURN
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-EXECUTION-ENV-SYNTAX
      imports CPP-EXECUTION-FULL-EXPRESSION-SYNTAX
+     imports CPP-EXECUTION-STMT-BLOCK-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
      imports CPP-REFERENCE-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      // Return (from C++ function)
-     rule <k> ReturnOp(V::Expr) => prepareReturn(getReturnType(T), V) ...</k>
+     rule <k> ReturnOp(V::Expr, Obj::Expr) => prepareReturn(getReturnType(T), V, Obj) ...</k>
           <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(_, T::CPPType, _, _) ...</functions>
 
-     syntax KItem ::= prepareReturn(CPPType, K)
+     syntax KItem ::= prepareReturn(CPPType, K, KItem)
 
-     rule prepareReturn(T::CPPType, Init:KItem)
+     context prepareReturn(_, _, HOLE:Expr) [result(LV)]
+
+     rule <k> prepareReturn(T::CPPType, Init:KItem, Obj:LV)
           => Return'(Init, T)
+          ...</k>
+          <ret-constructed-temporary>
+               .K => lcentry(Obj, false, true, false)
+          </ret-constructed-temporary>
           requires notBool isCPPVoidType(T)
 
-     rule prepareReturn(t(... st: void) #as T::CPPType, V:PRVal) => Return''(V)
+     rule prepareReturn(t(... st: void) #as T::CPPType, V:PRVal, _) => Return''(V)
 
      syntax KItem ::= "Return'" "(" KItem "," CPPType ")" [strict(c; 1)]
 
@@ -66,6 +73,7 @@ module CPP-EXECUTION-STMT-RETURN
      // Return (to C++ function)
      rule <k> return(V:Val) ~> _
               => exitRestrictBlock(.Set)
+              ~> addToCT(LCE)
               ~> sequencePoint
               ~> V
               ~> K
@@ -73,6 +81,7 @@ module CPP-EXECUTION-STMT-RETURN
           (<function-control>
                <live-va-lists> .Set </live-va-lists>
                <block-stack> .List </block-stack>
+               <ret-constructed-temporary> LCE::KItem  </ret-constructed-temporary>
           ...</function-control> => C)
           <call-stack>
                ListItem(
@@ -85,5 +94,15 @@ module CPP-EXECUTION-STMT-RETURN
                     </call-stack-frame>
                ) => .List
           ...</call-stack>
+
+     syntax KItem ::= addToCT(K)
+
+     rule addToCT(.K) => .K
+
+     rule <k> addToCT(lcentry(Obj::LV, _, _, _)) => .K ...</k>
+          <constructed-temporaries> .List =>
+               ListItem(lcentry(Obj, true, true, false))
+          ...</constructed-temporaries>
+
 
 endmodule

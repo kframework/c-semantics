@@ -64,7 +64,7 @@ module C-TYPING-EFFECTIVE
           requires Loc =/=K NullPointer
      rule updateLastAccessVariant(Loc::SymLoc, _, _) => Loc [owise]
 
-     rule <k> getLastAccessType(loc(Base::SymBase, _, _:Set SetItem(objectType(T::Type))))
+     rule <k> getLastAccessType(loc(Base::SymBase, _, SetItem(objectType(T::EffectiveType)) _::Set))
                => fixFlexibleType(T, Len)
           ...</k>
           <mem>... Base |-> object(_, Len::Int, _) ...</mem>

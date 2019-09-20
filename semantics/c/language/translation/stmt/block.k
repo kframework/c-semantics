@@ -9,7 +9,7 @@ module C-STMT-BLOCK
      /*@ \fromStandard{\source[n1570]{\para{6.8.2}{2}}}{
      A \emph{compound statement} is a block.
      }*/
-     rule BlockStatement(Block(Tag:Int, _, B:KItem)) => Block(Tag, B)
+     rule BlockStatement(Block(Tag:Int, _, B:StrictList)) => Block(Tag, B)
 
      rule <k> popBlock => .K ...</k>
           <elab>... .K => popBlock </elab>

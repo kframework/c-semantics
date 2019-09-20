@@ -61,12 +61,12 @@ module C-PROMOTION
                andBool (notBool isIntegerUType(T) orBool isPromoted(T))
                andBool (notBool isIntegerUType(utype(L)) orBool isPromoted(utype(L)))
 
-     rule arithBinNonEqualityOp(te(V:K, T::UType), R:RValue) #as O:KItem
+     rule arithBinNonEqualityOp(te(V:KItem, T::UType), R:RValue) #as O:KItem
           => fillExpr(O, te(V, stripConstants(T)), R)
           requires fromConstantExpr(T) andBool notBool fromConstantExpr(R)
                andBool (notBool isIntegerUType(T) orBool isPromoted(T))
                andBool (notBool isIntegerUType(utype(R)) orBool isPromoted(utype(R)))
-     rule arithBinNonEqualityOp(L:RValue, te(V:K, T::UType)) #as O:KItem
+     rule arithBinNonEqualityOp(L:RValue, te(V:KItem, T::UType)) #as O:KItem
           => fillExpr(O, L, te(V, stripConstants(T)))
           requires fromConstantExpr(T) andBool notBool fromConstantExpr(L)
                andBool (notBool isIntegerUType(T) orBool isPromoted(T))

@@ -56,11 +56,19 @@ module CPP-EXECUTION-BINDING
           <this> _ => Obj </this>
 
      rule <k> beginConstruction(Obj:LVal, IsBaseClassSubobject:Bool) => Obj ...</k>
-          <constructing> _ => Obj </constructing>
-          <most-derived-class> MostDerived:K => #if IsBaseClassSubobject #then MostDerived #else type(Obj) #fi </most-derived-class>
+          <constructing> Old::K => Obj </constructing>
+          <constructing-history>
+               .List => ListItem(<constructing>Old</constructing>)
+          ...</constructing-history>
+          <most-derived-class>
+               MostDerived:K => #if IsBaseClassSubobject #then MostDerived #else type(Obj) #fi
+          </most-derived-class>
 
      rule <k> endConstruction(Obj:LVal, IsConstructor::Bool) => finishConstruction(Obj, IsConstructor) ...</k>
-          <constructing> _ => .K </constructing>
+          <constructing> _ => Old </constructing>
+          <constructing-history>
+               ListItem(<constructing> Old::K </constructing>) => .List
+          ...</constructing-history>
 
      rule <k> finishConstruction(Obj:LVal, IsConstructor:Bool) => Obj ...</k>
           <locally-constructed> .List =>
