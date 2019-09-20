@@ -389,7 +389,7 @@ module C-ABSTRACT-SYNTAX
 
      syntax CId ::= AnonymousName() [function, symbol]
 
-     syntax KItem ::= DefinitionLoc(KItem, CabsLoc) [symbol]
+     syntax KItem ::= DefinitionLoc(CabsLoc, KItem) [symbol]
      syntax KItem ::= DefinitionLocRange(KItem, CabsLoc, CabsLoc) [symbol]
      // this wraps all statements with their location in the original file
      syntax KItem ::= StatementLoc(KItem, CabsLoc) [symbol] // new
@@ -460,7 +460,7 @@ module C-ABSTRACT-REWRITING
 
      rule AnonymousName() => #NoName
 
-     rule DefinitionLoc(K:KItem, L::CabsLoc) => CodeLoc(K, L) [anywhere]
+     rule DefinitionLoc(L::CabsLoc, K:KItem) => CodeLoc(K, L) [anywhere]
      rule StatementLoc(K:KItem, L::CabsLoc) => CodeLoc(K, L) [anywhere]
 
      rule Conditional(K1:KItem, K2:KItem, K3:KItem) => K1 ? K2 : K3 [anywhere]

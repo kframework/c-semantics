@@ -510,7 +510,7 @@ and type_spec =
     | Tatomic (s, d)    -> kapply SpecifierElem "TAtomic" [specifier s KItem; decl_type d KItem]
 
 and definition : definition -> csort -> unit printer =
-  let definition_loc a l         = if l.lineno <> -10 then kapply KItem "DefinitionLoc" [a KItem; cabs_loc l CabsLoc] else a in
+  let definition_loc a l         = if l.lineno <> -10 then kapply KItem "DefinitionLoc" [cabs_loc l CabsLoc; a KItem] else a in
   let definition_loc_range a b c = kapply KItem "DefinitionLocRange" [a KItem; cabs_loc b CabsLoc; cabs_loc c CabsLoc] in
   let init_name (a, b)           = kapply KItem "InitName" [name a KItem; init_expression b K] in
   let init_name_group (a, b)     = kapply KItem "InitNameGroup" [specifier a KItem; list_of init_name b StrictList] in
