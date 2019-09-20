@@ -997,6 +997,13 @@ public:
     return true;
   }
 
+std::string ifc(std::string c, std::string cpp) {
+    std::string const result = cparser() ? (c + "_C-TYPING-SYNTAX") : cpp;
+    if (result == "")
+      throw std::logic_error("Unsupported type");
+    return result;
+  }
+
   bool VisitBuiltinType(BuiltinType *T) {
     if (!cparser())
       Kast::add(Kast::KApply("BuiltinType", Sort::ATYPE, {Sort::TYPESPECIFIER}));
@@ -1004,59 +1011,64 @@ public:
     std::string const type_name = [&]{
         switch(T->getKind()) {
           case BuiltinType::Void:
-            return "Void";
+            return ifc("void", "Void");
           case BuiltinType::Char_S:
           case BuiltinType::Char_U:
-            return "Char";
+            return ifc("char", "Char");
           case BuiltinType::WChar_S:
           case BuiltinType::WChar_U:
-            return "WChar";
+            return ifc("", "WChar");
           case BuiltinType::Char16:
-            return "Char16";
+            return ifc("", "Char16");
           case BuiltinType::Char32:
-            return "Char32";
+            return ifc("", "Char32");
           case BuiltinType::Bool:
-            return "Bool";
+            return ifc("bool", "Bool");
           case BuiltinType::UChar:
-            return "UChar";
+            return ifc("unsigned-char", "UChar");
           case BuiltinType::UShort:
-            return "UShort";
+            return ifc("unsigned-short-int", "UShort");
           case BuiltinType::UInt:
-            return "UInt";
+            return ifc("unsigned-int", "UInt");
           case BuiltinType::ULong:
-            return "ULong";
+            return ifc("unsigned-long-int", "ULong");
           case BuiltinType::ULongLong:
-            return "ULongLong";
+            return ifc("unsigned-long-long-int", "ULongLong");
           case BuiltinType::SChar:
-            return "SChar";
+            return ifc("signed-char", "SChar");
           case BuiltinType::Short:
-            return "Short";
+            return ifc("short-int", "Short");
           case BuiltinType::Int:
-            return "Int";
+            return ifc("int", "Int");
           case BuiltinType::Long:
-            return "Long";
+            return ifc("long-int", "Long");
           case BuiltinType::LongLong:
-            return "LongLong";
+            return ifc("long-long-int", "LongLong");
           case BuiltinType::Float:
-            return "Float";
+            return ifc("float", "Float");
           case BuiltinType::Double:
-            return "Double";
+            return ifc("double", "Double");
           case BuiltinType::LongDouble:
-            return "LongDouble";
+            return ifc("long-double", "LongDouble");
           case BuiltinType::Int128:
-            return "OversizedInt";
+            return ifc("oversized-int", "OversizedInt");
           case BuiltinType::UInt128:
-            return "OversizedUInt";
+            return ifc("unsigned-oversized-int", "OversizedUInt");
           case BuiltinType::Dependent:
-            return "Dependent";
+            return ifc("", "Dependent");
           case BuiltinType::NullPtr:
-            return "NullPtr";
+            return ifc("", "NullPtr");
           default:
             throw std::logic_error("unimplemented: basic type");
         }
     }();
 
-    Kast::add(Kast::KApply(type_name, Sort::TYPESPECIFIER));
+    if (cparser()) {
+      Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+      Kast::add(Kast::KApply(type_name, Sort::SIMPLETYPE));
+    } else {
+      Kast::add(Kast::KApply(type_name, Sort::TYPESPECIFIER));
+    }
     return false;
   }
 

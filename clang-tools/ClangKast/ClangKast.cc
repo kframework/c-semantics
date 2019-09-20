@@ -101,6 +101,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::QUALIFIER:             os << "Qualifier"; break;
     case Sort::REFQUALIFIER:          os << "RefQualifier"; break;
     case Sort::RESOLVEDEXPR:          os << "ResolvedExpr"; break;
+    case Sort::SIMPLETYPE:            os << "SimpleType"; break;
     case Sort::SPECIFIER:             os << "Specifier"; break;
     case Sort::STMT:                  os << "Stmt"; break;
     case Sort::STORAGECLASSSPECIFIER: os << "StorageClassSpecifier"; break;
@@ -111,6 +112,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::TEMPLATEARGUMENT:      os << "TemplateArgument"; break;
     case Sort::TEMPLATEPARAMETER:     os << "TemplateParameter"; break;
     case Sort::THIS:                  os << "This"; break;
+    case Sort::TYPE:                  os << "Type"; break;
     case Sort::TYPEID:                os << "TypeId"; break;
     case Sort::TYPESPECIFIER:         os << "TypeSpecifier"; break;
     case Sort::UNNAMEDCID:            os << "UnnamedCId"; break;
