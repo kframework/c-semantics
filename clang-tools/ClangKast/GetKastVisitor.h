@@ -1000,81 +1000,63 @@ public:
   bool VisitBuiltinType(BuiltinType *T) {
     if (!cparser())
       Kast::add(Kast::KApply("BuiltinType", Sort::ATYPE, {Sort::TYPESPECIFIER}));
-    switch (T->getKind()) {
-      case BuiltinType::Void:
-        Kast::add(Kast::KApply("Void", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::Char_S:
-      case BuiltinType::Char_U:
-        Kast::add(Kast::KApply("Char", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::WChar_S:
-      case BuiltinType::WChar_U:
-        Kast::add(Kast::KApply("WChar", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::Char16:
-        Kast::add(Kast::KApply("Char16", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::Char32:
-        Kast::add(Kast::KApply("Char32", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::Bool:
-        Kast::add(Kast::KApply("Bool", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::UChar:
-        Kast::add(Kast::KApply("UChar", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::UShort:
-        Kast::add(Kast::KApply("UShort", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::UInt:
-        Kast::add(Kast::KApply("UInt", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::ULong:
-        Kast::add(Kast::KApply("ULong", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::ULongLong:
-        Kast::add(Kast::KApply("ULongLong", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::SChar:
-        Kast::add(Kast::KApply("SChar", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::Short:
-        Kast::add(Kast::KApply("Short", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::Int:
-        Kast::add(Kast::KApply("Int", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::Long:
-        Kast::add(Kast::KApply("Long", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::LongLong:
-        Kast::add(Kast::KApply("LongLong", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::Float:
-        Kast::add(Kast::KApply("Float", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::Double:
-        Kast::add(Kast::KApply("Double", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::LongDouble:
-        Kast::add(Kast::KApply("LongDouble", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::Int128:
-        Kast::add(Kast::KApply("OversizedInt", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::UInt128:
-        Kast::add(Kast::KApply("OversizedUInt", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::Dependent:
-        Kast::add(Kast::KApply("Dependent", Sort::TYPESPECIFIER));
-        break;
-      case BuiltinType::NullPtr:
-        Kast::add(Kast::KApply("NullPtr", Sort::TYPESPECIFIER));
-        break;
-      default:
-        throw std::logic_error("unimplemented: basic type");
-    }
+
+    std::string const type_name = [&]{
+        switch(T->getKind()) {
+          case BuiltinType::Void:
+            return "Void";
+          case BuiltinType::Char_S:
+          case BuiltinType::Char_U:
+            return "Char";
+          case BuiltinType::WChar_S:
+          case BuiltinType::WChar_U:
+            return "WChar";
+          case BuiltinType::Char16:
+            return "Char16";
+          case BuiltinType::Char32:
+            return "Char32";
+          case BuiltinType::Bool:
+            return "Bool";
+          case BuiltinType::UChar:
+            return "UChar";
+          case BuiltinType::UShort:
+            return "UShort";
+          case BuiltinType::UInt:
+            return "UInt";
+          case BuiltinType::ULong:
+            return "ULong";
+          case BuiltinType::ULongLong:
+            return "ULongLong";
+          case BuiltinType::SChar:
+            return "SChar";
+          case BuiltinType::Short:
+            return "Short";
+          case BuiltinType::Int:
+            return "Int";
+          case BuiltinType::Long:
+            return "Long";
+          case BuiltinType::LongLong:
+            return "LongLong";
+          case BuiltinType::Float:
+            return "Float";
+          case BuiltinType::Double:
+            return "Double";
+          case BuiltinType::LongDouble:
+            return "LongDouble";
+          case BuiltinType::Int128:
+            return "OversizedInt";
+          case BuiltinType::UInt128:
+            return "OversizedUInt";
+          case BuiltinType::Dependent:
+            return "Dependent";
+          case BuiltinType::NullPtr:
+            return "NullPtr";
+          default:
+            throw std::logic_error("unimplemented: basic type");
+        }
+    }();
+
+    Kast::add(Kast::KApply(type_name, Sort::TYPESPECIFIER));
     return false;
   }
 
