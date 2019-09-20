@@ -218,6 +218,7 @@ module C-ABSTRACT-SYNTAX
      syntax KItem ::= FunctionDefinition(KItem, KItem) [strict(1), symbol]
      syntax KItem ::= DeclarationDefinition(KItem) [symbol]
      syntax KItem ::= Typedef(KItem) [symbol]
+     syntax KItem ::= TypedefDecl(KItem, KItem) [symbol]
      syntax KItem ::= OnlyTypedef(KItem) [symbol]
      syntax KItem ::= GlobAsm(String) [symbol]
      syntax KItem ::= Pragma(KItem) [symbol]

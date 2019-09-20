@@ -79,7 +79,10 @@ public:
 
     // For TranslationUnit, getLocation() is empty.
     if (D->getKind() != Decl::TranslationUnit) {
-      Kast::add(Kast::KApply("DeclLoc", Sort::DECL, {Sort::CABSLOC, Sort::DECL}));
+      if (cparser())
+        Kast::add(Kast::KApply("DefinitionLoc", Sort::KITEM, {Sort::CABSLOC, Sort::KITEM}));
+      else
+        Kast::add(Kast::KApply("DeclLoc", Sort::DECL, {Sort::CABSLOC, Sort::DECL}));
       CabsLoc(D->getLocation());
     }
 
@@ -153,6 +156,10 @@ public:
     return false;
   }
 
+  static void strictlist() {
+    Kast::add(Kast::KApply("list", Sort::STRICTLIST, {Sort::LIST}));
+  }
+
   bool TraverseDeclContextNode(DeclContext *D) {
     for (clang::Decl * d : D->decls()) {
       if (!excludedDecl(d)) TRY_TO(TraverseDecl(d));
@@ -162,14 +169,18 @@ public:
 
   bool VisitTranslationUnitDecl(TranslationUnitDecl *D) {
     if (cparser())
-      Kast::add(Kast::KApply("TranslationUnit", Sort::KITEM, {Sort::STRING, Sort::LIST, Sort::LIST}));
+      Kast::add(Kast::KApply("TranslationUnit", Sort::KITEM, {Sort::STRING, Sort::STRICTLIST, Sort::STRICTLIST}));
     else
       Kast::add(Kast::KApply("TranslationUnit", Sort::DECL, {Sort::STRING, Sort::LIST}));
 
     Kast::add(Kast::KToken(InFile));
-    if (cparser())
+    if (cparser()) {
+      strictlist();
       Kast::add(Kast::KApply(".List", Sort::LIST));
+    }
 
+    if (cparser())
+      strictlist();
     DeclContext(D);
     return false;
   }
@@ -987,7 +998,8 @@ public:
   }
 
   bool VisitBuiltinType(BuiltinType *T) {
-    Kast::add(Kast::KApply("BuiltinType", Sort::ATYPE, {Sort::TYPESPECIFIER}));
+    if (!cparser())
+      Kast::add(Kast::KApply("BuiltinType", Sort::ATYPE, {Sort::TYPESPECIFIER}));
     switch (T->getKind()) {
       case BuiltinType::Void:
         Kast::add(Kast::KApply("Void", Sort::TYPESPECIFIER));

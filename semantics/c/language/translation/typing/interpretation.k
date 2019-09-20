@@ -237,6 +237,11 @@ module C-TYPING-INTERPRETATION
      rule Typedef(NameGroup(_:Type, list(.List))) => .K
           [structural]
 
+     context TypedefDecl(_, HOLE:KItem)
+
+     rule TypedefDecl(K:KItem, T:Type)
+          => defineType(SingleName(T, K))
+
      syntax KItem ::= defineType(KItem) [strict]
      rule defineType(typedDeclaration(T:Type, X:CId))
           => typedef(X, T)
