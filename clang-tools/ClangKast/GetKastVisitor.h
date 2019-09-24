@@ -186,7 +186,12 @@ public:
   }
 
   bool VisitTypedefDecl(TypedefDecl *D) {
-    Kast::add(Kast::KApply("TypedefDecl", Sort::DECL, {Sort::CID, Sort::ATYPE}));
+    if (cparser()) {
+      Kast::add(Kast::KApply("defineType", Sort::KITEM, {Sort::KITEM}));
+      Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::KITEM}));
+    } else {
+      Kast::add(Kast::KApply("TypedefDecl", Sort::DECL, {Sort::CID, Sort::ATYPE}));
+    }
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
     return false;
   }
@@ -520,6 +525,28 @@ public:
   }
 
   bool TraverseVarHelper(VarDecl *D) {
+    return cparser()? TraverseVarHelper_c(D) : TraverseVarHelper_cpp(D);
+  }
+
+  static bool isEmpty(std::unique_ptr<Kast::Node> const &p) {
+    return !p;
+  }
+  bool TraverseVarHelper_c(VarDecl *D) {
+    Kast::add(Kast::KApply("declare", Sort::KITEM, {Sort::KITEM, Sort::K}));
+    Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::KITEM}));
+    TRY_TO(TraverseDeclarationName(D->getDeclName()));
+    StorageClass(D->getStorageClass());
+    ThreadStorageClass(D->getTSCSpec());
+    TRY_TO(TraverseType(D->getType()));
+    if (D->getInit()) {
+      TRY_TO(TraverseStmt(D->getInit()));
+    } else {
+      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+    }
+    return true;
+  }
+
+  bool TraverseVarHelper_cpp(VarDecl *D) {
     StorageClass(D->getStorageClass());
     ThreadStorageClass(D->getTSCSpec());
     if (D->isConstexpr()) {
@@ -1073,7 +1100,14 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitPointerType(clang::PointerType *T) {
-    Kast::add(Kast::KApply("PointerType", Sort::ATYPE, {Sort::ATYPE}));
+    if (cparser()) {
+      Kast::add(Kast::KApply("PointerType", Sort::KITEM, {Sort::SPECIFIER, Sort::KITEM}));
+      Kast::add(Kast::KApply("Specifier", Sort::SPECIFIER, {Sort::STRICTLIST}));
+      strictlist();
+      Kast::add(Kast::KApply(".List", Sort::LIST));
+    }
+    else
+      Kast::add(Kast::KApply("PointerType", Sort::ATYPE, {Sort::ATYPE}));
     return false;
   }
 
@@ -2235,6 +2269,11 @@ private:
     Kast::add(Kast::KApply("Specifier", Sort::DECL, {Sort::SPECIFIER, Sort::DECL}));
   }
 
+  void addStorage(const char *str) {
+    Kast::add(Kast::KApply("addStorage", Sort::TYPE, {Sort::STORAGECLASSSPECIFIER, Sort::TYPE}));
+    Kast::add(Kast::KApply(str, Sort::STORAGECLASSSPECIFIER));
+  }
+
   void Specifier(const char *str, Sort sort) {
     Specifier();
     Kast::add(Kast::KApply(str, sort));
@@ -2278,39 +2317,81 @@ private:
 
   void StmtChildren(Stmt *S) {
     int i = 0;
+    // can we use 'std::distance'?
     for (Stmt::child_iterator iter = S->child_begin(), end = S->child_end(); iter != end; ++i, ++iter);
     KSeqList(i);
   }
 
+  std::unique_ptr<Kast::Node> getSC(StorageClass sc) {
+    switch (sc) {
+      case StorageClass::SC_None:
+        return {};
+      case StorageClass::SC_Extern:
+        return std::make_unique<Kast::KApply>("Extern", Sort::STORAGECLASSSPECIFIER);
+      case StorageClass::SC_Static:
+        return std::make_unique<Kast::KApply>("Static", Sort::STORAGECLASSSPECIFIER);
+      case StorageClass::SC_Register:
+        return std::make_unique<Kast::KApply>("Register", Sort::STORAGECLASSSPECIFIER);
+      case StorageClass::SC_Auto:
+        return std::make_unique<Kast::KApply>("Auto", Sort::AUTOSPECIFIER);
+      default:
+        throw std::logic_error("unimplemented: storage class");
+    }
+
+  }
+
   void StorageClass(StorageClass sc) {
-    const char *spec;
     switch (sc) {
       case StorageClass::SC_None:
         return;
       case StorageClass::SC_Extern:
-        Specifier("Extern", Sort::STORAGECLASSSPECIFIER);
+        if (cparser())
+          addStorage("Extern");
+        else
+          Specifier("Extern", Sort::STORAGECLASSSPECIFIER);
         break;
       case StorageClass::SC_Static:
-        Specifier("Static", Sort::STORAGECLASSSPECIFIER);
+        if (cparser())
+          addStorage("Static");
+        else
+          Specifier("Static", Sort::STORAGECLASSSPECIFIER);
         break;
       case StorageClass::SC_Register:
-        Specifier("Register", Sort::STORAGECLASSSPECIFIER);
+        if (cparser())
+          addStorage("Register");
+        else
+          Specifier("Register", Sort::STORAGECLASSSPECIFIER);
         break;
       case StorageClass::SC_Auto:
-        Specifier("Auto", Sort::AUTOSPECIFIER);
+        if (cparser())
+          addStorage("Auto");
+        else
+          Specifier("Auto", Sort::AUTOSPECIFIER);
         break;
       default:
         throw std::logic_error("unimplemented: storage class");
     }
   }
 
+  std::unique_ptr<Kast::Node> getTSC(ThreadStorageClassSpecifier sc) {
+    switch (sc) {
+      case ThreadStorageClassSpecifier::TSCS_unspecified:
+        return nullptr;
+      case ThreadStorageClassSpecifier::TSCS_thread_local:
+        return std::make_unique<Kast::KApply>("ThreadLocal", Sort::STORAGECLASSSPECIFIER);
+      default:
+        throw std::logic_error("unimplemented: thread storage class");
+    }
+  }
   void ThreadStorageClass(ThreadStorageClassSpecifier sc) {
-    const char *spec;
     switch (sc) {
       case ThreadStorageClassSpecifier::TSCS_unspecified:
         return;
       case ThreadStorageClassSpecifier::TSCS_thread_local:
-        Specifier("ThreadLocal", Sort::STORAGECLASSSPECIFIER);
+        if (cparser())
+          addStorage("ThreadLocal");
+        else
+          Specifier("ThreadLocal", Sort::STORAGECLASSSPECIFIER);
         break;
       default:
         throw std::logic_error("unimplemented: thread storage class");
@@ -2323,7 +2404,11 @@ private:
   }
 
   void Qualifier(const char * str) {
-    Kast::add(Kast::KApply("Qualifier", Sort::ATYPE, {Sort::QUALIFIER, Sort::ATYPE}));
+    if (cparser()) {
+      Kast::add(Kast::KApply("addQualifier", Sort::TYPE, {Sort::QUALIFIER, Sort::TYPE}));
+    } else {
+      Kast::add(Kast::KApply("Qualifier", Sort::ATYPE, {Sort::QUALIFIER, Sort::ATYPE}));
+    }
     Kast::add(Kast::KApply(str, Sort::QUALIFIER));
   }
 

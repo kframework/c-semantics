@@ -314,16 +314,12 @@ void Kast::KSequence::print(Sort parentSort, function<void (Sort)> printChild) c
 
 // *** Kast ***
 
-template <class T>
-void Kast::add(const T & node) {
-  static_assert(std::is_base_of<Kast::Node, T>::value, "type parameter must derive from Kast::Node");
-  Kast::Nodes.push_back(make_unique<T>(node));
-}
 
 void Kast::print() { print(Sort::K, 0); }
 
 int Kast::print(Sort parentSort, int idx) {
-  if (!Nodes[idx]) throw logic_error("parse error");
+  if (idx >= Nodes.size() || !Nodes[idx])
+    throw logic_error("parse error");
 
   Nodes[idx]->print(parentSort, [&idx](Sort sort) { idx = print(sort, idx + 1); });
 
