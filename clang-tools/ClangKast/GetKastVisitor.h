@@ -2057,9 +2057,16 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseFloatingLiteral(FloatingLiteral *Constant) {
-    Kast::add(Kast::KApply("FloatingLiteral", Sort::EXPR, {Sort::FLOAT, Sort::ATYPE}));
-    VisitAPFloat(Constant->getValue());
-    TRY_TO(TraverseType(Constant->getType()));
+    if (cparser()) {
+      Kast::add(Kast::KApply("tv", Sort::RVALUE, {Sort::CVALUE, Sort::UTYPE}));
+      VisitAPFloat(Constant->getValue());
+      Kast::add(Kast::KApply("utype", Sort::UTYPE, {Sort::TYPE}));
+      TRY_TO(TraverseType(Constant->getType()));
+    } else {
+      Kast::add(Kast::KApply("FloatingLiteral", Sort::EXPR, {Sort::FLOAT, Sort::ATYPE}));
+      VisitAPFloat(Constant->getValue());
+      TRY_TO(TraverseType(Constant->getType()));
+    }
     return true;
   }
 
