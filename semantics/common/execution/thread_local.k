@@ -92,9 +92,8 @@ module COMMON-THREAD-LOCAL
             <loop-stack color="violet">
                            .List
             </loop-stack>
-            <locs-written color="lightgray">
-                           .Set
-            </locs-written>
+            <locs-written color="lightgray"> .Set </locs-written>
+            <locs-read color="lightgray"> .Set </locs-read>
 
             // Used to catch potential stack size overflows.
             <stack-depth> 0 </stack-depth>

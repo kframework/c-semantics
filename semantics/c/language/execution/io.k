@@ -51,14 +51,14 @@ module C-IO
           <locs-written>
                Locs::Set (.Set => SetItem(Loc))
           </locs-written>
-          requires notBool Loc in Locs
+          <locs-read> LocsRead::Set </locs-read>
+          requires notBool (Loc in Locs)
+               andBool notBool (Loc in LocsRead)
           [structural]
-     rule <k> (.K => UNDEF("EIO8",
-               "Unsequenced side effect on scalar object with side effect of same object.") )
-               ~> checkSeq(Loc::SymLoc)
-          ...</k>
+     rule <k> checkSeq(Loc::SymLoc) => errorUnseqEffects ...</k>
           <locs-written> Locs::Set </locs-written>
-          requires Loc in Locs
+          <locs-read> LocsRead::Set </locs-read>
+          requires (Loc in Locs) orBool (Loc in LocsRead)
           [structural]
 
      syntax KItem ::= checkWrite(SymLoc)
@@ -150,6 +150,7 @@ module C-IO
                Base |-> object(ObjT::EffectiveType, Len::Int, M::Array)
           ...</mem>
           <locs-written> Locs::Set </locs-written>
+          <locs-read> _::Set (.Set => SetItem(stripProv(Loc))) </locs-read>
           <buffer> Mem::List </buffer>
           requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
                     andBool (ThreadId =/=K getThreadId(Loc)))
@@ -160,6 +161,7 @@ module C-IO
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
           <locs-written> Locs::Set </locs-written>
+          <locs-read> _::Set (.Set => SetItem(stripProv(Loc))) </locs-read>
           <buffer> Mem::List </buffer>
           requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
                     andBool (ThreadId =/=K getThreadId(Loc)))
