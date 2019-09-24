@@ -326,13 +326,15 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax Bool ::= hasInit(CId, Map) [function]
 
-     rule hasInit(X:CId, X |-> M::Map _) => notBool isNoInit(M)
+     rule hasInit(X:CId, (X |-> M:Map) _) => #hasInit(M)
 
-     syntax Bool ::= isNoInit(Map) [function]
+     rule hasInit(_, _) => false [owise]
 
-     rule isNoInit(_ |-> (_, NoInit())) => true
+     syntax Bool ::= #hasInit(Map) [function]
 
-     rule isNoInit(_ |-> _) => false [owise]
+     rule #hasInit(_ |-> (_, NoInit())) => false
+
+     rule #hasInit(_) => true [owise]
 
      syntax Expr ::= classAggInit(base: LVal, fields: List, initList: List, initializers: Map, class: Class, initExp: K, ctype: ConstructorType, duration: Duration)
 

@@ -2,14 +2,14 @@
 def img
 
 pipeline {
-  agent none 
+  agent none
   options {
     ansiColor('xterm')
   }
   stages {
     stage ( 'Pull Request' ) {
       agent any
-      when { 
+      when {
         changeRequest()
         beforeAgent true
       }
