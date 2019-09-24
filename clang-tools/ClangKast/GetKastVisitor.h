@@ -2003,23 +2003,28 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitStringLiteral(StringLiteral *Constant) {
-    Kast::add(Kast::KApply("StringLiteral", Sort::EXPR, {Sort::CHARKIND, Sort::STRING}));
-    switch (Constant->getKind()) {
-      case StringLiteral::Ascii:
-        Kast::add(Kast::KApply("Ascii", Sort::CHARKIND));
-        break;
-      case StringLiteral::Wide:
-        Kast::add(Kast::KApply("Wide", Sort::CHARKIND));
-        break;
-      case StringLiteral::UTF8:
-        Kast::add(Kast::KApply("UTF8", Sort::CHARKIND));
-        break;
-      case StringLiteral::UTF16:
-        Kast::add(Kast::KApply("UTF16", Sort::CHARKIND));
-        break;
-      case StringLiteral::UTF32:
-        Kast::add(Kast::KApply("UTF32", Sort::CHARKIND));
-        break;
+    if (cparser()) {
+      Kast::add(Kast::KApply("StringLiteral", Sort::EXPR, {Sort::STRING}));
+    }
+    else {
+      Kast::add(Kast::KApply("StringLiteral", Sort::EXPR, {Sort::CHARKIND, Sort::STRING}));
+      switch (Constant->getKind()) {
+        case StringLiteral::Ascii:
+          Kast::add(Kast::KApply("Ascii", Sort::CHARKIND));
+          break;
+        case StringLiteral::Wide:
+          Kast::add(Kast::KApply("Wide", Sort::CHARKIND));
+          break;
+        case StringLiteral::UTF8:
+          Kast::add(Kast::KApply("UTF8", Sort::CHARKIND));
+          break;
+        case StringLiteral::UTF16:
+          Kast::add(Kast::KApply("UTF16", Sort::CHARKIND));
+          break;
+        case StringLiteral::UTF32:
+          Kast::add(Kast::KApply("UTF32", Sort::CHARKIND));
+          break;
+      }
     }
     StringRef str = Constant->getBytes();
     VisitStringRef(str);
@@ -2027,7 +2032,7 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitCharacterLiteral(CharacterLiteral *Constant) {
-    if (cparser) {
+    if (cparser()) {
       Kast::add(Kast::KApply("CharLiteral", Sort::CONSTANT, {Sort::INT}));
     } else {
       Kast::add(Kast::KApply("CharacterLiteral", Sort::EXPR, {Sort::CHARKIND, Sort::INT}));
