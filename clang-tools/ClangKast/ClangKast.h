@@ -25,6 +25,7 @@ enum class Sort {
   CID,
   CLASSKEY,
   CTORINIT,
+  CVALUE,
   DECL,
   DECLARATOR,
   DESTRUCTORID,
@@ -40,6 +41,7 @@ enum class Sort {
   K,
   KITEM,
   LIST,
+  MODIFIER,
   NAME,
   NAMESPACE,
   NNS,
@@ -49,7 +51,10 @@ enum class Sort {
   QUALIFIER,
   REFQUALIFIER,
   RESOLVEDEXPR,
+  RVALUE,
+  SET,
   SIMPLETYPE,
+  SIMPLEUTYPE,
   SPECIFIER,
   STMT,
   STORAGECLASSSPECIFIER,
@@ -64,6 +69,7 @@ enum class Sort {
   TYPEID,
   TYPESPECIFIER,
   UNNAMEDCID,
+  UTYPE,
 };
 
 std::ostream& operator<<(std::ostream & os, const Sort & sort);

@@ -77,6 +77,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::CID:                   os << "CId"; break;
     case Sort::CLASSKEY:              os << "ClassKey"; break;
     case Sort::CTORINIT:              os << "CtorInit"; break;
+    case Sort::CVALUE:                os << "CValue"; break;
     case Sort::DECLARATOR:            os << "Declarator"; break;
     case Sort::DECL:                  os << "Decl"; break;
     case Sort::DESTRUCTORID:          os << "DestructorId"; break;
@@ -92,6 +93,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::KITEM:                 os << "KItem"; break;
     case Sort::K:                     os << "K"; break;
     case Sort::LIST:                  os << "List"; break;
+    case Sort::MODIFIER:              os << "Modifier"; break;
     case Sort::NAME:                  os << "Name"; break;
     case Sort::NAMESPACE:             os << "Namespeace"; break;
     case Sort::NNS:                   os << "NNS"; break;
@@ -101,7 +103,10 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::QUALIFIER:             os << "Qualifier"; break;
     case Sort::REFQUALIFIER:          os << "RefQualifier"; break;
     case Sort::RESOLVEDEXPR:          os << "ResolvedExpr"; break;
+    case Sort::RVALUE:                os << "RValue"; break;
+    case Sort::SET:                   os << "Set"; break;
     case Sort::SIMPLETYPE:            os << "SimpleType"; break;
+    case Sort::SIMPLEUTYPE:           os << "SimpleUType"; break;
     case Sort::SPECIFIER:             os << "Specifier"; break;
     case Sort::STMT:                  os << "Stmt"; break;
     case Sort::STORAGECLASSSPECIFIER: os << "StorageClassSpecifier"; break;
@@ -116,6 +121,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::TYPEID:                os << "TypeId"; break;
     case Sort::TYPESPECIFIER:         os << "TypeSpecifier"; break;
     case Sort::UNNAMEDCID:            os << "UnnamedCId"; break;
+    case Sort::UTYPE:                 os << "UType"; break;
   }
   if (Kore) os << "{}";
   return os;

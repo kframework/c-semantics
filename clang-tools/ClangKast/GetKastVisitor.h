@@ -62,8 +62,10 @@ public:
 
     if (Expr *E = dyn_cast<Expr>(S)) {
       if (!dyn_cast<CXXDefaultArgExpr>(S)) {
-        Kast::add(Kast::KApply("ExprLoc", Sort::EXPRLOC, {Sort::CABSLOC, Sort::EXPR}));
-        CabsLoc(E->getExprLoc());
+        if (!cparser()) {
+          Kast::add(Kast::KApply("ExprLoc", Sort::EXPRLOC, {Sort::CABSLOC, Sort::EXPR}));
+          CabsLoc(E->getExprLoc());
+        }
       }
     }
     return RecursiveASTVisitor::TraverseStmt(S);
@@ -539,6 +541,7 @@ public:
     ThreadStorageClass(D->getTSCSpec());
     TRY_TO(TraverseType(D->getType()));
     if (D->getInit()) {
+      Kast::add(Kast::KApply("SingleInit", Sort::KITEM, {Sort::KITEM}));
       TRY_TO(TraverseStmt(D->getInit()));
     } else {
       Kast::add(Kast::KApply("NoInit", Sort::INIT));
@@ -2040,9 +2043,16 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseIntegerLiteral(IntegerLiteral *Constant) {
-    Kast::add(Kast::KApply("IntegerLiteral", Sort::EXPR, {Sort::INT, Sort::ATYPE}));
-    VisitAPInt(Constant->getValue());
-    TRY_TO(TraverseType(Constant->getType()));
+    if (cparser()) {
+      Kast::add(Kast::KApply("tv", Sort::RVALUE, {Sort::CVALUE, Sort::UTYPE}));
+      VisitAPInt(Constant->getValue());
+      Kast::add(Kast::KApply("utype", Sort::UTYPE, {Sort::TYPE}));
+      TRY_TO(TraverseType(Constant->getType()));
+    } else {
+      Kast::add(Kast::KApply("IntegerLiteral", Sort::EXPR, {Sort::INT, Sort::ATYPE}));
+      VisitAPInt(Constant->getValue());
+      TRY_TO(TraverseType(Constant->getType()));
+    }
     return true;
   }
 
