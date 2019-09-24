@@ -76,6 +76,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::CHARKIND:              os << "CharKind"; break;
     case Sort::CID:                   os << "CId"; break;
     case Sort::CLASSKEY:              os << "ClassKey"; break;
+    case Sort::CONSTANT:              os << "Constant"; break;
     case Sort::CTORINIT:              os << "CtorInit"; break;
     case Sort::CVALUE:                os << "CValue"; break;
     case Sort::DECLARATOR:            os << "Declarator"; break;

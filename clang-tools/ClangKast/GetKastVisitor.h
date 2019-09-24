@@ -1027,8 +1027,15 @@ public:
     return true;
   }
 
+  std::string appendModuleName(std::string c) {
+    if (c == "signed-char" || c == "unsigned-char" || c == "char")
+      return c + "_C-TYPING-MACROS-SYNTAX";
+
+    return c + "_C-TYPING-SYNTAX";
+  }
+
 std::string ifc(std::string c, std::string cpp) {
-    std::string const result = cparser() ? (c + "_C-TYPING-SYNTAX") : cpp;
+    std::string const result = cparser() ? appendModuleName(c) : cpp;
     if (result == "")
       throw std::logic_error("Unsupported type");
     return result;
@@ -2020,23 +2027,27 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitCharacterLiteral(CharacterLiteral *Constant) {
-    Kast::add(Kast::KApply("CharacterLiteral", Sort::EXPR, {Sort::CHARKIND, Sort::INT}));
-    switch (Constant->getKind()) {
-      case CharacterLiteral::Ascii:
-        Kast::add(Kast::KApply("Ascii", Sort::CHARKIND));
-        break;
-      case CharacterLiteral::Wide:
-        Kast::add(Kast::KApply("Wide", Sort::CHARKIND));
-        break;
-      case CharacterLiteral::UTF8:
-        Kast::add(Kast::KApply("UTF8", Sort::CHARKIND));
-        break;
-      case CharacterLiteral::UTF16:
-        Kast::add(Kast::KApply("UTF16", Sort::CHARKIND));
-        break;
-      case CharacterLiteral::UTF32:
-        Kast::add(Kast::KApply("UTF32", Sort::CHARKIND));
-        break;
+    if (cparser) {
+      Kast::add(Kast::KApply("CharLiteral", Sort::CONSTANT, {Sort::INT}));
+    } else {
+      Kast::add(Kast::KApply("CharacterLiteral", Sort::EXPR, {Sort::CHARKIND, Sort::INT}));
+      switch (Constant->getKind()) {
+        case CharacterLiteral::Ascii:
+          Kast::add(Kast::KApply("Ascii", Sort::CHARKIND));
+          break;
+        case CharacterLiteral::Wide:
+          Kast::add(Kast::KApply("Wide", Sort::CHARKIND));
+          break;
+        case CharacterLiteral::UTF8:
+          Kast::add(Kast::KApply("UTF8", Sort::CHARKIND));
+          break;
+        case CharacterLiteral::UTF16:
+          Kast::add(Kast::KApply("UTF16", Sort::CHARKIND));
+          break;
+        case CharacterLiteral::UTF32:
+          Kast::add(Kast::KApply("UTF32", Sort::CHARKIND));
+          break;
+      }
     }
     Kast::add(Kast::KToken(Constant->getValue()));
     return false;

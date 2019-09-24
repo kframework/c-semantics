@@ -24,6 +24,7 @@ enum class Sort {
   CHARKIND,
   CID,
   CLASSKEY,
+  CONSTANT,
   CTORINIT,
   CVALUE,
   DECL,
