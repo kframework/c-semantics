@@ -27,13 +27,13 @@ pipeline {
             img = docker.build "c-semantics:${env.CHANGE_ID}"
           }
         } }
-        stage ( 'Push to private registry' ) { steps {
-          script {
-            docker.withRegistry ( "${PRIVATE_REGISTRY}", 'rvdockerhub' ) {
-              img.push()
-            }
-          }
-        } }
+        // stage ( 'Push to private registry' ) { steps {
+        //   script {
+        //     docker.withRegistry ( "${PRIVATE_REGISTRY}", 'rvdockerhub' ) {
+        //       img.push()
+        //     }
+        //   }
+        // } }
         stage ( 'Compile' ) {
           options {
             timeout(time: 70, unit: 'MINUTES')
