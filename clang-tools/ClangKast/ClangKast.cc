@@ -82,6 +82,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::DECLARATOR:            os << "Declarator"; break;
     case Sort::DECL:                  os << "Decl"; break;
     case Sort::DESTRUCTORID:          os << "DestructorId"; break;
+    case Sort::DTYPE:                 os << "DType"; break;
     case Sort::ENUMERATOR:            os << "Enumerator"; break;
     case Sort::EXCEPTIONSPEC:         os << "ExceptionSpec"; break;
     case Sort::EXPRESSIONLIST:        os << "ExpressionList"; break;
@@ -106,6 +107,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::RESOLVEDEXPR:          os << "ResolvedExpr"; break;
     case Sort::RVALUE:                os << "RValue"; break;
     case Sort::SET:                   os << "Set"; break;
+    case Sort::SIMPLEFUNCTIONTYPE:    os << "SimpleFunctionType"; break;
     case Sort::SIMPLETYPE:            os << "SimpleType"; break;
     case Sort::SIMPLEUTYPE:           os << "SimpleUType"; break;
     case Sort::SPECIFIER:             os << "Specifier"; break;

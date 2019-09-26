@@ -369,7 +369,22 @@ public:
     return true;
   }
 
-  bool TraverseFunctionHelper(FunctionDecl *D) {
+  bool TraverseFunctionHelper(FunctionDecl *D){
+    return cparser()? TraverseFunctionHelper_c(D) : TraverseFunctionHelper_cpp(D);
+  }
+
+  bool TraverseFunctionHelper_c(FunctionDecl *D){
+    if (D->isThisDeclarationADefinition()) {
+      Kast::add(Kast::KApply("FunctionDefinition", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+      Kast::add(Kast::KApply("typedDeclaration", Sort::DTYPE, {Sort::TYPE, Sort::CID}));
+      TRY_TO(TraverseType(D->getType()));
+      TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
+      TRY_TO(TraverseStmt(D->getBody()));
+    }
+    return true;
+  }
+
+  bool TraverseFunctionHelper_cpp(FunctionDecl *D) {
     if (const FunctionTemplateSpecializationInfo *FTSI =
             D->getTemplateSpecializationInfo()) {
       if (FTSI->getTemplateSpecializationKind() == TSK_ExplicitSpecialization) {
@@ -416,6 +431,7 @@ public:
     if (D->isInlineSpecified()) {
       Specifier("Inline", Sort::FUNCTIONSPECIFIER);
     }
+
     if (D->isConstexpr()) {
       Specifier("Constexpr", Sort::SPECIFIER);
     }
@@ -425,7 +441,6 @@ public:
     } else {
       Kast::add(Kast::KApply("FunctionDecl", Sort::DECLARATOR, {Sort::NNS, Sort::CID, Sort::CID, Sort::ATYPE, Sort::LIST}));
     }
-
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
 
@@ -987,6 +1002,22 @@ public:
   }
 
   bool TraverseFunctionProtoType(FunctionProtoType *T) {
+    return cparser()? TraverseFunctionProtoType_c(T) : TraverseFunctionProtoType_cpp(T);
+  }
+
+  bool TraverseFunctionProtoType_c(FunctionProtoType *T) {
+    Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+    Kast::add(Kast::KApply("functionType", Sort::SIMPLEFUNCTIONTYPE, {Sort::UTYPE, Sort::LIST}));
+    Kast::add(Kast::KApply("utype", Sort::UTYPE, {Sort::TYPE}));
+    TRY_TO(TraverseType(T->getReturnType()));
+    KSeqList(T->getNumParams());
+    for (unsigned i = 0; i < T->getNumParams(); i++) {
+      TRY_TO(TraverseType(T->getParamType(i)));
+    }
+    return true;
+  }
+
+  bool TraverseFunctionProtoType_cpp(FunctionProtoType *T) {
     Kast::add(Kast::KApply("FunctionPrototype", Sort::ATYPE, {Sort::ATYPE, Sort::STRICTLIST, Sort::EXCEPTIONSPEC, Sort::BOOL}));
 
     TRY_TO(TraverseType(T->getReturnType()));
@@ -1335,9 +1366,16 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitReturnStmt(ReturnStmt *S) {
-    Kast::add(Kast::KApply("ReturnStmt", Sort::STMT, {Sort::INIT}));
+    if (cparser())
+      Kast::add(Kast::KApply("Return", Sort::KITEM, {Sort::K}));
+    else
+      Kast::add(Kast::KApply("ReturnStmt", Sort::STMT, {Sort::INIT}));
+
     if (!S->getRetValue()) {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      if (cparser())
+        Kast::add(Kast::KApply("NothingExpression", Sort::KITEM));
+      else
+        Kast::add(Kast::KApply("NoInit", Sort::INIT));
     }
     return false;
   }
@@ -1347,8 +1385,16 @@ std::string ifc(std::string c, std::string cpp) {
     return false;
   }
 
+  unsigned blockNumber = 1;
+
   bool VisitCompoundStmt(CompoundStmt *S) {
-    Kast::add(Kast::KApply("CompoundAStmt", Sort::ASTMT, {Sort::LIST}));
+    if (cparser()) {
+      Kast::add(Kast::KApply("Block", Sort::KITEM, {Sort::INT, Sort::STRICTLIST}));
+      Kast::add(Kast::KToken(blockNumber++));
+      strictlist();
+    } else {
+      Kast::add(Kast::KApply("CompoundAStmt", Sort::ASTMT, {Sort::LIST}));
+    }
     StmtChildren(S);
     return false;
   }
