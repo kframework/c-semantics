@@ -301,6 +301,7 @@ module C-ABSTRACT-SYNTAX
      */
      // List
      syntax KItem ::= Comma(StrictList) [symbol]
+                    | BinaryComma(KItem, KItem) [symbol]
      /*
      | CONSTANT of constant
      | PAREN of expression

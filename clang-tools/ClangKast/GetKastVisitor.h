@@ -1637,8 +1637,7 @@ std::string ifc(std::string c, std::string cpp) {
         BINARY_OP(AndAssign, "AssignBitwiseAnd")
         BINARY_OP(XorAssign, "AssignBitwiseXor")
         BINARY_OP(OrAssign, "AssignBitwiseOr")
-        // TODO: Comma
-        //BINARY_OP(Comma, ",")
+        BINARY_OP(Comma, "BinaryComma")
         default:
           throw std::logic_error("unsupported binary operator");
       }
