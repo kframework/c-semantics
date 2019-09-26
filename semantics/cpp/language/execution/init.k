@@ -18,7 +18,7 @@ module CPP-EXECUTION-INIT
      rule <k> initMainThread(EP::String) => initMainThread'(getTU(Base)) ...</k>
           <odr-defs>... GlobalNamespace() :: Identifier(EP) |-> (_::CPPType |-> (_, Base::SymBase)) ...</odr-defs>
 
-     rule <k> callEntryPoint(EP::String, N:Int, Args:K)
+     rule <k> callEntryPoint(EP::String, N:Int, Args::KItem)
                => enterRestrictTU ~> K ~> reval(#callCppEntryPoint(T, getBase(Entry), N, mainArguments, Args)) ~> callAtExit
           ...</k>
           <dynamic-init> K:K </dynamic-init>
@@ -35,7 +35,7 @@ module CPP-EXECUTION-INIT
           => BuiltinCallOp(lv(lnew(Base), noTrace, T), false, .List)
           requires getParams(T) ==K .List
 
-     rule #callCppEntryPoint(T::CPPType, Base::SymBase, Argc:Int, X:CId, Args:K)
+     rule #callCppEntryPoint(T::CPPType, Base::SymBase, Argc:Int, X:CId, Args::KItem)
           => Args
           ~> setupCppEnv(Argc)
           ~> BuiltinCallOp(lv(lnew(Base), noTrace, T), false,

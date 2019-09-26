@@ -13,7 +13,7 @@ module C-EXPR-MULTIPLICATIVE
                andBool utype(L) ==Type utype(R)
           [structural]
 
-     rule te(L:K, T::UType) / tv(V:CValue, T'::UType) => te(L / tv(V, T'), T)
+     rule te(L:KItem, T::UType) / tv(V:CValue, T'::UType) => te(L / tv(V, T'), T)
           requires ((isPromoted(T) andBool V =/=K 0) orBool isFloatUType(T))
                andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
                andBool T ==Type T'
@@ -23,7 +23,7 @@ module C-EXPR-MULTIPLICATIVE
                andBool notBool (fromConstantExpr(L) xorBool fromConstantExpr(R))
                andBool utype(L) ==Type utype(R)
 
-     rule te(L:K, T::UType) % tv(V:CValue, T'::UType) => te(L % tv(V, T'), T)
+     rule te(L:KItem, T::UType) % tv(V:CValue, T'::UType) => te(L % tv(V, T'), T)
           requires isPromoted(T)
                andBool V =/=K 0
                andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))

@@ -171,11 +171,11 @@ module C-MEMORY-READING
           requires NumBits >Int 0
      rule extractBitsFromList-aux(_, 0, 0, Done::List) => dataList(Done)
 
-     syntax KItem ::= interpret(UType, BitValue)
+     syntax RValue ::= interpret(UType, BitValue) [function]
      rule interpret(integerUType #as T::UType, I:Int)
           => #if max(T) >=Int I #then tv(I, T) #else interpret(T, I -Int (1 <<Int absInt(bitSizeofType(T)))) #fi
      rule interpret(integerUType #as T::UType, encodedPtr(NullPointer, _, _)) => tv(unknown(0), T)
-     rule <k> interpret(T::UType, I:Int) => interpretPointer(T, I, Mem) ...</k>
+     rule [[ interpret(T::UType, I:Int) => interpretPointer(T, I, Mem) ]]
           <mem> Mem::Map </mem>
           requires isPointerUType(T)
      rule interpret(ut(... st: _:SimpleFloatType) #as T::UType, 0) => tv(zeroCFloat(T), T)
