@@ -1001,16 +1001,26 @@ public:
     return false;
   }
 
+  bool TraverseFunctionNoProtoType(FunctionNoProtoType *T) {
+    // C only
+    TraverseFunctionProtoType_c_helper(T->getReturnType(), 0);
+    return true;
+  }
+
   bool TraverseFunctionProtoType(FunctionProtoType *T) {
     return cparser()? TraverseFunctionProtoType_c(T) : TraverseFunctionProtoType_cpp(T);
   }
 
-  bool TraverseFunctionProtoType_c(FunctionProtoType *T) {
+  void TraverseFunctionProtoType_c_helper(QualType returnType, unsigned int numParams) {
     Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
     Kast::add(Kast::KApply("functionType", Sort::SIMPLEFUNCTIONTYPE, {Sort::UTYPE, Sort::LIST}));
     Kast::add(Kast::KApply("utype", Sort::UTYPE, {Sort::TYPE}));
-    TRY_TO(TraverseType(T->getReturnType()));
-    KSeqList(T->getNumParams());
+    TraverseType(returnType);
+    KSeqList(numParams);
+  }
+
+  bool TraverseFunctionProtoType_c(FunctionProtoType *T) {
+    TraverseFunctionProtoType_c_helper(T->getReturnType(), T->getNumParams());
     for (unsigned i = 0; i < T->getNumParams(); i++) {
       TRY_TO(TraverseType(T->getParamType(i)));
     }
