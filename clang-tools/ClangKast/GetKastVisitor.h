@@ -239,6 +239,13 @@ public:
     return false;
   }
 
+  bool TraverseDeclRefExpr(DeclRefExpr * S) {
+    if (cparser())
+      return TraverseDeclarationNameInfo(S->getNameInfo());
+
+    return RecursiveASTVisitor::TraverseDeclRefExpr(S);
+  }
+
   bool TraverseNestedNameSpecifierLoc(NestedNameSpecifierLoc NNS) {
     return TraverseNestedNameSpecifier(NNS.getNestedNameSpecifier());
   }
@@ -1177,6 +1184,18 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseConstantArrayType(ConstantArrayType *T) {
+    return cparser()? TraverseConstantArrayType_c(T) : TraverseConstantArrayType_cpp(T);
+  }
+
+  bool TraverseConstantArrayType_c(ConstantArrayType *T) {
+    Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+    Kast::add(Kast::KApply("arrayType", Sort::SIMPLEFIXEDARRAYTYPE,{Sort::TYPE, Sort::INT}));
+    TRY_TO(TraverseType(T->getElementType()));
+    VisitAPInt(T->getSize());
+    return true;
+  }
+
+  bool TraverseConstantArrayType_cpp(ConstantArrayType *T) {
     TRY_TO(TraverseArrayHelper(T, Sort::INT));
     VisitAPInt(T->getSize());
     return true;
@@ -1189,12 +1208,35 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseVariableArrayType(VariableArrayType *T) {
+    return cparser()? TraverseVariableArrayType_c(T) : TraverseVariableArrayType_cpp(T);
+  }
+
+  bool TraverseVariableArrayType_c(VariableArrayType *T) {
+    Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+    Kast::add(Kast::KApply("variableLengthArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
+    TRY_TO(TraverseType(T->getElementType()));
+    TRY_TO(TraverseStmt(T->getSizeExpr()));
+    return true;
+  }
+
+  bool TraverseVariableArrayType_cpp(VariableArrayType *T) {
     TRY_TO(TraverseArrayHelper(T, Sort::AEXPR));
     TRY_TO(TraverseStmt(T->getSizeExpr()));
     return true;
   }
 
   bool TraverseIncompleteArrayType(IncompleteArrayType *T) {
+    return cparser()? TraverseIncompleteArrayType_c(T) : TraverseIncompleteArrayType_cpp(T);
+  }
+
+  bool TraverseIncompleteArrayType_c(IncompleteArrayType *T) {
+    Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+    Kast::add(Kast::KApply("incompleteArrayType", Sort::SIMPLEINCOMPLETEARRAYTYPE,{Sort::TYPE}));
+    TRY_TO(TraverseType(T->getElementType()));
+    return true;
+  }
+
+  bool TraverseIncompleteArrayType_cpp(IncompleteArrayType *T) {
     TRY_TO(TraverseArrayHelper(T, Sort::AEXPR));
     NoExpression();
     return true;
@@ -1350,12 +1392,14 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitDeclStmt(DeclStmt *S) {
-    Kast::add(Kast::KApply("DeclStmt", Sort::STMT, {Sort::LIST}));
-    int i = 0;
-    for (auto *I : S->decls()) {
-      i++;
+    if (!cparser()) {
+      Kast::add(Kast::KApply("DeclStmt", Sort::STMT, {Sort::LIST}));
+      int i = 0;
+      for (auto *I : S->decls()) {
+        i++;
+      }
+      KSeqList(i);
     }
-    KSeqList(i);
     return false;
   }
 
@@ -1544,7 +1588,10 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitArraySubscriptExpr(ArraySubscriptExpr *E) {
-    Kast::add(Kast::KApply("Subscript", Sort::EXPR, {Sort::EXPR, Sort::EXPR}));
+    if (cparser())
+      Kast::add(Kast::KApply("ArrayIndex", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+    else
+      Kast::add(Kast::KApply("Subscript", Sort::EXPR, {Sort::EXPR, Sort::EXPR}));
     return false;
   }
 
