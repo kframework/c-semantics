@@ -1599,6 +1599,53 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   void VisitOperator(BinaryOperatorKind Kind) {
+    return cparser()? VisitOperator_c(Kind) : VisitOperator_cpp(Kind);
+  }
+
+  void VisitOperator_c(BinaryOperatorKind Kind) {
+    switch (Kind) {
+#define BINARY_OP(Name, Spelling)        \
+      case BO_##Name:                          \
+        Kast::add(Kast::KApply(Spelling, Sort::KITEM, {Sort::KITEM, Sort::KITEM})); \
+        break;
+        BINARY_OP(Mul, "Multiply")
+        BINARY_OP(Div, "Divide")
+        BINARY_OP(Rem, "Modulo")
+        BINARY_OP(Add, "Plus")
+        BINARY_OP(Sub, "Minus")
+        BINARY_OP(Shl, "LeftShift")
+        BINARY_OP(Shr, "RightShift")
+        BINARY_OP(LT, "LessThan")
+        BINARY_OP(GT, "GreaterThan")
+        BINARY_OP(LE, "LessThanOrEqual")
+        BINARY_OP(GE, "GreaterThanOrEqual")
+        BINARY_OP(EQ, "Equality")
+        BINARY_OP(NE, "NotEquality")
+        BINARY_OP(And, "BitwiseAnd")
+        BINARY_OP(Xor, "BitwiseXor")
+        BINARY_OP(Or, "BitwiseAnd")
+        BINARY_OP(LAnd, "LogicalAnd")
+        BINARY_OP(LOr, "LogicalOr")
+        BINARY_OP(Assign, "Assign")
+        BINARY_OP(MulAssign, "AssignMultiply")
+        BINARY_OP(DivAssign, "AssignDivide")
+        BINARY_OP(RemAssign, "AssignModulo")
+        BINARY_OP(AddAssign, "AssignPlus")
+        BINARY_OP(SubAssign, "AssignMinus")
+        BINARY_OP(ShlAssign, "AssignLeftShift")
+        BINARY_OP(ShrAssign, "AssignRightShift")
+        BINARY_OP(AndAssign, "AssignBitwiseAnd")
+        BINARY_OP(XorAssign, "AssignBitwiseXor")
+        BINARY_OP(OrAssign, "AssignBitwiseOr")
+        // TODO: Comma
+        //BINARY_OP(Comma, ",")
+        default:
+          throw std::logic_error("unsupported binary operator");
+      }
+#undef BINARY_OP
+  }
+
+  void VisitOperator_cpp(BinaryOperatorKind Kind) {
     switch (Kind) {
       #define BINARY_OP(Name, Spelling)        \
       case BO_##Name:                          \
@@ -1639,6 +1686,7 @@ std::string ifc(std::string c, std::string cpp) {
       default:
         throw std::logic_error("unsupported binary operator");
     }
+#undef BINARY_OP
   }
 
   bool VisitUnaryOperator(UnaryOperator *E) {
@@ -1649,7 +1697,9 @@ std::string ifc(std::string c, std::string cpp) {
 
 
   bool VisitBinaryOperator(BinaryOperator *E) {
-    BinaryOperator();
+    if (!cparser() ){
+      BinaryOperator();
+    }
     VisitOperator(E->getOpcode());
     return false;
   }
@@ -1740,7 +1790,16 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseCXXOperatorCallExpr_c(CXXOperatorCallExpr *E) {
-
+    std::string label = toCname(E);
+    if (E->getNumArgs() == 1) {
+      Kast::add(Kast::KApply(label, Sort::KITEM, {Sort::KITEM}));
+      TRY_TO(TraverseStmt(E->getArg(0)));
+    } else if (E->getNumArgs() == 2) {
+      Kast::add(Kast::KApply(label, Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+      TRY_TO(TraverseStmt(E->getArg(0)));
+      TRY_TO(TraverseStmt(E->getArg(1)));
+    }
+    return true;
   }
 
   bool TraverseCXXOperatorCallExpr(CXXOperatorCallExpr *E) {
