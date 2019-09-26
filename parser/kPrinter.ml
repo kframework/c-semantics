@@ -531,7 +531,7 @@ and statement =
   let for_clause = function
     | FC_EXP exp1  -> kapply1 KItem "ForClauseExpression" (expression exp1 KItem)
     | FC_DECL dec1 -> definition dec1 in
-  let statement_loc s l = kapply KItem "StatementLoc" [s KItem; cabs_loc l CabsLoc] in
+  let statement_loc s l = kapply KItem "StatementLoc" [cabs_loc l CabsLoc; s KItem] in
   let for_statement fc1 exp2 exp3 stat sort = new_counter >>= fun counter ->
     kapply KItem "For5" [ktoken_int counter Int; for_clause fc1 KItem; expression exp2 K; expression exp3 K; new_block_statement stat K] sort in
   let switch exp stat sort = push_switch >>= fun id ->

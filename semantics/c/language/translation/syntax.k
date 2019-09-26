@@ -394,7 +394,7 @@ module C-ABSTRACT-SYNTAX
      syntax KItem ::= DefinitionLoc(CabsLoc, KItem) [symbol]
      syntax KItem ::= DefinitionLocRange(KItem, CabsLoc, CabsLoc) [symbol]
      // this wraps all statements with their location in the original file
-     syntax KItem ::= StatementLoc(KItem, CabsLoc) [symbol] // new
+     syntax KItem ::= StatementLoc(CabsLoc, KItem) [symbol] // new
 
      /*
      and for_clause =
@@ -463,7 +463,7 @@ module C-ABSTRACT-REWRITING
      rule AnonymousName() => #NoName
 
      rule DefinitionLoc(L::CabsLoc, K:KItem) => CodeLoc(K, L) [anywhere]
-     rule StatementLoc(K:KItem, L::CabsLoc) => CodeLoc(K, L) [anywhere]
+     rule StatementLoc(L::CabsLoc, K::KItem) => CodeLoc(K, L) [anywhere]
 
      rule Conditional(K1:KItem, K2:KItem, K3:KItem) => K1 ? K2 : K3 [anywhere]
      rule Negative(K:KItem) => - K [anywhere]
