@@ -1505,7 +1505,7 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool TraverseWhileStmt(WhileStmt *S) {
     if (cparser())
-      Kast::add(Kast::KApply("While", Sort::ASTMT, {Sort::K, Sort::K}));
+      Kast::add(Kast::KApply("While", Sort::KITEM, {Sort::K, Sort::K}));
     else
       Kast::add(Kast::KApply("WhileAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
 
@@ -1519,10 +1519,20 @@ std::string ifc(std::string c, std::string cpp) {
     return true;
   }
 
-  bool VisitDoStmt(DoStmt *S) {
-    Kast::add(Kast::KApply("DoWhileAStmt", Sort::ASTMT, {Sort::ASTMT, Sort::EXPR}));
-    // TODO checkExpressionStatement(S->getBody());
-    return false;
+  bool TraverseDoStmt(DoStmt *S) {
+    if (cparser()) {
+      Kast::add(Kast::KApply("DoWhile3", Sort::KITEM, {Sort::K, Sort::K, Sort::CABSLOC}));
+      TRY_TO(TraverseStmt(S->getCond()));
+      checkExpressionStatement(S->getBody());
+      TRY_TO(TraverseStmt(S->getBody()));
+      CabsLoc(S->getDoLoc());
+    } else {
+      Kast::add(Kast::KApply("DoWhileAStmt", Sort::ASTMT, {Sort::ASTMT, Sort::EXPR}));
+      TRY_TO(TraverseStmt(S->getBody()));
+      TRY_TO(TraverseStmt(S->getCond()));
+    }
+
+    return true;
   }
 
   bool TraverseIfStmt(IfStmt *S) {
