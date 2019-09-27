@@ -393,11 +393,15 @@ public:
     return cparser()? TraverseFunctionHelper_c(D) : TraverseFunctionHelper_cpp(D);
   }
 
+  FunctionDecl * currentFunctionDecl = nullptr;
   bool TraverseFunctionHelper_c(FunctionDecl *D){
     if (D->isThisDeclarationADefinition()) {
       Kast::add(Kast::KApply("FunctionDefinition", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
       Kast::add(Kast::KApply("typedDeclaration", Sort::DTYPE, {Sort::TYPE, Sort::CID}));
+      currentFunctionDecl = D;
       TRY_TO(TraverseType(D->getType()));
+      currentFunctionDecl = nullptr;
+
       TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
       TRY_TO(TraverseStmt(D->getBody()));
     }
@@ -1041,8 +1045,14 @@ public:
 
   bool TraverseFunctionProtoType_c(FunctionProtoType *T) {
     TraverseFunctionProtoType_c_helper(T->getReturnType(), T->getNumParams());
+    if (currentFunctionDecl == nullptr)
+      throw std::logic_error("TraverseFunctionHelper_c not called");
+
     for (unsigned i = 0; i < T->getNumParams(); i++) {
+      Kast::add(Kast::KApply("typedDeclaration", Sort::DTYPE, {Sort::TYPE, Sort::CID}));
       TRY_TO(TraverseType(T->getParamType(i)));
+      //currentFunctionDecl->parameters()[i]->getName()
+      TRY_TO(TraverseDeclarationName(currentFunctionDecl->parameters()[i]->getDeclName()));
     }
     return true;
   }
