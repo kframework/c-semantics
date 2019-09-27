@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "clang/AST/ASTContext.h"
+#include "clang/AST/Expr.h"
 #include "clang/AST/Mangle.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 
@@ -56,16 +57,26 @@ public:
     return TraverseType(TL.getType());
   }
 
+  void checkExpressionStatement(Stmt *S) {
+    if (!cparser())
+      return;
+
+    if (isa<Expr>(S))
+      Kast::add(Kast::KApply("Computation", Sort::KITEM, {Sort::K}));
+  }
+
   bool TraverseStmt(Stmt *S) {
     if (!S)
       return RecursiveASTVisitor::TraverseStmt(S);
 
     if (Expr *E = dyn_cast<Expr>(S)) {
       if (!dyn_cast<CXXDefaultArgExpr>(S)) {
-        if (!cparser()) {
+        if (cparser()) {
+          Kast::add(Kast::KApply("StatementLoc", Sort::KITEM, {Sort::CABSLOC, Sort::KITEM}));
+        } else {
           Kast::add(Kast::KApply("ExprLoc", Sort::EXPRLOC, {Sort::CABSLOC, Sort::EXPR}));
-          CabsLoc(E->getExprLoc());
         }
+        CabsLoc(E->getExprLoc());
       }
     }
     return RecursiveASTVisitor::TraverseStmt(S);
@@ -96,6 +107,8 @@ public:
           return false;                                                            \
         break;
 #include "clang/AST/DeclNodes.inc"
+#undef DECL
+#undef ABSTRACT_DECL
     }
 
     return true;
@@ -1441,7 +1454,8 @@ std::string ifc(std::string c, std::string cpp) {
 
   unsigned blockNumber = 1;
 
-  bool VisitCompoundStmt(CompoundStmt *S) {
+  bool TraverseCompoundStmt(CompoundStmt *S) {
+
     if (cparser()) {
       Kast::add(Kast::KApply("Block", Sort::KITEM, {Sort::INT, Sort::STRICTLIST}));
       Kast::add(Kast::KToken(blockNumber++));
@@ -1450,7 +1464,14 @@ std::string ifc(std::string c, std::string cpp) {
       Kast::add(Kast::KApply("CompoundAStmt", Sort::ASTMT, {Sort::LIST}));
     }
     StmtChildren(S);
-    return false;
+
+    for (auto &child : S->children()) {
+      if (cparser())
+        checkExpressionStatement(child);
+      TRY_TO(TraverseStmt(child));
+    }
+
+    return true;
   }
 
   bool VisitLabelStmt(LabelStmt *S) {
@@ -1477,6 +1498,7 @@ std::string ifc(std::string c, std::string cpp) {
     } else {
       NoExpression();
     }
+    checkExpressionStatement(S->getBody());
     TRY_TO(TraverseStmt(S->getBody()));
     return true;
   }
@@ -1488,12 +1510,14 @@ std::string ifc(std::string c, std::string cpp) {
     } else {
       TRY_TO(TraverseStmt(S->getCond()));
     }
+    checkExpressionStatement(S->getBody());
     TRY_TO(TraverseStmt(S->getBody()));
     return true;
   }
 
   bool VisitDoStmt(DoStmt *S) {
     Kast::add(Kast::KApply("DoWhileAStmt", Sort::ASTMT, {Sort::ASTMT, Sort::EXPR}));
+    // TODO checkExpressionStatement(S->getBody());
     return false;
   }
 
@@ -1504,8 +1528,10 @@ std::string ifc(std::string c, std::string cpp) {
     } else {
       TRY_TO(TraverseStmt(S->getCond()));
     }
+    checkExpressionStatement(S->getThen());
     TRY_TO(TraverseStmt(S->getThen()));
     if (Stmt *Else = S->getElse()) {
+      checkExpressionStatement(Else);
       TRY_TO(TraverseStmt(Else));
     } else {
       NoStatement();
@@ -1520,6 +1546,7 @@ std::string ifc(std::string c, std::string cpp) {
     } else {
       TRY_TO(TraverseStmt(S->getCond()));
     }
+    checkExpressionStatement(S->getBody());
     TRY_TO(TraverseStmt(S->getBody()));
     return true;
   }
@@ -1530,6 +1557,7 @@ std::string ifc(std::string c, std::string cpp) {
       throw std::logic_error("unimplemented: gnu case stmt extensions");
     }
     TRY_TO(TraverseStmt(S->getLHS()));
+    checkExpressionStatement(S->getSubStmt());
     TRY_TO(TraverseStmt(S->getSubStmt()));
     return true;
   }
