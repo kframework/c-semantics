@@ -1504,7 +1504,11 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseWhileStmt(WhileStmt *S) {
-    Kast::add(Kast::KApply("WhileAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
+    if (cparser())
+      Kast::add(Kast::KApply("While", Sort::ASTMT, {Sort::K, Sort::K}));
+    else
+      Kast::add(Kast::KApply("WhileAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
+
     if (S->getConditionVariable()) {
       TRY_TO(TraverseDecl(S->getConditionVariable()));
     } else {
@@ -1522,7 +1526,11 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseIfStmt(IfStmt *S) {
-    Kast::add(Kast::KApply("IfAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT, Sort::ASTMT}));
+    if (cparser())
+      Kast::add(Kast::KApply("IfThenElse", Sort::KITEM, {Sort::K, Sort::K, Sort::K}));
+    else
+      Kast::add(Kast::KApply("IfAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT, Sort::ASTMT}));
+
     if (VarDecl *D = S->getConditionVariable()) {
       TRY_TO(TraverseDecl(D));
     } else {
@@ -1534,7 +1542,10 @@ std::string ifc(std::string c, std::string cpp) {
       checkExpressionStatement(Else);
       TRY_TO(TraverseStmt(Else));
     } else {
-      NoStatement();
+      if (cparser())
+        Kast::add(Kast::KApply("Nop", Sort::KITEM));
+      else
+        NoStatement();
     }
     return true;
   }
