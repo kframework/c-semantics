@@ -1433,7 +1433,11 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitGotoStmt(GotoStmt *S) {
-    Kast::add(Kast::KApply("GotoStmt", Sort::STMT, {Sort::CID}));
+    if (cparser())
+      Kast::add(Kast::KApply("Goto", Sort::KITEM, {Sort::CID}));
+    else
+      Kast::add(Kast::KApply("GotoStmt", Sort::STMT, {Sort::CID}));
+
     TRY_TO(TraverseDeclarationName(S->getLabel()->getDeclName()));
     return false;
   }
@@ -1481,9 +1485,15 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitLabelStmt(LabelStmt *S) {
-    Kast::add(Kast::KApply("LabelAStmt", Sort::ASTMT, {Sort::CID, Sort::LIST}));
+    if (cparser())
+      Kast::add(Kast::KApply("Label", Sort::KITEM, {Sort::CID, Sort::K}));
+    else
+      Kast::add(Kast::KApply("LabelAStmt", Sort::ASTMT, {Sort::CID, Sort::LIST}));
     TRY_TO(TraverseDeclarationName(S->getDecl()->getDeclName()));
-    StmtChildren(S);
+    if (cparser())
+      checkExpressionStatement(S->getSubStmt());
+    else
+      StmtChildren(S);
     return false;
   }
 
