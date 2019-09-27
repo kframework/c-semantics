@@ -1452,13 +1452,13 @@ std::string ifc(std::string c, std::string cpp) {
     return false;
   }
 
-  unsigned blockNumber = 1;
+  unsigned blockTag = 1;
 
   bool TraverseCompoundStmt(CompoundStmt *S) {
 
     if (cparser()) {
       Kast::add(Kast::KApply("Block", Sort::KITEM, {Sort::INT, Sort::STRICTLIST}));
-      Kast::add(Kast::KToken(blockNumber++));
+      Kast::add(Kast::KToken(blockTag++));
       strictlist();
     } else {
       Kast::add(Kast::KApply("CompoundAStmt", Sort::ASTMT, {Sort::LIST}));
@@ -1482,7 +1482,12 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseForStmt(ForStmt *S) {
-    Kast::add(Kast::KApply("ForAStmt", Sort::ASTMT, {Sort::ASTMT, Sort::AEXPR, Sort::AEXPR, Sort::ASTMT}));
+    if (cparser()) {
+      Kast::add(Kast::KApply("For5", Sort::KITEM, {Sort::INT, Sort::KITEM, Sort::K, Sort::K, Sort::K}));
+      Kast::add(Kast::KToken(blockTag++));
+    } else
+      Kast::add(Kast::KApply("ForAStmt", Sort::ASTMT, {Sort::ASTMT, Sort::AEXPR, Sort::AEXPR, Sort::ASTMT}));
+
     if (S->getInit()) {
       TRY_TO(TraverseStmt(S->getInit()));
     } else {
