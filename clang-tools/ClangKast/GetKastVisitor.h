@@ -1417,12 +1417,18 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitBreakStmt(BreakStmt *S) {
-    Kast::add(Kast::KApply("TBreakStmt", Sort::STMT));
+    if (cparser())
+      Kast::add(Kast::KApply("Break", Sort::KITEM));
+    else
+      Kast::add(Kast::KApply("TBreakStmt", Sort::STMT));
     return false;
   }
 
   bool VisitContinueStmt(ContinueStmt *S) {
-    Kast::add(Kast::KApply("ContinueStmt", Sort::STMT));
+    if (cparser())
+      Kast::add(Kast::KApply("Continue", Sort::KITEM));
+    else
+      Kast::add(Kast::KApply("ContinueStmt", Sort::STMT));
     return false;
   }
 
@@ -1565,8 +1571,16 @@ std::string ifc(std::string c, std::string cpp) {
     return true;
   }
 
+  unsigned switchBlockTag = -1;
+
   bool TraverseSwitchStmt(SwitchStmt *S) {
-    Kast::add(Kast::KApply("SwitchAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT}));
+    if (cparser()) {
+      Kast::add(Kast::KApply("Switch", Sort::KITEM, {Sort::INT, Sort::K, Sort::K}));
+      switchBlockTag = blockTag;
+      Kast::add(Kast::KToken(blockTag++));
+    } else
+      Kast::add(Kast::KApply("SwitchAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT}));
+
     if (VarDecl *D = S->getConditionVariable()) {
       TRY_TO(TraverseDecl(D));
     } else {
@@ -1578,7 +1592,13 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseCaseStmt(CaseStmt *S) {
-    Kast::add(Kast::KApply("CaseAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
+    if (cparser()) {
+      Kast::add(Kast::KApply("Case", Sort::KITEM, {Sort::INT, Sort::INT, Sort::K, Sort::K}));
+      Kast::add(Kast::KToken(switchBlockTag));
+      Kast::add(Kast::KToken(blockTag++));
+    } else
+      Kast::add(Kast::KApply("CaseAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
+
     if (S->getRHS()) {
       throw std::logic_error("unimplemented: gnu case stmt extensions");
     }
