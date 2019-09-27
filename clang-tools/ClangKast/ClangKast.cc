@@ -111,6 +111,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::SIMPLEFIXEDARRAYTYPE:  os << "SimpleFixedArrayType"; break;
     case Sort::SIMPLEINCOMPLETEARRAYTYPE:  os << "SimpleIncompleteArrayType"; break;
     case Sort::SIMPLEVARIABLEARRAYTYPE:  os << "SimpleVariableArrayType"; break;
+    case Sort::SIMPLEPOINTERTYPE:     os << "SimplePointerType"; break;
     case Sort::SIMPLETYPE:            os << "SimpleType"; break;
     case Sort::SIMPLEUTYPE:           os << "SimpleUType"; break;
     case Sort::SPECIFIER:             os << "Specifier"; break;

@@ -1182,10 +1182,8 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool VisitPointerType(clang::PointerType *T) {
     if (cparser()) {
-      Kast::add(Kast::KApply("PointerType", Sort::KITEM, {Sort::SPECIFIER, Sort::KITEM}));
-      Kast::add(Kast::KApply("Specifier", Sort::SPECIFIER, {Sort::STRICTLIST}));
-      strictlist();
-      Kast::add(Kast::KApply(".List", Sort::LIST));
+      Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+      Kast::add(Kast::KApply("pointerType", Sort::SIMPLEPOINTERTYPE, {Sort::TYPE}));
     }
     else
       Kast::add(Kast::KApply("PointerType", Sort::ATYPE, {Sort::ATYPE}));
