@@ -8,5 +8,5 @@ int main() {
       return memcmp(&x, &x, sizeof(x))
           || memcmp(&y, &y, sizeof(y))
           || memcmp(&z, &z, sizeof(z))
-          || memcmp(&p, &p, sizeof(z));
+          || memcmp(&p, &p, sizeof(p));
 }
