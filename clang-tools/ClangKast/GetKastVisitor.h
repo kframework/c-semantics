@@ -935,7 +935,22 @@ public:
     return true;
   }
 
+  bool TraverseEnumDecl_c(EnumDecl *D) {
+    Kast::add(Kast::KApply("EnumDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
+    TRY_TO(TraverseDeclarationAsName(D));
+    strictlist();
+    DeclContext(D);
+    TraverseDeclContextNode(D);
+    // TODO attribute packed
+    strictlist();
+    Kast::add(Kast::KApply(".List", Sort::LIST));
+    return true;
+  }
+
   bool TraverseEnumDecl(EnumDecl *D) {
+    if (cparser())
+      return TraverseEnumDecl_c(D);
+
     if (!D->isCompleteDefinition()) {
       Kast::add(Kast::KApply("OpaqueEnumDeclaration", Sort::DECL, {Sort::CID, Sort::BOOL, Sort::ATYPE}));
       TRY_TO(TraverseDeclarationName(D->getDeclName()));
@@ -956,7 +971,23 @@ public:
     return true;
   }
 
-  bool VisitEnumConstantDecl(EnumConstantDecl *D) {
+  bool TraverseEnumConstantDecl(EnumConstantDecl *D){
+    return cparser()? VisitEnumConstantDecl_c(D) : VisitEnumConstantDecl_cpp(D);
+  }
+
+  bool VisitEnumConstantDecl_c(EnumConstantDecl *D) {
+    if (D->getInitExpr()) {
+      Kast::add(Kast::KApply("EnumItemInit", Sort::KITEM, {Sort::CID, Sort::K}));
+      TraverseDeclarationName(D->getDeclName());
+      TraverseStmt(D->getInitExpr());
+    } else {
+      Kast::add(Kast::KApply("EnumItem", Sort::KITEM, {Sort::CID}));
+      TraverseDeclarationName(D->getDeclName());
+    }
+    return true;
+  }
+
+  bool VisitEnumConstantDecl_cpp(EnumConstantDecl *D) {
     Kast::add(Kast::KApply("Enumerator", Sort::ENUMERATOR, {Sort::CID, Sort::AEXPR}));
     TraverseDeclarationName(D->getDeclName());
     if (!D->getInitExpr()) {
@@ -2373,6 +2404,8 @@ std::string ifc(std::string c, std::string cpp) {
       Kast::add(Kast::KApply("tv", Sort::RVALUE, {Sort::CVALUE, Sort::UTYPE}));
       VisitAPInt(Constant->getValue());
       Kast::add(Kast::KApply("utype", Sort::UTYPE, {Sort::TYPE}));
+      Kast::add(Kast::KApply("addModifier", Sort::TYPE, {Sort::MODIFIER, Sort::TYPE}));
+      Kast::add(Kast::KApply("IntegerConstant_C-TYPING-SYNTAX", Sort::MODIFIER));
       TRY_TO(TraverseType(Constant->getType()));
     } else {
       Kast::add(Kast::KApply("IntegerLiteral", Sort::EXPR, {Sort::INT, Sort::ATYPE}));
