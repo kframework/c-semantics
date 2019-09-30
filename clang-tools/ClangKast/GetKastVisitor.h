@@ -1692,7 +1692,11 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseCallExpr(CallExpr *E) {
-    Kast::add(Kast::KApply("CallExpr", Sort::RESOLVEDEXPR, {Sort::EXPR, Sort::STRICTLIST, Sort::STRICTLISTRESULT}));
+    if (cparser())
+      Kast::add(Kast::KApply("Call", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+    else
+      Kast::add(Kast::KApply("CallExpr", Sort::RESOLVEDEXPR, {Sort::EXPR, Sort::STRICTLIST, Sort::STRICTLISTRESULT}));
+
     unsigned i = 0;
     for (Stmt *SubStmt : E->children()) {
       i++;
@@ -1706,8 +1710,10 @@ std::string ifc(std::string c, std::string cpp) {
       if (first) List(i-1);
       first = false;
     }
-    Kast::add(Kast::KApply("krlist", Sort::STRICTLISTRESULT, {Sort::LIST}));
-    Kast::add(Kast::KApply(".List", Sort::LIST));
+    if (!cparser()) {
+      Kast::add(Kast::KApply("krlist", Sort::STRICTLISTRESULT, {Sort::LIST}));
+      Kast::add(Kast::KApply(".List", Sort::LIST));
+    }
     return true;
   }
 
