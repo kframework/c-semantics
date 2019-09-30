@@ -935,6 +935,14 @@ public:
     return true;
   }
 
+  static bool hasAttrPacked(Decl *D) {
+    for (Attr *a : D->attrs()) {
+      if (a->getKind() == attr::Kind::Packed)
+        return true;
+    }
+    return false;
+  }
+
   bool TraverseEnumDecl_c(EnumDecl *D) {
     Kast::add(Kast::KApply("EnumDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
     TRY_TO(TraverseDeclarationAsName(D));
@@ -943,7 +951,12 @@ public:
     TraverseDeclContextNode(D);
     // TODO attribute packed
     strictlist();
-    Kast::add(Kast::KApply(".List", Sort::LIST));
+    if (!hasAttrPacked(D))
+      Kast::add(Kast::KApply(".List", Sort::LIST));
+    else {
+      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+      Kast::add(Kast::KApply("Packed", Sort::MODIFIER));
+    }
     return true;
   }
 
