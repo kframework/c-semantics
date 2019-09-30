@@ -1794,7 +1794,33 @@ std::string ifc(std::string c, std::string cpp) {
     }
   }
 
-  void VisitOperator(UnaryOperatorKind Kind) {
+  void VisitUnaryOperator(UnaryOperatorKind Kind) {
+    return cparser()? VisitUnaryOperator_c(Kind) : VisitUnaryOperator_cpp(Kind);
+  }
+
+  void VisitUnaryOperator_c(UnaryOperatorKind Kind) {
+    switch (Kind) {
+      #define UNARY_OP(Name, Spelling)         \
+      case UO_##Name:                          \
+        Kast::add(Kast::KApply(Spelling, Sort::KITEM, {Sort::KITEM})); \
+        break;
+      UNARY_OP(PostInc, "PostIncrement")
+      UNARY_OP(PostDec, "PostDecrement")
+      UNARY_OP(PreInc, "PreIncrement")
+      UNARY_OP(PreDec, "PreDecrement")
+      UNARY_OP(AddrOf, "Reference")
+      UNARY_OP(Deref, "Dereference")
+      UNARY_OP(Plus, "Positive")
+      UNARY_OP(Minus, "Negative")
+      UNARY_OP(Not, "BitwiseNot")
+      UNARY_OP(LNot, "LogicalNot")
+      default:
+        throw std::logic_error("unsupported unary operator");
+      #undef UNARY_OP
+    }
+  }
+
+  void VisitUnaryOperator_cpp(UnaryOperatorKind Kind) {
     switch (Kind) {
       #define UNARY_OP(Name, Spelling)         \
       case UO_##Name:                          \
@@ -1824,14 +1850,15 @@ std::string ifc(std::string c, std::string cpp) {
         break;
       default:
         throw std::logic_error("unsupported unary operator");
+      #undef UNARY_OP
     }
   }
 
-  void VisitOperator(BinaryOperatorKind Kind) {
-    return cparser()? VisitOperator_c(Kind) : VisitOperator_cpp(Kind);
+  void VisitBinaryOperator(BinaryOperatorKind Kind) {
+    return cparser() ? VisitBinaryOperator_c(Kind) : VisitBinaryOperator_cpp(Kind);
   }
 
-  void VisitOperator_c(BinaryOperatorKind Kind) {
+  void VisitBinaryOperator_c(BinaryOperatorKind Kind) {
     switch (Kind) {
 #define BINARY_OP(Name, Spelling)        \
       case BO_##Name:                          \
@@ -1873,7 +1900,7 @@ std::string ifc(std::string c, std::string cpp) {
 #undef BINARY_OP
   }
 
-  void VisitOperator_cpp(BinaryOperatorKind Kind) {
+  void VisitBinaryOperator_cpp(BinaryOperatorKind Kind) {
     switch (Kind) {
       #define BINARY_OP(Name, Spelling)        \
       case BO_##Name:                          \
@@ -1918,8 +1945,10 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitUnaryOperator(UnaryOperator *E) {
-    UnaryOperator();
-    VisitOperator(E->getOpcode());
+    if (!cparser()) {
+      UnaryOperator();
+    }
+    VisitUnaryOperator(E->getOpcode());
     return false;
   }
 
@@ -1928,7 +1957,7 @@ std::string ifc(std::string c, std::string cpp) {
     if (!cparser() ){
       BinaryOperator();
     }
-    VisitOperator(E->getOpcode());
+    VisitBinaryOperator(E->getOpcode());
     return false;
   }
 
@@ -1968,12 +1997,12 @@ std::string ifc(std::string c, std::string cpp) {
       case OO_PlusPlus:
         if (E->getNumArgs() == 2) {
           UnaryOperator();
-          VisitOperator(UO_PostInc);
+          VisitUnaryOperator_cpp(UO_PostInc);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else if (E->getNumArgs() == 1) {
           UnaryOperator();
-          VisitOperator(UO_PreInc);
+          VisitUnaryOperator_cpp(UO_PreInc);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else {
@@ -1982,12 +2011,12 @@ std::string ifc(std::string c, std::string cpp) {
       case OO_MinusMinus:
         if (E->getNumArgs() == 2) {
           UnaryOperator();
-          VisitOperator(UO_PostDec);
+          VisitUnaryOperator_cpp(UO_PostDec);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else if (E->getNumArgs() == 1) {
           UnaryOperator();
-          VisitOperator(UO_PreDec);
+          VisitUnaryOperator_cpp(UO_PreDec);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else {
