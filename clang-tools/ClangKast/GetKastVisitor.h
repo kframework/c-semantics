@@ -1962,7 +1962,10 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitConditionalOperator(ConditionalOperator *E) {
-    Kast::add(Kast::KApply("ConditionalOperator", Sort::EXPR, {Sort::EXPR, Sort::EXPR, Sort::EXPR}));
+    if (cparser())
+      Kast::add(Kast::KApply("Conditional", Sort::KITEM, {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+    else
+      Kast::add(Kast::KApply("ConditionalOperator", Sort::EXPR, {Sort::EXPR, Sort::EXPR, Sort::EXPR}));
     return false;
   }
 
