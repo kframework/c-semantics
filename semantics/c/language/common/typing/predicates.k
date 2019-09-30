@@ -97,15 +97,6 @@ module C-TYPING-PREDICATES
                andBool fromConstantExpr(T)
      rule isNullPointerConstant(_) => false [owise]
 
-     rule hasReadFrom(ut(SetItem(K:KItem) Mods:Set, _)) => true
-          requires isReadFrom(K)
-     rule hasReadFrom(ut(.Set, _)) => false
-     rule hasReadFrom(ut((SetItem(_) => .Set) _, _)) [owise]
-
-     syntax Bool ::= isReadFrom(K) [function]
-     rule isReadFrom(readFrom(_, _)) => true
-     rule isReadFrom(_) => false [owise]
-
      rule isTruthValue(tv(V::CValue, ut(_, T::SimpleUType)))
           => T ==K int andBool (V ==K 0 orBool V ==K 1)
 

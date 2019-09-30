@@ -296,7 +296,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= sameAlignas(Set, Set) [function]
      syntax Int ::= getAlignasMod(Set) [function]
 
-     syntax Modifier ::= readFrom(SymLoc, Int)
+     syntax Modifier ::= readFrom(Map) // Loc |-> most bytes read
 
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(Scope)
@@ -345,11 +345,10 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isNull(RValue) [function]
      syntax Bool ::= isNullPointerConstant(RValue) [function]
 
-     syntax Bool ::= hasReadFrom(UType) [function]
-     syntax SymLoc ::= getReadFromLoc(UType) [function]
-     syntax Int ::= getReadFromLen(UType) [function]
+     syntax Map ::= getReadFromMap(UType) [function]
+     syntax Bool ::= isOverlappedRead(UType, SymLoc, Int) [function]
+     syntax Int ::= getReadFromLen(UType, SymLoc) [function]
      syntax UType ::= updateReadFrom(UType, SymLoc) [function]
-     syntax UType ::= updateReadFrom(UType, SymLoc, Int) [function, klabel(updateReadFrom3)]
 
      syntax List ::= idsFromParams(List) [function]
 

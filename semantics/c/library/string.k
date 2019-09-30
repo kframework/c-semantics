@@ -50,13 +50,13 @@ module LIBC-STRING
           ~> strcpy(_, (Src => Src +bytes 1), _)
           [structural]
 
-     rule (reval(tv(I:Int, T::UType)) => write(Dest, I, type(T)))
+     rule (reval(tv(I:Int, T::UType)) => write(Dest, I, type(T), .Set))
           ~> strcpy((Dest:SymLoc => Dest +bytes 1), _, _)
           requires I =/=Int 0
           [structural]
      rule reval(tv(0, T::UType))
           ~> strcpy(Dest:SymLoc, _, Orig:SymLoc)
-          => write(Dest, 0, type(T))
+          => write(Dest, 0, type(T), .Set)
           ~> tv(Orig, utype(pointerType(type(char))))
           [structural]
 

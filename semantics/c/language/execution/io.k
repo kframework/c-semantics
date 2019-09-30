@@ -27,16 +27,16 @@ module C-IO
      imports DELETE-OBJECT-SYNTAX
      imports COMMON-IO-BUFFERED-SYNTAX
 
-     rule writeBytes(Loc::SymLoc, Bytes::List)
+     rule writeBytes(Loc::SymLoc, Bytes::List, ReadFrom::Set)
           => checkRestrict(true, Loc)
           ~> checkWrite(stripProv(Loc))
-          ~> checkSeq(stripProv(Loc))
+          ~> checkSeq(stripProv(Loc), ReadFrom)
           ~> checkBounds(stripProv(Loc), size(Bytes))
           ~> writeBytesBuffered(stripProv(Loc), Bytes)
      rule writeBytesFill(Loc::SymLoc, N::Int, V::Bits)
           => checkRestrict(true, Loc)
           ~> checkWrite(stripProv(Loc))
-          ~> checkSeq(stripProv(Loc))
+          ~> checkSeq(stripProv(Loc), .Set)
           ~> checkBounds(stripProv(Loc), N)
           ~> fillBytesBuffered(stripProv(Loc), N, V)
 
@@ -45,20 +45,21 @@ module C-IO
      rule initBytesFill(Loc::SymLoc, N::Int, V::Bits)
           => fillBytesBuffered(stripProv(Loc), N, V)
 
-
-     syntax KItem ::= checkSeq(SymLoc)
-     rule <k> checkSeq(Loc::SymLoc) => .K ...</k>
+     syntax KItem ::= checkSeq(SymLoc, Set)
+     rule <k> checkSeq(Loc::SymLoc, ReadFrom::Set) => .K ...</k>
           <locs-written>
                Locs::Set (.Set => SetItem(Loc))
           </locs-written>
           <locs-read> LocsRead::Set </locs-read>
           requires notBool (Loc in Locs)
-               andBool notBool (Loc in LocsRead)
+               andBool notBool (Loc in (LocsRead -Set ReadFrom))
           [structural]
-     rule <k> checkSeq(Loc::SymLoc) => errorUnseqEffects ...</k>
+     // TODO(chathhorn): misses cases when the loc is read in both the expression
+     // context and the expression being written.
+     rule <k> checkSeq(Loc::SymLoc, ReadFrom::Set) => errorUnseqEffects ...</k>
           <locs-written> Locs::Set </locs-written>
           <locs-read> LocsRead::Set </locs-read>
-          requires (Loc in Locs) orBool (Loc in LocsRead)
+          requires (Loc in Locs) orBool (Loc in (LocsRead -Set ReadFrom))
           [structural]
 
      syntax KItem ::= checkWrite(SymLoc)

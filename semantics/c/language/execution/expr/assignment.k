@@ -11,7 +11,7 @@ module C-EXPR-ASSIGNMENT
 
      rule nclv(Loc:SymLoc, T'::Type) := tv(V:CValue, T::UType)
           => checkOverlap(stripProv(Loc), T, T')
-          ~> write(Loc, V, T')
+          ~> write(Loc, V, T', keys(getReadFromMap(T)))
           ~> tv(V, stripConstants(T))
           requires notBool isRestrictType(T')
                andBool (T ==Type utype(T'))
@@ -19,31 +19,22 @@ module C-EXPR-ASSIGNMENT
      rule nclv(Loc:SymLoc, T'::Type) := tv(V:SymLoc, T::UType)
           => checkOverlap(stripProv(Loc), T, T')
           ~> checkRestrictAssign(getRestrictBlock(T'), getRelevantTags(Loc, V))
-          ~> write(Loc, V, T')
+          ~> write(Loc, V, T', keys(getReadFromMap(T)))
           ~> tv(V, stripConstants(T))
           requires isRestrictType(T')
                andBool (T ==Type utype(T'))
           [structural]
 
-     syntax KItem ::= checkOverlap(SymLoc, UType, Type)
-     rule checkOverlap(Loc:SymLoc, T::UType, T'::Type) => .K
-          requires notBool hasReadFrom(T)
-               orBool (getReadFromLoc(T) ==K Loc
-                   andBool getReadFromLen(T) ==K byteSizeofType(T'))
-               orBool notBool sameBase(getReadFromLoc(T), Loc)
-               orBool (getReadFromLoc(T) +bytes byteSizeofType(T)) <=bytes Loc
-               orBool (Loc +bytes byteSizeofType(T)) <=bytes getReadFromLoc(T)
-          [structural]
+     syntax K ::= checkOverlap(SymLoc, UType, Type) [function]
+     rule checkOverlap(Loc:SymLoc, T::UType, T'::Type) => errorOverlap
+          requires getReadFromLen(T, Loc) =/=Int byteSizeofType(T')
+               andBool isOverlappedRead(T, Loc, byteSizeofType(T'))
+     rule checkOverlap(_, _, _) => .K [owise]
+
+     syntax Error ::= "errorOverlap"
      rule (.K => UNDEF("EEA1",
                "Assignment from non-exactly-overlapping overlapping read."))
-          ~> checkOverlap(Loc:SymLoc, T::UType, T'::Type)
-          requires hasReadFrom(T)
-               andBool sameBase(getReadFromLoc(T), Loc)
-               andBool (getReadFromLoc(T) =/=K Loc
-                   orBool getReadFromLen(T) =/=K byteSizeofType(T'))
-               andBool (getReadFromLoc(T) +bytes byteSizeofType(T)) >bytes Loc
-               andBool (Loc +bytes byteSizeofType(T)) >bytes getReadFromLoc(T)
-          [structural]
+          ~> errorOverlap
 
      syntax Set ::= getRelevantTags(SymLoc, SymLoc) [function]
      rule getRelevantTags(Loc':SymLoc, Loc:SymLoc)
@@ -58,19 +49,20 @@ module C-EXPR-ASSIGNMENT
           requires Base =/=K Base'
      rule getRelevantTags'(.K, _, .Set) => .Set
 
-     syntax KItem ::= checkRestrictAssign(Scope, Set)
-     rule checkRestrictAssign(Tag:Scope, Tags:Set) => .K
-          requires ((Tag =/=K fileScope) andBool notBool (Tag in Tags))
-               orBool Tag ==K none
-     rule (.K => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block."))
-          ~> checkRestrictAssign(Tag:Scope, Tags:Set)
+     syntax K ::= checkRestrictAssign(Scope, Set) [function]
+     rule checkRestrictAssign(Tag:Scope, Tags:Set) => errorRestrictPointerAssign1
           requires Tag in Tags
-     rule checkRestrictAssign(fileScope, .Set) => .K
      // TODO(chathhorn): more cases here we don't catch.
-     rule (.K => UNDEF("EEA3", "Attempt to alias restrict qualified pointers associated with incompatible blocks."))
-          ~> checkRestrictAssign(fileScope, Tags:Set)
+     rule checkRestrictAssign(fileScope, Tags:Set) => errorRestrictPointerAssign2
           requires notBool (fileScope in Tags)
                andBool Tags =/=K .Set
+     rule checkRestrictAssign(_, _) => .K [owise]
+
+     syntax Error ::= "errorRestrictPointerAssign1" | "errorRestrictPointerAssign2"
+     rule (.K => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block."))
+          ~> errorRestrictPointerAssign1
+     rule (.K => UNDEF("EEA3", "Attempt to alias restrict qualified pointers associated with incompatible blocks."))
+          ~> errorRestrictPointerAssign2
 
      rule compoundAssign(LV:KResult, AExp:K)
           => #compoundAssign(LV, LV, AExp)

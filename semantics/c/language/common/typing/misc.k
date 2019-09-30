@@ -202,22 +202,41 @@ module C-TYPING-MISC
      rule getRestrictBlock''(SetItem(K:KItem) S:Set) => getRestrictBlock'(K, S)
      rule getRestrictBlock''(.Set) => none
 
-     rule getReadFromLoc(T::UType) => #getReadFromLoc(getModifiers(T))
+     rule getReadFromLen(T::UType, Loc::SymLoc) => #getReadFromLen(getModifiers(T), stripProv(Loc))
 
-     syntax SymLoc ::= #getReadFromLoc(Set) [function]
-     rule #getReadFromLoc(SetItem(readFrom(Loc:SymLoc, _)) _) => Loc
-     rule #getReadFromLoc(_) => NullPointer [owise]
-
-     syntax Int ::= #getReadFromLen(Set) [function]
-     rule getReadFromLen(T::UType) => #getReadFromLen(getModifiers(T))
-
-     rule #getReadFromLen(SetItem(readFrom(_, Len:Int)) _) => Len
-     rule #getReadFromLen(_) => 0 [owise]
+     syntax Int ::= #getReadFromLen(Set, SymLoc) [function]
+     rule #getReadFromLen(SetItem(readFrom((Loc |-> Len:Int) _::Map)) _, Loc::SymLoc) => Len
+     rule #getReadFromLen(_, _) => 0 [owise]
 
      rule updateReadFrom(T::UType, Loc::SymLoc)
-          => updateReadFrom(T, Loc, byteSizeofType(T))
-     rule updateReadFrom(T::UType, Loc::SymLoc, Len::Int)
-          => addModifier(readFrom(stripProv(Loc), Len), stripReadFrom(T))
+          => #updateReadFrom(T, stripProv(Loc), getReadFromMap(T))
+
+     syntax UType ::= #updateReadFrom(UType, SymLoc, Map) [function]
+     rule #updateReadFrom(T::UType, Loc::SymLoc, M::Map (Loc |-> Len::Int))
+          => #setReadFromMap(T, M (Loc |-> maxInt(Len, byteSizeofType(T))))
+     rule #updateReadFrom(T::UType, Loc::SymLoc, M::Map)
+          => #setReadFromMap(T, M (Loc |-> byteSizeofType(T)))
+          [owise]
+
+     rule getReadFromMap(ut(SetItem(readFrom(M::Map)) _::Set, _)) => M
+     rule getReadFromMap(_) => .Map [owise]
+
+     rule isOverlappedRead(T::UType, Loc::SymLoc, Len::Int)
+          => #isOverlappedRead(keys_list(getReadFromMap(T)), getReadFromMap(T), Loc, Loc +bytes Len)
+
+     syntax Bool ::= #isOverlappedRead(List, Map, SymLoc, SymLoc) [function]
+     rule #isOverlappedRead(ListItem(L::SymLoc) _::List, M::Map, LocStart::SymLoc, LocEnd::SymLoc) => true
+          requires sameBase(L, LocStart) andBool L <bytes LocEnd
+               andBool (L +bytes {M[L]}:>Int) >bytes LocStart
+     rule #isOverlappedRead((ListItem(L::SymLoc) => .List) _::List, _, _, _) [owise]
+     rule #isOverlappedRead(.List, _, _, _) => false
+
+     syntax UType ::= #setReadFromMap(UType, Map) [function]
+     rule #setReadFromMap(ut(SetItem(readFrom(_)) Mods::Set, T::SimpleUType), M::Map)
+          => ut(SetItem(readFrom(M)) Mods, T)
+     rule #setReadFromMap(ut(Mods::Set, T::SimpleUType), M::Map)
+          => ut(SetItem(readFrom(M)) Mods, T)
+          [owise]
 
      rule arrayLength(t(_, _, arrayType(_, N:Int))) => N
 

@@ -1,6 +1,7 @@
 module C-MEMORY-WRITING-SYNTAX
      imports BASIC-K
      imports INT-SYNTAX
+     imports SET
      imports STRING-SYNTAX
      imports C-DYNAMIC-SORTS
      imports C-TYPING-SORTS
@@ -8,11 +9,11 @@ module C-MEMORY-WRITING-SYNTAX
      imports BITS-SYNTAX
 
      // location, value
-     syntax KItem ::= write(SymLoc, CValue, Type)
+     syntax KItem ::= write(SymLoc, CValue, Type, Set)
      syntax KItem ::= init(SymLoc, CValue, Type)
 
      // Either buffered or unbuffered depending on whether we're executing.
-     syntax KItem ::= writeBytes(SymLoc, List)
+     syntax KItem ::= writeBytes(SymLoc, List, Set)
      syntax KItem ::= writeBytesFill(SymLoc, Int, Bits)
      syntax KItem ::= initBytes(SymLoc, List)
      syntax KItem ::= initBytesFill(SymLoc, Int, Bits)
@@ -66,48 +67,48 @@ module C-MEMORY-WRITING
      imports MEMORY-SYNTAX
 
      // Write thread-local or auto.
-     rule write(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, false)
+     rule write(Loc:SymLoc, V:CValue, T:Type, ReadFrom:Set) => writeSpecific(Loc, V, T, false, ReadFrom)
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool notBool isConstType(T)
           [structural]
      // Write global, shared data, or "allocated" duration.
-     rule write(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, false)
+     rule write(Loc:SymLoc, V:CValue, T:Type, ReadFrom:Set) => writeSpecific(Loc, V, T, false, ReadFrom)
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
                andBool notBool isConstType(T)
                andBool notBool isStringLoc(Loc)
                andBool notBool isLinkerLoc(Loc)
           [ndtrans]
-     rule write(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, false)
+     rule write(Loc:SymLoc, V:CValue, T:Type, ReadFrom:Set) => writeSpecific(Loc, V, T, false, ReadFrom)
           requires isNativeLoc(Loc)
           [ndtrans]
      rule (.K => CV("CMW2", "Trying to write through a const lvalue.") )
-          ~> write(_, _, T:Type)
+          ~> write(_, _, T:Type, _)
           requires isConstType(T)
           [structural]
      rule (.K => UNDEF("CMW1", "Trying to modify a string literal."))
-          ~> write(Loc:SymLoc, _, _)
+          ~> write(Loc:SymLoc, _, _, _)
           requires isStringLoc(Loc)
           [structural]
 
-     rule init(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, true)
+     rule init(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, true, .Set)
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
           [structural]
-     rule init(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, true)
+     rule init(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, true, .Set)
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
                andBool notBool isLinkerLoc(Loc)
           [ndtrans]
 
-     syntax KItem ::= writeSpecific(SymLoc, CValue, Type, Bool)
-     rule <k> writeSpecific(Loc::SymLoc, V::CValue, T::Type, IsInit::Bool)
+     syntax KItem ::= writeSpecific(SymLoc, CValue, Type, Bool, Set)
+     rule <k> writeSpecific(Loc::SymLoc, V::CValue, T::Type, IsInit::Bool, ReadFrom::Set)
                => updateEffectiveType(Loc)
                ~> makePaddingUnknown(base(Loc), bitOffset(Loc), getEffectiveType(base(Loc)))
                ~> checkVolatile(Loc, getEffectiveType(base(Loc)), T)
-               ~> writeSpecific'(Loc, stripLastAccessType(V), T, IsInit)
+               ~> writeSpecific'(Loc, stripLastAccessType(V), T, IsInit, ReadFrom)
           ...</k>
           <mem> Mem::Map </mem>
           requires base(Loc) in_keys(Mem)
-     rule <k> writeSpecific(Loc::SymLoc, V::CValue, T::Type, IsInit::Bool)
-               => writeSpecific'(Loc, stripLastAccessType(V), T, IsInit)
+     rule <k> writeSpecific(Loc::SymLoc, V::CValue, T::Type, IsInit::Bool, ReadFrom::Set)
+               => writeSpecific'(Loc, stripLastAccessType(V), T, IsInit, ReadFrom)
           ...</k>
           <mem> Mem::Map </mem>
           requires notBool (base(Loc) in_keys(Mem))
@@ -123,19 +124,19 @@ module C-MEMORY-WRITING
                orBool notBool (Volatile() inQuals getQualsAtOffset(ObjT, offset(Loc)))
           [structural]
 
-     syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type "," Bool ")"
-     rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type, false)
-          => writeBytes(Loc, splitBytes(tv(V, utype(T))))
+     syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type "," Bool "," Set ")"
+     rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type, false, ReadFrom::Set)
+          => writeBytes(Loc, splitBytes(tv(V, utype(T))), ReadFrom)
           requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
                andBool (bitOffset(Loc) %Int cfg:bitsPerByte ==Int 0)
           [structural]
-     rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type, true)
+     rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type, true, _)
           => initBytes(Loc, splitBytes(tv(V, utype(T))))
           requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
                andBool (bitOffset(Loc) %Int cfg:bitsPerByte ==Int 0)
           [structural]
-     rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type, IsInit::Bool)
-          => writeUnalignedBits(Loc, toBits(V, T), IsInit)
+     rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type, IsInit::Bool, ReadFrom::Set)
+          => writeUnalignedBits(Loc, toBits(V, T), IsInit, ReadFrom)
           requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
                orBool (bitOffset(Loc) %Int cfg:bitsPerByte =/=Int 0)
           [structural]
@@ -222,17 +223,17 @@ module C-MEMORY-WRITING
                     bitOffsetIntoLastByte(Loc))
           ))
      rule initPaddingBits(Loc::SymLoc, N::Int, true)
-          => writeUnalignedBits(Loc, explodeToBits(ListItem(piece(trap, N))), true)
+          => writeUnalignedBits(Loc, explodeToBits(ListItem(piece(trap, N))), true, .Set)
 
      syntax KItem ::= ooga(Int, Int, List, List, List, List)
 
      // Loc, list of bit values, true for init
-     syntax KItem ::= writeUnalignedBits(SymLoc, List, Bool)
+     syntax KItem ::= writeUnalignedBits(SymLoc, List, Bool, Set)
      rule (.K => readBytesForWriting(Loc, byteRange(Loc, size(Bits))))
-          ~> writeUnalignedBits(Loc::SymLoc, Bits::List, _)
-     rule dataList(Bytes::List) ~> writeUnalignedBits(Loc::SymLoc, Bits::List, false)
-          => writeBytes(Loc, joinBitsToBytes(calculateNewBits(Bits, explodeToBits(Bytes), bitOffsetIntoLastByte(Loc))))
-     rule dataList(Bytes::List) ~> writeUnalignedBits(Loc::SymLoc, Bits::List, true)
+          ~> writeUnalignedBits(Loc::SymLoc, Bits::List, _, _)
+     rule dataList(Bytes::List) ~> writeUnalignedBits(Loc::SymLoc, Bits::List, false, ReadFrom::Set)
+          => writeBytes(Loc, joinBitsToBytes(calculateNewBits(Bits, explodeToBits(Bytes), bitOffsetIntoLastByte(Loc))), ReadFrom)
+     rule dataList(Bytes::List) ~> writeUnalignedBits(Loc::SymLoc, Bits::List, true, _)
           => initBytes(Loc, joinBitsToBytes(calculateNewBits(Bits, explodeToBits(Bytes), bitOffsetIntoLastByte(Loc))))
 
      syntax Int ::= justBits(Int, UType) [function]

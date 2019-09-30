@@ -14,7 +14,7 @@ module C-RACES
                read(Loc:SymLoc, T:Type)
           ...</k>
           <k> (.K => UNDEF("CEER4", "Have a read-write datarace.")) ~>
-               write(Loc':SymLoc, _, T':Type)
+               write(Loc':SymLoc, _, T':Type, _)
           ...</k>
           requires sameBase(Loc, Loc') andBool
                ((Loc <=bytes Loc'
@@ -25,10 +25,10 @@ module C-RACES
 
       rule [write-write-race]:
           <k> (.K => UNDEF("CEER5", "Have a write-write datarace.")) ~>
-               write(Loc:SymLoc, _, T:Type)
+               write(Loc:SymLoc, _, T:Type, _)
           ...</k>
           <k> (.K => UNDEF("CEER5", "Have a write-write datarace.")) ~>
-               write(Loc':SymLoc, _, T':Type)
+               write(Loc':SymLoc, _, T':Type, _)
           ...</k>
           requires sameBase(Loc, Loc') andBool
                ((Loc <=bytes Loc'
