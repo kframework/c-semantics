@@ -404,7 +404,18 @@ public:
 
       TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
       TRY_TO(TraverseStmt(D->getBody()));
+      return true;
     }
+
+    // declaration
+    Kast::add(Kast::KApply("declare", Sort::KITEM, {Sort::KITEM, Sort::K}));
+    Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::KITEM}));
+    TRY_TO(TraverseDeclarationName(D->getDeclName()));
+    StorageClass(D->getStorageClass());
+    currentFunctionDecl = D;
+    TRY_TO(TraverseType(D->getType()));
+    currentFunctionDecl = nullptr;
+    Kast::add(Kast::KApply("NoInit", Sort::INIT));
     return true;
   }
 
@@ -572,6 +583,7 @@ public:
   static bool isEmpty(std::unique_ptr<Kast::Node> const &p) {
     return !p;
   }
+
   bool TraverseVarHelper_c(VarDecl *D) {
     Kast::add(Kast::KApply("declare", Sort::KITEM, {Sort::KITEM, Sort::K}));
     Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::KITEM}));
