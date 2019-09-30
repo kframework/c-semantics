@@ -341,6 +341,19 @@ module C-COMMON-EXPR-RELATIONAL
           requires notBool hasLint
           [structural]
 
+     rule tv(encodedValue(V:EncodableValue, N:Int, M:Int), T::UType) == tv(encodedValue(V':EncodableValue, N, M), T'::UType)
+          => tv(V, T) == tv(V', T')
+     rule tv(encodedValue(V:EncodableValue, N:Int, M:Int), T::UType) != tv(encodedValue(V':EncodableValue, N, M), T'::UType)
+          => tv(V, T) != tv(V', T')
+     rule tv(encodedValue(V:EncodableValue, N:Int, M:Int), T::UType) < tv(encodedValue(V':EncodableValue, N, M), T'::UType)
+          => tv(V, T) < tv(V', T')
+     rule tv(encodedValue(V:EncodableValue, N:Int, M:Int), T::UType) <= tv(encodedValue(V':EncodableValue, N, M), T'::UType)
+          => tv(V, T) <= tv(V', T')
+     rule tv(encodedValue(V:EncodableValue, N:Int, M:Int), T::UType) > tv(encodedValue(V':EncodableValue, N, M), T'::UType)
+          => tv(V, T) > tv(V', T')
+     rule tv(encodedValue(V:EncodableValue, N:Int, M:Int), T::UType) >= tv(encodedValue(V':EncodableValue, N, M), T'::UType)
+          => tv(V, T) >= tv(V', T')
+
      rule tv(encodedPtr(Loc:SymLoc, N:Int, M:Int), T::UType) == tv(encodedPtr(Loc':SymLoc, N:Int, M:Int), T'::UType)
           => tv(Loc, T) == tv(Loc', T')
      rule tv(encodedPtr(Loc:SymLoc, N:Int, M:Int), T::UType) != tv(encodedPtr(Loc':SymLoc, N:Int, M:Int), T'::UType)
