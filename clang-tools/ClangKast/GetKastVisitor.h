@@ -1180,10 +1180,14 @@ std::string ifc(std::string c, std::string cpp) {
     return false;
   }
 
+  void pointerType() {
+    Kast::add(Kast::KApply("pointerType", Sort::SIMPLEPOINTERTYPE, {Sort::TYPE}));
+  }
+
   bool VisitPointerType(clang::PointerType *T) {
     if (cparser()) {
       Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
-      Kast::add(Kast::KApply("pointerType", Sort::SIMPLEPOINTERTYPE, {Sort::TYPE}));
+      pointerType();
     }
     else
       Kast::add(Kast::KApply("PointerType", Sort::ATYPE, {Sort::ATYPE}));
@@ -1210,9 +1214,13 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool TraverseConstantArrayType_c(ConstantArrayType *T) {
     Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
-    Kast::add(Kast::KApply("arrayType", Sort::SIMPLEFIXEDARRAYTYPE,{Sort::TYPE, Sort::INT}));
+    if (currentFunctionDecl)
+      pointerType();
+    else
+      Kast::add(Kast::KApply("arrayType", Sort::SIMPLEFIXEDARRAYTYPE,{Sort::TYPE, Sort::INT}));
     TRY_TO(TraverseType(T->getElementType()));
-    VisitAPInt(T->getSize());
+    if (!currentFunctionDecl)
+      VisitAPInt(T->getSize());
     return true;
   }
 
@@ -1234,9 +1242,14 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool TraverseVariableArrayType_c(VariableArrayType *T) {
     Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
-    Kast::add(Kast::KApply("variableLengthArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
+    if (currentFunctionDecl)
+      pointerType();
+    else
+      Kast::add(Kast::KApply("variableLengthArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
     TRY_TO(TraverseType(T->getElementType()));
-    TRY_TO(TraverseStmt(T->getSizeExpr()));
+
+    if (!currentFunctionDecl)
+      TRY_TO(TraverseStmt(T->getSizeExpr()));
     return true;
   }
 
@@ -1252,7 +1265,10 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool TraverseIncompleteArrayType_c(IncompleteArrayType *T) {
     Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
-    Kast::add(Kast::KApply("incompleteArrayType", Sort::SIMPLEINCOMPLETEARRAYTYPE,{Sort::TYPE}));
+    if (currentFunctionDecl)
+      pointerType();
+    else
+      Kast::add(Kast::KApply("incompleteArrayType", Sort::SIMPLEINCOMPLETEARRAYTYPE,{Sort::TYPE}));
     TRY_TO(TraverseType(T->getElementType()));
     return true;
   }
