@@ -1421,13 +1421,15 @@ std::string ifc(std::string c, std::string cpp) {
       switch(T->getKeyword()) {
         case ETK_Enum:
           Kast::add(Kast::KApply("EnumRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
-          TraverseType(T->getNamedType());
-          strictlist();
-          Kast::add(Kast::KApply(".List", Sort::LIST));
+          break;
+        case ETK_Struct:
+          Kast::add(Kast::KApply("StructRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
           break;
         default:
           throw std::logic_error("unimplemented: type keyword");
       }
+      TraverseType(T->getNamedType());
+      emptyStrictList();
       return true;
     }
     Kast::add(Kast::KApply("QualifiedTypeName", Sort::ATYPE, {Sort::TAG, Sort::NNS, Sort::ATYPE}));
