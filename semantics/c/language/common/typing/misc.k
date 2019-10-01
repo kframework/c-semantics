@@ -138,8 +138,10 @@ module C-TYPING-MISC
      rule stripConstants(V:RValue) => V [owise]
 
      rule addQualifier(Q:Qualifier, T:Type) => addQualifiers(noQuals +Qual Q, T)
+     rule addQualifierStrict(Q:Qualifier, T:Type) => addQualifier(Q, T)
 
      rule addStorage(S:StorageClassSpecifier, T:Type) => addModifier(S, T)
+     rule addStorageStrict(S:StorageClassSpecifier, T:Type) => addStorage(S, T)
 
      rule addModifier(M:Modifier, T:UType) => utype(addModifier(M, type(T)))
      rule addModifiers(Mods::Set, T:UType) => utype(addModifiers(Mods, type(T)))

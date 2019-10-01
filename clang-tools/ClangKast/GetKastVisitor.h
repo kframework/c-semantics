@@ -2683,7 +2683,7 @@ private:
   }
 
   void addStorage(const char *str) {
-    Kast::add(Kast::KApply("addStorage", Sort::TYPE, {Sort::STORAGECLASSSPECIFIER, Sort::TYPE}));
+    Kast::add(Kast::KApply("addStorageStrict", Sort::KITEM, {Sort::STORAGECLASSSPECIFIER, Sort::TYPE}));
     Kast::add(Kast::KApply(str, Sort::STORAGECLASSSPECIFIER));
   }
 
@@ -2818,7 +2818,7 @@ private:
 
   void Qualifier(const char * str) {
     if (cparser()) {
-      Kast::add(Kast::KApply("addQualifier", Sort::TYPE, {Sort::QUALIFIER, Sort::TYPE}));
+      Kast::add(Kast::KApply("addQualifierStrict", Sort::KITEM, {Sort::QUALIFIER, Sort::TYPE}));
     } else {
       Kast::add(Kast::KApply("Qualifier", Sort::ATYPE, {Sort::QUALIFIER, Sort::ATYPE}));
     }

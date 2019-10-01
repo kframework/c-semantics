@@ -323,8 +323,10 @@ module C-TYPING-SYNTAX
      syntax RValue ::= stripConstants(RValue) [function]
 
      syntax Type ::= addQualifier(Qualifier, Type) [function]
+     syntax KItem ::= addQualifierStrict(Qualifier, Type) [strict(2)]
      syntax Type ::= addQualifiers(Quals, Type) [function]
      syntax Type ::= addStorage(StorageClassSpecifier, Type) [function]
+     syntax KItem ::= addStorageStrict(StorageClassSpecifier, Type) [strict(2)]
 
      syntax Type ::= addModifiers(Set, Type) [function]
      syntax Type ::= addModifier(Modifier, Type) [function]
