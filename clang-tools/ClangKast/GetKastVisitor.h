@@ -182,6 +182,15 @@ public:
     return true;
   }
 
+  void emptyList() {
+    Kast::add(Kast::KApply(".List", Sort::LIST));
+  }
+
+  void emptyStrictList(){
+    strictlist();
+    emptyList();
+  }
+
   bool VisitTranslationUnitDecl(TranslationUnitDecl *D) {
     if (cparser())
       Kast::add(Kast::KApply("TranslationUnit", Sort::KITEM, {Sort::STRING, Sort::STRICTLIST, Sort::STRICTLIST}));
@@ -189,10 +198,8 @@ public:
       Kast::add(Kast::KApply("TranslationUnit", Sort::DECL, {Sort::STRING, Sort::LIST}));
 
     Kast::add(Kast::KToken(InFile));
-    if (cparser()) {
-      strictlist();
-      Kast::add(Kast::KApply(".List", Sort::LIST));
-    }
+    if (cparser())
+      emptyStrictList();
 
     if (cparser())
       strictlist();
@@ -631,6 +638,31 @@ public:
   }
 
   bool TraverseFieldDecl(FieldDecl *D) {
+    return cparser()? TraverseFieldDecl_c(D) : TraverseFieldDecl_cpp(D);
+  }
+
+  bool TraverseFieldDecl_c(FieldDecl *D) {
+    Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
+    TRY_TO(TraverseType(D->getType()));
+    strictlist();
+    Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+    if (D->isBitField()) {
+      Kast::add(Kast::KApply("BitFieldName", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+    } else {
+      Kast::add(Kast::KApply("FieldName", Sort::KITEM, {Sort::KITEM}));
+    }
+    Kast::add(Kast::KApply("Name", Sort::NAME, {Sort::CID, Sort::KITEM, Sort::KITEM}));
+    TRY_TO(TraverseDeclarationName(D->getDeclName()));
+    JustBase();
+    emptyStrictList();
+
+    if (D->isBitField()) {
+      TRY_TO(TraverseStmt(D->getBitWidth()));
+    }
+    return true;
+  }
+
+  bool TraverseFieldDecl_cpp(FieldDecl *D) {
     if (D->isMutable()) {
       Specifier("Mutable", Sort::STORAGECLASSSPECIFIER);
     }
@@ -932,6 +964,21 @@ public:
 
   bool TraverseCXXRecordDecl(CXXRecordDecl *D) {
     TRY_TO(TraverseCXXRecordHelper(D));
+    return true;
+  }
+
+  bool TraverseRecordDecl(RecordDecl *D) {
+    if (!cparser())
+      return true;
+
+    Kast::add(Kast::KApply("StructDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
+    TRY_TO(TraverseDeclarationAsName(D));
+    strictlist();
+    DeclContext(D);
+    TraverseDeclContextNode(D);
+    strictlist();
+    Kast::add(Kast::KApply(".List", Sort::LIST));
+
     return true;
   }
 
@@ -2145,6 +2192,10 @@ std::string ifc(std::string c, std::string cpp) {
     return true;
   }
 
+  void JustBase() {
+    Kast::add(Kast::KApply("JustBase", Sort::KITEM));
+  }
+
   bool TraverseCStyleCastExpr(CStyleCastExpr *E) {
     if (cparser()) {
       Kast::add(Kast::KApply("Cast", Sort::KITEM, {Sort::K, Sort::KITEM, Sort::K}));
@@ -2154,7 +2205,7 @@ std::string ifc(std::string c, std::string cpp) {
 
     TRY_TO(TraverseTypeLoc(E->getTypeInfoAsWritten()->getTypeLoc()));
     if (cparser())
-      Kast::add(Kast::KApply("JustBase", Sort::KITEM));
+      JustBase();
 
     TRY_TO(TraverseStmt(E->getSubExpr()));
     return true;
