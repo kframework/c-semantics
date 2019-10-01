@@ -1141,7 +1141,7 @@ public:
   void TraverseFunctionProtoType_c_helper(QualType returnType, unsigned int numParams) {
     typeFromSimpleType();
     Kast::add(Kast::KApply("functionType", Sort::SIMPLEFUNCTIONTYPE, {Sort::UTYPE, Sort::LIST}));
-    Kast::add(Kast::KApply("utype", Sort::UTYPE, {Sort::TYPE}));
+    utypeFromType();
     TraverseType(returnType);
     KSeqList(numParams);
   }
@@ -2503,11 +2503,15 @@ std::string ifc(std::string c, std::string cpp) {
     return false;
   }
 
+  void utypeFromType() {
+    Kast::add(Kast::KApply("utype", Sort::UTYPE, {Sort::TYPE}));
+  }
+
   bool TraverseIntegerLiteral(IntegerLiteral *Constant) {
     if (cparser()) {
       Kast::add(Kast::KApply("tv", Sort::RVALUE, {Sort::CVALUE, Sort::UTYPE}));
       VisitAPInt(Constant->getValue());
-      Kast::add(Kast::KApply("utype", Sort::UTYPE, {Sort::TYPE}));
+      utypeFromType();
       Kast::add(Kast::KApply("addModifier", Sort::TYPE, {Sort::MODIFIER, Sort::TYPE}));
       Kast::add(Kast::KApply("IntegerConstant_C-TYPING-SYNTAX", Sort::MODIFIER));
       TRY_TO(TraverseType(Constant->getType()));
@@ -2523,7 +2527,7 @@ std::string ifc(std::string c, std::string cpp) {
     if (cparser()) {
       Kast::add(Kast::KApply("tv", Sort::RVALUE, {Sort::CVALUE, Sort::UTYPE}));
       VisitAPFloat(Constant->getValue());
-      Kast::add(Kast::KApply("utype", Sort::UTYPE, {Sort::TYPE}));
+      utypeFromType();
       TRY_TO(TraverseType(Constant->getType()));
     } else {
       Kast::add(Kast::KApply("FloatingLiteral", Sort::EXPR, {Sort::FLOAT, Sort::ATYPE}));
