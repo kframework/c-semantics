@@ -1148,14 +1148,14 @@ public:
 
   bool TraverseFunctionProtoType_c(FunctionProtoType *T) {
     TraverseFunctionProtoType_c_helper(T->getReturnType(), T->getNumParams());
-    if (currentFunctionDecl == nullptr)
-      throw std::logic_error("TraverseFunctionHelper_c not called");
 
     for (unsigned i = 0; i < T->getNumParams(); i++) {
-      Kast::add(Kast::KApply("typedDeclaration", Sort::DTYPE, {Sort::TYPE, Sort::CID}));
+      if (currentFunctionDecl)
+        Kast::add(Kast::KApply("typedDeclaration", Sort::DTYPE, {Sort::TYPE, Sort::CID}));
       TRY_TO(TraverseType(T->getParamType(i)));
       //currentFunctionDecl->parameters()[i]->getName()
-      TRY_TO(TraverseDeclarationName(currentFunctionDecl->parameters()[i]->getDeclName()));
+      if (currentFunctionDecl)
+        TRY_TO(TraverseDeclarationName(currentFunctionDecl->parameters()[i]->getDeclName()));
     }
     return true;
   }
