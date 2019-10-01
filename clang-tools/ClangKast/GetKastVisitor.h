@@ -1139,7 +1139,7 @@ public:
   }
 
   void TraverseFunctionProtoType_c_helper(QualType returnType, unsigned int numParams) {
-    Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+    typeFromSimpleType();
     Kast::add(Kast::KApply("functionType", Sort::SIMPLEFUNCTIONTYPE, {Sort::UTYPE, Sort::LIST}));
     Kast::add(Kast::KApply("utype", Sort::UTYPE, {Sort::TYPE}));
     TraverseType(returnType);
@@ -1275,7 +1275,7 @@ std::string ifc(std::string c, std::string cpp) {
     }();
 
     if (cparser()) {
-      Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+      typeFromSimpleType();
       Kast::add(Kast::KApply(type_name, Sort::SIMPLETYPE));
     } else {
       Kast::add(Kast::KApply(type_name, Sort::TYPESPECIFIER));
@@ -1287,9 +1287,13 @@ std::string ifc(std::string c, std::string cpp) {
     Kast::add(Kast::KApply("pointerType", Sort::SIMPLEPOINTERTYPE, {Sort::TYPE}));
   }
 
+  void typeFromSimpleType() {
+    Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+  }
+
   bool VisitPointerType(clang::PointerType *T) {
     if (cparser()) {
-      Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+      typeFromSimpleType();
       pointerType();
     }
     else
@@ -1316,7 +1320,7 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseConstantArrayType_c(ConstantArrayType *T) {
-    Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+    typeFromSimpleType();
     if (currentFunctionDecl)
       pointerType();
     else
@@ -1344,7 +1348,7 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseVariableArrayType_c(VariableArrayType *T) {
-    Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+    typeFromSimpleType();
     if (currentFunctionDecl)
       pointerType();
     else
@@ -1367,7 +1371,7 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseIncompleteArrayType_c(IncompleteArrayType *T) {
-    Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+    typeFromSimpleType();
     if (currentFunctionDecl)
       pointerType();
     else
