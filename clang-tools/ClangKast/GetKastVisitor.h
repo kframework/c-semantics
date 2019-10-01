@@ -2145,9 +2145,19 @@ std::string ifc(std::string c, std::string cpp) {
     return true;
   }
 
-  bool VisitCStyleCastExpr(CStyleCastExpr *E) {
-    Kast::add(Kast::KApply("ParenthesizedCast", Sort::EXPR, {Sort::ATYPE, Sort::EXPR}));
-    return false;
+  bool TraverseCStyleCastExpr(CStyleCastExpr *E) {
+    if (cparser()) {
+      Kast::add(Kast::KApply("Cast", Sort::KITEM, {Sort::K, Sort::KITEM, Sort::K}));
+    }
+    else
+      Kast::add(Kast::KApply("ParenthesizedCast", Sort::EXPR, {Sort::ATYPE, Sort::EXPR}));
+
+    TRY_TO(TraverseTypeLoc(E->getTypeInfoAsWritten()->getTypeLoc()));
+    if (cparser())
+      Kast::add(Kast::KApply("JustBase", Sort::KITEM));
+
+    TRY_TO(TraverseStmt(E->getSubExpr()));
+    return true;
   }
 
   bool VisitCXXReinterpretCastExpr(CXXReinterpretCastExpr *E) {
