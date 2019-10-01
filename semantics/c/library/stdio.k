@@ -960,7 +960,7 @@ module LIBC-STDIO
           requires notBool isReadable(Mode)
           [structural]
      rule <k> fscanf'(FD::FD, _,
-               (ListItem(" ") => .List) _,
+               (ListItem(whitespace) => .List) _,
                _,
                _ => "",
                _)
@@ -1037,7 +1037,7 @@ module LIBC-STDIO
           [structural]
      rule str(C::String)
           ~> fscanf'(_, _,
-               (ListItem(" ") => .List) _,
+               (ListItem(whitespace) => .List) _,
                _,
                _ => "",
                _)
@@ -1446,7 +1446,7 @@ module LIBC-STDIO
 
      syntax List ::= "parseFormat'" "(" ParseResult "," Bool ")" [function]
      rule parseFormat'(parseResult(D::Directive, L::List), false)
-          => ListItem(" ") ListItem(normalizeDirective(D)) parseFormat(L)
+          => ListItem(whitespace) ListItem(normalizeDirective(D)) parseFormat(L)
           requires isSpaceSkipDirective(D)
      rule parseFormat'(parseResult(D::Directive, L::List), true)
           => ListItem(normalizeDirective(D)) parseFormat(L)
