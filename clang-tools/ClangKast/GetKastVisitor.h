@@ -1366,11 +1366,33 @@ std::string ifc(std::string c, std::string cpp) {
     }
   }
 
-  bool VisitElaboratedType(ElaboratedType *T) {
+  bool TraverseElaboratedType(ElaboratedType *T) {
+    if (cparser()) {
+      Kast::add(Kast::KApply("Specifier", Sort::SPECIFIER, {Sort::STRICTLIST}));
+      strictlist();
+      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+      switch(T->getKeyword()) {
+        case ETK_Enum:
+          Kast::add(Kast::KApply("EnumRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
+          TraverseType(T->getNamedType());
+          strictlist();
+          Kast::add(Kast::KApply(".List", Sort::LIST));
+          break;
+        default:
+          throw std::logic_error("unimplemented: type keyword");
+      }
+      return true;
+    }
     Kast::add(Kast::KApply("QualifiedTypeName", Sort::ATYPE, {Sort::TAG, Sort::NNS, Sort::ATYPE}));
     VisitTypeKeyword(T->getKeyword());
-    if (!T->getQualifier()) NoNNS();
-    return false;
+
+    if (T->getQualifier()) {
+      TRY_TO(TraverseNestedNameSpecifier(T->getQualifier()));
+    } else {
+      NoNNS();
+    }
+    TRY_TO(TraverseType(T->getNamedType()));
+    return true;
   }
 
   bool VisitDecltypeType(DecltypeType *T) {
@@ -1391,8 +1413,10 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool VisitTagType(TagType *T) {
     TagDecl *D = T->getDecl();
-    Name();
-    NoNNS();
+    if (!cparser()) {
+      Name();
+      NoNNS();
+    }
     TRY_TO(TraverseDeclarationAsName(D));
     return false;
   }
