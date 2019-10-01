@@ -74,10 +74,9 @@ typedef unsigned long long int uint_fast64_t;
 # define INT_FAST64_MAX		(9223372036854775807LL)
 # define UINT_FAST64_MAX		(18446744073709551615ULL)
 
-
 // intptr_t and uintptr_t are optional
-typedef signed int intptr_t;
-typedef unsigned int uintptr_t;
+typedef signed long int intptr_t;
+typedef unsigned long int uintptr_t;
 
 typedef signed long long int intmax_t;
 typedef unsigned long long int uintmax_t;
@@ -85,14 +84,13 @@ typedef unsigned long long int uintmax_t;
 # define INTMAX_MAX		(9223372036854775807LL)
 # define UINTMAX_MAX		(18446744073709551615ULL)
 
-# define PTRDIFF_MIN (-2147483647-1)
-# define PTRDIFF_MAX (2147483647)
+# define PTRDIFF_MIN		(-9223372036854775807L-1)
+# define PTRDIFF_MAX		(9223372036854775807L)
 
-# define SIZE_MAX	(4294967295U)
+# define SIZE_MAX		(18446744073709551615UL)
 
 # define WCHAR_MIN (-2147483647-1)
 # define WCHAR_MAX (2147483647)
-
 
 # define INT8_C(value) ((int_least8_t) value)
 # define INT16_C(value) ((int_least16_t) value)
