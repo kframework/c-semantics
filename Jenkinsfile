@@ -1,9 +1,6 @@
 // Object holding the docker image.
 def img
 
-// Our internal registry.
-def PRIVATE_REGISTRY = "https://10.0.0.21:5201"
-
 pipeline {
   agent none 
   options {
@@ -25,13 +22,6 @@ pipeline {
         stage ( 'Build docker image' ) { steps {
           script {
             img = docker.build "c-semantics:${env.CHANGE_ID}"
-          }
-        } }
-        stage ( 'Push to private registry' ) { steps {
-          script {
-            docker.withRegistry ( "${PRIVATE_REGISTRY}", 'rvdockerhub' ) {
-              img.push()
-            }
           }
         } }
         stage ( 'Compile' ) {
