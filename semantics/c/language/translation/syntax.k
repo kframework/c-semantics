@@ -181,7 +181,6 @@ module C-ABSTRACT-SYNTAX
      and init_name = name * init_expression
      */
      syntax KItem ::= InitName(KItem, K) [symbol]
-     context InitName(_, (HOLE:KItem => reval(HOLE))) [ndheat, result(RValue)]
 
      /*
      (* Single names are for declarations that cannot come in groups, like
