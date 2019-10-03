@@ -30,7 +30,7 @@ module C-EXPR-SIZEOF
      \header{<stddef.h>} (and other headers).
      }*/
 
-     rule (.K => typeof(V)) ~> SizeofExpression(V:KItem)
+     rule (.K => typeof(V)) ~> SizeofExpression(V:KResult)
      rule typeof(T:Type) ~> SizeofExpression(V:KItem) => sizeof(T)
           requires notBool isVariableLengthArrayType(T)
                andBool isCompleteType(T)

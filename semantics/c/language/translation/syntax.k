@@ -314,7 +314,7 @@ module C-ABSTRACT-SYNTAX
      | EXPR_ALIGNOF of expression
      | TYPE_ALIGNOF of specifier * decl_type
      */
-     syntax KItem ::= SizeofExpression(K) [symbol]
+     syntax KItem ::= SizeofExpression(KItem) [strict(1), symbol]
      syntax KItem ::= SizeofType(KItem, K) [strict(1), symbol]
      syntax KItem ::= AlignofExpression(KItem) [symbol]
      syntax KItem ::= AlignofType(KItem, KItem) [strict(1), symbol]
