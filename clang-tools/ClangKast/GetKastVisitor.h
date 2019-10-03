@@ -404,12 +404,11 @@ public:
   bool TraverseFunctionHelper_c(FunctionDecl *D){
     if (D->isThisDeclarationADefinition()) {
       Kast::add(Kast::KApply("FunctionDefinition", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
-      Kast::add(Kast::KApply("typedDeclaration", Sort::DTYPE, {Sort::TYPE, Sort::CID}));
+      Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
+      TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
       currentFunctionDecl = D;
       TRY_TO(TraverseType(D->getType()));
       currentFunctionDecl = nullptr;
-
-      TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
       TRY_TO(TraverseStmt(D->getBody()));
       return true;
     }
@@ -1139,8 +1138,7 @@ public:
   }
 
   void TraverseFunctionProtoType_c_helper(QualType returnType, unsigned int numParams) {
-    typeFromSimpleType();
-    Kast::add(Kast::KApply("functionType", Sort::SIMPLEFUNCTIONTYPE, {Sort::UTYPE, Sort::LIST}));
+    Kast::add(Kast::KApply("createFunctionType", Sort::KITEM, {Sort::KITEM, Sort::LIST}));
     utypeFromType();
     TraverseType(returnType);
     KSeqList(numParams);
@@ -1150,12 +1148,11 @@ public:
     TraverseFunctionProtoType_c_helper(T->getReturnType(), T->getNumParams());
 
     for (unsigned i = 0; i < T->getNumParams(); i++) {
-      if (currentFunctionDecl)
-        Kast::add(Kast::KApply("typedDeclaration", Sort::DTYPE, {Sort::TYPE, Sort::CID}));
-      TRY_TO(TraverseType(T->getParamType(i)));
-      //currentFunctionDecl->parameters()[i]->getName()
-      if (currentFunctionDecl)
+      if (currentFunctionDecl) {
+        Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
         TRY_TO(TraverseDeclarationName(currentFunctionDecl->parameters()[i]->getDeclName()));
+      }
+      TRY_TO(TraverseType(T->getParamType(i)));
     }
     return true;
   }
@@ -1284,11 +1281,11 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   void pointerType() {
-    Kast::add(Kast::KApply("pointerType", Sort::SIMPLEPOINTERTYPE, {Sort::TYPE}));
+    Kast::add(Kast::KApply("pointerTypeStrict", Sort::SIMPLEPOINTERTYPE, {Sort::TYPE}));
   }
 
   void typeFromSimpleType() {
-    Kast::add(Kast::KApply("type", Sort::TYPE,{Sort::SIMPLETYPE}));
+    Kast::add(Kast::KApply("typeFromSimpleType", Sort::TYPE,{Sort::SIMPLETYPE}));
   }
 
   bool VisitPointerType(clang::PointerType *T) {
@@ -2504,15 +2501,15 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   void utypeFromType() {
-    Kast::add(Kast::KApply("utype", Sort::UTYPE, {Sort::TYPE}));
+    Kast::add(Kast::KApply("utypeFromType", Sort::UTYPE, {Sort::TYPE}));
   }
 
   bool TraverseIntegerLiteral(IntegerLiteral *Constant) {
     if (cparser()) {
-      Kast::add(Kast::KApply("tv", Sort::RVALUE, {Sort::CVALUE, Sort::UTYPE}));
+      Kast::add(Kast::KApply("createTv", Sort::KITEM, {Sort::CVALUE, Sort::KITEM}));
       VisitAPInt(Constant->getValue());
       utypeFromType();
-      Kast::add(Kast::KApply("addModifier", Sort::TYPE, {Sort::MODIFIER, Sort::TYPE}));
+      Kast::add(Kast::KApply("addModifierStrict", Sort::KITEM, {Sort::MODIFIER, Sort::KITEM}));
       Kast::add(Kast::KApply("IntegerConstant_C-TYPING-SYNTAX", Sort::MODIFIER));
       TRY_TO(TraverseType(Constant->getType()));
     } else {
@@ -2525,7 +2522,7 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool TraverseFloatingLiteral(FloatingLiteral *Constant) {
     if (cparser()) {
-      Kast::add(Kast::KApply("tv", Sort::RVALUE, {Sort::CVALUE, Sort::UTYPE}));
+      Kast::add(Kast::KApply("createTv", Sort::KITEM, {Sort::CVALUE, Sort::KITEM}));
       VisitAPFloat(Constant->getValue());
       utypeFromType();
       TRY_TO(TraverseType(Constant->getType()));
