@@ -598,7 +598,8 @@ public:
     ThreadStorageClass(D->getTSCSpec());
     TRY_TO(TraverseType(D->getType()));
     if (D->getInit()) {
-      Kast::add(Kast::KApply("SingleInit", Sort::KITEM, {Sort::KITEM}));
+      if (!isa<InitListExpr>(D->getInit()))
+        Kast::add(Kast::KApply("SingleInit", Sort::KITEM, {Sort::KITEM}));
       TRY_TO(TraverseStmt(D->getInit()));
     } else {
       Kast::add(Kast::KApply("NoInit", Sort::INIT));
@@ -1328,11 +1329,11 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseConstantArrayType_c(ConstantArrayType *T) {
-    typeFromSimpleType();
-    if (currentFunctionDecl)
+    if (currentFunctionDecl) {
+      typeFromSimpleType();
       pointerType();
-    else
-      Kast::add(Kast::KApply("arrayType", Sort::SIMPLEFIXEDARRAYTYPE,{Sort::TYPE, Sort::INT}));
+    } else
+      Kast::add(Kast::KApply("createArrayType", Sort::KITEM,{Sort::KITEM, Sort::INT}));
     TRY_TO(TraverseType(T->getElementType()));
     if (!currentFunctionDecl)
       VisitAPInt(T->getSize());
@@ -2584,9 +2585,20 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool TraverseInitListExpr(InitListExpr *E) {
     InitListExpr *Syntactic = E->isSemanticForm() ? E->getSyntacticForm() ? E->getSyntacticForm() : E : E;
-    Kast::add(Kast::KApply("BraceInit", Sort::BRACEINIT, {Sort::LIST}));
+    if (cparser()) {
+      Kast::add(Kast::KApply("CompoundInit", Sort::KITEM, {Sort::STRICTLIST}));
+      strictlist();
+    }
+    else
+      Kast::add(Kast::KApply("BraceInit", Sort::BRACEINIT, {Sort::LIST}));
+
     KSeqList(Syntactic->getNumInits());
     for (Stmt *SubStmt : Syntactic->children()) {
+      if (cparser()) {
+        Kast::add(Kast::KApply("InitFragment", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+        Kast::add(Kast::KApply("NextInit", Sort::KRESULT));
+        Kast::add(Kast::KApply("SingleInit", Sort::KITEM, {Sort::KITEM}));
+      }
       TRY_TO(TraverseStmt(SubStmt));
     }
     return true;

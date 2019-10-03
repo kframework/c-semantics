@@ -42,6 +42,7 @@ enum class Sort {
   INT,
   K,
   KITEM,
+  KRESULT,
   LIST,
   MODIFIER,
   NAME,

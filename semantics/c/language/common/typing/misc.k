@@ -663,4 +663,7 @@ module C-TYPING-MISC
      rule createFunctionType2(Ret::UType, L::List, .List)
           => type(functionType(Ret, L))
 
+     rule createArrayType(Inner:Type, Size:Int)
+          => type(arrayType(Inner, Size))
+
 endmodule

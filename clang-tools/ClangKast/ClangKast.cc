@@ -92,8 +92,9 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::FUNCTIONSPECIFIER:     os << "FunctionSpecifier"; break;
     case Sort::INIT:                  os << "Init"; break;
     case Sort::INT:                   os << "Int"; break;
-    case Sort::KITEM:                 os << "KItem"; break;
     case Sort::K:                     os << "K"; break;
+    case Sort::KITEM:                 os << "KItem"; break;
+    case Sort::KRESULT:               os << "KResult"; break;
     case Sort::LIST:                  os << "List"; break;
     case Sort::MODIFIER:              os << "Modifier"; break;
     case Sort::NAME:                  os << "Name"; break;

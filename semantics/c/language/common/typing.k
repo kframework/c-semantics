@@ -49,6 +49,8 @@ module C-TYPING-SYNTAX
      syntax KItem ::= utypeFromType(K)
 
      syntax KItem ::= createFunctionType(KItem, List) [strict(1)]
+     syntax KItem ::= createArrayType(KItem, Int) [strict(1)]
+
      // --------------
 
      syntax CId ::= typedef(CId) [klabel(typedef1)]
