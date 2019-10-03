@@ -2277,12 +2277,21 @@ std::string ifc(std::string c, std::string cpp) {
     return TraverseCXXConstructHelper(E->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
 
-  bool VisitUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E) {
+  bool TraverseUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E) {
     if (E->getKind() == UETT_SizeOf) {
       if (E->isArgumentType()) {
+        if (cparser()) {
+          Kast::add(Kast::KApply("SizeofType", Sort::KITEM, {Sort::KITEM, Sort::K}));
+          TraverseType(E->getArgumentType());
+          JustBase();
+          return true;
+        }
         Kast::add(Kast::KApply("SizeofType", Sort::EXPR, {Sort::ATYPE}));
       } else {
-        Kast::add(Kast::KApply("SizeofExpr", Sort::EXPR, {Sort::EXPR}));
+        if (cparser())
+          Kast::add(Kast::KApply("SizeofExpression", Sort::KITEM, {Sort::K}));
+        else
+          Kast::add(Kast::KApply("SizeofExpr", Sort::EXPR, {Sort::EXPR}));
       }
     } else if (E->getKind() == UETT_AlignOf) {
       if (E->isArgumentType()) {
@@ -2293,7 +2302,12 @@ std::string ifc(std::string c, std::string cpp) {
     } else {
       throw std::logic_error("unimplemented: ??? expr or type trait");
     }
-    return false;
+
+    if (E->isArgumentType())
+      TraverseType(E->getArgumentType());
+    else
+      TraverseStmt(E->getArgumentExpr());
+    return true;
   }
 
   bool VisitSizeOfPackExpr(SizeOfPackExpr *E) {
