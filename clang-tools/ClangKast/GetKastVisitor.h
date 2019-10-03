@@ -970,7 +970,13 @@ public:
     if (!cparser())
       return true;
 
-    Kast::add(Kast::KApply("StructDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
+    if (D->isStruct())
+      Kast::add(Kast::KApply("StructDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
+    else if (D->isUnion())
+      Kast::add(Kast::KApply("UnionDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
+    else
+      throw std::logic_error("A record that is not a structure or union");
+
     TRY_TO(TraverseDeclarationAsName(D));
     strictlist();
     DeclContext(D);
@@ -1439,6 +1445,9 @@ std::string ifc(std::string c, std::string cpp) {
           break;
         case ETK_Struct:
           Kast::add(Kast::KApply("StructRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
+          break;
+        case ETK_Union:
+          Kast::add(Kast::KApply("UnionRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
           break;
         default:
           throw std::logic_error("unimplemented: type keyword");
