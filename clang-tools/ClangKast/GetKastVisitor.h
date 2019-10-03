@@ -1384,7 +1384,10 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitTypedefType(TypedefType *T) {
-    Kast::add(Kast::KApply("TypedefType", Sort::ATYPE, {Sort::CID}));
+    if (cparser())
+      Kast::add(Kast::KApply("Named", Sort::ATYPE, {Sort::CID}));
+    else
+      Kast::add(Kast::KApply("TypedefType", Sort::TYPESPECIFIER, {Sort::CID}));
     TRY_TO(TraverseDeclarationName(T->getDecl()->getDeclName()));
     return false;
   }
