@@ -1683,6 +1683,7 @@ std::string ifc(std::string c, std::string cpp) {
       Kast::add(Kast::KApply("ForAStmt", Sort::ASTMT, {Sort::ASTMT, Sort::AEXPR, Sort::AEXPR, Sort::ASTMT}));
 
     if (S->getInit()) {
+      checkExpressionStatement(S->getInit());
       TRY_TO(TraverseStmt(S->getInit()));
     } else {
       NoStatement();
