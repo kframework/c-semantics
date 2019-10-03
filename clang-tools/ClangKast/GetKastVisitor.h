@@ -2835,8 +2835,13 @@ private:
 
   void StmtChildren(Stmt *S) {
     int i = 0;
-    // can we use 'std::distance'?
-    for (Stmt::child_iterator iter = S->child_begin(), end = S->child_end(); iter != end; ++i, ++iter);
+    for (Stmt::child_iterator iter = S->child_begin(), end = S->child_end(); iter != end; ++i, ++iter){
+      if (DeclStmt *d = dyn_cast<DeclStmt>(*iter)) {
+        if (!d->isSingleDecl())
+          i += std::distance(d->getDeclGroup().begin(), d->getDeclGroup().end()) - 1;
+      }
+    }
+
     KSeqList(i);
   }
 
