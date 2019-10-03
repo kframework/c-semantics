@@ -976,7 +976,12 @@ public:
     DeclContext(D);
     TraverseDeclContextNode(D);
     strictlist();
-    Kast::add(Kast::KApply(".List", Sort::LIST));
+    if (!hasAttrPacked(D))
+      Kast::add(Kast::KApply(".List", Sort::LIST));
+    else {
+      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+      Kast::add(Kast::KApply("Packed", Sort::MODIFIER));
+    }
 
     return true;
   }
@@ -1384,8 +1389,10 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitTypedefType(TypedefType *T) {
-    if (cparser())
+    if (cparser()) {
+      SpecifierItem();
       Kast::add(Kast::KApply("Named", Sort::ATYPE, {Sort::CID}));
+    }
     else
       Kast::add(Kast::KApply("TypedefType", Sort::TYPESPECIFIER, {Sort::CID}));
     TRY_TO(TraverseDeclarationName(T->getDecl()->getDeclName()));
@@ -1417,11 +1424,15 @@ std::string ifc(std::string c, std::string cpp) {
     }
   }
 
+  void SpecifierItem() {
+    Kast::add(Kast::KApply("Specifier", Sort::SPECIFIER, {Sort::STRICTLIST}));
+    strictlist();
+    Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+  }
+
   bool TraverseElaboratedType(ElaboratedType *T) {
     if (cparser()) {
-      Kast::add(Kast::KApply("Specifier", Sort::SPECIFIER, {Sort::STRICTLIST}));
-      strictlist();
-      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+      SpecifierItem();
       switch(T->getKeyword()) {
         case ETK_Enum:
           Kast::add(Kast::KApply("EnumRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
