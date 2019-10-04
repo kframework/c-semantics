@@ -1822,6 +1822,13 @@ std::string ifc(std::string c, std::string cpp) {
 
   template<typename ExprType>
   bool TraverseMemberHelper(ExprType *E) {
+    if (cparser()) {
+      Kast::add(Kast::KApply(E->isArrow()?"Arrow":"Dot", Sort::KITEM, {Sort::KITEM, Sort::CID}));
+      TRY_TO(TraverseStmt(E->getBase()));
+      TRY_TO(TraverseDeclarationNameInfo(E->getMemberNameInfo()));
+      return true;
+    }
+
     if (E->isImplicitAccess()) {
       Name();
       TRY_TO(TraverseNestedNameSpecifierLoc(E->getQualifierLoc()));
