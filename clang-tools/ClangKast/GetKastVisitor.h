@@ -971,14 +971,31 @@ public:
     if (!cparser())
       return true;
 
-    if (D->isStruct())
-      Kast::add(Kast::KApply("StructDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
-    else if (D->isUnion())
-      Kast::add(Kast::KApply("UnionDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
-    else
-      throw std::logic_error("A record that is not a structure or union");
+    Kast::add(Kast::KApply("OnlyTypedef", Sort::KITEM, {Sort::KITEM}));
+    SpecifierItem();
+
+    if (D->isCompleteDefinition()) {
+      if (D->isStruct())
+        Kast::add(Kast::KApply("StructDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
+      else if (D->isUnion())
+        Kast::add(Kast::KApply("UnionDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
+      else
+        throw std::logic_error("A record that is not a structure or union");
+    } else {
+      if (D->isStruct())
+        Kast::add(Kast::KApply("StructRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
+      else if (D->isUnion())
+        Kast::add(Kast::KApply("UnionRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
+      else
+        throw std::logic_error("A record that is not a structure or union");
+    }
 
     TRY_TO(TraverseDeclarationAsName(D));
+    if (!D->isCompleteDefinition()) {
+      emptyStrictList();
+      return true;
+    }
+
     strictlist();
     DeclContext(D);
     TraverseDeclContextNode(D);
