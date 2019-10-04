@@ -404,11 +404,44 @@ public:
   bool TraverseFunctionHelper_c(FunctionDecl *D){
     if (D->isThisDeclarationADefinition()) {
       Kast::add(Kast::KApply("FunctionDefinition", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+
+#if 1
       Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
       TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
       currentFunctionDecl = D;
+      Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
       TRY_TO(TraverseType(D->getType()));
       currentFunctionDecl = nullptr;
+#else
+      Kast::add(Kast::KApply("SingleName", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+      QualType T = D->getType();
+      FunctionProtoType const *FT = dyn_cast<FunctionProtoType>(T.getTypePtr());
+      if (!FT)
+        throw std::logic_error("Type of a function is not a function type");
+
+      TRY_TO(TraverseType(FT->getReturnType()));
+      Kast::add(Kast::KApply("Name", Sort::KITEM, {Sort::CID, Sort::KITEM, Sort::KITEM}));
+      TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
+      Kast::add(Kast::KApply("Prototype", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST, Sort::BOOL}));
+      JustBase();
+      strictlist();
+      KSeqList(FT->getNumParams());
+
+      for (unsigned i = 0; i < FT->getNumParams(); i++) {
+        // FIXME: this is a problem if a function takes a function pointer as a parameter
+        if (currentFunctionDecl) {
+          Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
+          TRY_TO(TraverseDeclarationName(currentFunctionDecl->parameters()[i]->getDeclName()));
+
+        }
+        //Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
+        TRY_TO(TraverseType(FT->getParamType(i)));
+      }
+
+      VisitBool(false);
+      emptyStrictList();
+
+#endif
       TRY_TO(TraverseStmt(D->getBody()));
       return true;
     }
@@ -1173,17 +1206,23 @@ public:
     KSeqList(numParams);
   }
 
-  bool TraverseFunctionProtoType_c(FunctionProtoType *T) {
-    TraverseFunctionProtoType_c_helper(T->getReturnType(), T->getNumParams());
-
+  bool TraverseFunctionParams(FunctionProtoType const *T) {
     for (unsigned i = 0; i < T->getNumParams(); i++) {
+      // FIXME: this is a problem if a function takes a function pointer as a parameter
       if (currentFunctionDecl) {
         Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
         TRY_TO(TraverseDeclarationName(currentFunctionDecl->parameters()[i]->getDeclName()));
+
       }
+      Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
       TRY_TO(TraverseType(T->getParamType(i)));
     }
     return true;
+  }
+
+  bool TraverseFunctionProtoType_c(FunctionProtoType *T) {
+    TraverseFunctionProtoType_c_helper(T->getReturnType(), T->getNumParams());
+    return TraverseFunctionParams(T);
   }
 
   bool TraverseFunctionProtoType_cpp(FunctionProtoType *T) {
