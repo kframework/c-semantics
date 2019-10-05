@@ -788,4 +788,6 @@ module C-DECL-GLOBAL
           requires notBool areDeclCompat(T, T')
           [structural]
 
+     rule isNoInit(initValue(_, _, .K)) => true
+
 endmodule

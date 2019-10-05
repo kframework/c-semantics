@@ -93,7 +93,8 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= "comma"
      // these are semantic
 
-     syntax NoInit ::= initValue(CId, Type, K)
+     syntax KResult ::= initValue(CId, Type, K)
+     syntax NoInit
      syntax KResult ::= NoInit
 
      syntax CompoundLiteralId ::= compoundLiteral(Int)

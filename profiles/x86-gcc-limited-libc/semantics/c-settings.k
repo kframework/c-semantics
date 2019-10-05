@@ -24,7 +24,7 @@ module C-SETTINGS
      rule cfg:sizeofSignedChar => 1
      rule cfg:sizeofShortInt => 2
      rule cfg:sizeofInt => 4
-     rule cfg:sizeofLongInt => 4
+     rule cfg:sizeofLongInt => 8
      rule cfg:sizeofLongLongInt => 8
      rule cfg:sizeofOversizedInt => 16
      rule cfg:sizeofFloat => 4
@@ -49,21 +49,21 @@ module C-SETTINGS
      rule cfg:sizeut => unsigned-long-int
      rule cfg:wintut => unsigned-int
      rule cfg:wcharut => int
-     rule cfg:ptrsize => 4
-     rule cfg:ptrdiffut => int
+     rule cfg:ptrsize => 8
+     rule cfg:ptrdiffut => long-int
 
      rule cfg:alignofBool => 1
      rule cfg:alignofSignedChar => 1
      rule cfg:alignofShortInt => 2
      rule cfg:alignofInt => 4
-     rule cfg:alignofLongInt => 4
+     rule cfg:alignofLongInt => 8
      rule cfg:alignofLongLongInt => 8
      rule cfg:alignofOversizedInt => 16
      rule cfg:alignofFloat => 4
      rule cfg:alignofDouble => 8
      rule cfg:alignofLongDouble => 16
      rule cfg:alignofOversizedFloat => 16
-     rule cfg:alignofPointer => 4
+     rule cfg:alignofPointer => 8
      // Max of the above.
      rule cfg:alignofMalloc => 16
 
