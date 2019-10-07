@@ -1697,7 +1697,10 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitNullStmt(NullStmt *S) {
-    Kast::add(Kast::KApply("NullStmt", Sort::STMT));
+    if (cparser())
+      Kast::add(Kast::KApply("Nop", Sort::KITEM));
+    else
+      Kast::add(Kast::KApply("NullStmt", Sort::STMT));
     return false;
   }
 
