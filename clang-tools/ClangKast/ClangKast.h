@@ -78,6 +78,7 @@ enum class Sort {
   TYPESPECIFIER,
   UNNAMEDCID,
   UTYPE,
+  VARIADIC,
 };
 
 std::ostream& operator<<(std::ostream & os, const Sort & sort);

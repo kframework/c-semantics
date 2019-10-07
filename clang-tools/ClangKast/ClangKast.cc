@@ -130,6 +130,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::TYPESPECIFIER:         os << "TypeSpecifier"; break;
     case Sort::UNNAMEDCID:            os << "UnnamedCId"; break;
     case Sort::UTYPE:                 os << "UType"; break;
+    case Sort::VARIADIC:              os << "Variadic"; break;
   }
   if (Kore) os << "{}";
   return os;

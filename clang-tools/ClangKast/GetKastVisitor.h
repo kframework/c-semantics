@@ -1222,11 +1222,16 @@ public:
       Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
       TRY_TO(TraverseType(T->getParamType(i)));
     }
+
+    if (T->isVariadic()) {
+      Kast::add(Kast::KApply("variadic_C-TYPING-SYNTAX", Sort::VARIADIC));
+    }
+
     return true;
   }
 
   bool TraverseFunctionProtoType_c(FunctionProtoType *T) {
-    TraverseFunctionProtoType_c_helper(T->getReturnType(), T->getNumParams());
+    TraverseFunctionProtoType_c_helper(T->getReturnType(), T->getNumParams() + (T->isVariadic()?1:0));
     return TraverseFunctionParams(T);
   }
 
