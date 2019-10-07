@@ -2842,7 +2842,10 @@ private:
   }
 
   void NoExpression() {
-    Kast::add(Kast::KApply("NoExpression", Sort::AEXPR));
+    if (cparser())
+      Kast::add(Kast::KApply("NothingExpression", Sort::KITEM));
+    else
+      Kast::add(Kast::KApply("NoExpression", Sort::AEXPR));
   }
 
   void NoStatement() {
