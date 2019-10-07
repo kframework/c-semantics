@@ -2104,7 +2104,7 @@ std::string ifc(std::string c, std::string cpp) {
         BINARY_OP(NE, "NotEquality")
         BINARY_OP(And, "BitwiseAnd")
         BINARY_OP(Xor, "BitwiseXor")
-        BINARY_OP(Or, "BitwiseAnd")
+        BINARY_OP(Or, "BitwiseOr")
         BINARY_OP(LAnd, "LogicalAnd")
         BINARY_OP(LOr, "LogicalOr")
         BINARY_OP(Assign, "Assign")
