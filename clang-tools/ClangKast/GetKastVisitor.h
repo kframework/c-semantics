@@ -2661,7 +2661,8 @@ std::string ifc(std::string c, std::string cpp) {
       if (cparser()) {
         Kast::add(Kast::KApply("InitFragment", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
         Kast::add(Kast::KApply("NextInit", Sort::KRESULT));
-        Kast::add(Kast::KApply("SingleInit", Sort::KITEM, {Sort::KITEM}));
+        if (!isa<InitListExpr>(SubStmt))
+          Kast::add(Kast::KApply("SingleInit", Sort::KITEM, {Sort::KITEM}));
       }
       TRY_TO(TraverseStmt(SubStmt));
     }

@@ -335,6 +335,8 @@ module C-DECL-INITIALIZER
      rule isFieldAccess(ListItem(ncle(_ .init _::CId, _)) _) => true
      rule isFieldAccess(_) => false [owise]
 
+     rule (.K => Loc) ~> fillInit(CodeLoc(K:K, Loc:CabsLoc) => K)
+
      rule <k> fillInit(CompoundInit(list(L::List)))
                => fillInits(L)
                ~> finishCompoundInit(ListItem(next) ListItem(ncle(K, T)) Remainder)
