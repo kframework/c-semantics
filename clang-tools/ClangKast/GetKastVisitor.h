@@ -1004,8 +1004,8 @@ public:
     if (!cparser())
       return true;
 
-    Kast::add(Kast::KApply("OnlyTypedef", Sort::KITEM, {Sort::KITEM}));
-    SpecifierItem();
+    //Kast::add(Kast::KApply("OnlyTypedef", Sort::KITEM, {Sort::KITEM}));
+    //SpecifierItem();
 
     if (D->isCompleteDefinition()) {
       if (D->isStruct())
@@ -1854,7 +1854,13 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitDefaultStmt(DefaultStmt *S) {
-    Kast::add(Kast::KApply("DefaultAStmt", Sort::ASTMT, {Sort::ASTMT}));
+    if (cparser()) {
+      Kast::add(Kast::KApply("Default", Sort::KITEM, {Sort::INT, Sort::KITEM}));
+      Kast::add(Kast::KToken(blockTag++));
+      checkExpressionStatement(S->getSubStmt());
+    }
+    else
+      Kast::add(Kast::KApply("DefaultAStmt", Sort::ASTMT, {Sort::ASTMT}));
     return false;
   }
 
