@@ -215,6 +215,8 @@ public:
       Kast::add(Kast::KApply("TypedefDecl", Sort::DECL, {Sort::CID, Sort::ATYPE}));
     }
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
+    if (cparser())
+      Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
     return false;
   }
 
@@ -408,8 +410,9 @@ public:
 #if 1
       Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
       TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
-      currentFunctionDecl = D;
       Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
+      StorageClass(D->getStorageClass());
+      currentFunctionDecl = D;
       TRY_TO(TraverseType(D->getType()));
       currentFunctionDecl = nullptr;
 #else
@@ -450,6 +453,7 @@ public:
     Kast::add(Kast::KApply("declare", Sort::KITEM, {Sort::KITEM, Sort::K}));
     Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::KITEM}));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
+    Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
     StorageClass(D->getStorageClass());
     currentFunctionDecl = D;
     TRY_TO(TraverseType(D->getType()));
@@ -627,6 +631,7 @@ public:
     Kast::add(Kast::KApply("declare", Sort::KITEM, {Sort::KITEM, Sort::K}));
     Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::KITEM}));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
+    Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
     StorageClass(D->getStorageClass());
     ThreadStorageClass(D->getTSCSpec());
     TRY_TO(TraverseType(D->getType()));
