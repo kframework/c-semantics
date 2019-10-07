@@ -2852,7 +2852,12 @@ private:
   }
 
   void NoStatement() {
-    Kast::add(Kast::KApply("NoStatement", Sort::ASTMT));
+    if (cparser()) {
+      Kast::add(Kast::KApply("Computation", Sort::KITEM, {Sort::K}));
+      Kast::add(Kast::KApply("NothingExpression", Sort::KITEM));
+    }
+    else
+      Kast::add(Kast::KApply("NoStatement", Sort::ASTMT));
   }
 
   void List(int n) {
