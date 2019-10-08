@@ -71,15 +71,23 @@ public:
 
     if (Expr *E = dyn_cast<Expr>(S)) {
       if (!dyn_cast<CXXDefaultArgExpr>(S)) {
-        if (cparser()) {
-          Kast::add(Kast::KApply("StatementLoc", Sort::KITEM, {Sort::CABSLOC, Sort::KITEM}));
-        } else {
-          Kast::add(Kast::KApply("ExprLoc", Sort::EXPRLOC, {Sort::CABSLOC, Sort::EXPR}));
-        }
-        CabsLoc(E->getExprLoc());
+        addExprLoc(E);
       }
     }
     return RecursiveASTVisitor::TraverseStmt(S);
+  }
+
+  void addExprLoc(const Expr *E) {
+    // prevent problems in `figureInit`
+    if (isa<StringLiteral>(E))
+      return;
+
+    if (cparser()) {
+      Kast::add(Kast::KApply("StatementLoc", Sort::KITEM, {Sort::CABSLOC, Sort::KITEM}));
+    } else {
+      Kast::add(Kast::KApply("ExprLoc", Sort::EXPRLOC, {Sort::CABSLOC, Sort::EXPR}));
+    }
+    CabsLoc(E->getExprLoc());
   }
 
   // copied from RecursiveASTVisitor.h with a change made: D->isImplicit() -> excludedDecl(D)
