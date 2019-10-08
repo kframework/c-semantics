@@ -27,6 +27,8 @@ module C-ELABORATOR
      rule (.K => K) ~> compoundExp(K:K)
      rule R:KResult ~> compoundExp(K:K)
           => te(compoundExp(K), utype(R))
+     rule toRVal(R:RValue) ~> compoundExp(K:K)
+          => te(compoundExp(K), utype(R))
 
      rule <k> elaborate(K:K) ~> Cont:K => K </k>
           <elab> OldElab:K => .K </elab>
