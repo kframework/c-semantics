@@ -277,5 +277,9 @@ module C-EXECUTION-INIT
 
      rule [[ nameOfCurrentTranslationUnit() => TU ]]
           <curr-tu>TU::String</curr-tu>
+
+     rule CodeLoc(K::K, Loc::CabsLoc)
+          => Loc ~> K
+
 endmodule
 
