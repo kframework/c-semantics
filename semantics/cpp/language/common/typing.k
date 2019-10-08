@@ -1038,7 +1038,7 @@ module C-CPP-TYPING
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned-short)) => t(Q, Mods, unsigned-short-int)
 
-     rule convertTypeToC(t(Q::Quals, Mods::Set, int::CPPSimpleSignedType)) => t(Q, Mods, int::SimpleSignedIntType)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, int::CPPSimpleSignedType)) => t(Q, Mods, int::SimpleIntType)
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned)) => t(Q, Mods, unsigned-int)
 
@@ -1112,7 +1112,7 @@ module C-CPP-TYPING
 
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, unsigned-short-int)) => t(Q, Mods, unsigned-short)
 
-     rule convertTypeToCPP(t(Q::Quals, Mods::Set, int::SimpleSignedIntType)) => t(Q, Mods, int::CPPSimpleSignedType)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, int::SimpleIntType)) => t(Q, Mods, int::CPPSimpleSignedType)
 
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, unsigned-int)) => t(Q, Mods, unsigned)
 

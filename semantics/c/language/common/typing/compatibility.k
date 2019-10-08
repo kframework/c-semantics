@@ -60,8 +60,16 @@ module C-TYPING-COMPATIBILITY
 
      syntax Bool ::= #areCompat(Type, Type, Set) [function]
      rule #areCompat(
-               t(Qs::Quals, Mods::Set, T:SimpleBasicType),
-               t(Qs, Mods'::Set, T), _)
+               t(Qs::Quals, _, T:SimpleBasicType),
+               t(Qs       , _, T), _)
+          => true
+     rule #areCompat(
+               t(Qs::Quals, _, signed-int),
+               t(Qs       , _, int), _)
+          => true
+     rule #areCompat(
+               t(Qs::Quals, _, int),
+               t(Qs       , _, signed-int), _)
           => true
 
      // TODO(chathhorn): should be a setting.

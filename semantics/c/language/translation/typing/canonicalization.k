@@ -379,9 +379,9 @@ module C-TYPING-CANONICALIZATION
      rule canonicalizeSpecifier(ListItem(Short()) ListItem(Int()) ListItem(Unsigned())) => type(unsigned-short-int)
 
      rule canonicalizeSpecifier(ListItem(Int())) => type(int)
-     rule canonicalizeSpecifier(ListItem(Signed())) => type(int)
-     rule canonicalizeSpecifier(ListItem(Signed()) ListItem(Int())) => type(int)
-     rule canonicalizeSpecifier(ListItem(Int()) ListItem(Signed())) => type(int)
+     rule canonicalizeSpecifier(ListItem(Signed())) => type(signed-int)
+     rule canonicalizeSpecifier(ListItem(Signed()) ListItem(Int())) => type(signed-int)
+     rule canonicalizeSpecifier(ListItem(Int()) ListItem(Signed())) => type(signed-int)
 
      rule canonicalizeSpecifier(ListItem(Unsigned())) => type(unsigned-int)
      rule canonicalizeSpecifier(ListItem(Unsigned()) ListItem(Int())) => type(unsigned-int)

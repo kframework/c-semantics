@@ -280,7 +280,8 @@ module C-CONVERSION
      need not be in the range of values of any integer type.
      }*/
      rule cast(integerUType #as T'::UType, tv(V::CValue, ut(... st: pointerType(_)) #as T::UType))
-          => checkUse(tv(cfg:pointerToInt(V, T'), castTypes(T', T)))
+          => lintPointerToInt()
+          ~> checkUse(tv(cfg:pointerToInt(V, T'), castTypes(T', T)))
           requires notBool isBoolUType(T')
                andBool (byteSizeofType(T) <=Int byteSizeofType(T')
                     orBool (V ==K NullPointer))
@@ -351,7 +352,10 @@ module C-CONVERSION
           [structural]
 
      syntax Error ::= lintCastingAwayQuals()
+                    | lintPointerToInt()
      rule lintCastingAwayQuals() => .K
+          requires notBool hasLint
+     rule lintPointerToInt() => .K
           requires notBool hasLint
 
      syntax UType ::= castTypes(UType, UType) [function]

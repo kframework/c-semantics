@@ -134,6 +134,7 @@ module C-TYPING-COMMON
      rule numBytesArithmetic(_:SimpleSignedCharType) => cfg:sizeofSignedChar
      rule numBytesArithmetic(short-int) => cfg:sizeofShortInt
      rule numBytesArithmetic(int) => cfg:sizeofInt
+     rule numBytesArithmetic(signed-int) => numBytesArithmetic(int)
      rule numBytesArithmetic(long-int) => cfg:sizeofLongInt
      rule numBytesArithmetic(long-long-int) => cfg:sizeofLongLongInt
      rule numBytesArithmetic(oversized-int) => cfg:sizeofOversizedInt
@@ -234,6 +235,7 @@ module C-TYPING-COMMON
      rule showTypeSpecifier(signed-char) => "signed char"
      rule showTypeSpecifier(short-int) => "short"
      rule showTypeSpecifier(int) => "int"
+     rule showTypeSpecifier(signed-int) => "signed int"
      rule showTypeSpecifier(long-int) => "long"
      rule showTypeSpecifier(long-long-int) => "long long"
      rule showTypeSpecifier(oversized-int) => "__kcc_oversized_int"
