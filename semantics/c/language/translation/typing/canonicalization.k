@@ -83,17 +83,20 @@ module C-TYPING-CANONICALIZATION
      rule isReducibleModifier(AlignasType(_, _)) => true
      rule isReducibleModifier(_) => false [owise]
 
-     rule addMods(Mods::List ListItem(RestrictReserved(Tok:String, _)), T:Type)
-          => addMods(Mods, addQualifier(Restrict(), T))
+     rule addMods(_::List ListItem(RestrictReserved(Tok:String, _) => Restrict()), _)
           requires cfg:reservedKeywordSupported(Tok)
           [structural]
      rule (.K => SE("TCANON2","Unsupported reserved identifier "+String Tok +String " (reserved variant of restrict)."))
           ~> addMods(Mods::List ListItem(RestrictReserved(Tok::String, Loc::CabsLoc)), T:Type)
           requires notBool cfg:reservedKeywordSupported(Tok)
           [structural]
+     rule addMods(Mods::List ListItem(Restrict()), T:Type)
+          => lintRestrictUsed() ~> addMods(Mods, addQualifier(Restrict(), T))
+          [structural]
      rule addMods(Mods::List ListItem(Q:Qualifier), T:Type)
           => addMods(Mods, addQualifier(Q, T))
           requires RestrictReserved(...) :/=K Q
+               andBool Restrict() :/=K Q
                andBool notBool isReducibleModifier(Q)
           [structural]
      rule addMods(Mods::List ListItem(M:Modifier), T:Type)
@@ -129,6 +132,10 @@ module C-TYPING-CANONICALIZATION
           requires notBool isCompleteType(T)
                orBool getAlignas(T) >=Int byteAlignofType(T)
           [structural]
+
+     syntax Error ::= lintRestrictUsed()
+     rule lintRestrictUsed() => .K
+          requires notBool hasLint
 
      rule <k> canonicalizeSpecifier(ListItem(Named(X:CId)))
                => type(typedefType(X, T))

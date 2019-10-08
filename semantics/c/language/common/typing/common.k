@@ -78,6 +78,7 @@ module C-TYPING-COMMON
      rule Qs::Quals -Qual _ => Qs [owise]
 
      rule quals(Qs::Set) <=Quals quals(Qs'::Set) => Qs <=Set Qs'
+     rule quals(Qs::Set) >Quals quals(Qs'::Set) => notBool (Qs <=Set Qs')
 
      rule quals(Qs::Set) +Quals quals(Qs'::Set) => quals(Qs Qs')
 

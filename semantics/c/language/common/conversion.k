@@ -328,18 +328,31 @@ module C-CONVERSION
      }*/
      rule cast(ut(Mods'::Set, pointerType(T'::Type)), tv(Loc:SymLoc, ut(Mods::Set, pointerType(T::Type))))
           => adjustPointerBounds(tv(Loc, castTypes(ut(Mods', pointerType(T')), ut(Mods, pointerType(T)))))
-          requires Loc =/=K NullPointer andBool (notBool isCompleteType(T')
-               orBool type(pointerType(T')) ==Type type(pointerType(T))
-               orBool getAlignas(T') <=Int getAlign(Loc)
-               orBool (isFunctionType(T) andBool isFunctionType(T')))
+          requires Loc =/=K NullPointer
+               andBool getAlignas(T') <=Int getAlign(Loc)
+               andBool notBool (isFunctionType(T) andBool notBool isFunctionType(T'))
+               andBool getQualifiers(T) <=Quals getQualifiers(T')
      //TODO(dwightguth): handle pointer alignment
      rule (.K => UNDEF("CCV11",
                "Conversion to a pointer type with a stricter alignment requirement (possibly undefined)."))
           ~> cast(ut(_, pointerType(T'::Type)), tv(Loc:SymLoc, ut(_, pointerType(T::Type))))
-          requires isCompleteType(T')
-               andBool type(pointerType(T')) =/=Type type(pointerType(T))
+          requires type(pointerType(T')) =/=Type type(pointerType(T))
+               andBool notBool (isFunctionType(T) andBool notBool isFunctionType(T'))
                andBool getAlignas(T') >Int getAlign(Loc)
           [structural]
+     rule (.K => UNDEF("CCV14",
+               "Conversion of a function pointer to object pointer type."))
+          ~> cast(ut(_, pointerType(T'::Type)), tv(Loc:SymLoc, ut(_, pointerType(T::Type))))
+          requires isFunctionType(T) andBool notBool isFunctionType(T')
+          [structural]
+     rule (.K => lintCastingAwayQuals())
+          ~> cast(ut(_, pointerType(T'::Type)), tv(Loc:SymLoc, ut(_, pointerType(T::Type => addQualifiers(getQualifiers(T'), stripQualifiers(T))))))
+          requires getQualifiers(T) >Quals getQualifiers(T')
+          [structural]
+
+     syntax Error ::= lintCastingAwayQuals()
+     rule lintCastingAwayQuals() => .K
+          requires notBool hasLint
 
      syntax UType ::= castTypes(UType, UType) [function]
      rule castTypes(ut(_, T'::SimpleUType), ut(Mods::Set, _)) => ut(Mods, T')
