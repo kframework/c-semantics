@@ -1602,6 +1602,17 @@ std::string ifc(std::string c, std::string cpp) {
     return true;
   }
 
+  bool TraverseAtomicType(AtomicType *T) {
+    if (!cparser())
+      return true;
+
+    Kast::add(Kast::KApply("addQualifierStrict", Sort::KITEM, {Sort::QUALIFIER, Sort::TYPE}));
+    Kast::add(Kast::KApply("Atomic", Sort::QUALIFIER));
+
+    TRY_TO(TraverseType(T->getValueType()));
+    return true;
+  }
+
   bool VisitDependentNameType(DependentNameType *T) {
     Kast::add(Kast::KApply("ElaboratedTypeSpecifier", Sort::ATYPE, {Sort::TAG, Sort::CID, Sort::NNS}));
     VisitTypeKeyword(T->getKeyword());
