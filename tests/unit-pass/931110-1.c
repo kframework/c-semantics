@@ -1,7 +1,7 @@
 #include <stdlib.h>
 typedef struct
 {
-  int f:3, g:3, h:10;
+  signed int f:3, g:3, h:10;
 } small;
 
 struct

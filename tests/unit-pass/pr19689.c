@@ -3,7 +3,7 @@ extern void abort (void);
 
 struct
 {
-  int b : 29;
+  signed int b : 29;
 } f;
 
 void foo (short j)

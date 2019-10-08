@@ -3,24 +3,24 @@
 typedef unsigned int t;
 
 struct foo {
-  int : 1;
-  int : 0;
-  int : 1;
-  int : 0;
-  int : 1;
-  int : 0;
-  int : 1;
-  int : 0;
-  int : 1;
-  int : 0;
-  int : 1;
-  int : 0;
-  int : 1;
-  int : 0;
-  int : 1;
-  int : 0;
-  int : 1;
-  int : 0;
+  unsigned int : 1;
+  unsigned int : 0;
+  unsigned int : 1;
+  unsigned int : 0;
+  unsigned int : 1;
+  unsigned int : 0;
+  unsigned int : 1;
+  unsigned int : 0;
+  unsigned int : 1;
+  unsigned int : 0;
+  unsigned int : 1;
+  unsigned int : 0;
+  unsigned int : 1;
+  unsigned int : 0;
+  unsigned int : 1;
+  unsigned int : 0;
+  unsigned int : 1;
+  unsigned int : 0;
   t z : 1;
 };
 

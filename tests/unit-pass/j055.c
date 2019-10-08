@@ -1,5 +1,5 @@
 struct s {
-      int s : 5;
+      signed int s : 5;
 };
 
 int x;

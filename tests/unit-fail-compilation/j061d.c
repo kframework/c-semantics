@@ -1,6 +1,6 @@
 union s {
-      int : 4;
-      int : 2;
+      signed int : 4;
+      signed int : 2;
 };
 
 int main(void) {
