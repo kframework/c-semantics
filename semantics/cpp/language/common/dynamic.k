@@ -202,7 +202,7 @@ module CPP-SCOPE-SYNTAX
 
      syntax NamespaceScope ::= namespaceScope(Namespace)
 
-     syntax ClassScope ::= classScope(Class, isInBody: Bool)
+     syntax ClassScope ::= classScope(Class, inBody: Bool)
 
      syntax BlockScope ::= blockScope(QualId, SymBase, Int) [klabel(blockScopeCpp)]
 

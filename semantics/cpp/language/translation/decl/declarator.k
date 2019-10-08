@@ -342,7 +342,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                    => defineLocalStaticObject(X, bnew(!I:Int, T, Set, static(Tu)), T, Init, Type, Set)
                    ~> Declare.potentiallyInvokeDestructor(T)
                ...</k>
-                   
+
           <curr-tr-scope> S::Scope </curr-tr-scope>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -622,7 +622,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           <curr-tr-program-loc> Loc::CabsLoc </curr-tr-program-loc>
           <external-decls-loc> DeclsLoc::Map => addOdrDecl(DeclsLoc, CName, Loc) </external-decls-loc>
 
-     syntax KItem ::= newExternalType(cname: CId, type: CPPType)
+     syntax NewExternalType ::= newExternalType(cname: CId, type: CPPType)
 
      rule <k> newExternalType(CName::CId, T::CPPType) => .K ...</k>
           <external-types> ET::Map => addOdrDecl(ET, CName, convertTypeToC(T)) </external-types>

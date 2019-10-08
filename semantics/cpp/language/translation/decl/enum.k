@@ -128,7 +128,7 @@ module CPP-TRANSLATION-DECL-ENUM
           <enum-type> cppEnumType #as E2::CPPType </enum-type>
           requires E1 =/=K E2
 
-     syntax KItem ::= declareEnumerators(CPPType, min: Int, max: Int, next: Int, prevType: CPPSimpleType, enums: List, fixed: Bool, first: Bool)
+     syntax DeclareEnumerators ::= declareEnumerators(CPPType, min: Int, max: Int, next: Int, prevType: CPPSimpleType, enums: List, fixed: Bool, first: Bool)
 
      rule (.K => C) ~> declareEnumerators(... enums: ListItem(DeclLoc(C::CabsLoc, D::Decl) => D) _)
 
@@ -272,7 +272,7 @@ module CPP-TRANSLATION-DECL-ENUM
      rule firstSuitableType(_, _, (ListItem(_) => .List) _) [owise]
 
 
-     syntax KItem ::= calculateEnumValues(CPPType, min: Int, max: Int)
+     syntax CalculateEnumValues ::= calculateEnumValues(CPPType, min: Int, max: Int)
 
      syntax Int ::= calculateMaxEnumValue(emin: Int, emax: Int) [function]
 
@@ -295,12 +295,12 @@ module CPP-TRANSLATION-DECL-ENUM
 
      rule calculateEnumValues(T::CPPType, Min::Int, Max::Int) => computeEnumUt(T, calculateMinEnumValue(Min, Max), calculateMaxEnumValue(Min, Max))
 
-     syntax KItem ::= computeEnumUt(CPPType, min: Int, max: Int)
+     syntax ComputeEnumUt ::= computeEnumUt(CPPType, min: Int, max: Int)
 
      // TODO(h0nzZik): packed enums
      rule computeEnumUt(T::CPPType, Min::Int, Max::Int) => setEnumMinMaxUt(T, Min, Max, type(firstSuitableType(Min, Max, integralTypesGreaterThanInt)))
 
-     syntax KItem ::= setEnumMinMaxUt(CPPType, min: Int, max: Int, ut: CPPType)
+     syntax SetEnumMinMaxUt ::= setEnumMinMaxUt(CPPType, min: Int, max: Int, ut: CPPType)
 
      rule <k> setEnumMinMaxUt(t(_, _, unscopedEnum(_ :: Enum(X::CId) #as E::Enum, _, Fixed:Bool)) #as T::CPPType, Min::Int, Max::Int, cppIntegerType #as UT::CPPType)
           => addEnumToEnv(X, t(noQuals, .Set, unscopedEnum(E, UT, Fixed))) ... </k>
