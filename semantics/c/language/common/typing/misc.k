@@ -666,4 +666,7 @@ module C-TYPING-MISC
      rule createArrayType(Inner:Type, Size:Int)
           => type(arrayType(Inner, Size))
 
+     rule createVariableLengthArrayType(Inner:Type, Size::K)
+          => type(variableLengthArrayType(Inner, Size))
+
 endmodule

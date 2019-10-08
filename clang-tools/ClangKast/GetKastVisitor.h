@@ -1431,11 +1431,11 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseVariableArrayType_c(VariableArrayType *T) {
-    typeFromSimpleType();
-    if (currentFunctionDecl)
+    if (currentFunctionDecl) {
+      typeFromSimpleType();
       pointerType();
-    else
-      Kast::add(Kast::KApply("variableLengthArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
+    } else
+      Kast::add(Kast::KApply("createVariableLengthArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
     TRY_TO(TraverseType(T->getElementType()));
 
     if (!currentFunctionDecl)
