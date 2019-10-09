@@ -34,6 +34,7 @@ module C-ALIGNMENT
      rule byteAlignofType'(t(_, _, _:SimpleSignedCharType)) => cfg:alignofSignedChar
      rule byteAlignofType'(t(_, _, short-int)) => cfg:alignofShortInt
      rule byteAlignofType'(t(_, _, int)) => cfg:alignofInt
+     rule byteAlignofType'(t(_, _, signed-int)) => cfg:alignofInt
      rule byteAlignofType'(t(_, _, long-int)) => cfg:alignofLongInt
      rule byteAlignofType'(t(_, _, long-long-int)) => cfg:alignofLongLongInt
      rule byteAlignofType'(t(_, _, oversized-int)) => cfg:alignofOversizedInt

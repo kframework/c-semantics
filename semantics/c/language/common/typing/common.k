@@ -134,7 +134,7 @@ module C-TYPING-COMMON
      rule numBytesArithmetic(_:SimpleSignedCharType) => cfg:sizeofSignedChar
      rule numBytesArithmetic(short-int) => cfg:sizeofShortInt
      rule numBytesArithmetic(int) => cfg:sizeofInt
-     rule numBytesArithmetic(signed-int) => numBytesArithmetic(int)
+     rule numBytesArithmetic(signed-int) => cfg:sizeofInt
      rule numBytesArithmetic(long-int) => cfg:sizeofLongInt
      rule numBytesArithmetic(long-long-int) => cfg:sizeofLongLongInt
      rule numBytesArithmetic(oversized-int) => cfg:sizeofOversizedInt

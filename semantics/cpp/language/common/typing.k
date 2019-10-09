@@ -1114,6 +1114,8 @@ module C-CPP-TYPING
 
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, int::SimpleIntType)) => t(Q, Mods, int::CPPSimpleSignedType)
 
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, signed-int)) => t(Q, Mods, int::CPPSimpleSignedType)
+
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, unsigned-int)) => t(Q, Mods, unsigned)
 
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, long-int)) => t(Q, Mods, long)

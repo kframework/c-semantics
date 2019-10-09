@@ -16,9 +16,7 @@ module C-LITERAL
      rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S))
           requires (firstChar(S) ==String "0")
                andBool (lengthString(S) >Int 1)
-     rule simplifyForHex(S:String) => S
-          requires (firstChar(S) =/=String "0")
-               orBool (lengthString(S) ==Int 1)
+     rule simplifyForHex(S:String) => S [owise]
 
      syntax IntConstant ::= hexOrOctalConstant(Int)
      rule HexConstant(S:String)

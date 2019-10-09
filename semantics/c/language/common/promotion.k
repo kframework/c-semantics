@@ -143,7 +143,7 @@ module C-COMMON-PROMOTION
 
      rule promote(ut(Mods::Set, bitfieldType(T::SimpleType, Len::Int)))
           => utype(int)
-          requires ((T ==K bool) orBool (T ==K int) orBool (T ==K signed-int) orBool (T ==K unsigned-int))
+          requires ((T ==K bool) orBool isSimpleIntType(T) orBool (T ==K unsigned-int))
                andBool min(utype(int))
                     <=Int min(utype(bitfieldType(T, Len)))
                andBool max(utype(int))
@@ -159,7 +159,7 @@ module C-COMMON-PROMOTION
 
      rule promote(ut(Mods::Set, bitfieldType(T::SimpleType, Len::Int)))
           => utype(unsigned-int)
-          requires (T ==K bool orBool T ==K int orBool T ==K signed-int orBool T ==K unsigned-int)
+          requires (T ==K bool orBool isSimpleIntType(T) orBool T ==K unsigned-int)
                andBool notBool (
                     min(utype(int))
                          <=Int min(utype(bitfieldType(T, Len)))
