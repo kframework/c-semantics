@@ -337,7 +337,7 @@ module C-CONVERSION
      rule (.K => UNDEF("CCV11",
                "Conversion to a pointer type with a stricter alignment requirement (possibly undefined)."))
           ~> cast(ut(_, pointerType(T'::Type)), tv(Loc:SymLoc, ut(_, pointerType(T::Type))))
-          requires type(pointerType(T')) =/=Type type(pointerType(T))
+          requires T' =/=Type T
                andBool notBool (isFunctionType(T) andBool notBool isFunctionType(T'))
                andBool getAlignas(T') >Int getAlign(Loc)
           [structural]
