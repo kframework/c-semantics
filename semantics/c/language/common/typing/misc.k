@@ -669,7 +669,7 @@ module C-TYPING-MISC
      rule createIncompleteArrayType(Inner:Type)
           => type(incompleteArrayType(Inner))
 
-     rule createVariableLengthArrayType(Inner:Type, Size::K)
+     rule createVariableLengthArrayType(Inner:Type, Size:KResult)
           => type(variableLengthArrayType(Inner, Size))
 
 endmodule
