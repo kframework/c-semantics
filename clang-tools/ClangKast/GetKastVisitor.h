@@ -2672,6 +2672,15 @@ std::string ifc(std::string c, std::string cpp) {
     return false;
   }
 
+  bool TraverseCompoundLiteralExpr(CompoundLiteralExpr *E) {
+    Kast::add(Kast::KApply("CompoundLiteral", Sort::KITEM, {Sort::INT, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+    Kast::add(Kast::KToken(blockTag++));
+    TraverseType(E->getType());
+    JustBase();
+    TraverseStmt(E->getInitializer());
+    return true;
+  }
+
   bool TraverseInitListExpr(InitListExpr *E) {
     InitListExpr *Syntactic = E->isSemanticForm() ? E->getSyntacticForm() ? E->getSyntacticForm() : E : E;
     if (cparser()) {
