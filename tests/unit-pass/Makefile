@@ -5,7 +5,7 @@ Makefile: $(ROOT)/../check-results.mk ;
 include $(ROOT)/../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
-EXCLUDES :=
+EXCLUDES := ./j078.c
 OS_STDIO_EXCLUDES := $(wildcard ./stdio-*.c)
 OS_EXCLUDES := $(OS_STDIO_EXCLUDES) \
                ./pthreads-starve.c \
