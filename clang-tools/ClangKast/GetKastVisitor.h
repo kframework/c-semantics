@@ -1228,6 +1228,7 @@ public:
 
       }
       Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
+      Kast::add(Kast::KApply("adjustParamStrict", Sort::KITEM, {Sort::KITEM}));
       TRY_TO(TraverseType(T->getParamType(i)));
     }
 
@@ -1403,14 +1404,9 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseConstantArrayType_c(ConstantArrayType *T) {
-    if (currentFunctionDecl) {
-      typeFromSimpleType();
-      pointerType();
-    } else
-      Kast::add(Kast::KApply("createArrayType", Sort::KITEM,{Sort::KITEM, Sort::INT}));
+    Kast::add(Kast::KApply("createArrayType", Sort::KITEM,{Sort::KITEM, Sort::INT}));
     TRY_TO(TraverseType(T->getElementType()));
-    if (!currentFunctionDecl)
-      VisitAPInt(T->getSize());
+    VisitAPInt(T->getSize());
     return true;
   }
 
@@ -1431,15 +1427,9 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseVariableArrayType_c(VariableArrayType *T) {
-    if (currentFunctionDecl) {
-      typeFromSimpleType();
-      pointerType();
-    } else
-      Kast::add(Kast::KApply("createVariableLengthArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
+    Kast::add(Kast::KApply("createVariableLengthArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
     TRY_TO(TraverseType(T->getElementType()));
-
-    if (!currentFunctionDecl)
-      TRY_TO(TraverseStmt(T->getSizeExpr()));
+    TRY_TO(TraverseStmt(T->getSizeExpr()));
     return true;
   }
 
@@ -1454,12 +1444,7 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseIncompleteArrayType_c(IncompleteArrayType *T) {
-    if (currentFunctionDecl) {
-      typeFromSimpleType();
-      pointerType();
-    }
-    else
-      Kast::add(Kast::KApply("createIncompleteArrayType", Sort::KITEM,{Sort::KITEM}));
+    Kast::add(Kast::KApply("createIncompleteArrayType", Sort::KITEM,{Sort::KITEM}));
     TRY_TO(TraverseType(T->getElementType()));
     return true;
   }
