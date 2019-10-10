@@ -615,7 +615,7 @@ sub parse {
       if (arg('--use-clang')) {
             my $std = getStd('c11');
             my $cppParser = distDir('clang-kast');
-            my @cppParserArgs = ('-x', 'c');
+            my @cppParserArgs = ('-x', 'c', '-Wno-incompatible-library-redeclaration');
             if (arg('-fno-diagnostics-color')) {
                   push(@cppParserArgs, '-fno-diagnostics-color');
             }
