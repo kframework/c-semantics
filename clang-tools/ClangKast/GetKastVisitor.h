@@ -1454,11 +1454,12 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseIncompleteArrayType_c(IncompleteArrayType *T) {
-    typeFromSimpleType();
-    if (currentFunctionDecl)
+    if (currentFunctionDecl) {
+      typeFromSimpleType();
       pointerType();
+    }
     else
-      Kast::add(Kast::KApply("incompleteArrayType", Sort::SIMPLEINCOMPLETEARRAYTYPE,{Sort::TYPE}));
+      Kast::add(Kast::KApply("createIncompleteArrayType", Sort::KITEM,{Sort::KITEM}));
     TRY_TO(TraverseType(T->getElementType()));
     return true;
   }

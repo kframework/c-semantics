@@ -50,6 +50,7 @@ module C-TYPING-SYNTAX
 
      syntax KItem ::= createFunctionType(KItem, List) [strict(1)]
      syntax KItem ::= createArrayType(KItem, Int) [strict(1)]
+     syntax KItem ::= createIncompleteArrayType(KItem) [strict(1)]
      syntax KItem ::= createVariableLengthArrayType(KItem, K) [strict(1)]
 
      // --------------
