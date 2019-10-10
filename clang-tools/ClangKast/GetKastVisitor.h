@@ -1028,6 +1028,7 @@ public:
       else
         throw std::logic_error("A record that is not a structure or union");
     } else {
+      Kast::add(Kast::KApply("OnlyTypedef", Sort::KITEM, {Sort::KITEM}));
       if (D->isStruct())
         Kast::add(Kast::KApply("StructRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
       else if (D->isUnion())
