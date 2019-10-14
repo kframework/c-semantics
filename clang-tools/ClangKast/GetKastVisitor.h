@@ -2718,8 +2718,10 @@ std::string ifc(std::string c, std::string cpp) {
         if (DesignatedInitExpr * D = dyn_cast<DesignatedInitExpr>(SubStmt)) {
           sub = D->getInit();
           for (unsigned i = 0; i < D->size(); i++) {
-            Kast::add(Kast::KApply("InFieldInit", Sort::KRESULT, {Sort::CID, Sort::KITEM}));
-            TraverseIdentifierInfo(D->getDesignator(i)->getFieldName());
+            if (D->getDesignator(i)->getFieldName()) {
+              Kast::add(Kast::KApply("InFieldInit", Sort::KRESULT, {Sort::CID, Sort::KITEM}));
+              TraverseIdentifierInfo(D->getDesignator(i)->getFieldName());
+            }
           }
         }
         Kast::add(Kast::KApply("NextInit", Sort::KRESULT));
