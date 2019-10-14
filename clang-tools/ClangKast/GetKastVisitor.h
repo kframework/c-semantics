@@ -1045,7 +1045,27 @@ public:
 
     strictlist();
     DeclContext(D);
-    TraverseDeclContextNode(D);
+
+    for (clang::Decl * d : D->decls()) {
+      if (excludedDecl(d))
+        continue;
+
+      if (isa<RecordDecl>(d)) {
+        Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
+        SpecifierItem();
+        TRY_TO(TraverseDecl(d));
+        strictlist();
+        Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+        Kast::add(Kast::KApply("FieldName", Sort::KITEM, {Sort::KITEM}));
+        Kast::add(Kast::KApply("Name", Sort::NAME, {Sort::CID, Sort::KITEM, Sort::KITEM}));
+        Kast::add(Kast::KApply("AnonymousName", Sort::CID));
+        JustBase();
+        emptyStrictList();
+        continue;
+      }
+      TRY_TO(TraverseDecl(d));
+    }
+
     strictlist();
     if (!hasAttrPacked(D))
       Kast::add(Kast::KApply(".List", Sort::LIST));
