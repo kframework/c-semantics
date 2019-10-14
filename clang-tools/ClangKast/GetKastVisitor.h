@@ -2694,10 +2694,23 @@ std::string ifc(std::string c, std::string cpp) {
     for (Stmt *SubStmt : Syntactic->children()) {
       if (cparser()) {
         Kast::add(Kast::KApply("InitFragment", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+        Stmt * sub = SubStmt;
+        if (DesignatedInitExpr * D = dyn_cast<DesignatedInitExpr>(SubStmt)) {
+          sub = D->getInit();
+          for (unsigned i = 0; i < D->size(); i++) {
+            Kast::add(Kast::KApply("InFieldInit", Sort::KRESULT, {Sort::CID, Sort::KITEM}));
+            TraverseIdentifierInfo(D->getDesignator(i)->getFieldName());
+          }
+        }
         Kast::add(Kast::KApply("NextInit", Sort::KRESULT));
-        if (!isa<InitListExpr>(SubStmt))
+        if (!isa<InitListExpr>(sub))
           Kast::add(Kast::KApply("SingleInit", Sort::KITEM, {Sort::KITEM}));
+
+        TRY_TO(TraverseStmt(sub));
+        continue;
       }
+
+      // cparser() == false
       TRY_TO(TraverseStmt(SubStmt));
     }
     return true;
