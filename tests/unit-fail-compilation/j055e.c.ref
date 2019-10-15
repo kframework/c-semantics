@@ -1,9 +1,8 @@
-j055e.c:3:1: error: Signed integer overflow.
+j055e.c:3:1: error: Enum initializer not an integer constant expression.
 
-    Undefined behavior (UB-CCV1):
-        see C11 section 6.5:5 http://rvdoc.org/C11/6.5
-        see C11 section J.2:1 item 36 http://rvdoc.org/C11/J.2
-        see CERT-C section INT32-C http://rvdoc.org/CERT-C/INT32-C
-        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+    Constraint violation (CV-CDE1):
+        see C11 section 6.7.2.2:2 http://rvdoc.org/C11/6.7.2.2
+        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
