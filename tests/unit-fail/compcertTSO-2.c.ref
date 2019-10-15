@@ -1,0 +1,12 @@
+Casting a pointer to an integer:
+      > in g at compcertTSO-2.c:8:3
+        in main at compcertTSO-2.c:10:3
+
+    Implementation defined behavior (IMPL-CCVE4)
+
+Casting a pointer to an integer:
+      > in f at compcertTSO-2.c:5:3
+        in main at compcertTSO-2.c:10:3
+
+    Implementation defined behavior (IMPL-CCVE4)
+
