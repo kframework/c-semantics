@@ -1037,7 +1037,11 @@ public:
         throw std::logic_error("A record that is not a structure or union");
     }
 
-    TRY_TO(TraverseDeclarationAsName(D));
+    if (D->isAnonymousStructOrUnion())
+      Kast::add(Kast::KApply("AnonymousName", Sort::CID));
+    else
+      TRY_TO(TraverseDeclarationAsName(D));
+
     if (!D->isCompleteDefinition()) {
       emptyStrictList();
       return true;
@@ -1924,9 +1928,12 @@ std::string ifc(std::string c, std::string cpp) {
   template<typename ExprType>
   bool TraverseMemberHelper(ExprType *E) {
     if (cparser()) {
-      Kast::add(Kast::KApply(E->isArrow()?"Arrow":"Dot", Sort::KITEM, {Sort::KITEM, Sort::CID}));
+      IdentifierInfo * info = E->getMemberNameInfo().getName().getAsIdentifierInfo();
+      if (info)
+        Kast::add(Kast::KApply(E->isArrow()?"Arrow":"Dot", Sort::KITEM, {Sort::KITEM, Sort::CID}));
       TRY_TO(TraverseStmt(E->getBase()));
-      TRY_TO(TraverseDeclarationNameInfo(E->getMemberNameInfo()));
+      if (info)
+        TRY_TO(TraverseDeclarationNameInfo(E->getMemberNameInfo()));
       return true;
     }
 
