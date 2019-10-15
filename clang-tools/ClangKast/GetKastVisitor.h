@@ -2420,6 +2420,7 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E) {
+    bool jb = false;
     if (E->getKind() == UETT_SizeOf) {
       if (E->isArgumentType()) {
         if (cparser()) {
@@ -2437,7 +2438,12 @@ std::string ifc(std::string c, std::string cpp) {
       }
     } else if (E->getKind() == UETT_AlignOf) {
       if (E->isArgumentType()) {
-        Kast::add(Kast::KApply("AlignofType", Sort::EXPR, {Sort::ATYPE}));
+        if (cparser()) {
+          Kast::add(Kast::KApply("AlignofType", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+          jb = true;
+        }
+        else
+          Kast::add(Kast::KApply("AlignofType", Sort::EXPR, {Sort::ATYPE}));
       } else {
         Kast::add(Kast::KApply("AlignofExpr", Sort::EXPR, {Sort::EXPR}));
       }
@@ -2449,6 +2455,9 @@ std::string ifc(std::string c, std::string cpp) {
       TraverseType(E->getArgumentType());
     else
       TraverseStmt(E->getArgumentExpr());
+
+    if (jb)
+      JustBase();
     return true;
   }
 
