@@ -1,3 +1,8 @@
+Casting a pointer to an integer:
+      > in main at IMPL-CEMX4-bad.c:5:7
+
+    Implementation defined behavior (IMPL-CCVE4)
+
 Modulus operator with a pointer value as an argument:
       > in main at IMPL-CEMX4-bad.c:5:7
 
