@@ -5,6 +5,7 @@
 #include <type_traits> // std::enable_if
 
 bool cparser();
+bool noLocation();
 
 enum class Sort {
   ACCESSSPECIFIER,

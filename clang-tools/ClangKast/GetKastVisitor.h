@@ -82,6 +82,9 @@ public:
     if (isa<StringLiteral>(E))
       return;
 
+    if (noLocation())
+      return;
+
     if (cparser()) {
       Kast::add(Kast::KApply("StatementLoc", Sort::KITEM, {Sort::CABSLOC, Sort::KITEM}));
     } else {
@@ -98,13 +101,15 @@ public:
     if (excludedDecl(D))
       return true;
 
-    // For TranslationUnit, getLocation() is empty.
-    if (D->getKind() != Decl::TranslationUnit) {
-      if (cparser())
-        Kast::add(Kast::KApply("DefinitionLoc", Sort::KITEM, {Sort::CABSLOC, Sort::KITEM}));
-      else
-        Kast::add(Kast::KApply("DeclLoc", Sort::DECL, {Sort::CABSLOC, Sort::DECL}));
-      CabsLoc(D->getLocation());
+    if (!noLocation()) {
+      // For TranslationUnit, getLocation() is empty.
+      if (D->getKind() != Decl::TranslationUnit) {
+        if (cparser())
+          Kast::add(Kast::KApply("DefinitionLoc", Sort::KITEM, {Sort::CABSLOC, Sort::KITEM}));
+        else
+          Kast::add(Kast::KApply("DeclLoc", Sort::DECL, {Sort::CABSLOC, Sort::DECL}));
+        CabsLoc(D->getLocation());
+      }
     }
 
     switch (D->getKind()) {

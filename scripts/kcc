@@ -588,6 +588,24 @@ sub preprocess {
       return $retval;
 }
 
+sub clangKast {
+        my ($ppResult, $std, $kast, $refClangKastArgs, $refCppParserArgs) = @_;
+        my @clangKastArgs = @{ $refClangKastArgs };
+        my @cppParserArgs = @{ $refCppParserArgs };
+
+        if (arg('-fno-diagnostics-color')) {
+            push(@cppParserArgs, '-fno-diagnostics-color');
+        }
+
+        if (arg('-nolocation')) {
+            push(@clangKastArgs, '-no-location');
+        }
+
+        my $cppParser = distDir('clang-kast');
+        shell($cppParser, $ppResult, @clangKastArgs, '--', @cppParserArgs)->verbose()->stdout($kast)->run();
+
+}
+
 sub parse {
       my ($inputFile, $lang, $trampolines) = @_;
 
@@ -603,30 +621,21 @@ sub parse {
             my $std = getStd('c++');
             my $cppParser = distDir('clang-kast');
             my @cppParserArgs = ('-x', 'c++-cpp-output', $std);
-            if (arg('-fno-diagnostics-color')) {
-                  push(@cppParserArgs, '-fno-diagnostics-color');
-            }
-
-            shell($cppParser, $ppResult, '--', @cppParserArgs)->verbose()->stdout($kast)->run();
-
+            my @clangKastArgs = ();
+            clangKast($ppResult, $std, $kast, \@clangKastArgs, \@cppParserArgs);
             return $kast;
       }
-      # Yes, it is a duplication, but only temporary one
+
       if (arg('--use-clang')) {
             my $std = getStd('c11');
-            my $cppParser = distDir('clang-kast');
             my @cppParserArgs = ('-x', 'c', '-Wno-incompatible-library-redeclaration');
-            if (arg('-fno-diagnostics-color')) {
-                  push(@cppParserArgs, '-fno-diagnostics-color');
-            }
-
-            shell($cppParser, $ppResult, '-cparser', '-extra-arg=-std=c11', '--', @cppParserArgs)->verbose()->stdout($kast)->run();
-
+            my @clangKastArgs = ('-cparser', '-extra-arg=-std=c11');
+            clangKast($ppResult, $std, $kast, \@clangKastArgs, \@cppParserArgs);
             return $kast;
       }
+
       my $cparser = distDir('cparser');
       shell($cparser, $ppResult, '--trueName', $inputFile)->verbose()->stdout($kast)->run();
-
       return $kast;
 }
 

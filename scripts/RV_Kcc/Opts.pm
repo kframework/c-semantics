@@ -404,6 +404,7 @@ sub parseOpts {
             RV_Kcc::Opts::pushArg('ldArgs', "-L$dir");
       }
   -nodefaultlibs	Do not link against the standard library.
+  -nolocation		Do not emit location information (CabsLoc).
   -std=<std>		Standard to use when building internally with
 			GCC for inline assembly. Not used by kcc directly.
   -o <file>		Place the output into <file>.
