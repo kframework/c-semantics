@@ -1,0 +1,10 @@
+Casting a pointer to an integer:
+      > in main at decls.c:45:3
+
+    Implementation defined behavior (IMPL-CCVE4)
+
+Casting a pointer to an integer:
+      > in main at decls.c:46:3
+
+    Implementation defined behavior (IMPL-CCVE4)
+

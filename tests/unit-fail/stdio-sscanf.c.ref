@@ -1,0 +1,7 @@
+Casting a pointer to an integer:
+      > in __isoc99_sscanf at stdio-sscanf.c:192:7
+        in main at stdio-sscanf.c:192:7
+
+    Implementation defined behavior (IMPL-CCVE4)
+
+PASS: bug16618: Did not crash.

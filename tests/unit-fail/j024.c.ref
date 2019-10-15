@@ -1,0 +1,5 @@
+Casting a pointer to an integer:
+      > in main at j024.c:5:7
+
+    Implementation defined behavior (IMPL-CCVE4)
+
