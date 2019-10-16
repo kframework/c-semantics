@@ -84,6 +84,8 @@ module C-TYPING-EXPR
      rule <k> typeof(X:CId => t(noQuals, SetItem(IntegerConstant), int)) ...</k>
           <enums>... X |-> _ ...</enums>
 
+     rule typeof(CodeLoc(E:KItem, _) => E)
+
      rule typeof(T:Typed => type(T))
           requires notBool isType(T)
 
