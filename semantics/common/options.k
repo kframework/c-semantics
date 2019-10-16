@@ -43,6 +43,5 @@ module OPTIONS
      rule showOpt(InteractiveFail()) => "interactive-fail"
      rule showOpt(FatalErrors()) => "fatal-errors"
      rule showOpt(Lint()) => "lint"
-     rule showOpt(Opt::Opt) => showK(Opt) [owise]
 
 endmodule

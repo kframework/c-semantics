@@ -320,7 +320,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           // NoLinkage, AutoStorage, not previously declared
           rule <k> declareObject(NoNamespace(), _, X::CId, _, T::CPPType, Init::Init, Var(Type::InitType), NoLinkage, AutoStorage, S::Set) ~> Next:KItem
                    => addToEnv(NoNamespace() :: X, T, nonStatic, false)
-                   ~> prepareDeclareNonStaticObject(X, T, Init, Type, S)
+                   ~> prepareDeclareNonStaticObject(X, T, Init, Type, S, Constexpr() in S)
                    ~> Declare.potentiallyInvokeDestructor(T)
                    ~> Next
                ...</k>
@@ -329,12 +329,11 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                requires completeDeclaration(T, Init) ==K T
                     andBool dummyBind(...) :/=K Next
 
-          syntax KItem ::= prepareDeclareNonStaticObject(CId, CPPType, init: Init, InitType, s: Set)
+          syntax KItem ::= prepareDeclareNonStaticObject(CId, CPPType, init: Init, InitType, s: Set, Bool)
 
-          context prepareDeclareNonStaticObject(...init: HOLE:Expr => evalCoreConstantExpressionUntil(HOLE, isEvalVal), s: S::Set)
-               requires Constexpr() in S
+          context prepareDeclareNonStaticObject(...init: HOLE:Expr => evalCoreConstantExpressionUntil(HOLE, isEvalVal), s: S::Set, true => false)
 
-          rule prepareDeclareNonStaticObject(X::CId, T::CPPType, Init::Init, Type::InitType, S::Set)
+          rule prepareDeclareNonStaticObject(X::CId, T::CPPType, Init::Init, Type::InitType, S::Set, false)
                => declareNonStaticObject(X, T, figureInit(le(ExecName(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, Init, Type, AutoStorage), Var(Type), AutoStorage, S)
 
           // NoLinkage, StaticStorage, not previously declared
