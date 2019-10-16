@@ -2445,7 +2445,10 @@ std::string ifc(std::string c, std::string cpp) {
         else
           Kast::add(Kast::KApply("AlignofType", Sort::EXPR, {Sort::ATYPE}));
       } else {
-        Kast::add(Kast::KApply("AlignofExpr", Sort::EXPR, {Sort::EXPR}));
+        if (cparser)
+          Kast::add(Kast::KApply("AlignofExpression", Sort::KITEM, {Sort::KITEM}));
+        else
+          Kast::add(Kast::KApply("AlignofExpr", Sort::EXPR, {Sort::EXPR}));
       }
     } else {
       throw std::logic_error("unimplemented: ??? expr or type trait");
