@@ -280,7 +280,8 @@ module C-CONVERSION
      need not be in the range of values of any integer type.
      }*/
      rule cast(integerUType #as T'::UType, tv(V::CValue, ut(... st: pointerType(_)) #as T::UType))
-          => checkUse(tv(cfg:pointerToInt(V, T'), castTypes(T', T)))
+          => implPointerToInt()
+          ~> checkUse(tv(cfg:pointerToInt(V, T'), castTypes(T', T)))
           requires notBool isBoolUType(T')
                andBool (byteSizeofType(T) <=Int byteSizeofType(T')
                     orBool (V ==K NullPointer))
@@ -292,6 +293,9 @@ module C-CONVERSION
                andBool notBool isBoolUType(T')
                andBool byteSizeofType(T) >Int byteSizeofType(T')
           [structural]
+
+     rule (.K => IMPL("CCVE4", "Casting a pointer to an integer."))
+          ~> implPointerToInt()
 
      syntax Bool ::= isAbsolute(CValue) [function]
      rule isAbsolute(_) => false [owise]
@@ -328,18 +332,34 @@ module C-CONVERSION
      }*/
      rule cast(ut(Mods'::Set, pointerType(T'::Type)), tv(Loc:SymLoc, ut(Mods::Set, pointerType(T::Type))))
           => adjustPointerBounds(tv(Loc, castTypes(ut(Mods', pointerType(T')), ut(Mods, pointerType(T)))))
-          requires Loc =/=K NullPointer andBool (notBool isCompleteType(T')
-               orBool type(pointerType(T')) ==Type type(pointerType(T))
-               orBool getAlignas(T') <=Int getAlign(Loc)
-               orBool (isFunctionType(T) andBool isFunctionType(T')))
+          requires Loc =/=K NullPointer
+               andBool getAlignas(T') <=Int getAlign(Loc)
+               andBool notBool (isFunctionType(T) andBool notBool isFunctionType(T'))
+               andBool getQualifiers(T) <=Quals getQualifiers(T')
      //TODO(dwightguth): handle pointer alignment
      rule (.K => UNDEF("CCV11",
                "Conversion to a pointer type with a stricter alignment requirement (possibly undefined)."))
           ~> cast(ut(_, pointerType(T'::Type)), tv(Loc:SymLoc, ut(_, pointerType(T::Type))))
-          requires isCompleteType(T')
-               andBool type(pointerType(T')) =/=Type type(pointerType(T))
+          requires T' =/=Type T
+               andBool notBool (isFunctionType(T) andBool notBool isFunctionType(T'))
                andBool getAlignas(T') >Int getAlign(Loc)
           [structural]
+     rule (.K => UNDEF("CCV14",
+               "Conversion of a function pointer to object pointer type."))
+          ~> cast(ut(_, pointerType(T'::Type)), tv(Loc:SymLoc, ut(_, pointerType(T::Type))))
+          requires isFunctionType(T) andBool notBool isFunctionType(T')
+          [structural]
+     rule (.K => lintCastingAwayQuals())
+          ~> cast(ut(_, pointerType(T'::Type)), tv(Loc:SymLoc, ut(_, pointerType(T::Type => addQualifiers(getQualifiers(T'), stripQualifiers(T))))))
+          requires getQualifiers(T) >Quals getQualifiers(T')
+          [structural]
+
+     syntax Error ::= lintCastingAwayQuals()
+                    | implPointerToInt()
+     rule lintCastingAwayQuals() => .K
+          requires notBool hasLint
+     rule implPointerToInt() => .K
+          requires notBool hasLint
 
      syntax UType ::= castTypes(UType, UType) [function]
      rule castTypes(ut(_, T'::SimpleUType), ut(Mods::Set, _)) => ut(Mods, T')

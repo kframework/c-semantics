@@ -122,10 +122,11 @@ module C-TYPING-SYNTAX
      // Basic types
      syntax SimpleBitfieldType ::= bitfieldType(SimpleType, Int)
 
-     syntax SimpleSignedType ::= "short-int" | SimpleSignedIntType
+     syntax SimpleSignedType ::= "short-int" | SimpleIntType
                                | "long-int" | "long-long-int" | "oversized-int"
      syntax SimpleFloatType ::= "float" | "double" | "long-double" | "oversized-float"
-     syntax SimpleSignedIntType ::= "int"
+     syntax SimpleIntType ::= "int" | SimpleSignedIntType
+     syntax SimpleSignedIntType ::= "signed-int"
      syntax SimpleUnsignedType ::= SimpleBoolType | "unsigned-short-int"
                                  | SimpleUnsignedIntType | "unsigned-long-int"
                                  | "unsigned-long-long-int"
@@ -220,7 +221,7 @@ module C-TYPING-SYNTAX
      rule aggregateOrUnionUType => ut(?_, arrayUType(?_, ?_) #Or incompleteArrayUType(?_) #Or flexibleArrayUType(?_) #Or unspecifiedArrayUType(?_) #Or variableLengthArrayUType(?_, ?_) #Or structType(?_) #Or unionType(?_)) [macro]
      rule pointerOrArrayUType => ut(?_, arrayUType(?_, ?_) #Or incompleteArrayUType(?_) #Or flexibleArrayUType(?_) #Or unspecifiedArrayUType(?_) #Or variableLengthArrayUType(?_, ?_) #Or pointerType(?_)) [macro]
      rule integerUType => unsignedIntegerUType #Or signedIntegerUType #Or ut(?_, enumType(?_)) [macro]
-     rule signedIntegerUType => ut(?_, short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType #Or bitfieldType(short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType, ?_)) [macro]
+     rule signedIntegerUType => ut(?_, short-int #Or int #Or signed-int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType #Or bitfieldType(short-int #Or int #Or signed-int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType, ?_)) [macro]
      rule unsignedIntegerUType => ut(?_, bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType #Or bitfieldType(bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType, ?_)) [macro]
      rule charUType => ut(?_, signedCharType #Or unsignedCharType) [macro]
      rule arithmeticUType => integerUType #Or ut(?_, float #Or double #Or long-double #Or oversized-float) [macro]
@@ -230,7 +231,7 @@ module C-TYPING-SYNTAX
      rule aggregateOrUnionType => t(?_, ?_, arrayType(?_, ?_) #Or incompleteArrayType(?_) #Or flexibleArrayType(?_) #Or unspecifiedArrayType(?_) #Or variableLengthArrayType(?_, ?_) #Or structType(?_) #Or unionType(?_)) [macro]
      rule pointerOrArrayType => t(?_, ?_, arrayType(?_, ?_) #Or incompleteArrayType(?_) #Or flexibleArrayType(?_) #Or unspecifiedArrayType(?_) #Or variableLengthArrayType(?_, ?_) #Or pointerType(?_)) [macro]
      rule integerType => unsignedIntegerType #Or signedIntegerType #Or t(?_, ?_, enumType(?_)) [macro]
-     rule signedIntegerType => t(?_, ?_, short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType #Or bitfieldType(short-int #Or int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType, ?_)) [macro]
+     rule signedIntegerType => t(?_, ?_, short-int #Or int #Or signed-int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType #Or bitfieldType(short-int #Or int #Or signed-int #Or long-int #Or long-long-int #Or oversized-int #Or signedCharType, ?_)) [macro]
      rule unsignedIntegerType => t(?_, ?_, bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType #Or bitfieldType(bool #Or unsigned-short-int #Or unsigned-int #Or unsigned-long-int #Or unsigned-long-long-int #Or unsigned-oversized-int #Or unsignedCharType, ?_)) [macro]
      rule charType => t(?_, ?_, signedCharType #Or unsignedCharType) [macro]
      rule arithmeticType => integerType #Or t(?_, ?_, float #Or double #Or long-double #Or oversized-float) [macro]

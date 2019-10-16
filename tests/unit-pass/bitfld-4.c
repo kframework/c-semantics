@@ -9,7 +9,7 @@
 
 extern void abort (void);
 
-struct s { int a:12, b:20; };
+struct s { signed int a:12, b:20; };
 
 struct s x = { -123, -456 };
 

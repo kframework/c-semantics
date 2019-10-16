@@ -1,15 +1,14 @@
 Casting a pointer to an integer:
-      > in main at IMPL-CEMX4-bad.c:5:7
+      > in main at decls.c:45:3
 
     Implementation defined behavior (IMPL-CCVE4):
         see C11 section 6.3.2.3:6 http://rvdoc.org/C11/6.3.2.3
         see MISRA-C section 8.11:4 http://rvdoc.org/MISRA-C/8.11
 
-Modulus operator with a pointer value as an argument:
-      > in main at IMPL-CEMX4-bad.c:5:7
+Casting a pointer to an integer:
+      > in main at decls.c:46:3
 
-    Implementation defined behavior (IMPL-CEMX4):
+    Implementation defined behavior (IMPL-CCVE4):
         see C11 section 6.3.2.3:6 http://rvdoc.org/C11/6.3.2.3
-        see C11 section J.3.7:1 item 1 http://rvdoc.org/C11/J.3.7
         see MISRA-C section 8.11:4 http://rvdoc.org/MISRA-C/8.11
 

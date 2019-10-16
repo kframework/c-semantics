@@ -81,6 +81,7 @@ module C-COMMON-PROMOTION
      rule rank(ut(_, short-int)) => 2
      rule rank(ut(_, unsigned-short-int)) => 2
      rule rank(ut(_, int)) => 3
+     rule rank(ut(_, signed-int)) => 3
      rule rank(ut(_, unsigned-int)) => 3
      rule rank(ut(_, long-int)) => 4
      rule rank(ut(_, unsigned-long-int)) => 4
@@ -121,6 +122,7 @@ module C-COMMON-PROMOTION
      // things more convenient if it's total.
      rule isPromoted(ut(_, enumType(_))) => true
      rule isPromoted(ut(_, int)) => true
+     rule isPromoted(ut(_, signed-int)) => true
      rule isPromoted(ut(_, unsigned-int)) => true
      rule isPromoted(ut(_, long-int)) => true
      rule isPromoted(ut(_, unsigned-long-int)) => true
@@ -141,7 +143,7 @@ module C-COMMON-PROMOTION
 
      rule promote(ut(Mods::Set, bitfieldType(T::SimpleType, Len::Int)))
           => utype(int)
-          requires ((T ==K bool) orBool (T ==K int) orBool (T ==K unsigned-int))
+          requires ((T ==K bool) orBool isSimpleIntType(T) orBool (T ==K unsigned-int))
                andBool min(utype(int))
                     <=Int min(utype(bitfieldType(T, Len)))
                andBool max(utype(int))
@@ -157,7 +159,7 @@ module C-COMMON-PROMOTION
 
      rule promote(ut(Mods::Set, bitfieldType(T::SimpleType, Len::Int)))
           => utype(unsigned-int)
-          requires (T ==K bool orBool T ==K int orBool T ==K unsigned-int)
+          requires (T ==K bool orBool isSimpleIntType(T) orBool T ==K unsigned-int)
                andBool notBool (
                     min(utype(int))
                          <=Int min(utype(bitfieldType(T, Len)))

@@ -1,0 +1,7 @@
+Casting away qualifiers:
+      > in main at L-CCVE3-bad.c:3:7
+
+    Possible unintended behavior (L-CCVE3):
+        see CERT-C section EXP05-C http://rvdoc.org/CERT-C/EXP05-C
+        see MISRA-C section 8.11:8 http://rvdoc.org/MISRA-C/8.11
+

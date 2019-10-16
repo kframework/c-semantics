@@ -1,9 +1,9 @@
 #include <stdlib.h>
 struct {
-  int a:4;
-  int :4;
-  int b:4;
-  int c:4;
+  unsigned int a:4;
+  unsigned int :4;
+  unsigned int b:4;
+  unsigned int c:4;
 } x = { 2,3,4 };
 
 int main ()

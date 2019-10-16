@@ -1,3 +1,10 @@
+Casting a pointer to an integer:
+      > in main at z00024a.c:5:2
+
+    Implementation defined behavior (IMPL-CCVE4):
+        see C11 section 6.3.2.3:6 http://rvdoc.org/C11/6.3.2.3
+        see MISRA-C section 8.11:4 http://rvdoc.org/MISRA-C/8.11
+
 Unspecified value returned from main function:
 
     Unspecified value or behavior (USP-CEER6):

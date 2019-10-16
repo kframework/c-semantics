@@ -119,11 +119,11 @@ module C-FUNCTION-DEF
           [structural]
      rule (.K => UNDEF("FD5", "Function main must return an int.") )
           ~> checkMainDef(t(_, _, functionType(ut(_, T::SimpleUType), _)))
-          requires T =/=K int
+          requires notBool isSimpleIntType(T)
           [structural]
      rule (.K => UNDEF("FD6", "If main has parameters, the type of the first parameter must be equivalent to int.") )
           ~> checkMainDef(t(_, _, functionType(_, ListItem(t(_, _, T::SimpleType)) _)))
-          requires T =/=K int andBool T =/=K void
+          requires notBool isSimpleIntType(T) andBool T =/=K void
           [structural]
      rule (.K => UNDEF("FD7", "If main has parameters, the type of the second parameter must be equivalent to char**.") )
           ~> checkMainDef(t(_, _, functionType(_, ListItem(_) ListItem(T:Type))))

@@ -4,7 +4,7 @@ int main ()
   struct  {
     signed int s:3;
     unsigned int u:3;
-    int i:3;
+    signed int i:3;
   } x = {-1, -1, -1};
 
   if (x.u != 7)

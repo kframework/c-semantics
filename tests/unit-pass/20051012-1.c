@@ -3,9 +3,9 @@ extern void abort (void);
 
 struct type 
 {
-  int *a;
+  signed int *a;
   
-  int b:16;
+  signed int b:16;
   unsigned int p:9;
 } t;
 

@@ -5,7 +5,7 @@ extern void abort (void);
 
 struct S
 {
-  int s : (sizeof (int) * __CHAR_BIT__ - 2);
+  signed int s : (sizeof (int) * __CHAR_BIT__ - 2);
 } s;
 
 void

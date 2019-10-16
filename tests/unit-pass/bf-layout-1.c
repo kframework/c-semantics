@@ -1,6 +1,6 @@
 #include <stdlib.h>
-struct { int f8:8; int f24:24; } a;
-struct { int f32:32; } b;
+struct { signed int f8:8; signed int f24:24; } a;
+struct { signed int f32:32; } b;
 
 int main ()
 {

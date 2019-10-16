@@ -107,7 +107,7 @@ module C-TYPING-PREDICATES
      rule isReadFrom(_) => false [owise]
 
      rule isTruthValue(tv(V::CValue, ut(_, T::SimpleUType)))
-          => T ==K int andBool (V ==K 0 orBool V ==K 1)
+          => isSimpleIntType(T) andBool (V ==K 0 orBool V ==K 1)
 
      rule isFlexibleType(dynamicType(T::Type)) => isFlexibleType(T)
      rule isFlexibleType(t(... st: structType(_)) #as T::Type) => isFlexibleStruct(getFields(T))

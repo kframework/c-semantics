@@ -49,6 +49,7 @@ module COMMON-SYNTAX
      syntax Quals ::= Quals "+Qual" Qualifier [function]
      syntax Quals ::= Quals "-Qual" Qualifier [function]
      syntax Bool ::= Quals "<=Quals" Quals [function]
+     syntax Bool ::= Quals ">Quals" Quals [function]
 
      syntax Namespace ::= GlobalNamespace()
 

@@ -8,7 +8,7 @@ CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
 KCC = kcc
-KCCFLAGS = -frecover-all-errors -fno-native-compilation -fno-diagnostics-color
+KCCFLAGS = -frecover-all-errors -fno-native-compilation -fno-diagnostics-color -Wno-implementation-defined
 CFLAGS = -fno-diagnostics-color -std=c11
 
 .PHONY: clean comparison
