@@ -274,15 +274,27 @@ string Kast::KToken::toKString(unsigned long long s) {
 }
 
 string Kast::KToken::toKString(llvm::APFloat f) {
+  unsigned precision = f.semanticsPrecision(f.getSemantics());
   const unsigned numBytes = 6      // max length of signed short
                           + 4      // -1.E
                           + 3 + 11 // p4294967295x16
                           + 1      // null byte
-                          + f.semanticsPrecision(f.getSemantics());
+                          + precision;
   char result[numBytes] = {0}, suffix[14] = {0};
   SmallVector<char, 80> buf;
   f.toString(buf, 0, 0);
-  sprintf(suffix, "p%ux11", f.semanticsPrecision(f.getSemantics()));
+  const unsigned range = [&]{
+      if (precision == 24)
+        return 8;
+      if (precision == 53)
+        return 11;
+      if (precision == 64)
+        return 15;
+      throw std::logic_error("Unexpected precision: " + std::to_string(precision));
+  }();
+  if (precision == 64)
+    precision = 65;
+  sprintf(suffix, "p%ux%d", precision, range);
   strncpy(result, buf.data(), buf.size());
   strcat(result, suffix);
   return string(result);
