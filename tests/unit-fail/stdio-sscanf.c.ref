@@ -2,6 +2,8 @@ Casting a pointer to an integer:
       > in __isoc99_sscanf at stdio-sscanf.c:192:7
         in main at stdio-sscanf.c:192:7
 
-    Implementation defined behavior (IMPL-CCVE4)
+    Implementation defined behavior (IMPL-CCVE4):
+        see C11 section 6.3.2.3:6 http://rvdoc.org/C11/6.3.2.3
+        see MISRA-C section 8.11:4 http://rvdoc.org/MISRA-C/8.11
 
 PASS: bug16618: Did not crash.
