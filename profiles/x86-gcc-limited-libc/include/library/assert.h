@@ -15,7 +15,7 @@ void abort(void);
 }
 #endif
 
-#define assert(test) ((!(test)) ? (printf("Assertion failed: `%s', file %s, line %u\n", #test, (__FILE__), (__LINE__)), abort()) : (void)0)
+#define assert(test) ((!(test)) ? (printf("Assertion failed: `%s', file %s, line %d\n", #test, (__FILE__), (__LINE__)), abort()) : (void)0)
 #endif
 
 #define static_assert _Static_assert
