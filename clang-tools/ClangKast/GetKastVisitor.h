@@ -1257,8 +1257,8 @@ public:
         TRY_TO(TraverseDeclarationName(currentFunctionDecl->parameters()[i]->getDeclName()));
 
       }
-      Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
       Kast::add(Kast::KApply("adjustParamStrict", Sort::KITEM, {Sort::KITEM}));
+      Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
       TRY_TO(TraverseType(T->getParamType(i)));
     }
 
