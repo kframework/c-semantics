@@ -331,7 +331,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
           syntax KItem ::= prepareDeclareNonStaticObject(CId, CPPType, init: Init, InitType, s: Set, Bool)
 
-          context prepareDeclareNonStaticObject(...init: HOLE:Expr => evalCoreConstantExpressionUntil(HOLE, isEvalVal), s: S::Set, true => false)
+          context prepareDeclareNonStaticObject(_, _, HOLE:Expr => evalCoreConstantExpressionUntil(HOLE, isEvalVal), _, S::Set, true => false)
 
           rule prepareDeclareNonStaticObject(X::CId, T::CPPType, Init::Init, Type::InitType, S::Set, false)
                => declareNonStaticObject(X, T, figureInit(le(ExecName(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, Init, Type, AutoStorage), Var(Type), AutoStorage, S)
