@@ -1964,7 +1964,7 @@ std::string ifc(std::string c, std::string cpp) {
   bool VisitDefaultStmt(DefaultStmt *S) {
     if (cparser()) {
       Kast::add(Kast::KApply("Default", Sort::KITEM, {Sort::INT, Sort::KITEM}));
-      Kast::add(Kast::KToken(blockTag++));
+      Kast::add(Kast::KToken(switchBlockTag));
       checkExpressionStatement(S->getSubStmt());
     }
     else
