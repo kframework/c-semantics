@@ -3028,6 +3028,10 @@ private:
   }
 
   bool excludedDecl(clang::Decl const *d) const {
+    if (auto *record = dyn_cast<RecordDecl>(d)) {
+      if (!record->isCompleteDefinition())
+        return true;
+    }
     return d->isImplicit() && d->isDefinedOutsideFunctionOrMethod();
   }
 
