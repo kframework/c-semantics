@@ -7,6 +7,8 @@ uintptr_t g() {
   int a; 
   return (uintptr_t)&a; }
 int main() { 
-  _Bool b = (f() == g()); // can this be true?
+  uintptr_t g_ = g();
+  uintptr_t f_ = f();
+  _Bool b = (f_ == g_); // can this be true?
   //printf("(f()==g())=%s\n",b?"true":"false"); 
 }
