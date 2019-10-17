@@ -1231,6 +1231,23 @@ public:
     return true;
   }
 
+  bool TraverseGenericSelectionExpr(GenericSelectionExpr *E) {
+    Kast::add(Kast::KApply("Generic", Sort::KITEM, {Sort::K, Sort::STRICTLIST}));
+    TraverseStmt(E->getControllingExpr());
+    strictlist();
+    KSeqList(E->getNumAssocs());
+    for (unsigned i = 0; i < E->getNumAssocs(); i++) {
+      if (E->getAssocTypeSourceInfo(i)) {
+        Kast::add(Kast::KApply("GenericPair", Sort::KITEM, {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+        TraverseType(E->getAssocType(i));
+        JustBase();
+      } else {
+        Kast::add(Kast::KApply("GenericDefault", Sort::KITEM, {Sort::KITEM}));
+      }
+      TraverseStmt(E->getAssocExpr(i));
+    }
+    return true;
+  }
 
   bool TraverseOffsetOfExpr(OffsetOfExpr *E) {
     Kast::add(Kast::KApply("OffsetOf", Sort::KITEM, {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
