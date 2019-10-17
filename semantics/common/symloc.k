@@ -212,7 +212,6 @@ module SYMLOC
 
      rule Loc::SymLoc +bits N:Int
           => setBitOffset(N %Int cfg:bitsPerByte, Loc +bytes (N /Int cfg:bitsPerByte))
-     rule NullPointer +bits _ => NullPointer
 
      rule loc(_, A:Int) >bytes loc(_, B:Int) => A >Int B
      rule loc(_, A:Int) >=bytes loc(_, B:Int) => A >=Int B

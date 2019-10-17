@@ -308,7 +308,8 @@ module CPP-TRANSLATION-TYPING-EXPR
      rule #typeofBuiltinOperator(operator-, t(... st: pointerType(...)) #as T::CPPType, _, T2::CPPType) => typeof(T)
           requires isCPPArithmeticType(T2)
 
-     rule #typeofBuiltinOperator(operator-, t(... st: _:CPPSimpleArrayType) #as T::CPPType, _, _) => typeof(revalType(T))
+     rule #typeofBuiltinOperator(operator-, t(... st: _:CPPSimpleArrayType) #as T::CPPType, _, T2::CPPType) => typeof(revalType(T))
+          requires isCPPArithmeticType(T2)
 
      rule #typeofBuiltinOperator(operator-, t(... st: pointerType(...)), _, t(... st: pointerType(...)))
           => typeof(type(ptrdiff_t))

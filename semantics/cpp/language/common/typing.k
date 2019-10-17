@@ -1156,8 +1156,6 @@ module C-CPP-TYPING
 
      rule type(V:Val)::Type => convertTypeToC(type(V))
 
-     rule type(V:TExpr)::Type => convertTypeToC(type(V))
-
      rule isCPPVoidType(t(... st: void)) => true
      rule isCPPVoidType(_) => false [owise]
      rule isCPPUnsignedType(t(... st: _:CPPSimpleUnsignedType)) => true
