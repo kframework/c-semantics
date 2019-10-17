@@ -121,6 +121,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::SIMPLETYPE:            os << "SimpleType"; break;
     case Sort::SIMPLEUTYPE:           os << "SimpleUType"; break;
     case Sort::SPECIFIER:             os << "Specifier"; break;
+    case Sort::SPECIFIERELEM:         os << "SpecifierElem"; break;
     case Sort::STMT:                  os << "Stmt"; break;
     case Sort::STORAGECLASSSPECIFIER: os << "StorageClassSpecifier"; break;
     case Sort::STRICTLIST:            os << "StrictList"; break;

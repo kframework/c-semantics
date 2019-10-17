@@ -647,6 +647,7 @@ public:
     Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
     StorageClass(D->getStorageClass());
     ThreadStorageClass(D->getTSCSpec());
+    addAlignment(D);
     TRY_TO(TraverseType(D->getType()));
     if (D->getInit()) {
       if (!isa<InitListExpr>(D->getInit()))
@@ -692,8 +693,35 @@ public:
     return cparser()? TraverseFieldDecl_c(D) : TraverseFieldDecl_cpp(D);
   }
 
+  AlignedAttr * getAlignment(Decl *D) {
+    for (Attr *a : D->attrs()) {
+      if (a->getKind() == attr::Kind::Aligned) {
+        return dyn_cast<AlignedAttr>(a);
+      }
+    }
+    return nullptr;
+  }
+  void addAlignment(Decl *D) {
+    AlignedAttr * alignment = getAlignment(D);
+    if (!alignment)
+      return;
+
+    Kast::add(Kast::KApply("addMods", Sort::KITEM, {Sort::LIST, Sort::KITEM}));
+    Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+
+    if (alignment->isAlignmentExpr()) {
+      Kast::add(Kast::KApply("AlignasExpression", Sort::SPECIFIERELEM, {Sort::KITEM}));
+      TraverseStmt(alignment->getAlignmentExpr());
+    } else {
+      Kast::add(Kast::KApply("AlignasType", Sort::SPECIFIERELEM, {Sort::KITEM, Sort::KITEM}));
+      TraverseTypeLoc(alignment->getAlignmentType()->getTypeLoc());
+      JustBase();
+    }
+  }
+
   bool TraverseFieldDecl_c(FieldDecl *D) {
     Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
+    addAlignment(D);
     TRY_TO(TraverseType(D->getType()));
     strictlist();
     Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
@@ -2445,7 +2473,7 @@ std::string ifc(std::string c, std::string cpp) {
         else
           Kast::add(Kast::KApply("AlignofType", Sort::EXPR, {Sort::ATYPE}));
       } else {
-        if (cparser)
+        if (cparser())
           Kast::add(Kast::KApply("AlignofExpression", Sort::KITEM, {Sort::KITEM}));
         else
           Kast::add(Kast::KApply("AlignofExpr", Sort::EXPR, {Sort::EXPR}));
