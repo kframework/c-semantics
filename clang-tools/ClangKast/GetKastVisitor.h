@@ -1231,6 +1231,21 @@ public:
     return true;
   }
 
+
+  bool TraverseOffsetOfExpr(OffsetOfExpr *E) {
+    Kast::add(Kast::KApply("OffsetOf", Sort::KITEM, {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+    TraverseTypeLoc(E->getTypeSourceInfo()->getTypeLoc());
+    JustBase();
+    for (unsigned i = 0; i < E->getNumComponents() - 1; i++) {
+      Kast::add(Kast::KApply("Dot", Sort::KITEM, {Sort::KITEM, Sort::CID}));
+    }
+
+    for (unsigned i = 0; i < E->getNumComponents(); i++) {
+      TraverseIdentifierInfo(E->getComponent(i).getFieldName());
+    }
+    return true;
+  }
+
   bool VisitAccessSpecDecl(AccessSpecDecl *D) {
     Kast::add(Kast::KApply("AccessSpec", Sort::DECL, {Sort::ACCESSSPECIFIER}));
     VisitAccessSpecifier(D->getAccess());
