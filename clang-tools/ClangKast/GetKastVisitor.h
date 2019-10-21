@@ -7,6 +7,7 @@
 #include "clang/AST/Expr.h"
 #include "clang/AST/Mangle.h"
 #include "clang/AST/RecursiveASTVisitor.h"
+#include "clang/AST/Type.h"
 
 #include "ClangKast.h"
 
@@ -1133,14 +1134,18 @@ public:
     }
 
     strictlist();
-    
+
     int count = 0;
     for (auto it = D->decls_begin(); it != D->decls_end(); ++it) {
       clang::Decl * d = *it;
       if (excludedDecl(d))
         continue;
-      if (getNestedRecordField(D, it))
+      if (getNestedRecordField(D, it)) {
+        count++;
+        ++it;
+        assert(it != D->decls_end());
         continue;
+      }
       count++;
     }
     KSeqList(count);
