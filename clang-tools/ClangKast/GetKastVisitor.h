@@ -693,7 +693,7 @@ public:
     return cparser()? TraverseFieldDecl_c(D) : TraverseFieldDecl_cpp(D);
   }
 
-  AlignedAttr * getAlignment(Decl *D) {
+  AlignedAttr * getAlignment(const Decl *D) {
     for (Attr *a : D->attrs()) {
       if (a->getKind() == attr::Kind::Aligned) {
         return dyn_cast<AlignedAttr>(a);
@@ -701,7 +701,7 @@ public:
     }
     return nullptr;
   }
-  void addAlignment(Decl *D) {
+  void addAlignment(Decl const *D) {
     AlignedAttr * alignment = getAlignment(D);
     if (!alignment)
       return;
@@ -719,26 +719,31 @@ public:
     }
   }
 
+    bool TraverseFieldDecl_c_helper(const FieldDecl *D) {
+      strictlist();
+      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+      if (D->isBitField()) {
+        Kast::add(Kast::KApply("BitFieldName", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+      } else {
+        Kast::add(Kast::KApply("FieldName", Sort::KITEM, {Sort::KITEM}));
+      }
+      Kast::add(Kast::KApply("Name", Sort::NAME, {Sort::CID, Sort::KITEM, Sort::KITEM}));
+      TRY_TO(TraverseDeclarationName(D->getDeclName()));
+      JustBase();
+      emptyStrictList();
+
+      if (D->isBitField()) {
+        TRY_TO(TraverseStmt(D->getBitWidth()));
+      }
+      return true;
+    }
+
   bool TraverseFieldDecl_c(FieldDecl *D) {
     Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
     addAlignment(D);
     TRY_TO(TraverseType(D->getType()));
-    strictlist();
-    Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-    if (D->isBitField()) {
-      Kast::add(Kast::KApply("BitFieldName", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
-    } else {
-      Kast::add(Kast::KApply("FieldName", Sort::KITEM, {Sort::KITEM}));
-    }
-    Kast::add(Kast::KApply("Name", Sort::NAME, {Sort::CID, Sort::KITEM, Sort::KITEM}));
-    TRY_TO(TraverseDeclarationName(D->getDeclName()));
-    JustBase();
-    emptyStrictList();
+    return TraverseFieldDecl_c_helper(D);
 
-    if (D->isBitField()) {
-      TRY_TO(TraverseStmt(D->getBitWidth()));
-    }
-    return true;
   }
 
   bool TraverseFieldDecl_cpp(FieldDecl *D) {
@@ -1046,6 +1051,53 @@ public:
     return true;
   }
 
+  struct NestedRecordField {
+      RecordDecl * nested_record;
+      FieldDecl *next_field;
+  };
+
+  std::optional<NestedRecordField> getNestedRecordField(RecordDecl const *record, DeclContext::decl_iterator it) {
+    RecordDecl * nested_record = dyn_cast<RecordDecl>(*it);
+    if (!nested_record)
+      return std::nullopt;
+
+    ++it;
+    if (it == record->decls_end())
+      return std::nullopt;
+
+    FieldDecl * next_field = dyn_cast<FieldDecl>(*it);
+    if (!next_field)
+      return std::nullopt;
+
+    if (!next_field->getType()->isRecordType())
+      return std::nullopt;
+
+    QualType t = next_field->getType();
+    if (isa<ElaboratedType>(t.getTypePtr()))
+      t = dyn_cast<ElaboratedType>(t.getTypePtr())->getNamedType();
+
+    RecordType const *rt = dyn_cast<RecordType>(t.getTypePtr());
+    if (!rt)
+      return std::nullopt;
+
+    if (rt->getDecl() != nested_record)
+      return std::nullopt;
+
+    return {{nested_record, next_field}};
+  }
+
+  bool processNestedRecordField(RecordDecl const *record, DeclContext::decl_iterator it) {
+    std::optional<NestedRecordField> nrf = getNestedRecordField(record, it);
+    if (!nrf)
+      return false;
+
+    Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
+    SpecifierItem();
+    TRY_TO(TraverseDecl(nrf->nested_record));
+    TraverseFieldDecl_c_helper(nrf->next_field);
+    return true;
+  }
+
   bool TraverseRecordDecl(RecordDecl *D) {
     if (!cparser())
       return true;
@@ -1081,25 +1133,29 @@ public:
     }
 
     strictlist();
-    DeclContext(D);
+    
+    int count = 0;
+    for (auto it = D->decls_begin(); it != D->decls_end(); ++it) {
+      clang::Decl * d = *it;
+      if (excludedDecl(d))
+        continue;
+      if (getNestedRecordField(D, it))
+        continue;
+      count++;
+    }
+    KSeqList(count);
 
-    for (clang::Decl * d : D->decls()) {
+    for (auto it = D->decls_begin(); it != D->decls_end(); ++it) {
+      clang::Decl * d = *it;
       if (excludedDecl(d))
         continue;
 
-      if (isa<RecordDecl>(d)) {
-        Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
-        SpecifierItem();
-        TRY_TO(TraverseDecl(d));
-        strictlist();
-        Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-        Kast::add(Kast::KApply("FieldName", Sort::KITEM, {Sort::KITEM}));
-        Kast::add(Kast::KApply("Name", Sort::NAME, {Sort::CID, Sort::KITEM, Sort::KITEM}));
-        Kast::add(Kast::KApply("AnonymousName", Sort::CID));
-        JustBase();
-        emptyStrictList();
+      if (processNestedRecordField(D, it)) {
+        // skip the following field declaration
+        ++it;
         continue;
       }
+
       TRY_TO(TraverseDecl(d));
     }
 
@@ -3092,7 +3148,9 @@ private:
   void DeclContext(DeclContext *D) {
     int i = 0;
     for (const clang::Decl * d : D->decls()) {
-      if (!excludedDecl(d)) i++;
+      if (excludedDecl(d))
+        continue;
+      i++;
     }
     KSeqList(i);
   }
