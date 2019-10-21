@@ -3077,12 +3077,16 @@ private:
     }
   }
 
-  bool excludedDecl(clang::Decl const *d) const {
+  static bool excludedDecl(clang::Decl const *d) {
     if (auto *record = dyn_cast<RecordDecl>(d)) {
       if (!record->isCompleteDefinition())
         return true;
     }
     return d->isImplicit() && d->isDefinedOutsideFunctionOrMethod();
+  }
+
+  static bool notExcludedDecl(clang::Decl const *d) {
+    return !excludedDecl(d);
   }
 
   void DeclContext(DeclContext *D) {
@@ -3098,7 +3102,7 @@ private:
     for (Stmt::child_iterator iter = S->child_begin(), end = S->child_end(); iter != end; ++i, ++iter){
       if (DeclStmt *d = dyn_cast<DeclStmt>(*iter)) {
         if (!d->isSingleDecl())
-          i += std::distance(d->getDeclGroup().begin(), d->getDeclGroup().end()) - 1;
+          i += std::count_if(d->getDeclGroup().begin(), d->getDeclGroup().end(), notExcludedDecl) - 1;
       }
     }
 
