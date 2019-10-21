@@ -127,6 +127,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::STRICTLIST:            os << "StrictList"; break;
     case Sort::STRICTLISTRESULT:      os << "StrictListResult"; break;
     case Sort::STRING:                os << "String"; break;
+    case Sort::STRINGLITERAL:         os << "StringLiteral"; break;
     case Sort::TAG:                   os << "Tag"; break;
     case Sort::TEMPLATEARGUMENT:      os << "TemplateArgument"; break;
     case Sort::TEMPLATEPARAMETER:     os << "TemplateParameter"; break;

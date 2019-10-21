@@ -2677,7 +2677,25 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool VisitStringLiteral(StringLiteral *Constant) {
     if (cparser()) {
-      Kast::add(Kast::KApply("StringLiteral", Sort::EXPR, {Sort::STRING}));
+      if (Constant->getKind() == StringLiteral::Ascii) {
+        Kast::add(Kast::KApply("StringLiteral", Sort::STRINGLITERAL, {Sort::STRING}));
+        StringRef str = Constant->getBytes();
+        VisitStringRef(str);
+        return false;
+      }
+
+      if (Constant->getKind() != StringLiteral::Wide)
+        throw std::logic_error("Unsupported kind of string literal");
+
+      Kast::add(Kast::KApply("WStringLiteral", Sort::STRINGLITERAL, {Sort::STRICTLIST}));
+      strictlist();
+      for(size_t i = 0; i < Constant->getLength(); i++) {
+        Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
+        Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+        VisitUnsigned(Constant->getCodeUnit(i));
+      }
+      emptyList();
+      return false;
     }
     else {
       Kast::add(Kast::KApply("StringLiteral", Sort::EXPR, {Sort::CHARKIND, Sort::STRING}));
