@@ -1380,7 +1380,10 @@ public:
       }
       Kast::add(Kast::KApply("adjustParamStrict", Sort::KITEM, {Sort::KITEM}));
       Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
-      TRY_TO(TraverseType(T->getParamType(i)));
+      if (currentFunctionDecl)
+        TRY_TO(TraverseType(currentFunctionDecl->parameters()[i]->getType()));
+      else
+        TRY_TO(TraverseType(T->getParamType(i)));
     }
 
     if (T->isVariadic()) {
