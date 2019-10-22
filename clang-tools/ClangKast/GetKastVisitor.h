@@ -416,49 +416,15 @@ public:
     return cparser()? TraverseFunctionHelper_c(D) : TraverseFunctionHelper_cpp(D);
   }
 
-  FunctionDecl * currentFunctionDecl = nullptr;
   bool TraverseFunctionHelper_c(FunctionDecl *D){
     if (D->isThisDeclarationADefinition()) {
       Kast::add(Kast::KApply("FunctionDefinition", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
 
-#if 1
       Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
       TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
       Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
       StorageClass(D->getStorageClass());
-      currentFunctionDecl = D;
-      TRY_TO(TraverseType(D->getType()));
-      currentFunctionDecl = nullptr;
-#else
-      Kast::add(Kast::KApply("SingleName", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
-      QualType T = D->getType();
-      FunctionProtoType const *FT = dyn_cast<FunctionProtoType>(T.getTypePtr());
-      if (!FT)
-        throw std::logic_error("Type of a function is not a function type");
-
-      TRY_TO(TraverseType(FT->getReturnType()));
-      Kast::add(Kast::KApply("Name", Sort::KITEM, {Sort::CID, Sort::KITEM, Sort::KITEM}));
-      TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
-      Kast::add(Kast::KApply("Prototype", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST, Sort::BOOL}));
-      JustBase();
-      strictlist();
-      KSeqList(FT->getNumParams());
-
-      for (unsigned i = 0; i < FT->getNumParams(); i++) {
-        // FIXME: this is a problem if a function takes a function pointer as a parameter
-        if (currentFunctionDecl) {
-          Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
-          TRY_TO(TraverseDeclarationName(currentFunctionDecl->parameters()[i]->getDeclName()));
-
-        }
-        //Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
-        TRY_TO(TraverseType(FT->getParamType(i)));
-      }
-
-      VisitBool(false);
-      emptyStrictList();
-
-#endif
+      TraverseFunctionDeclParams(D);
       TRY_TO(TraverseStmt(D->getBody()));
       return true;
     }
@@ -469,9 +435,7 @@ public:
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
     Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
     StorageClass(D->getStorageClass());
-    currentFunctionDecl = D;
-    TRY_TO(TraverseType(D->getType()));
-    currentFunctionDecl = nullptr;
+    TraverseFunctionDeclParams(D);
     Kast::add(Kast::KApply("NoInit", Sort::INIT));
     return true;
   }
@@ -1370,20 +1334,30 @@ public:
     KSeqList(numParams);
   }
 
-  bool TraverseFunctionParams(FunctionProtoType const *T) {
-    for (unsigned i = 0; i < T->getNumParams(); i++) {
-      // FIXME: this is a problem if a function takes a function pointer as a parameter
-      if (currentFunctionDecl) {
-        Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
-        TRY_TO(TraverseDeclarationName(currentFunctionDecl->parameters()[i]->getDeclName()));
+  bool TraverseFunctionDeclParams(FunctionDecl *decl) {
+    Qualifiers(decl->getType());
+    TraverseFunctionProtoType_c_helper(decl->getReturnType(), decl->getNumParams() + (decl->isVariadic()?1:0));
 
-      }
+    for (unsigned i = 0; i < decl->getNumParams(); i++) {
+      Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
+      TRY_TO(TraverseDeclarationName(decl->parameters()[i]->getDeclName()));
       Kast::add(Kast::KApply("adjustParamStrict", Sort::KITEM, {Sort::KITEM}));
       Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
-      if (currentFunctionDecl)
-        TRY_TO(TraverseType(currentFunctionDecl->parameters()[i]->getType()));
-      else
-        TRY_TO(TraverseType(T->getParamType(i)));
+      TRY_TO(TraverseType(decl->parameters()[i]->getType()));
+    }
+
+    if (decl->isVariadic()) {
+      Kast::add(Kast::KApply("variadic_C-TYPING-SYNTAX", Sort::VARIADIC));
+    }
+
+    return true;
+  }
+
+  bool TraverseFunctionParams(FunctionProtoType const *T) {
+    for (unsigned i = 0; i < T->getNumParams(); i++) {
+      Kast::add(Kast::KApply("adjustParamStrict", Sort::KITEM, {Sort::KITEM}));
+      Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
+      TRY_TO(TraverseType(T->getParamType(i)));
     }
 
     if (T->isVariadic()) {
