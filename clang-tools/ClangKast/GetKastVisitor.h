@@ -3128,6 +3128,9 @@ private:
   }
 
   static bool excludedDecl(clang::Decl const *d) {
+    if (isa<EmptyDecl>(d))
+      return true;
+
     if (auto *record = dyn_cast<RecordDecl>(d)) {
       if (!record->isCompleteDefinition())
         return true;
