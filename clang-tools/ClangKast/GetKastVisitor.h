@@ -1887,6 +1887,22 @@ std::string ifc(std::string c, std::string cpp) {
     return true;
   }
 
+  void insertBlock() {
+    Kast::add(Kast::KApply("Block", Sort::KITEM, {Sort::INT, Sort::STRICTLIST}));
+    Kast::add(Kast::KToken(blockTag++));
+    strictlist();
+    Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+  }
+
+  bool insertBlockOf(Stmt *S) {
+    if (cparser() && !isa<CompoundStmt>(S)) {
+      insertBlock();
+    }
+    checkExpressionStatement(S);
+    TRY_TO(TraverseStmt(S));
+    return true;
+  }
+
   bool VisitLabelStmt(LabelStmt *S) {
     if (cparser())
       Kast::add(Kast::KApply("Label", Sort::KITEM, {Sort::CID, Sort::K}));
@@ -1923,8 +1939,7 @@ std::string ifc(std::string c, std::string cpp) {
     } else {
       NoExpression();
     }
-    checkExpressionStatement(S->getBody());
-    TRY_TO(TraverseStmt(S->getBody()));
+    insertBlockOf(S->getBody());
     return true;
   }
 
@@ -1939,8 +1954,7 @@ std::string ifc(std::string c, std::string cpp) {
     } else {
       TRY_TO(TraverseStmt(S->getCond()));
     }
-    checkExpressionStatement(S->getBody());
-    TRY_TO(TraverseStmt(S->getBody()));
+    insertBlockOf(S->getBody());
     return true;
   }
 
@@ -1948,8 +1962,7 @@ std::string ifc(std::string c, std::string cpp) {
     if (cparser()) {
       Kast::add(Kast::KApply("DoWhile3", Sort::KITEM, {Sort::K, Sort::K, Sort::CABSLOC}));
       TRY_TO(TraverseStmt(S->getCond()));
-      checkExpressionStatement(S->getBody());
-      TRY_TO(TraverseStmt(S->getBody()));
+      insertBlockOf(S->getBody());
       CabsLoc(S->getDoLoc());
     } else {
       Kast::add(Kast::KApply("DoWhileAStmt", Sort::ASTMT, {Sort::ASTMT, Sort::EXPR}));
@@ -1971,15 +1984,14 @@ std::string ifc(std::string c, std::string cpp) {
     } else {
       TRY_TO(TraverseStmt(S->getCond()));
     }
-    checkExpressionStatement(S->getThen());
-    TRY_TO(TraverseStmt(S->getThen()));
+    insertBlockOf(S->getThen());
     if (Stmt *Else = S->getElse()) {
-      checkExpressionStatement(Else);
-      TRY_TO(TraverseStmt(Else));
+      insertBlockOf(Else);
     } else {
-      if (cparser())
+      if (cparser()) {
+        insertBlock();
         Kast::add(Kast::KApply("Nop", Sort::KITEM));
-      else
+      } else
         NoStatement();
     }
     return true;
