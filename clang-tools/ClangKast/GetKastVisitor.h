@@ -355,7 +355,7 @@ public:
                                                     TALI->NumTemplateArgs));
         } else {
           Kast::add(Kast::KApply("TemplateSpecialization", Sort::DECL, {Sort::ATYPE, Sort::DECL}));
-          Kast::add(Kast::KApply("TemplateSpecializationType", Sort::ATYPE, {Sort::CID}));
+          Kast::add(Kast::KApply("TemplateSpecializationType2", Sort::ATYPE, {Sort::CID}));
           TRY_TO(TraverseDeclarationName(FTSI->getTemplate()->getDeclName()));
         }
       } else if (FTSI->getTemplateSpecializationKind() != TSK_Undeclared &&
@@ -378,7 +378,7 @@ public:
           } else {
              Kast::add(Kast::KApply("TemplateInstantiationDeclaration", Sort::DECL, {Sort::ATYPE, Sort::DECL}));
           }
-          Kast::add(Kast::KApply("TemplateSpecializationType", Sort::ATYPE, {Sort::CID}));
+          Kast::add(Kast::KApply("TemplateSpecializationType2", Sort::ATYPE, {Sort::CID}));
           TRY_TO(TraverseDeclarationName(FTSI->getTemplate()->getDeclName()));
         }
       }
@@ -1070,7 +1070,13 @@ public:
     if (T->getSizeModifier() != clang::ArrayType::Normal) {
       throw std::logic_error("unimplemented: static/* array");
     }
-    Kast::add(Kast::KApply("ArrayType", Sort::ATYPE, {Sort::ATYPE, sort}));
+    std::string arr;
+    if (sort == Sort::AEXPR) {
+       arr = "ArrayTypeAExpr";
+    } else {
+       arr = "ArrayType";
+    }
+    Kast::add(Kast::KApply(arr, Sort::ATYPE, {Sort::ATYPE, sort}));
     TRY_TO(TraverseType(T->getElementType()));
     return true;
   }
