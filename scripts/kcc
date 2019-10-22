@@ -603,7 +603,7 @@ sub parse {
                   push(@cppParserArgs, '-fno-diagnostics-color');
             }
 
-            shell($cppParser, $ppResult, '--', @cppParserArgs)->verbose()->stdout($kast)->run();
+            shell($cppParser, $ppResult, '--kore', '--', @cppParserArgs)->verbose()->stdout($kast)->run();
 
             return $kast;
       }
