@@ -38,7 +38,7 @@ module COMPAT-SYNTAX
      syntax KItem ::= set(Set)
 
      syntax K ::= listToK(List) [function]
-     syntax List ::= kSeqToList(K) [function]
+     syntax List ::= kSeqToList(K) [function, symbol]
 
      syntax KTuple ::= kpair(K, K)
                     | ktriple(K, K, K)
