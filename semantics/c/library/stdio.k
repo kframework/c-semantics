@@ -1659,7 +1659,7 @@ module LIBC-STDIO
 
      syntax List ::= tail(List) [function]
      rule tail(ListItem(_) L::List) => L
-     rule tail(_) => .List [owise]
+     rule tail(.List) => .List
 
      syntax String ::= fst(ParseStrResult) [function, klabel(fstParseStr)]
      rule fst(parseStrResult(S::String, _)) => S

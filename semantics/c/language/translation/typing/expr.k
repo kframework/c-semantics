@@ -42,8 +42,6 @@ module C-TYPING-EXPR
      context typeof((HOLE:KItem => typeof(HOLE)) % _) [result(Type)]
      context typeof((HOLE:KItem => typeof(HOLE)) + _) [result(Type)]
      context typeof((HOLE:KItem => typeof(HOLE)) - _) [result(Type)]
-     context typeof((HOLE:KItem => typeof(HOLE)) == _) [result(Type)]
-     context typeof((HOLE:KItem => typeof(HOLE)) != _) [result(Type)]
      context typeof((HOLE:KItem => typeof(HOLE)) & _) [result(Type)]
      context typeof((HOLE:KItem => typeof(HOLE)) ^ _) [result(Type)]
      context typeof((HOLE:KItem => typeof(HOLE)) | _) [result(Type)]
@@ -70,13 +68,9 @@ module C-TYPING-EXPR
      context typeof(_ % (HOLE:KItem => typeof(HOLE))) [result(Type)]
      context typeof(_ + (HOLE:KItem => typeof(HOLE))) [result(Type)]
      context typeof(_ - (HOLE:KItem => typeof(HOLE))) [result(Type)]
-     context typeof(_ == (HOLE:KItem => typeof(HOLE))) [result(Type)]
-     context typeof(_ != (HOLE:KItem => typeof(HOLE))) [result(Type)]
      context typeof(_ & (HOLE:KItem => typeof(HOLE))) [result(Type)]
      context typeof(_ ^ (HOLE:KItem => typeof(HOLE))) [result(Type)]
      context typeof(_ | (HOLE:KItem => typeof(HOLE))) [result(Type)]
-     context typeof(_ && (HOLE:KItem => typeof(HOLE))) [result(Type)]
-     context typeof(_ || (HOLE:KItem => typeof(HOLE))) [result(Type)]
 
      // primary expressions
      rule <k> typeof(X:CId => T:Type) ...</k>

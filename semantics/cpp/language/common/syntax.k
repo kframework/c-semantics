@@ -193,19 +193,19 @@ module CPP-SYNTAX
      syntax Expr ::= ConvertType(CPPType, Expr)
                    | ExprLoc
 
-     syntax ExprLoc ::= ExprLoc(CabsLoc, Expr)
+     syntax ExprLoc ::= ExprLoc(CabsLoc, Expr) [symbol]
 
-     syntax Init ::= ExprLoc(CabsLoc, Init)
+     syntax Init ::= InitLoc(CabsLoc, Init)
 
-     syntax BraceInit ::= ExprLoc(CabsLoc, BraceInit)
+     syntax BraceInit ::= BraceInitLoc(CabsLoc, BraceInit)
 
      syntax Block ::= BlockStmt(List)
                     | BlockStmt(Int, List)
 
      syntax Decl
 
-     syntax Stmt ::= LabelStmt(CId, List)
-                   | GotoStmt(CId)
+     syntax Stmt ::= LabelStmt(CId, List) [symbol]
+                   | GotoStmt(CId) [symbol]
                    | ExpressionStmt(Expr) [strict(c)]
                    | PRValExpressionStmt(Expr) [strict(c)]
                    | BreakStmt()

@@ -8,8 +8,6 @@ module CPP-NAMESPACE-SORTS
 
      syntax NamespaceSpecifier
 
-     syntax UnnamedNamespace
-
 endmodule // CPP-NAMESPACE-SORTS
 
 module CPP-NAMESPACE-SYNTAX
@@ -20,7 +18,6 @@ module CPP-NAMESPACE-SYNTAX
 
      syntax Namespace ::= Namespace "::" NamespaceSpecifier
                         | NoNamespace() // signifies a declaration at block scope
-                        | UnnamedNamespace
 
      syntax NamespaceSpecifier ::= Namespace(CId)
 
@@ -586,7 +583,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax DefaultArguments ::= DefaultArgumentsResult
 
-     syntax DefaultArgumentsResult ::= defArgs(vals: StrictListResult, types: StrictListResult, cats: StrictListResult)
+     syntax DefaultArgumentsResult ::= defArgsResult(vals: StrictListResult, types: StrictListResult, cats: StrictListResult)
 
 endmodule // CPP-DYNAMIC-OTHER-SYNTAX
 

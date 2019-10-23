@@ -102,7 +102,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax KItem ::= #figureInitHeatBase(destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType, Duration)
 
-     rule <k> #figureInit(... init: ExprLoc(L::CabsLoc, I::Init) => I) ...</k>
+     rule <k> #figureInit(... init: InitLoc(L::CabsLoc, I::Init) => I) ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
 
      // @ref n4296 8.5:6.1
@@ -416,7 +416,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule #evalBraceOrEqualInitializer(_, _, NoInit()) => BraceInit(.List)
 
-     rule #evalBraceOrEqualInitializer(_, _, ExprLoc(L::CabsLoc, I::Init) => I)
+     rule #evalBraceOrEqualInitializer(_, _, InitLoc(L::CabsLoc, I::Init) => I)
 
      rule #evalBraceOrEqualInitializer(C::Class, Base::Expr, BraceInit(L::List))
        => BraceInit(#evalBraceOrEqualInitializers(C, Base, L))

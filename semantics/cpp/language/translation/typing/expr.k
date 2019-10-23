@@ -61,7 +61,7 @@ module CPP-TRANSLATION-TYPING-EXPR
 
      rule ofSTypeList(K:KItem types:: L::STypeList) => ListItem(K) ofSTypeList(L) [owise]
 
-     rule (ExprLoc(_, BraceInit(L::List)) => BraceInit(L)) types:: _
+     rule (BraceInitLoc(_, BraceInit(L::List)) => BraceInit(L)) types:: _
 
      rule (.K => types(list(L))) ~> BraceInit(L::List) types:: _
 

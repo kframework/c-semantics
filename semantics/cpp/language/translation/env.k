@@ -99,11 +99,11 @@ module CPP-TRANSLATION-ENV
          <cenv> CE::Map => CE[X <- stripType(T) |-> (T, envEntry(Base, IsUsing, NoDefArgs()))] </cenv>
          requires notBool isCPPFunctionType(T)
 
-     rule getDefaultArgsVals(defArgs(... vals: krlist(Args::List))) => Args
+     rule getDefaultArgsVals(defArgsResult(... vals: krlist(Args::List))) => Args
 
-     rule getDefaultArgsTypes(defArgs(... types: krlist(Types::List))) => Types
+     rule getDefaultArgsTypes(defArgsResult(... types: krlist(Types::List))) => Types
 
-     rule getDefaultArgsCats(defArgs(... cats: krlist(Cats::List))) => Cats
+     rule getDefaultArgsCats(defArgsResult(... cats: krlist(Cats::List))) => Cats
 
      syntax Map ::= updateFnEnv(Map, CId, CPPType, SymBase, Bool) [function]
 
@@ -123,38 +123,38 @@ module CPP-TRANSLATION-ENV
      syntax DefaultArgumentsResult ::= #updateDefaultArgs(newArgs: DefaultArgumentsResult, oldArgs: DefaultArgumentsResult) [function]
 
      rule #updateDefaultArgs(NewArgs::DefaultArgumentsResult, OldArgs::DefaultArgumentsResult)
-          => #updateDefaultArgs(NewArgs, OldArgs, defArgs(krlist(.List), krlist(.List), krlist(.List)))
+          => #updateDefaultArgs(NewArgs, OldArgs, defArgsResult(krlist(.List), krlist(.List), krlist(.List)))
 
      syntax DefaultArgumentsResult ::= #updateDefaultArgs(newArgs: DefaultArgumentsResult, oldArgs: DefaultArgumentsResult, resultArgs: DefaultArgumentsResult) [function, klabel(updateDefaultArgsHelper)]
 
     // The next rule compensates for the clang policy to aggregate existing default args from previous declarations
     // Hence, we'll trust clang to check that the user does not redefine an old def. arg.
      rule #updateDefaultArgs(
-            defArgs(krlist((ListItem(_) => .List) _),
+            defArgsResult(krlist((ListItem(_) => .List) _),
                     krlist((ListItem(_) => .List) _),
                     krlist((ListItem(_) => .List) _)),
-            defArgs(krlist((ListItem(I:KItem) => .List) _),
+            defArgsResult(krlist((ListItem(I:KItem) => .List) _),
                     krlist((ListItem(T::CPPDType) => .List) _),
                     krlist((ListItem(C::ValueCategory) => .List) _)),
-            defArgs(krlist(_::List (.List => ListItem(I:KItem))),
+            defArgsResult(krlist(_::List (.List => ListItem(I:KItem))),
                     krlist(_::List (.List => ListItem(T::CPPDType))),
                     krlist(_::List (.List => ListItem(C::ValueCategory)))))
           requires I =/=K NoArg()
 
      rule #updateDefaultArgs(
-            defArgs(krlist((ListItem(I:KItem) => .List) _),
+            defArgsResult(krlist((ListItem(I:KItem) => .List) _),
                     krlist((ListItem(T::CPPDType) => .List) _),
                     krlist((ListItem(C::ValueCategory) => .List) _)),
-            defArgs(krlist((ListItem(NoArg()) => .List) _),
+            defArgsResult(krlist((ListItem(NoArg()) => .List) _),
                     krlist((ListItem(_) => .List) _),
                     krlist((ListItem(_) => .List) _)),
-            defArgs(krlist(_::List (.List => ListItem(I:KItem))),
+            defArgsResult(krlist(_::List (.List => ListItem(I:KItem))),
                     krlist(_::List (.List => ListItem(T::CPPDType))),
                     krlist(_::List (.List => ListItem(C::ValueCategory)))))
 
      rule #updateDefaultArgs(
-            defArgs(krlist(.List), krlist(.List), krlist(.List)),
-            defArgs(krlist(.List), krlist(.List), krlist(.List)),
+            defArgsResult(krlist(.List), krlist(.List), krlist(.List)),
+            defArgsResult(krlist(.List), krlist(.List), krlist(.List)),
             DA::DefaultArgumentsResult) => DA
 
      rule <k> clearScope() => .K ...</k>

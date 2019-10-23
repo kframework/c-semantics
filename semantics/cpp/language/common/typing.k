@@ -78,35 +78,35 @@ module CPP-TYPING-SYNTAX
                             | CPPSimpleDependentType
                             | CPPSimpleAutoType
 
-     syntax CPPSimpleSignedType ::= bitfieldType(CPPSimpleSignedType, Int) [klabel(bitfieldTypeCpp)]
+     // syntax CPPSimpleSignedType ::= bitfieldType(CPPSimpleSignedType, Int) [klabel(bitfieldTypeCpp)]
 
-     syntax CPPSimpleUnsignedType ::= bitfieldType(CPPSimpleUnsignedType, Int) [klabel(bitfieldTypeCpp)]
+     // syntax CPPSimpleUnsignedType ::= bitfieldType(CPPSimpleUnsignedType, Int) [klabel(bitfieldTypeCpp)]
 
-     syntax CPPSimpleSignedCharType ::= bitfieldType(CPPSimpleSignedCharType, Int) [klabel(bitfieldTypeCpp)]
+     // syntax CPPSimpleSignedCharType ::= bitfieldType(CPPSimpleSignedCharType, Int) [klabel(bitfieldTypeCpp)]
 
-     syntax CPPSimpleUnsignedCharType ::= bitfieldType(CPPSimpleUnsignedCharType, Int) [klabel(bitfieldTypeCpp)]
+     // syntax CPPSimpleUnsignedCharType ::= bitfieldType(CPPSimpleUnsignedCharType, Int) [klabel(bitfieldTypeCpp)]
 
-     syntax CPPSimpleBoolType ::= bitfieldType(CPPSimpleBoolType, Int) [klabel(bitfieldTypeCpp)]
+     // syntax CPPSimpleBoolType ::= bitfieldType(CPPSimpleBoolType, Int) [klabel(bitfieldTypeCpp)]
 
-     syntax CPPSimpleWideCharType ::= bitfieldType(CPPSimpleWideCharType, Int) [klabel(bitfieldTypeCpp)]
+     // syntax CPPSimpleWideCharType ::= bitfieldType(CPPSimpleWideCharType, Int) [klabel(bitfieldTypeCpp)]
 
-     syntax CPPSimpleScopedEnumType ::= bitfieldType(CPPSimpleScopedEnumType, Int) [klabel(bitfieldTypeCpp)]
+     // syntax CPPSimpleScopedEnumType ::= bitfieldType(CPPSimpleScopedEnumType, Int) [klabel(bitfieldTypeCpp)]
 
-     syntax CPPSimpleUnscopedEnumType ::= bitfieldType(CPPSimpleUnscopedEnumType, Int) [klabel(bitfieldTypeCpp)]
+     // syntax CPPSimpleUnscopedEnumType ::= bitfieldType(CPPSimpleUnscopedEnumType, Int) [klabel(bitfieldTypeCpp)]
 
      syntax CPPSimpleBitfieldType ::= bitfieldType(CPPSimpleType, Int) [klabel(bitfieldTypeCpp)]
 
-     syntax CPPSimpleSignedType ::= CPPSimpleBottomType
-     syntax CPPSimpleUnsignedType ::= CPPSimpleBottomType
-     syntax CPPSimpleSignedCharType ::= CPPSimpleBottomType
-     syntax CPPSimpleUnsignedCharType ::= CPPSimpleBottomType
-     syntax CPPSimpleBoolType ::= CPPSimpleBottomType
-     syntax CPPSimpleWideCharType ::= CPPSimpleBottomType
-     syntax CPPSimpleScopedEnumType ::= CPPSimpleBottomType
-     syntax CPPSimpleUnscopedEnumType ::= CPPSimpleBottomType
-     syntax CPPSimpleBitfieldType ::= CPPSimpleBottomType
+     // syntax CPPSimpleSignedType ::= CPPSimpleBottomType
+     // syntax CPPSimpleUnsignedType ::= CPPSimpleBottomType
+     // syntax CPPSimpleSignedCharType ::= CPPSimpleBottomType
+     // syntax CPPSimpleUnsignedCharType ::= CPPSimpleBottomType
+     // syntax CPPSimpleBoolType ::= CPPSimpleBottomType
+     // syntax CPPSimpleWideCharType ::= CPPSimpleBottomType
+     // syntax CPPSimpleScopedEnumType ::= CPPSimpleBottomType
+     // syntax CPPSimpleUnscopedEnumType ::= CPPSimpleBottomType
+     // syntax CPPSimpleBitfieldType ::= CPPSimpleBottomType
 
-     syntax CPPSimpleBottomType ::= bitfieldType(CPPSimpleBottomType, Int) [klabel(bitfieldTypeCpp)]
+     // syntax CPPSimpleBottomType ::= bitfieldType(CPPSimpleBottomType, Int) [klabel(bitfieldTypeCpp)]
 
      syntax CPPSimpleSignedType ::= CPPSimpleSignedCharType | "short" | "int" | "long" | "long-long" | "oversized"
 
