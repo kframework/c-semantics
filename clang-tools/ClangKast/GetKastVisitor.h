@@ -1067,6 +1067,7 @@ public:
     if (!cparser())
       return true;
 
+    tagDecls.insert(D);
     //Kast::add(Kast::KApply("OnlyTypedef", Sort::KITEM, {Sort::KITEM}));
     //SpecifierItem();
 
@@ -1148,6 +1149,7 @@ public:
   }
 
   bool TraverseEnumDecl_c(EnumDecl *D) {
+    tagDecls.insert(D);
     Kast::add(Kast::KApply("EnumDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
     TRY_TO(TraverseDeclarationAsName(D));
     strictlist();
@@ -1625,9 +1627,19 @@ std::string ifc(std::string c, std::string cpp) {
     Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
   }
 
+  std::set<TagDecl *> tagDecls;
+
   bool TraverseElaboratedType(ElaboratedType *T) {
     if (cparser()) {
       SpecifierItem();
+      // this is for sizeof(struct {int x;})
+      // since there is no visible AST node fore the struct definition
+      TagDecl *td = dyn_cast<TagType>(T->getNamedType())->getDecl();
+      assert(td != nullptr);
+      if (tagDecls.count(td) == 0) {
+        TraverseDecl(td);
+        return true;
+      }
       switch(T->getKeyword()) {
         case ETK_Enum:
           Kast::add(Kast::KApply("EnumRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
