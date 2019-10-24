@@ -685,8 +685,6 @@ public:
   }
 
     bool TraverseFieldDecl_c_helper(const FieldDecl *D) {
-      strictlist();
-      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
       if (D->isBitField()) {
         Kast::add(Kast::KApply("BitFieldName", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
       } else {
@@ -707,8 +705,9 @@ public:
     Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
     addAlignment(D);
     TRY_TO(TraverseType(D->getType()));
+    strictlist();
+    Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
     return TraverseFieldDecl_c_helper(D);
-
   }
 
   bool TraverseFieldDecl_cpp(FieldDecl *D) {
@@ -1016,51 +1015,60 @@ public:
     return true;
   }
 
-  struct NestedRecordField {
+  struct NestedRecordFields {
       RecordDecl * nested_record;
-      FieldDecl *next_field;
+      std::vector<FieldDecl *> next_fields;
   };
 
-  std::optional<NestedRecordField> getNestedRecordField(RecordDecl const *record, DeclContext::decl_iterator it) {
-    RecordDecl * nested_record = dyn_cast<RecordDecl>(*it);
-    if (!nested_record)
-      return std::nullopt;
-
-    ++it;
-    if (it == record->decls_end())
-      return std::nullopt;
-
-    FieldDecl * next_field = dyn_cast<FieldDecl>(*it);
-    if (!next_field)
-      return std::nullopt;
-
-    if (!next_field->getType()->isRecordType())
-      return std::nullopt;
-
-    QualType t = next_field->getType();
-    if (isa<ElaboratedType>(t.getTypePtr()))
-      t = dyn_cast<ElaboratedType>(t.getTypePtr())->getNamedType();
-
-    RecordType const *rt = dyn_cast<RecordType>(t.getTypePtr());
-    if (!rt)
-      return std::nullopt;
-
-    if (rt->getDecl() != nested_record)
-      return std::nullopt;
-
-    return {{nested_record, next_field}};
+  static bool baseTypeMatch(QualType qt, TagDecl *nested_decl) {
+    while(true) {
+      Type const * t = qt.getTypePtr();
+      if (ElaboratedType const * et = dyn_cast<ElaboratedType>(t)) {
+        qt = et->getNamedType();
+      } else if (TagType const *tt = dyn_cast<TagType>(t)) {
+        return tt->getDecl() == nested_decl;
+      } else {
+        return false;
+      }
+    }
   }
 
-  bool processNestedRecordField(RecordDecl const *record, DeclContext::decl_iterator it) {
-    std::optional<NestedRecordField> nrf = getNestedRecordField(record, it);
+  std::optional<NestedRecordFields> getNestedRecordField(RecordDecl const *record, DeclContext::decl_iterator it) {
+    // TODO this should work with unions and enums, too.
+    // and maybe the outer type can be union, too
+    NestedRecordFields nrf;
+    nrf.nested_record = dyn_cast<RecordDecl>(*it);
+    if (!nrf.nested_record)
+      return std::nullopt;
+
+    for(++it; it != record->decls_end(); ++it) {
+      FieldDecl *next_field = dyn_cast<FieldDecl>(*it);
+      if (!next_field)
+        break;
+      if (!baseTypeMatch(next_field->getType(), nrf.nested_record))
+        break;
+
+      nrf.next_fields.push_back(next_field);
+    }
+    return nrf;
+  }
+
+  size_t processNestedRecordField(RecordDecl const *record, DeclContext::decl_iterator it) {
+    std::optional<NestedRecordFields> nrf = getNestedRecordField(record, it);
     if (!nrf)
-      return false;
+      return 0;
 
     Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
     SpecifierItem();
     TRY_TO(TraverseDecl(nrf->nested_record));
-    TraverseFieldDecl_c_helper(nrf->next_field);
-    return true;
+    strictlist();
+    for(FieldDecl *field : nrf->next_fields) {
+      Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
+      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+      TraverseFieldDecl_c_helper(field);
+    }
+    emptyList();
+    return nrf->next_fields.size();
   }
 
   bool TraverseRecordDecl(RecordDecl *D) {
@@ -1100,35 +1108,26 @@ public:
 
     strictlist();
 
-    int count = 0;
-    for (auto it = D->decls_begin(); it != D->decls_end(); ++it) {
-      clang::Decl * d = *it;
-      if (excludedDecl(d))
-        continue;
-      if (getNestedRecordField(D, it)) {
-        count++;
-        ++it;
-        assert(it != D->decls_end());
-        continue;
-      }
-      count++;
-    }
-    KSeqList(count);
-
     for (auto it = D->decls_begin(); it != D->decls_end(); ++it) {
       clang::Decl * d = *it;
       if (excludedDecl(d))
         continue;
 
-      if (processNestedRecordField(D, it)) {
-        // skip the following field declaration
-        ++it;
+      Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
+      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+
+      size_t const count = processNestedRecordField(D, it);
+      if (count > 0) {
+        // skip the following field declarations
+        std::advance(it, count);
         continue;
       }
 
       TRY_TO(TraverseDecl(d));
     }
+    emptyList();
 
+    // __attribute__((packed))
     strictlist();
     if (!hasAttrPacked(D))
       Kast::add(Kast::KApply(".List", Sort::LIST));
