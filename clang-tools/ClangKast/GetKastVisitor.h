@@ -684,7 +684,7 @@ public:
     }
   }
 
-    bool TraverseFieldDecl_c_helper(const FieldDecl *D) {
+    bool TraverseFieldDecl_c_helper(const FieldDecl *D, bool type) {
       if (D->isBitField()) {
         Kast::add(Kast::KApply("BitFieldName", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
       } else {
@@ -692,7 +692,10 @@ public:
       }
       Kast::add(Kast::KApply("Name", Sort::NAME, {Sort::CID, Sort::KITEM, Sort::KITEM}));
       TRY_TO(TraverseDeclarationName(D->getDeclName()));
-      JustBase();
+      if (type)
+        TraverseType(D->getType());
+      else
+        JustBase();
       emptyStrictList();
 
       if (D->isBitField()) {
@@ -707,7 +710,8 @@ public:
     TRY_TO(TraverseType(D->getType()));
     strictlist();
     Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-    return TraverseFieldDecl_c_helper(D);
+    // we do not use the specifier part
+    return TraverseFieldDecl_c_helper(D, false);
   }
 
   bool TraverseFieldDecl_cpp(FieldDecl *D) {
@@ -1020,13 +1024,21 @@ public:
       std::vector<FieldDecl *> next_fields;
   };
 
-  static bool baseTypeMatch(QualType qt, TagDecl *nested_decl) {
+  static bool baseTypeMatch(QualType qt, TagDecl *base) {
     while(true) {
       Type const * t = qt.getTypePtr();
       if (ElaboratedType const * et = dyn_cast<ElaboratedType>(t)) {
         qt = et->getNamedType();
+      } else if (ArrayType const *at = dyn_cast<ArrayType>(t)) {
+        qt = at->getElementType();
+      } else if (PointerType const *pt = dyn_cast<PointerType>(t)) {
+        qt = pt->getPointeeType();
+      } else if (ParenType const *pt = dyn_cast<ParenType>(t)) {
+        qt = pt->getInnerType();
+      } else if (FunctionType const *ft = dyn_cast<FunctionType>(t)) {
+        qt = ft->getReturnType();
       } else if (TagType const *tt = dyn_cast<TagType>(t)) {
-        return tt->getDecl() == nested_decl;
+        return tt->getDecl() == base;
       } else {
         return false;
       }
@@ -1065,11 +1077,17 @@ public:
     for(FieldDecl *field : nrf->next_fields) {
       Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
       Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-      TraverseFieldDecl_c_helper(field);
+
+      assert(nested_record == nullptr);
+      nested_record = nrf->nested_record;
+      TraverseFieldDecl_c_helper(field, true); // we need to add a parameter
+      nested_record = nullptr;
     }
     emptyList();
     return nrf->next_fields.size();
   }
+
+  RecordDecl * nested_record = nullptr;
 
   bool TraverseRecordDecl(RecordDecl *D) {
     if (!cparser())
@@ -1630,11 +1648,19 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool TraverseElaboratedType(ElaboratedType *T) {
     if (cparser()) {
-      SpecifierItem();
-      // this is for sizeof(struct {int x;})
-      // since there is no visible AST node fore the struct definition
+
       TagDecl *td = dyn_cast<TagType>(T->getNamedType())->getDecl();
       assert(td != nullptr);
+
+      if (td == nested_record) {
+        JustBase();
+        return true;
+      }
+
+      SpecifierItem();
+
+      // this is for sizeof(struct {int x;})
+      // since there is no visible AST node fore the struct definition
       if (tagDecls.count(td) == 0) {
         TraverseDecl(td);
         return true;
