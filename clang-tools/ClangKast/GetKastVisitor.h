@@ -691,7 +691,10 @@ public:
         Kast::add(Kast::KApply("FieldName", Sort::KITEM, {Sort::KITEM}));
       }
       Kast::add(Kast::KApply("Name", Sort::NAME, {Sort::CID, Sort::KITEM, Sort::KITEM}));
-      TRY_TO(TraverseDeclarationName(D->getDeclName()));
+      if (!D->getDeclName().getAsIdentifierInfo())
+        Kast::add(Kast::KApply("AnonymousName", Sort::CID));
+      else
+        TRY_TO(TraverseDeclarationName(D->getDeclName()));
       if (type)
         TraverseType(D->getType());
       else
@@ -1715,6 +1718,10 @@ std::string ifc(std::string c, std::string cpp) {
     if (!cparser()) {
       Name();
       NoNNS();
+    }
+    if (D == nested_tagtype) {
+      JustBase();
+      return false;
     }
     TRY_TO(TraverseDeclarationAsName(D));
     return false;
