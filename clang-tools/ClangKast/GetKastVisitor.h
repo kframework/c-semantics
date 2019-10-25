@@ -1020,7 +1020,7 @@ public:
   }
 
   struct NestedRecordFields {
-      RecordDecl * nested_record;
+      TagDecl * nested_tagtype;
       std::vector<FieldDecl *> next_fields;
   };
 
@@ -1049,15 +1049,15 @@ public:
     // TODO this should work with unions and enums, too.
     // and maybe the outer type can be union, too
     NestedRecordFields nrf;
-    nrf.nested_record = dyn_cast<RecordDecl>(*it);
-    if (!nrf.nested_record)
+    nrf.nested_tagtype = dyn_cast<TagDecl>(*it);
+    if (!nrf.nested_tagtype)
       return std::nullopt;
 
     for(++it; it != record->decls_end(); ++it) {
       FieldDecl *next_field = dyn_cast<FieldDecl>(*it);
       if (!next_field)
         break;
-      if (!baseTypeMatch(next_field->getType(), nrf.nested_record))
+      if (!baseTypeMatch(next_field->getType(), nrf.nested_tagtype))
         break;
 
       nrf.next_fields.push_back(next_field);
@@ -1072,22 +1072,22 @@ public:
 
     Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
     SpecifierItem();
-    TRY_TO(TraverseDecl(nrf->nested_record));
+    TRY_TO(TraverseDecl(nrf->nested_tagtype));
     strictlist();
     for(FieldDecl *field : nrf->next_fields) {
       Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
       Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
 
-      assert(nested_record == nullptr);
-      nested_record = nrf->nested_record;
+      assert(nested_tagtype == nullptr);
+      nested_tagtype = nrf->nested_tagtype;
       TraverseFieldDecl_c_helper(field, true); // we need to add a parameter
-      nested_record = nullptr;
+      nested_tagtype = nullptr;
     }
     emptyList();
     return nrf->next_fields.size();
   }
 
-  RecordDecl * nested_record = nullptr;
+  TagDecl * nested_tagtype = nullptr;
 
   bool TraverseRecordDecl(RecordDecl *D) {
     if (!cparser())
@@ -1652,7 +1652,7 @@ std::string ifc(std::string c, std::string cpp) {
       TagDecl *td = dyn_cast<TagType>(T->getNamedType())->getDecl();
       assert(td != nullptr);
 
-      if (td == nested_record) {
+      if (td == nested_tagtype) {
         JustBase();
         return true;
       }
