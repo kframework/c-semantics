@@ -1664,7 +1664,7 @@ std::string ifc(std::string c, std::string cpp) {
 
       // this is for sizeof(struct {int x;})
       // since there is no visible AST node fore the struct definition
-      if (tagDecls.count(td) == 0) {
+      if (tagDecls.count(td) == 0 && tagDecls.count(td->getFirstDecl()) == 0) {
         TraverseDecl(td);
         return true;
       }
@@ -3175,10 +3175,6 @@ private:
     if (isa<EmptyDecl>(d))
       return true;
 
-    if (auto *record = dyn_cast<RecordDecl>(d)) {
-      if (!record->isCompleteDefinition())
-        return true;
-    }
     return d->isImplicit() && d->isDefinedOutsideFunctionOrMethod();
   }
 
