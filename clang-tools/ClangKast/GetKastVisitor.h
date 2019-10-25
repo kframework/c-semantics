@@ -1041,7 +1041,7 @@ public:
       } else if (FunctionType const *ft = dyn_cast<FunctionType>(t)) {
         qt = ft->getReturnType();
       } else if (TagType const *tt = dyn_cast<TagType>(t)) {
-        return tt->getDecl() == base;
+        return tt->getDecl()->getFirstDecl() == base->getFirstDecl();
       } else {
         return false;
       }
@@ -1075,7 +1075,11 @@ public:
 
     Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
     SpecifierItem();
-    TRY_TO(TraverseDecl(nrf->nested_tagtype));
+    if (RecordDecl * rd = dyn_cast<RecordDecl>(nrf->nested_tagtype)) {
+      TRY_TO(TraverseRecordDecl(rd, true));
+    } else {
+      TRY_TO(TraverseDecl(nrf->nested_tagtype));
+    }
     strictlist();
     for(FieldDecl *field : nrf->next_fields) {
       Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
@@ -1093,6 +1097,10 @@ public:
   TagDecl * nested_tagtype = nullptr;
 
   bool TraverseRecordDecl(RecordDecl *D) {
+    return TraverseRecordDecl(D, false);
+  }
+
+  bool TraverseRecordDecl(RecordDecl *D, bool isUsed) {
     if (!cparser())
       return true;
 
@@ -1108,7 +1116,8 @@ public:
       else
         throw std::logic_error("A record that is not a structure or union");
     } else {
-      Kast::add(Kast::KApply("OnlyTypedef", Sort::KITEM, {Sort::KITEM}));
+      if (!isUsed)
+        Kast::add(Kast::KApply("OnlyTypedef", Sort::KITEM, {Sort::KITEM}));
       if (D->isStruct())
         Kast::add(Kast::KApply("StructRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
       else if (D->isUnion())
