@@ -26,6 +26,26 @@ using namespace clang::tooling;
       return true;                                                            \
     } while (0)
 
+
+  bool declIsInAst(TagDecl *decl) {
+    struct DeclFinderVisitor : public RecursiveASTVisitor<DeclFinderVisitor> {
+        TagDecl *decl;
+        bool found = false;
+
+        explicit DeclFinderVisitor(TagDecl *decl)
+                : decl(decl) {}
+
+        bool VisitTagDecl(TagDecl *D) {
+          if (D == decl)
+            found = true;
+          return true;
+        }
+    };
+    DeclFinderVisitor dfv{decl};
+    dfv.TraverseDecl(decl->getASTContext().getTranslationUnitDecl());
+    return dfv.found;
+  }
+
 class GetKastVisitor
   : public RecursiveASTVisitor<GetKastVisitor> {
 
@@ -1104,10 +1124,6 @@ public:
     if (!cparser())
       return true;
 
-    tagDecls.insert(D);
-    //Kast::add(Kast::KApply("OnlyTypedef", Sort::KITEM, {Sort::KITEM}));
-    //SpecifierItem();
-
     if (D->isCompleteDefinition()) {
       if (D->isStruct())
         Kast::add(Kast::KApply("StructDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
@@ -1178,7 +1194,6 @@ public:
   }
 
   bool TraverseEnumDecl_c(EnumDecl *D) {
-    tagDecls.insert(D);
     Kast::add(Kast::KApply("EnumDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
     TRY_TO(TraverseDeclarationAsName(D));
     strictlist();
@@ -1656,8 +1671,6 @@ std::string ifc(std::string c, std::string cpp) {
     Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
   }
 
-  std::set<TagDecl *> tagDecls;
-
   bool TraverseElaboratedType(ElaboratedType *T) {
     if (cparser()) {
 
@@ -1673,7 +1686,7 @@ std::string ifc(std::string c, std::string cpp) {
 
       // this is for sizeof(struct {int x;})
       // since there is no visible AST node fore the struct definition
-      if (tagDecls.count(td) == 0 && tagDecls.count(td->getFirstDecl()) == 0) {
+      if (!declIsInAst(td)) {
         TraverseDecl(td);
         return true;
       }
