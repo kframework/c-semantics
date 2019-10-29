@@ -1382,6 +1382,11 @@ public:
 
   bool TraverseFunctionDeclParams(FunctionDecl *decl) {
     Qualifiers(decl->getType());
+    if (!decl->hasWrittenPrototype()) {
+      Kast::add(Kast::KApply("addMods", Sort::KITEM, {Sort::LIST, Sort::KITEM}));
+      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+      Kast::add(Kast::KApply("oldStyle_C-TYPING-SYNTAX", Sort::MODIFIER));
+    }
     TraverseFunctionProtoType_c_helper(decl->getReturnType(), decl->getNumParams() + (decl->isVariadic()?1:0));
 
     for (unsigned i = 0; i < decl->getNumParams(); i++) {
