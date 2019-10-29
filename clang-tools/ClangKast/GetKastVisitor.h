@@ -2845,7 +2845,16 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool VisitCharacterLiteral(CharacterLiteral *Constant) {
     if (cparser()) {
-      Kast::add(Kast::KApply("CharLiteral", Sort::CONSTANT, {Sort::INT}));
+      switch (Constant->getKind()) {
+        case CharacterLiteral::Ascii:
+          Kast::add(Kast::KApply("CharLiteral", Sort::CONSTANT, {Sort::INT}));
+          break;
+        case CharacterLiteral::Wide:
+          Kast::add(Kast::KApply("WCharLiteral", Sort::CONSTANT, {Sort::INT}));
+          break;
+        default:
+          throw std::logic_error("Unsupported characted literal");
+      }
     } else {
       Kast::add(Kast::KApply("CharacterLiteral", Sort::EXPR, {Sort::CHARKIND, Sort::INT}));
       switch (Constant->getKind()) {
