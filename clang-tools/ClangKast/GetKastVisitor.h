@@ -1483,6 +1483,10 @@ std::string ifc(std::string c, std::string cpp) {
   bool VisitBuiltinType(BuiltinType *T) {
     if (!cparser())
       Kast::add(Kast::KApply("BuiltinType", Sort::ATYPE, {Sort::TYPESPECIFIER}));
+    volatile bool isInteger = T->isInteger();
+    volatile bool isSigned = T->isSignedInteger();
+    volatile bool isUnsigned = T->isUnsignedInteger();
+    std::string name = T->getTypeClassName();
 
     std::string const type_name = [&]{
         switch(T->getKind()) {

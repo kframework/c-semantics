@@ -5,7 +5,21 @@ Makefile: $(ROOT)/../check-results.mk ;
 include $(ROOT)/../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
-EXCLUDES := ./enum-offsetof.c ./float128.c ./j042.c ./j078.c ./offsetof-1.c
+EXCLUDES := ./enum-offsetof.c \
+	./float128.c \
+	./j042.c \
+	./j078.c \
+	./offsetof-1.c \
+	./20051012-1.c \
+	./931110-1.c \
+	./bf-layout-1.c \
+	./bf-sign-1.c \
+	./bitfld-4.c \
+	./j055.c \
+	./pr19689.c \
+	./pr38422.c \
+	./struct-ini-2.c \
+	./zero-bit-field.c
 OS_STDIO_EXCLUDES := $(wildcard ./stdio-*.c)
 OS_EXCLUDES := $(OS_STDIO_EXCLUDES) \
                ./pthreads-starve.c \
