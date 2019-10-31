@@ -3234,7 +3234,7 @@ private:
     int i = 0;
     for (Stmt::child_iterator iter = S->child_begin(), end = S->child_end(); iter != end; ++i, ++iter){
       if (DeclStmt *d = dyn_cast<DeclStmt>(*iter)) {
-        if (!d->isSingleDecl())
+        if (cparser() && !d->isSingleDecl())
           i += std::count_if(d->getDeclGroup().begin(), d->getDeclGroup().end(), notExcludedDecl) - 1;
       }
     }
