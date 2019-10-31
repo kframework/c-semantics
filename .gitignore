@@ -14,3 +14,6 @@ semantics/.lock
 semantics/.build
 scripts/cdecl-*
 .vagrant
+tests/unit-pass/*.out
+tests/unit-pass/*.kcc
+tests/unit-pass/*.cmp
