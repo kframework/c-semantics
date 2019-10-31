@@ -405,6 +405,11 @@ int main(int argc, const char **argv) {
     throw;
   }
 
-  Kast::print();
+  try {
+    Kast::print();
+  } catch(...) {
+    cout << flush;
+    throw;
+  }
   cout << endl;
 }
