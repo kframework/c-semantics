@@ -1235,10 +1235,10 @@ public:
   }
 
   bool TraverseEnumConstantDecl(EnumConstantDecl *D){
-    return cparser()? VisitEnumConstantDecl_c(D) : VisitEnumConstantDecl_cpp(D);
+    return cparser()? TraverseEnumConstantDecl_c(D) : TraverseEnumConstantDecl_cpp(D);
   }
 
-  bool VisitEnumConstantDecl_c(EnumConstantDecl *D) {
+  bool TraverseEnumConstantDecl_c(EnumConstantDecl *D) {
     if (D->getInitExpr()) {
       Kast::add(Kast::KApply("EnumItemInit", Sort::KITEM, {Sort::CID, Sort::K}));
       TraverseDeclarationName(D->getDeclName());
@@ -1250,13 +1250,15 @@ public:
     return true;
   }
 
-  bool VisitEnumConstantDecl_cpp(EnumConstantDecl *D) {
+  bool TraverseEnumConstantDecl_cpp(EnumConstantDecl *D) {
     Kast::add(Kast::KApply("Enumerator", Sort::ENUMERATOR, {Sort::CID, Sort::AEXPR}));
     TraverseDeclarationName(D->getDeclName());
     if (!D->getInitExpr()) {
       NoExpression();
+    } else {
+      TraverseStmt(D->getInitExpr());
     }
-    return false;
+    return true;
   }
 
   bool TraverseClassTemplateSpecializationDecl(ClassTemplateSpecializationDecl *D) {
