@@ -5,7 +5,7 @@ Makefile: $(ROOT)/../check-results.mk ;
 include $(ROOT)/../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
-EXCLUDES := ./j078.c
+EXCLUDES := ./enum-offsetof.c ./float128.c ./j042.c ./j078.c ./offsetof-1.c
 OS_STDIO_EXCLUDES := $(wildcard ./stdio-*.c)
 OS_EXCLUDES := $(OS_STDIO_EXCLUDES) \
                ./pthreads-starve.c \
@@ -87,7 +87,7 @@ zeroinit-class-padding.C.cmp:
 
 %.c.kcc: %.c
 	@echo -n "Compiling $<... "
-	@$(KCC) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -fno-native-compilation --use-clang -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.kcc: %.C
 	@echo -n "Compiling $<... "
 	@$(KXX) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
