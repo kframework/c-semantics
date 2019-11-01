@@ -17,7 +17,7 @@ int main() {
   offset = offsetof(struct foo, x[2]);
   if (offset != 4)
     abort();
-  offset = offsetof(struct foo, z->y);
+  offset = offsetof(struct foo, z[0].y);
   if (offset != 8)
     abort();
   return 0;
