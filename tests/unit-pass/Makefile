@@ -19,7 +19,8 @@ EXCLUDES := ./enum-offsetof.c \
 	./pr19689.c \
 	./pr38422.c \
 	./struct-ini-2.c \
-	./zero-bit-field.c
+	./zero-bit-field.c \
+	./930630-1.c
 OS_STDIO_EXCLUDES := $(wildcard ./stdio-*.c)
 OS_EXCLUDES := $(OS_STDIO_EXCLUDES) \
                ./pthreads-starve.c \
