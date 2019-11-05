@@ -1194,6 +1194,21 @@ public:
   }
 
   bool TraverseEnumDecl_c(EnumDecl *D) {
+    // remove record declarations
+    // (clang adds a record declaration to EnumDecl
+    // in case of
+    // ```
+    // enum e { x = offsetof(struct {int x; int y;}, y)};
+    // ```)
+    std::vector<Decl *> recordDecls;
+    std::copy_if(D->decls_begin(), D->decls_end(), std::back_inserter(recordDecls), [](const clang::Decl * d){
+      return isa<RecordDecl>(d);
+    });
+    for (Decl * d : recordDecls) {
+      D->removeDecl(d);
+    }
+    recordDecls.clear();
+
     Kast::add(Kast::KApply("EnumDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
     TRY_TO(TraverseDeclarationAsName(D));
     strictlist();

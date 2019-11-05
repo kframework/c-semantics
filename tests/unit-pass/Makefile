@@ -5,7 +5,7 @@ Makefile: $(ROOT)/../check-results.mk ;
 include $(ROOT)/../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
-NO_CLANG_PARSER := ./enum-offsetof.c \
+NO_CLANG_PARSER := \
 	./float128.c \
 	./j042.c \
 	./j078.c \
