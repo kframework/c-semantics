@@ -5,7 +5,7 @@ Makefile: $(ROOT)/../check-results.mk ;
 include $(ROOT)/../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
-EXCLUDES := ./enum-offsetof.c \
+NO_CLANG_PARSER := ./enum-offsetof.c \
 	./float128.c \
 	./j042.c \
 	./j078.c \
@@ -20,7 +20,8 @@ EXCLUDES := ./enum-offsetof.c \
 	./pr38422.c \
 	./struct-ini-2.c \
 	./zero-bit-field.c \
-	./930630-1.c
+	./930630-1.c \
+	./bitfld-1.c
 OS_STDIO_EXCLUDES := $(wildcard ./stdio-*.c)
 OS_EXCLUDES := $(OS_STDIO_EXCLUDES) \
                ./pthreads-starve.c \
@@ -57,6 +58,7 @@ KXX := $(ROOT)/../../dist/k++
 
 LDFLAGS := -pthread
 
+clang_parser = $(if $(filter $(1),$(NO_CLANG_PARSER)),,--use-clang)
 
 .PRECIOUS: %.kcc %.out
 
@@ -94,7 +96,7 @@ zeroinit-class-padding.C.cmp:
 
 %-link1.c.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@$(KCC) -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -fno-native-compilation --use-clang -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.C.kcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
@@ -102,7 +104,7 @@ zeroinit-class-padding.C.cmp:
 
 %.c.kcc: %.c
 	@echo -n "Compiling $<... "
-	@$(KCC) -fno-native-compilation --use-clang -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	$(KCC) -fno-native-compilation $(call clang_parser,./$<) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.kcc: %.C
 	@echo -n "Compiling $<... "
 	@$(KXX) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
