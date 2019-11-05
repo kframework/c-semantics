@@ -104,7 +104,7 @@ zeroinit-class-padding.C.cmp:
 
 %.c.kcc: %.c
 	@echo -n "Compiling $<... "
-	$(KCC) -fno-native-compilation $(call clang_parser,./$<) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -fno-native-compilation $(call clang_parser,./$<) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.kcc: %.C
 	@echo -n "Compiling $<... "
 	@$(KXX) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
