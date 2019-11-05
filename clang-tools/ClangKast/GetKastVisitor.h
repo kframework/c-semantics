@@ -1693,6 +1693,8 @@ std::string ifc(std::string c, std::string cpp) {
     Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
   }
 
+  std::set<TagDecl *> invisibleTagDecls;
+
   bool TraverseElaboratedType(ElaboratedType *T) {
     if (cparser()) {
 
@@ -1706,9 +1708,13 @@ std::string ifc(std::string c, std::string cpp) {
 
       SpecifierItem();
 
-      // this is for sizeof(struct {int x;})
-      // since there is no visible AST node fore the struct definition
-      if (!declIsInAst(td)) {
+      // This is for sizeof(struct {int x;})
+      // since there is no visible AST node fore the struct definition.
+      // But for sizeof(struct S{int x;}) + sizeof(struct S);
+      // we need to prevent duplicate struct definition,
+      // that is what `invisibleTagDecls` is for.
+      if (!declIsInAst(td) && invisibleTagDecls.count(td) == 0) {
+        invisibleTagDecls.insert(td);
         TraverseDecl(td);
         return true;
       }
