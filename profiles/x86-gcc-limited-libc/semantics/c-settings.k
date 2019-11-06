@@ -32,6 +32,7 @@ module C-SETTINGS
      rule cfg:sizeofLongDouble => 16
      rule cfg:sizeofOversizedFloat => 16
      rule cfg:thrdut => int
+     rule cfg:thrdutAlternative => signed-int
 
      rule cfg:precisionofFloat => 24
      rule cfg:precisionofDouble => 53
@@ -49,6 +50,7 @@ module C-SETTINGS
      rule cfg:sizeut => unsigned-long-int
      rule cfg:wintut => unsigned-int
      rule cfg:wcharut => int
+     rule cfg:wcharutAlternative => signed-int
      rule cfg:ptrsize => 8
      rule cfg:ptrdiffut => long-int
 

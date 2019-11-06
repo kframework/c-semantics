@@ -1341,12 +1341,40 @@ public:
     Kast::add(Kast::KApply("OffsetOf", Sort::KITEM, {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
     TraverseTypeLoc(E->getTypeSourceInfo()->getTypeLoc());
     JustBase();
-    for (unsigned i = 0; i < E->getNumComponents() - 1; i++) {
-      Kast::add(Kast::KApply("Dot", Sort::KITEM, {Sort::KITEM, Sort::CID}));
+    for (unsigned i = E->getNumComponents(); i > 1; i--) {
+      switch(E->getComponent(i-1).getKind()) {
+        case OffsetOfNode::Kind::Field:
+          Kast::add(Kast::KApply("Dot", Sort::KITEM, {Sort::KITEM, Sort::CID}));
+          break;
+        case OffsetOfNode::Kind::Array:
+          Kast::add(Kast::KApply("ArrayIndex", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+          break;
+        case OffsetOfNode::Kind::Identifier:// fall through
+        default:
+          throw std::logic_error("Unsupported OffsetOfNode::Kind");
+      }
+
     }
 
     for (unsigned i = 0; i < E->getNumComponents(); i++) {
-      TraverseIdentifierInfo(E->getComponent(i).getFieldName());
+      OffsetOfNode const & component = E->getComponent(i);
+      OffsetOfNode::Kind const kind = component.getKind();
+      switch(kind) {
+        case OffsetOfNode::Kind::Field: // fall through
+        case OffsetOfNode::Kind::Identifier:
+          TraverseIdentifierInfo(component.getFieldName());
+          break;
+        case OffsetOfNode::Kind::Array: {
+          volatile auto index = component.getArrayExprIndex();
+          VisitIntegerValue(
+                  llvm::APInt(64, component.getArrayExprIndex()),
+                  Context->getIntTypeForBitwidth(64, false)
+          );
+          break;
+        }
+        default:
+          throw std::logic_error("Unsupported OffsetOfNode::Kind");
+      }
     }
     return true;
   }
@@ -1530,7 +1558,7 @@ std::string ifc(std::string c, std::string cpp) {
           case BuiltinType::Short:
             return ifc("short-int", "Short");
           case BuiltinType::Int:
-            return ifc("int", "Int");
+            return ifc("signed-int", "Int");
           case BuiltinType::Long:
             return ifc("long-int", "Long");
           case BuiltinType::LongLong:
@@ -2906,14 +2934,19 @@ std::string ifc(std::string c, std::string cpp) {
     Kast::add(Kast::KApply("utypeFromType", Sort::UTYPE, {Sort::TYPE}));
   }
 
+  bool VisitIntegerValue(llvm::APInt const &value, QualType const &type) {
+    Kast::add(Kast::KApply("createTv", Sort::KITEM, {Sort::CVALUE, Sort::KITEM}));
+    VisitAPInt(value);
+    utypeFromType();
+    Kast::add(Kast::KApply("addModifierStrict", Sort::KITEM, {Sort::MODIFIER, Sort::KITEM}));
+    Kast::add(Kast::KApply("IntegerConstant_C-TYPING-SYNTAX", Sort::MODIFIER));
+    TRY_TO(TraverseType(type));
+    return true;
+  }
+
   bool TraverseIntegerLiteral(IntegerLiteral *Constant) {
     if (cparser()) {
-      Kast::add(Kast::KApply("createTv", Sort::KITEM, {Sort::CVALUE, Sort::KITEM}));
-      VisitAPInt(Constant->getValue());
-      utypeFromType();
-      Kast::add(Kast::KApply("addModifierStrict", Sort::KITEM, {Sort::MODIFIER, Sort::KITEM}));
-      Kast::add(Kast::KApply("IntegerConstant_C-TYPING-SYNTAX", Sort::MODIFIER));
-      TRY_TO(TraverseType(Constant->getType()));
+      VisitIntegerValue(Constant->getValue(), Constant->getType());
     } else {
       Kast::add(Kast::KApply("IntegerLiteral", Sort::EXPR, {Sort::INT, Sort::ATYPE}));
       VisitAPInt(Constant->getValue());

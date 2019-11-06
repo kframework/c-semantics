@@ -87,7 +87,7 @@ module LIBC-THREADS
                tv(ThId:Int, ut(_, T::SimpleUType)),
                ResultPtr:RValue)
           => join-aux(ThId, ResultPtr)
-          requires T ==K cfg:thrdut
+          requires (T ==K cfg:thrdut) orBool (T ==K cfg:thrdutAlternative)
           [structural]
 
      rule [thrd-join]:

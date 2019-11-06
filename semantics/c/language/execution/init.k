@@ -206,7 +206,7 @@ module C-EXECUTION-INIT
      // int main(void) -- also, int main() gets normalized to main(void)
      syntax K ::= #callEntryPoint(String, Int, KItem, Type) [function]
      rule #callEntryPoint(Entry::String, _, _,
-               t(quals(.Set), _, functionType(ut(.Set, int),
+               t(quals(.Set), _, functionType(ut(.Set, int #Or signed-int),
                     ListItem(typedDeclaration(t(quals(.Set), .Set, void), _)))))
           => Call(Identifier(Entry), list(.List))
      // int main(int argc, char* argv[]), int main(int argc, char** argv), and old style (no prototype).

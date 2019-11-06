@@ -104,12 +104,12 @@ module C-FUNCTION-DEF
      rule areVoidOrComplete((ListItem(_) => .List) _) [owise]
 
      syntax KItem ::= checkMainDef(Type)
-     rule checkMainDef(t(_, _, functionType(ut(_, int),
+     rule checkMainDef(t(_, _, functionType(ut(_, int #Or signed-int),
                ListItem(t(_, _, void)))))
           => .K
           [structural]
-     rule checkMainDef(t(_, Mods:Set, functionType(ut(_, int),
-               ListItem(t(_, _, int)) ListItem(T:Type))))
+     rule checkMainDef(t(_, Mods:Set, functionType(ut(_, int #Or signed-int),
+               ListItem(t(_, _, int #Or signed-int)) ListItem(T:Type))))
           => .K
           requires (notBool oldStyle in Mods) andBool isArgvType(T)
           [structural]

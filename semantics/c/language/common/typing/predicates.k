@@ -13,7 +13,7 @@ module C-TYPING-PREDICATES
      rule hasSameSignedness(_, _) => false [owise]
 
      rule isWCharType(t(_, _, T::SimpleType)) => true
-          requires T ==K cfg:wcharut
+          requires (T ==K cfg:wcharut) orBool (T ==K cfg:wcharutAlternative)
      rule isWCharType(_) => false [owise]
 
      rule isFlexibleArrayType(t(_, _, flexibleArrayType(_))) => true

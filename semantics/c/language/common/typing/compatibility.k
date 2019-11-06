@@ -80,12 +80,12 @@ module C-TYPING-COMPATIBILITY
                t(Qs::Quals, Mods::Set, enumType(S::TagId)),
                t(Qs, Mods'::Set, T::SimpleType), _)
           => true
-          requires T ==K getEnumAlias(S)
+          requires type(T) ==Type type(getEnumAlias(S))
      rule #areCompat(
                t(Qs::Quals, Mods::Set, T::SimpleType),
                t(Qs, Mods'::Set, enumType(S::TagId)), _)
           => true
-          requires T ==K getEnumAlias(S)
+          requires type(T) ==Type type(getEnumAlias(S))
 
      // TODO(chathhorn): should also check for equivalent members
      rule #areCompat(
@@ -326,18 +326,28 @@ module C-TYPING-COMPATIBILITY
                orBool isStructOrUnionType(type(T))
                orBool isBitfieldType(type(T))
 
+     rule compositeType(
+               t(Qs::Quals, Mods::Set, signed-int),
+               t(Qs'::Quals, Mods'::Set, int))
+          => t(Qs +Quals Qs', Mods Mods', int)
+
+     rule compositeType(
+               t(Qs::Quals, Mods::Set, int),
+               t(Qs'::Quals, Mods'::Set, signed-int))
+          => t(Qs +Quals Qs', Mods Mods', int)
+
      // TODO(chathhorn): surely implementation defined, although I don't see
      // composite types for enums explicitly addressed in the standard.
      rule compositeType(
                t(Qs::Quals, Mods::Set, enumType(S::TagId)),
                t(Qs'::Quals, Mods'::Set, T::SimpleType))
           => t(Qs +Quals Qs', Mods Mods', T)
-          requires T ==K getEnumAlias(S)
+          requires type(T) ==Type type(getEnumAlias(S))
      rule compositeType(
                t(Qs::Quals, Mods::Set, T::SimpleType),
                t(Qs'::Quals, Mods'::Set, enumType(S::TagId)))
           => t(Qs +Quals Qs', Mods Mods', T)
-          requires T ==K getEnumAlias(S)
+          requires type(T) ==Type type(getEnumAlias(S))
 
      rule compositeType(
                t(Qs::Quals, Mods:Set, functionType(T::UType, P:List)),

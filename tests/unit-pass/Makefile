@@ -9,19 +9,7 @@ NO_CLANG_PARSER := \
 	./float128.c \
 	./j042.c \
 	./j078.c \
-	./offsetof-1.c \
-	./20051012-1.c \
-	./931110-1.c \
-	./bf-layout-1.c \
-	./bf-sign-1.c \
-	./bitfld-4.c \
-	./j055.c \
-	./pr19689.c \
-	./pr38422.c \
-	./struct-ini-2.c \
-	./zero-bit-field.c \
-	./930630-1.c \
-	./bitfld-1.c
+	./offsetof-1.c
 OS_STDIO_EXCLUDES := $(wildcard ./stdio-*.c)
 OS_EXCLUDES := $(OS_STDIO_EXCLUDES) \
                ./pthreads-starve.c \
