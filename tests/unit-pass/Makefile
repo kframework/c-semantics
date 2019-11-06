@@ -58,7 +58,7 @@ KXX := $(ROOT)/../../dist/k++
 
 LDFLAGS := -pthread
 
-clang_parser = $(if $(filter $(1),$(NO_CLANG_PARSER)),,--use-clang)
+parser_selection = $(if $(filter $(1),$(NO_CLANG_PARSER)),--use-ocaml-cparser,)
 
 .PRECIOUS: %.kcc %.out
 
@@ -96,7 +96,7 @@ zeroinit-class-padding.C.cmp:
 
 %-link1.c.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@$(KCC) -fno-native-compilation --use-clang -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -fno-native-compilation -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.C.kcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
@@ -104,7 +104,7 @@ zeroinit-class-padding.C.cmp:
 
 %.c.kcc: %.c
 	@echo -n "Compiling $<... "
-	@$(KCC) -fno-native-compilation $(call clang_parser,./$<) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -fno-native-compilation $(call parser_selection,./$<) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.kcc: %.C
 	@echo -n "Compiling $<... "
 	@$(KXX) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}

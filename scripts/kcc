@@ -617,6 +617,8 @@ sub parse {
 
       debug("Parsing $inputFile.\n");
       setShellDebugFile($kast, 0);
+
+      # use clang-based C++ parser
       if ($lang eq 'c++') {
             my $std = getStd('c++');
             my $cppParser = distDir('clang-kast');
@@ -626,16 +628,18 @@ sub parse {
             return $kast;
       }
 
-      if (arg('--use-clang')) {
-            my $std = getStd('c11');
-            my @cppParserArgs = ('-x', 'c', '-Wno-incompatible-library-redeclaration');
-            my @clangKastArgs = ('-cparser', '-extra-arg=-std=c11');
-            clangKast($ppResult, $std, $kast, \@clangKastArgs, \@cppParserArgs);
+      # use old C parser written in OCaml
+      if (arg('--use-ocaml-cparser')) {
+            my $cparser = distDir('cparser');
+            shell($cparser, $ppResult, '--trueName', $inputFile)->verbose()->stdout($kast)->run();
             return $kast;
       }
 
-      my $cparser = distDir('cparser');
-      shell($cparser, $ppResult, '--trueName', $inputFile)->verbose()->stdout($kast)->run();
+      # use clang-based C parser
+      my $std = getStd('c11');
+      my @cppParserArgs = ('-x', 'c', '-Wno-incompatible-library-redeclaration');
+      my @clangKastArgs = ('-cparser', '-extra-arg=-std=c11');
+      clangKast($ppResult, $std, $kast, \@clangKastArgs, \@cppParserArgs);
       return $kast;
 }
 

@@ -583,8 +583,9 @@ sub parseOpts {
                   exit 1;
             }
       }
-  --use-clang	[undocumented]
-      { RV_Kcc::Opts::pushArg('cppArgs', '-DCLANG_BASED_PARSER'); }
+
+  --use-ocaml-cparser	Use old C parser written in ocaml.
+      { RV_Kcc::Opts::pushArg('cppArgs', '-DKCC_OCAML_PARSER'); }
 
   --use-profile <name>	Use a KCC profile for this run, but do not make it the current profile. [undocumented]
       {
