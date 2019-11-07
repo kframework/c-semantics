@@ -40,6 +40,10 @@ module C-DECL-INITIALIZER
      rule figureInit(X:CId, T:Type, NoInit()) => initValue(X, T, .K)
           [structural]
 
+
+     rule (.K => Loc) ~>
+          figureInit(_, _, SingleInit(CodeLoc(X:KItem, Loc::CabsLoc) => X))
+
      // aggregates
      rule figureInit(X:CId, aggregateOrUnionType #as T::Type, CompoundInit(list(L::List)))
           => giveType(X, T)
@@ -334,6 +338,8 @@ module C-DECL-INITIALIZER
      syntax Bool ::= isFieldAccess(List) [function]
      rule isFieldAccess(ListItem(ncle(_ .init _::CId, _)) _) => true
      rule isFieldAccess(_) => false [owise]
+
+     rule (.K => Loc) ~> fillInit(CodeLoc(K:K, Loc:CabsLoc) => K)
 
      rule <k> fillInit(CompoundInit(list(L::List)))
                => fillInits(L)

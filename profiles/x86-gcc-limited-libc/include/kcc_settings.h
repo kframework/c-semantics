@@ -19,8 +19,7 @@ typedef long unsigned int __kcc_size_t;
 #undef __SIZE_TYPE__
 #define __SIZE_TYPE__ __kcc_size_t
 
-#ifndef __cplusplus
-
+#if !defined(__cplusplus) && defined(KCC_OCAML_PARSER)
 /* We don't use the C parser for C++, so we need clang to recognize these
  * primitives. */
 
@@ -39,6 +38,8 @@ typedef long unsigned int __kcc_size_t;
 typedef __int128 __int128_t;
 typedef unsigned __int128 __uint128_t;
 
+#endif
+
 /* OpenSSL checks for these macros rather than checking __GNUC__ like it's
  * supposed to, so we have to undefine these so that it knows the extensions
  * are missing. */
@@ -51,7 +52,6 @@ typedef unsigned __int128 __uint128_t;
 
 #define __STDC_NO_ATOMICS__
 
-#endif
 
 #define _DEFAULT_SOURCE
 

@@ -40,11 +40,18 @@ module C-TYPING-SYNTAX
 
      syntax Type ::= t(q: Quals, m: Set, st: SimpleType) // possibly-qualified type
      syntax UType ::= ut(m: Set, st: SimpleUType)     // unqualified type
-     syntax DType ::= typedDeclaration(Type, CId)
+     syntax DType ::= typedDeclaration(KItem, CId) [strict(1)]
      syntax ParamDecl ::= Type | DType
 
      syntax Type ::= type(K) [function]
      syntax UType ::= utype(K) [function]
+     syntax KItem ::= typeFromSimpleType(K)
+     syntax KItem ::= utypeFromType(K)
+
+     syntax KItem ::= createFunctionType(KItem, List) [strict(1)]
+     syntax KItem ::= createArrayType(KItem, Int) [strict(1)]
+     syntax KItem ::= createIncompleteArrayType(KItem) [strict(1)]
+     syntax KItem ::= createVariableLengthArrayType(KItem, KItem) [strict(1,2)]
 
      // --------------
 
@@ -148,6 +155,7 @@ module C-TYPING-SYNTAX
      // Composite types
      syntax SimpleFunctionType ::= functionType(UType, List)
      syntax SimplePointerType ::= pointerType(Type)
+     syntax KItem ::= pointerTypeStrict(KItem) [strict(1)]
 
      syntax SimpleFixedArrayType ::= arrayType(Type, Int)
      syntax SimpleIncompleteArrayType ::= incompleteArrayType(Type)
@@ -323,11 +331,14 @@ module C-TYPING-SYNTAX
      syntax RValue ::= stripConstants(RValue) [function]
 
      syntax Type ::= addQualifier(Qualifier, Type) [function]
+     syntax KItem ::= addQualifierStrict(Qualifier, Type) [strict(2)]
      syntax Type ::= addQualifiers(Quals, Type) [function]
      syntax Type ::= addStorage(StorageClassSpecifier, Type) [function]
+     syntax KItem ::= addStorageStrict(StorageClassSpecifier, Type) [strict(2)]
 
      syntax Type ::= addModifiers(Set, Type) [function]
      syntax Type ::= addModifier(Modifier, Type) [function]
+     syntax KItem ::= addModifierStrict(Modifier, KItem) [strict(2)]
 
      syntax UType ::= addModifiers(Set, UType) [function]
      syntax UType ::= addModifier(Modifier, UType) [function]

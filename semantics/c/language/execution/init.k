@@ -262,6 +262,8 @@ module C-EXECUTION-INIT
           requires notBool (Breakpoint(File, Line) in Opts)
           [structural]
 
+     rule UnknownCabsLoc => .K [structural]
+
      syntax Set ::= clearActiveBreakpoints(Set) [function]
      rule clearActiveBreakpoints(SetItem(ActiveBreakpoint(File::String, Line::Int)) Opts::Set)
           => SetItem(Breakpoint(File, Line)) clearActiveBreakpoints(Opts)
@@ -277,5 +279,9 @@ module C-EXECUTION-INIT
 
      rule [[ nameOfCurrentTranslationUnit() => TU ]]
           <curr-tu>TU::String</curr-tu>
+
+     rule CodeLoc(K::K, Loc::CabsLoc)
+          => Loc ~> K
+
 endmodule
 

@@ -17,6 +17,7 @@ module C-TYPING-EXPR
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
@@ -83,6 +84,12 @@ module C-TYPING-EXPR
           <types>... X |-> T ...</types>
      rule <k> typeof(X:CId => t(noQuals, SetItem(IntegerConstant), int)) ...</k>
           <enums>... X |-> _ ...</enums>
+
+     rule typeof(CodeLoc(E:KItem, _) => E)
+
+     context typeof(createTv(_, HOLE:KItem)) [result(UType)]
+
+     rule typeof(createTv(_, UT:UType) => type(UT))
 
      rule typeof(T:Typed => type(T))
           requires notBool isType(T)

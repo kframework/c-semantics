@@ -138,8 +138,12 @@ module C-TYPING-MISC
      rule stripConstants(V:RValue) => V [owise]
 
      rule addQualifier(Q:Qualifier, T:Type) => addQualifiers(noQuals +Qual Q, T)
+     rule addQualifierStrict(Q:Qualifier, T:Type) => addQualifier(Q, T)
 
      rule addStorage(S:StorageClassSpecifier, T:Type) => addModifier(S, T)
+     rule addStorageStrict(S:StorageClassSpecifier, T:Type) => addStorage(S, T)
+
+     rule addModifierStrict(M:Modifier, T:Type) => addModifier(M, T)
 
      rule addModifier(M:Modifier, T:UType) => utype(addModifier(M, type(T)))
      rule addModifiers(Mods::Set, T:UType) => utype(addModifiers(Mods, type(T)))
@@ -638,5 +642,34 @@ module C-TYPING-MISC
      rule rvalType(t(... st: functionType(...)) #as T::Type)
           => utype(pointerType(T))
      rule rvalType(T::Type) => utype(T) [owise]
+
+     rule pointerTypeStrict(T:Type) => pointerType(T)
+
+     context typeFromSimpleType(HOLE:KItem) [result(SimpleType)]
+     rule typeFromSimpleType(S:SimpleType) => type(S)
+
+     context utypeFromType(HOLE:KItem) [result(Type)]
+     rule utypeFromType(T:Type) => utype(T)
+
+     rule createFunctionType(Ret:UType, L:List)
+          => createFunctionType2(Ret, .List, L)
+
+     syntax KItem ::= createFunctionType2(KItem, List, List)
+
+     context createFunctionType2(_, _, ListItem(HOLE:KItem) _)
+
+     rule createFunctionType2(_, _::List (.List => ListItem(K)), (ListItem(K:KResult) => .List) _)
+
+     rule createFunctionType2(Ret::UType, L::List, .List)
+          => type(functionType(Ret, L))
+
+     rule createArrayType(Inner:Type, Size:Int)
+          => type(arrayType(Inner, Size))
+
+     rule createIncompleteArrayType(Inner:Type)
+          => type(incompleteArrayType(Inner))
+
+     rule createVariableLengthArrayType(Inner:Type, Size:KResult)
+          => type(variableLengthArrayType(Inner, Size))
 
 endmodule

@@ -218,6 +218,7 @@ module C-ABSTRACT-SYNTAX
      syntax KItem ::= FunctionDefinition(KItem, KItem) [strict(1), symbol]
      syntax KItem ::= DeclarationDefinition(KItem) [symbol]
      syntax KItem ::= Typedef(KItem) [symbol]
+     syntax KItem ::= TypedefDecl(KItem, KItem) [symbol]
      syntax KItem ::= OnlyTypedef(KItem) [symbol]
      syntax KItem ::= GlobAsm(String) [symbol]
      syntax KItem ::= Pragma(KItem) [symbol]
@@ -300,6 +301,7 @@ module C-ABSTRACT-SYNTAX
      */
      // List
      syntax KItem ::= Comma(StrictList) [symbol]
+                    | BinaryComma(KItem, KItem) [symbol]
      /*
      | CONSTANT of constant
      | PAREN of expression
@@ -389,10 +391,10 @@ module C-ABSTRACT-SYNTAX
 
      syntax CId ::= AnonymousName() [function, symbol]
 
-     syntax KItem ::= DefinitionLoc(KItem, CabsLoc) [symbol]
+     syntax KItem ::= DefinitionLoc(CabsLoc, KItem) [symbol]
      syntax KItem ::= DefinitionLocRange(KItem, CabsLoc, CabsLoc) [symbol]
      // this wraps all statements with their location in the original file
-     syntax KItem ::= StatementLoc(KItem, CabsLoc) [symbol] // new
+     syntax KItem ::= StatementLoc(CabsLoc, KItem) [symbol] // new
 
      /*
      and for_clause =
@@ -460,8 +462,8 @@ module C-ABSTRACT-REWRITING
 
      rule AnonymousName() => #NoName
 
-     rule DefinitionLoc(K:KItem, L::CabsLoc) => CodeLoc(K, L) [anywhere]
-     rule StatementLoc(K:KItem, L::CabsLoc) => CodeLoc(K, L) [anywhere]
+     rule DefinitionLoc(L::CabsLoc, K:KItem) => CodeLoc(K, L) [anywhere]
+     rule StatementLoc(L::CabsLoc, K::KItem) => CodeLoc(K, L) [anywhere]
 
      rule Conditional(K1:KItem, K2:KItem, K3:KItem) => K1 ? K2 : K3 [anywhere]
      rule Negative(K:KItem) => - K [anywhere]
@@ -512,6 +514,8 @@ module C-ABSTRACT-REWRITING
      \source[n1570]{\para{6.5.3.2}{3}}. As a syntactic macro, it should run
      on programs before they even start to reduce. */
      rule &(*(K:KItem)) => K [anywhere]
+     rule &(CodeLoc(*(K:KItem), _)) => K [anywhere]
+
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
      A postfix expression followed by the \cinline{->} operator and an

@@ -1,6 +1,12 @@
 #ifndef CLANGKAST_H_
 #define CLANGKAST_H_
 
+#include <utility> // std::move
+#include <type_traits> // std::enable_if
+
+bool cparser();
+bool noLocation();
+
 enum class Sort {
   ACCESSSPECIFIER,
   AEXPR,
@@ -19,10 +25,13 @@ enum class Sort {
   CHARKIND,
   CID,
   CLASSKEY,
+  CONSTANT,
   CTORINIT,
+  CVALUE,
   DECL,
   DECLARATOR,
   DESTRUCTORID,
+  DTYPE,
   ENUMERATOR,
   EXCEPTIONSPEC,
   EXPR,
@@ -34,7 +43,9 @@ enum class Sort {
   INT,
   K,
   KITEM,
+  KRESULT,
   LIST,
+  MODIFIER,
   NAME,
   NAMESPACE,
   NNS,
@@ -44,29 +55,39 @@ enum class Sort {
   QUALIFIER,
   REFQUALIFIER,
   RESOLVEDEXPR,
+  RVALUE,
+  SET,
+  SIMPLEFUNCTIONTYPE,
+  SIMPLEFIXEDARRAYTYPE,
+  SIMPLEINCOMPLETEARRAYTYPE,
+  SIMPLEPOINTERTYPE,
+  SIMPLEVARIABLEARRAYTYPE,
+  SIMPLETYPE,
+  SIMPLEUTYPE,
   SPECIFIER,
+  SPECIFIERELEM,
   STMT,
   STORAGECLASSSPECIFIER,
   STRICTLIST,
   STRICTLISTRESULT,
   STRING,
+  STRINGLITERAL,
   TAG,
   TEMPLATEARGUMENT,
   TEMPLATEPARAMETER,
   THIS,
+  TYPE,
   TYPEID,
   TYPESPECIFIER,
   UNNAMEDCID,
+  UTYPE,
+  VARIADIC,
 };
 
 std::ostream& operator<<(std::ostream & os, const Sort & sort);
 
 class Kast {
 public:
-
-  // Add a Kast::Node to the KAST. The next nodes added should be the children (breadth-first).
-  template <class T>
-  static void add(const T & node);
 
   // Print the KAST.
   static void print();
@@ -130,6 +151,21 @@ public:
   private:
     const int size;
   };
+
+    // Add a Kast::Node to the KAST. The next nodes added should be the children (breadth-first).
+    template <class T, typename = std::enable_if_t<std::is_base_of<Kast::Node, T>::value>>
+    static void add(const T & node) {
+      static_assert(std::is_base_of<Kast::Node, T>::value, "type parameter must derive from Kast::Node");
+      Kast::Nodes.push_back(std::make_unique<T>(node));
+    }
+
+
+    template <typename T, typename = std::enable_if_t<std::is_base_of<Kast::Node, T>::value>>
+    static void add(std::unique_ptr<T> node) {
+      static_assert(std::is_base_of<Kast::Node, T>::value, "type parameter must derive from Kast::Node");
+      Kast::Nodes.push_back(std::move(node));
+    }
+
 
 private:
   static std::vector<std::unique_ptr<const Node>> Nodes;

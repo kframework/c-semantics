@@ -6,14 +6,14 @@ typedef char TEXT;
 
 union T_VALS
 {
-  TEXT   *id __attribute__ ((aligned (2), packed)) ;
+  TEXT   *id ;//__attribute__ ((aligned (2), packed)) ;
 };
 typedef union T_VALS VALS;
 
 struct T_VAL
 {
-  COUNT    pos __attribute__ ((aligned (2), packed)) ;
-  VALS    vals __attribute__ ((aligned (2), packed)) ;
+  COUNT    pos ;// __attribute__ ((aligned (2), packed)) ;
+  VALS    vals ;//__attribute__ ((aligned (2), packed)) ;
 };
 typedef struct T_VAL VAL;
 

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+./old "$@" > old.out
+./new "$@" > new.out

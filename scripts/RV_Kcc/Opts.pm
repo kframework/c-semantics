@@ -404,6 +404,7 @@ sub parseOpts {
             RV_Kcc::Opts::pushArg('ldArgs', "-L$dir");
       }
   -nodefaultlibs	Do not link against the standard library.
+  -nolocation		Do not emit location information (CabsLoc).
   -std=<std>		Standard to use when building internally with
 			GCC for inline assembly. Not used by kcc directly.
   -o <file>		Place the output into <file>.
@@ -582,6 +583,10 @@ sub parseOpts {
                   exit 1;
             }
       }
+
+  --use-ocaml-cparser	Use old C parser written in ocaml.
+      { RV_Kcc::Opts::pushArg('cppArgs', '-DKCC_OCAML_PARSER'); }
+
   --use-profile <name>	Use a KCC profile for this run, but do not make it the current profile. [undocumented]
       {
             if ( grep( /^$name$/, RV_Kcc::Files::getProfiles() ) ) {
