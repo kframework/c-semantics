@@ -1581,6 +1581,8 @@ std::string ifc(std::string c, std::string cpp) {
             return ifc("double", "Double");
           case BuiltinType::LongDouble:
             return ifc("long-double", "LongDouble");
+          case BuiltinType::Float128:
+            return ifc("oversized-float", "OversizedFloat");
           case BuiltinType::Int128:
             return ifc("oversized-int", "OversizedInt");
           case BuiltinType::UInt128:
