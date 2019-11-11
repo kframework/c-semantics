@@ -5,6 +5,7 @@ Makefile: $(ROOT)/../check-results.mk ;
 include $(ROOT)/../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
+EXCLUDES := ./anon1-2.C
 NO_CLANG_PARSER := \
 	./float128.c \
 	./j042.c \

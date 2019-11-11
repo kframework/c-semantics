@@ -7,9 +7,9 @@ FROM runtimeverificationinc/kframework:ubuntu-bionic
 RUN     apt-get update -q \
     &&  apt install --yes \
           libstdc++6      \
-          llvm-6.0        \
-          clang++-6.0     \
-          clang-6.0
+          llvm-8          \
+          clang++-8       \
+          clang-8
 
 # This user is set up in the runtimeverificationinc/kframework:* images.
 USER user:user

@@ -78,6 +78,16 @@ public:
     return TraverseType(TL.getType());
   }
 
+  bool TraverseConstantExpr(ConstantExpr *E) {
+    return TraverseStmt(E->getSubExpr());
+  }
+
+  // TODO We could use this node instead of the `checkExpressionStatement` hack
+  // to add `Computation` nodes in places of full expression.
+  bool TraverseFullExpr(FullExpr *E) {
+    return TraverseStmt(E->getSubExpr());
+  }
+
   void checkExpressionStatement(Stmt *S) {
     if (!cparser())
       return;
@@ -540,7 +550,7 @@ public:
           Kast::add(Kast::KApply("MethodPrototype", Sort::ATYPE, {Sort::BOOL, Sort::BOOL, Sort::ATYPE, Sort::ATYPE}));
           VisitBool(Method->isUserProvided());
           VisitBool(dyn_cast<CXXConstructorDecl>(D)); // converts to true if this is a constructor
-          TRY_TO(TraverseType(Method->getThisType(*Context)));
+          TRY_TO(TraverseType(Method->getThisType()));
           if (Method->isVirtual()) {
             Kast::add(Kast::KApply("Virtual", Sort::ATYPE, {Sort::ATYPE}));
           }
@@ -1486,7 +1496,9 @@ public:
         Kast::add(Kast::KApply("NoexceptSpec", Sort::EXCEPTIONSPEC, {Sort::AEXPR}));
         NoExpression();
         break;
-      case EST_ComputedNoexcept:
+      case EST_DependentNoexcept: // fallthrough
+      case EST_NoexceptFalse: // fallthrough
+      case EST_NoexceptTrue:
         Kast::add(Kast::KApply("NoexceptSpec", Sort::EXCEPTIONSPEC, {Sort::AEXPR}));
         TRY_TO(TraverseStmt(T->getNoexceptExpr()));
         break;
@@ -2668,7 +2680,7 @@ std::string ifc(std::string c, std::string cpp) {
         else
           Kast::add(Kast::KApply("SizeofExpr", Sort::EXPR, {Sort::EXPR}));
       }
-    } else if (E->getKind() == UETT_AlignOf) {
+    } else if ((E->getKind() == UETT_AlignOf) || (E->getKind() == UETT_PreferredAlignOf)) {
       if (E->isArgumentType()) {
         if (cparser()) {
           Kast::add(Kast::KApply("AlignofType", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
@@ -3266,6 +3278,19 @@ private:
   static bool excludedDecl(clang::Decl const *d) {
     if (isa<EmptyDecl>(d))
       return true;
+
+    // If there is a typedef declaration of an undeclared enum,
+    // Clang-8 inserts an incomplete declaration of the enum
+    // before the typedef.
+    // Example:
+    // ```
+    // typedef enum foo E;
+    // enum foo { e0, e1 };
+    // ```
+    if (EnumDecl const *E = dyn_cast<EnumDecl>(d)) {
+      if (cparser() && !E->isCompleteDefinition())
+        return true;
+    }
 
     return d->isImplicit() && d->isDefinedOutsideFunctionOrMethod();
   }

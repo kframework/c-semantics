@@ -4,7 +4,7 @@ project ( clang-tools LANGUAGES CXX )
 
 
 find_package ( Curses REQUIRED )
-find_package ( LLVM 6.0 EXACT REQUIRED CONFIG )
+find_package ( LLVM 8.0 EXACT REQUIRED CONFIG )
 
 link_directories ( ${LLVM_LIBRARY_DIRS} )
 
