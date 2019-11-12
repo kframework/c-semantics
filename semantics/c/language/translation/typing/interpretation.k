@@ -9,6 +9,8 @@ module C-TYPING-INTERPRETATION-SYNTAX
      syntax KItem ::= makeArrayType(Set, Set, RValue)
 
      syntax List ::= numberUnnamed(List) [function]
+     syntax KItem ::= extractActualTypeFreezer(KItem) [strict]
+
 endmodule
 
 module C-TYPING-INTERPRETATION
@@ -182,7 +184,6 @@ module C-TYPING-INTERPRETATION
           <decl-type-holder> (.K => T) ...</decl-type-holder>
           [structural]
 
-     syntax KItem ::= extractActualTypeFreezer(KItem) [strict]
      rule extractActualTypeFreezer(t(...) #as T::Type) => extractActualType(T)
           [structural]
 
