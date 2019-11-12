@@ -2,6 +2,7 @@
 #define GETKASTVISITOR_H_
 
 #include <unistd.h>
+#include <iostream>
 
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Expr.h"
@@ -1603,6 +1604,12 @@ std::string ifc(std::string c, std::string cpp) {
       Kast::add(Kast::KApply(type_name, Sort::TYPESPECIFIER));
     }
     return false;
+  }
+
+  bool TraverseComplexType(ComplexType *T) {
+    std::cerr << "Warning: Encountered _Complex type. These are not yet supported, and are currently ignored." << std::endl;
+    TraverseType(T->getElementType());
+    return true;
   }
 
   void pointerType() {
