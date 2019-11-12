@@ -102,6 +102,12 @@ public:
     return true;
   }
 
+  bool TraverseStmtExpr(StmtExpr *E) {
+    Kast::add(Kast::KApply("GnuBody", Sort::KITEM, {Sort::KITEM}));
+    TraverseStmt(E->getSubStmt());
+    return true;
+  }
+
   bool TraverseStmt(Stmt *S) {
     if (!S)
       return RecursiveASTVisitor::TraverseStmt(S);
