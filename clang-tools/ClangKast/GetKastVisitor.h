@@ -97,6 +97,11 @@ public:
       Kast::add(Kast::KApply("Computation", Sort::KITEM, {Sort::K}));
   }
 
+  bool TraverseGCCAsmStmt(GCCAsmStmt *S) {
+    Kast::add(Kast::KApply("OtherStatement", Sort::KITEM));
+    return true;
+  }
+
   bool TraverseStmt(Stmt *S) {
     if (!S)
       return RecursiveASTVisitor::TraverseStmt(S);
