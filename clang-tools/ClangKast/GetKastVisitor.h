@@ -2001,8 +2001,9 @@ std::string ifc(std::string c, std::string cpp) {
   bool TraverseCompoundStmt(CompoundStmt *S) {
 
     if (cparser()) {
-      Kast::add(Kast::KApply("Block", Sort::KITEM, {Sort::INT, Sort::STRICTLIST}));
+      Kast::add(Kast::KApply("Block3", Sort::KITEM, {Sort::INT, Sort::STRICTLIST, Sort::STRICTLIST}));
       Kast::add(Kast::KToken(blockTag++));
+      emptyStrictList();
       strictlist();
     } else {
       Kast::add(Kast::KApply("CompoundAStmt", Sort::ASTMT, {Sort::LIST}));
