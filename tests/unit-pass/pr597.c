@@ -10,9 +10,9 @@ void bar(char **psave, const char *restrict unused) {
 }
 
 int main() {
-        char tmp[] = "1,0,2";
+	char tmp[] = "1,0,2";
 	char *save = "";
 	foo(tmp, &save);
-        bar(&save, NULL);
-        return 0;
+	bar(&save, NULL);
+	return 0;
 }
