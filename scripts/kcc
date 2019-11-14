@@ -636,9 +636,9 @@ sub parse {
       }
 
       # use clang-based C parser
-      my $std = getStd('c11');
-      my @cppParserArgs = ('-x', 'c', '-Wno-incompatible-library-redeclaration');
-      my @clangKastArgs = ('-cparser', '-extra-arg=-std=c11');
+      my $std = getStd('c');
+      my @cppParserArgs = ('-x', 'c', '-Wno-incompatible-library-redeclaration', $std);
+      my @clangKastArgs = ('-cparser');
       clangKast($ppResult, $std, $kast, \@clangKastArgs, \@cppParserArgs);
       return $kast;
 }
