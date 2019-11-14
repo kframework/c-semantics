@@ -35,10 +35,11 @@ typedef long unsigned int __kcc_size_t;
 #define __auto_type __kcc_auto_type
 #define __int128 __kcc_oversized_int
 #define __float128 __kcc_oversized_float
-typedef __int128 __int128_t;
-typedef unsigned __int128 __uint128_t;
 
 #endif
+
+typedef __int128 __int128_t;
+typedef unsigned __int128 __uint128_t;
 
 /* OpenSSL checks for these macros rather than checking __GNUC__ like it's
  * supposed to, so we have to undefine these so that it knows the extensions
