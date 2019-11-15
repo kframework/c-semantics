@@ -215,6 +215,10 @@ module C-CHECK-RESTRICT
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
           requires notBool isConstType(innerType(T))
           [structural]
+     rule <k> checkConst'(basedOn(Base:SymBase, _)) => .K ...</k>
+          <mem> M::Map </mem>
+          requires notBool (Base in_keys(M))
+          [structural]
      rule <k> (.K => UNDEF("ECL4",
                "An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type."))
                ~> checkConst'(basedOn(Base:SymBase, _))
