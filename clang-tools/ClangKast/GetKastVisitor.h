@@ -3067,7 +3067,26 @@ std::string ifc(std::string c, std::string cpp) {
     return false;
   }
 
-  bool VisitTypeTraitExpr(TypeTraitExpr *E) {
+  bool TraverseTypeTraitExpr(TypeTraitExpr *E) {
+    return cparser()? TraverseTypeTraitExpr_c(E) : TraverseTypeTraitExpr_cpp(E);
+  }
+
+  bool TraverseTypeTraitExpr_c(TypeTraitExpr *E) {
+    switch(E->getTrait()) {
+      case BTT_TypeCompatible:
+        Kast::add(Kast::KApply("TypesCompat", Sort::KITEM, {Sort::KITEM, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
+        TRY_TO(TraverseTypeLoc(E->getArg(0)->getTypeLoc()));
+        JustBase();
+        TRY_TO(TraverseTypeLoc(E->getArg(1)->getTypeLoc()));
+        JustBase();
+        break;
+      default:
+        throw std::logic_error("unimplemented: type trait");
+    }
+    return true;
+  }
+
+  bool TraverseTypeTraitExpr_cpp(TypeTraitExpr *E) {
     Kast::add(Kast::KApply("GnuTypeTrait", Sort::EXPR, {Sort::STRING, Sort::LIST}));
     switch (E->getTrait()) {
       #define TRAIT(Name, Str)                    \
@@ -3139,7 +3158,9 @@ std::string ifc(std::string c, std::string cpp) {
         throw std::logic_error("unimplemented: type trait");
     }
     KSeqList(E->getNumArgs());
-    return false;
+    for (unsigned I = 0, N = E->getNumArgs(); I != N; ++I)
+      TRY_TO(TraverseTypeLoc(E->getArg(I)->getTypeLoc()));
+    return true;
   }
 
   bool VisitAtomicExpr(AtomicExpr *E) {
