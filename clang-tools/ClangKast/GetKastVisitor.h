@@ -1912,6 +1912,8 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitTypeOfExprType(TypeOfExprType *T) {
+    if (cparser())
+      SpecifierItem();
     Kast::add(Kast::KApply("TypeofExpression", Sort::ATYPE, {Sort::EXPR}));
     return false;
   }
