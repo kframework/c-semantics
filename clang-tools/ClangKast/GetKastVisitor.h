@@ -2342,6 +2342,8 @@ std::string ifc(std::string c, std::string cpp) {
       UNARY_OP(Minus, "Negative")
       UNARY_OP(Not, "BitwiseNot")
       UNARY_OP(LNot, "LogicalNot")
+      case UO_Extension:
+        break;
       default:
         throw std::logic_error("unsupported unary operator");
       #undef UNARY_OP
