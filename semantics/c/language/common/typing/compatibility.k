@@ -58,6 +58,11 @@ module C-TYPING-COMPATIBILITY
      syntax Bool ::= areCompatible(UType, UType) [function, klabel(areCompatibleUType)]
      rule areCompatible(T::UType, T'::UType) => #areCompat(type(T), type(T'), .Set)
 
+     syntax Bool ::= sameUpToSignedInt(SimpleType, SimpleType) [function]
+     rule sameUpToSignedInt(int, signed-int) => true
+     rule sameUpToSignedInt(signed-int, int) => true
+     rule sameUpToSignedInt(T1::SimpleType, T2::SimpleType) => T1 ==K T2 [owise]
+
      syntax Bool ::= #areCompat(Type, Type, Set) [function]
      rule #areCompat(
                t(Qs::Quals, _, T:SimpleBasicType),
@@ -80,12 +85,12 @@ module C-TYPING-COMPATIBILITY
                t(Qs::Quals, Mods::Set, enumType(S::TagId)),
                t(Qs, Mods'::Set, T::SimpleType), _)
           => true
-          requires type(T) ==Type type(getEnumAlias(S))
+          requires sameUpToSignedInt(T, getEnumAlias(S))
      rule #areCompat(
                t(Qs::Quals, Mods::Set, T::SimpleType),
                t(Qs, Mods'::Set, enumType(S::TagId)), _)
           => true
-          requires type(T) ==Type type(getEnumAlias(S))
+          requires sameUpToSignedInt(T, getEnumAlias(S))
 
      // TODO(chathhorn): should also check for equivalent members
      rule #areCompat(
@@ -342,12 +347,13 @@ module C-TYPING-COMPATIBILITY
                t(Qs::Quals, Mods::Set, enumType(S::TagId)),
                t(Qs'::Quals, Mods'::Set, T::SimpleType))
           => t(Qs +Quals Qs', Mods Mods', T)
-          requires type(T) ==Type type(getEnumAlias(S))
+          requires sameUpToSignedInt(T, getEnumAlias(S))
+
      rule compositeType(
                t(Qs::Quals, Mods::Set, T::SimpleType),
                t(Qs'::Quals, Mods'::Set, enumType(S::TagId)))
           => t(Qs +Quals Qs', Mods Mods', T)
-          requires type(T) ==Type type(getEnumAlias(S))
+          requires sameUpToSignedInt(T, getEnumAlias(S))
 
      rule compositeType(
                t(Qs::Quals, Mods:Set, functionType(T::UType, P:List)),
