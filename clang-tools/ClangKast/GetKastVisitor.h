@@ -1684,10 +1684,10 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool TraverseVariableArrayType_c(VariableArrayType *T) {
     if (!T->getSizeExpr()) {
-      Kast::add(Kast::KApply("createUnspecifiedArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
+      Kast::add(Kast::KApply("createUnspecifiedArrayType", Sort::KITEM,{Sort::KITEM}));
       TRY_TO(TraverseType(T->getElementType()));
     } else {
-      Kast::add(Kast::KApply("createVariableLengthArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
+      Kast::add(Kast::KApply("createVariableLengthArrayType", Sort::KITEM,{Sort::KITEM, Sort::KITEM}));
       TRY_TO(TraverseType(T->getElementType()));
       TRY_TO(TraverseStmt(T->getSizeExpr()));
     }
