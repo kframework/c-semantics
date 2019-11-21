@@ -171,6 +171,10 @@ module C-TYPING-INTERPRETATION
           => setQuals(ParamMods, addMods(Set2List(Mods getSpecifiers(T) (ParamMods -Set typeQualifiers)), type(variableLengthArrayType(stripSpecifiers(T), N))))
           requires isHold(N)
 
+     syntax KItem ::= createUnspecifiedArrayType(KItem) [strict(1)]
+     rule createUnspecifiedArrayType(Inner:Type)
+          => type(unspecifiedArrayType(Inner))
+
      syntax KItem ::= setQuals(Set, KItem) [strict(2)]
 
      rule setQuals(M::Set, t(Qs::Quals, Mods::Set, T::SimpleType))

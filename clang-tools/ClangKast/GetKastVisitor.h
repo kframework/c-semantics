@@ -1683,9 +1683,14 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseVariableArrayType_c(VariableArrayType *T) {
-    Kast::add(Kast::KApply("createVariableLengthArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
-    TRY_TO(TraverseType(T->getElementType()));
-    TRY_TO(TraverseStmt(T->getSizeExpr()));
+    if (!T->getSizeExpr()) {
+      Kast::add(Kast::KApply("createUnspecifiedArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
+      TRY_TO(TraverseType(T->getElementType()));
+    } else {
+      Kast::add(Kast::KApply("createVariableLengthArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
+      TRY_TO(TraverseType(T->getElementType()));
+      TRY_TO(TraverseStmt(T->getSizeExpr()));
+    }
     return true;
   }
 
