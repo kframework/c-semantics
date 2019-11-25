@@ -126,6 +126,34 @@ module C-TYPING-INTERPRETATION
      rule NoPrototype(T:Type, krlist(L:List), false)
           => pushTypeDown(T, makeOldStyleFunctionType(.Set, adjustParams'(L)))
 
+     // The same as Prototype, just without pushTypeDown
+     syntax KItem ::= Prototype2(KItem, StrictList, Bool) [strict(1), symbol]
+     // "Prototype scope."
+     rule (.K => elaborate(scope(prototypeScope, Prototype2'(T, L, .List, Var))))
+          ~> Prototype2(T:Type, list(L:List), Var:Bool)
+     rule elaborateDone(T:Type) ~> Prototype2(_, _, _) => T
+
+     // We "declare" function prototype parameters in the order they appear,
+     // from left to right. This is mostly to (somewhat) handle VLA parameters.
+     syntax KItem ::= "Prototype2'" "(" Type "," List "," List "," Bool ")"
+     rule Prototype2'(T:Type, ListItem(K:KItem) L1:List, L2:List, Var:Bool)
+          => K ~> Prototype2'(T, L1, L2, Var)
+     rule t(Qs::Quals, Mods::Set, ST:SimpleType)
+          ~> Prototype2'(T::Type, L1::List, L2::List, Var::Bool)
+          => Prototype2'(T, L1, L2 ListItem(adjustParam(t(Qs, Mods, ST))), Var)
+     rule typedDeclaration(DT:Type, X:CId)
+          ~> Prototype2'(T:Type, L1:List, L2:List, Var:Bool)
+          => declare(typedDeclaration(adjustParam(DT), X), NoInit())
+          ~> Prototype2'(T, L1, L2 ListItem(typedDeclaration(adjustParam(DT), X)), Var)
+     rule Prototype2'(T:Type, .List, L:List, false)
+          => setElab(type(functionType(utype(T), numberUnnamed(L))))
+     rule Prototype2'(T:Type, .List, L:List, true)
+          => setElab(type(functionType(utype(T), numberUnnamed(L) ListItem(variadic))))
+
+     syntax KItem ::= NoPrototype2(KItem, StrictList, Bool) [strict(1, 2), symbol]
+     rule NoPrototype2(T:Type, krlist(L:List), false)
+          => addMods(ListItem(oldStyle), type(functionType(utype(T), numberUnnamed(adjustParams'(L)))))
+
      rule pushTypeDown(t(... st: _:SimpleBasicType) #as T::Type, Lbl::KItem) => applyTypeFunction(Lbl, T)
 
      rule pushTypeDown(t(quals(Qs::Set), Mods::Set, arrayType(T::Type, N::Int)), Lbl::KItem)

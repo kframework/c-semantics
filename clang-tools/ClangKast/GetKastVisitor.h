@@ -459,26 +459,38 @@ public:
   }
 
   bool TraverseFunctionHelper_c(FunctionDecl *D){
-    if (D->isThisDeclarationADefinition()) {
+    if (D->isThisDeclarationADefinition())
       Kast::add(Kast::KApply("FunctionDefinition", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
+    else
+      Kast::add(Kast::KApply("declare", Sort::KITEM, {Sort::KITEM, Sort::K}));
 
+    Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::KITEM}));
+    TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
+    // or:
+    //TRY_TO(TraverseDeclarationName(D->getDeclName()));
+
+    StorageClass(D->getStorageClass());
+    Qualifiers(D->getType());
+    Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
+    Kast::add(Kast::KApply(D->hasWrittenPrototype()? "Prototype2":"NoPrototype2", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST, Sort::BOOL}));
+    TraverseType(D->getReturnType());
+
+    strictlist();
+    KSeqList(D->getNumParams());
+    for (unsigned i = 0; i < D->getNumParams(); i++) {
       Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
-      TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
+      TRY_TO(TraverseDeclarationName(D->parameters()[i]->getDeclName()));
+      //Kast::add(Kast::KApply("adjustParamStrict", Sort::KITEM, {Sort::KITEM}));
       Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
-      StorageClass(D->getStorageClass());
-      TraverseFunctionDeclParams(D);
-      TRY_TO(TraverseStmt(D->getBody()));
-      return true;
+      TRY_TO(TraverseType(D->parameters()[i]->getType()));
     }
 
-    // declaration
-    Kast::add(Kast::KApply("declare", Sort::KITEM, {Sort::KITEM, Sort::K}));
-    Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::KITEM}));
-    TRY_TO(TraverseDeclarationName(D->getDeclName()));
-    Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
-    StorageClass(D->getStorageClass());
-    TraverseFunctionDeclParams(D);
-    Kast::add(Kast::KApply("NoInit", Sort::INIT));
+    VisitBool(D->isVariadic());
+
+    if (D->isThisDeclarationADefinition())
+      TRY_TO(TraverseStmt(D->getBody()));
+    else
+      Kast::add(Kast::KApply("NoInit", Sort::INIT));
     return true;
   }
 
@@ -1432,7 +1444,10 @@ public:
 
   bool TraverseFunctionNoProtoType(FunctionNoProtoType *T) {
     // C only
-    TraverseFunctionProtoType_c_helper(T->getReturnType(), 0);
+    Kast::add(Kast::KApply("NoPrototype2", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST, Sort::BOOL}));
+    TraverseType(T->getReturnType());
+    emptyStrictList();
+    VisitBool(false);
     return true;
   }
 
@@ -1447,31 +1462,8 @@ public:
     KSeqList(numParams);
   }
 
-  bool TraverseFunctionDeclParams(FunctionDecl *decl) {
-    Qualifiers(decl->getType());
-    if (!decl->hasWrittenPrototype()) {
-      Kast::add(Kast::KApply("addMods", Sort::KITEM, {Sort::LIST, Sort::KITEM}));
-      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-      Kast::add(Kast::KApply("oldStyle_C-TYPING-SYNTAX", Sort::MODIFIER));
-    }
-    TraverseFunctionProtoType_c_helper(decl->getReturnType(), decl->getNumParams() + (decl->isVariadic()?1:0));
-
-    for (unsigned i = 0; i < decl->getNumParams(); i++) {
-      Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
-      TRY_TO(TraverseDeclarationName(decl->parameters()[i]->getDeclName()));
-      Kast::add(Kast::KApply("adjustParamStrict", Sort::KITEM, {Sort::KITEM}));
-      Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
-      TRY_TO(TraverseType(decl->parameters()[i]->getType()));
-    }
-
-    if (decl->isVariadic()) {
-      Kast::add(Kast::KApply("variadic_C-TYPING-SYNTAX", Sort::VARIADIC));
-    }
-
-    return true;
-  }
-
-  bool TraverseFunctionParams(FunctionProtoType const *T) {
+  bool TraverseFunctionProtoType_c(FunctionProtoType *T) {
+    TraverseFunctionProtoType_c_helper(T->getReturnType(), T->getNumParams() + (T->isVariadic()?1:0));
     for (unsigned i = 0; i < T->getNumParams(); i++) {
       Kast::add(Kast::KApply("adjustParamStrict", Sort::KITEM, {Sort::KITEM}));
       Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
@@ -1483,11 +1475,6 @@ public:
     }
 
     return true;
-  }
-
-  bool TraverseFunctionProtoType_c(FunctionProtoType *T) {
-    TraverseFunctionProtoType_c_helper(T->getReturnType(), T->getNumParams() + (T->isVariadic()?1:0));
-    return TraverseFunctionParams(T);
   }
 
   bool TraverseFunctionProtoType_cpp(FunctionProtoType *T) {
