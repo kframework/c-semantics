@@ -17,7 +17,7 @@ dependencies:
 - Install docker (see <https://docs.docker.com/get-started/>)
 - Clone this repository:
   ```sh
-  git clone git@github.com:kframework/c-semantics
+  git clone https://github.com/kframework/c-semantics.git
   cd c-semantics
   git submodule update --init --recursive
   ```
