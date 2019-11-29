@@ -623,7 +623,6 @@ sub parse {
       # use clang-based C++ parser
       if ($lang eq 'c++') {
             my $std = getStd('c++');
-            my $cppParser = distDir('clang-kast');
             my @cppParserArgs = ('-x', 'c++-cpp-output', $std);
             my @clangKastArgs = ();
             clangKast($ppResult, $std, $kast, \@clangKastArgs, \@cppParserArgs);
