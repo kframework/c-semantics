@@ -599,6 +599,8 @@ sub clangKast {
 
         if (arg('-nolocation')) {
             push(@clangKastArgs, '-no-location');
+        } else {
+            push(@clangKastArgs, '-compat-location');
         }
 
         my $cppParser = distDir('clang-kast');

@@ -6,6 +6,7 @@
 
 bool cparser();
 bool noLocation();
+bool compatLocation();
 
 enum class Sort {
   ACCESSSPECIFIER,

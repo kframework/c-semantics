@@ -50,6 +50,7 @@ static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 static cl::opt<bool> Kore("kore", cl::desc("Output kore instead of kast."), cl::cat(KastOptionCategory));
 static cl::opt<bool> Cparser("cparser", cl::desc("Parse C instead of C++."), cl::cat(KastOptionCategory));
 static cl::opt<bool> NoLocation("no-location", cl::desc("Do not emit location information (CabsLoc)."), cl::cat(KastOptionCategory));
+static cl::opt<bool> CompatLocation("compat-location", cl::desc("Try to emit location information (CabsLoc) whenever ocaml cparser does."), cl::cat(KastOptionCategory));
 
 bool cparser() {
   return Cparser;
@@ -57,6 +58,10 @@ bool cparser() {
 
 bool noLocation() {
   return NoLocation;
+}
+
+bool compatLocation() {
+  return CompatLocation;
 }
 
 // *** Sort to string ***
