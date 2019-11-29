@@ -599,8 +599,6 @@ sub clangKast {
 
         if (arg('-nolocation')) {
             push(@clangKastArgs, '-no-location');
-        } else {
-            push(@clangKastArgs, '-compat-location');
         }
 
         my $cppParser = distDir('clang-kast');
@@ -640,6 +638,10 @@ sub parse {
       my $std = getStd('c');
       my @cppParserArgs = ('-x', 'c', '-Wno-incompatible-library-redeclaration', $std);
       my @clangKastArgs = ('-cparser');
+      if (!arg('-nolocation')) {
+            push(@clangKastArgs, '-compat-location');
+      }
+
       clangKast($ppResult, $std, $kast, \@clangKastArgs, \@cppParserArgs);
       return $kast;
 }
