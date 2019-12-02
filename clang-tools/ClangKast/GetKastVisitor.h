@@ -93,8 +93,12 @@ public:
     if (!cparser())
       return;
 
-    if (isa<Expr>(S))
+    if (Expr *E = dyn_cast<Expr>(S)) {
+      if (compatLocation())
+        addExprLoc(E->getExprLoc());
+
       Kast::add(Kast::KApply("Computation", Sort::KITEM, {Sort::K}));
+    }
   }
 
   bool TraverseGCCAsmStmt(GCCAsmStmt *S) {
