@@ -3,6 +3,7 @@
 
 #include <unistd.h>
 #include <iostream>
+#include <experimental/filesystem>
 
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Expr.h"
@@ -14,6 +15,7 @@
 
 using namespace clang;
 using namespace clang::tooling;
+namespace fs = std::experimental::filesystem;
 
 #define TRY_TO(CALL_EXPR)                                                     \
   do {                                                                        \
@@ -3314,7 +3316,7 @@ private:
       StringRef filename(presumed.getFilename());
       SmallString<64> vector(filename);
       llvm::sys::fs::make_absolute(vector);
-      Kast::add(Kast::KToken(vector.str().str()));
+      Kast::add(Kast::KToken(fs::canonical(fs::path(vector.str().str())).string()));
       VisitUnsigned(presumed.getLine());
       VisitUnsigned(presumed.getColumn());
       VisitBool(mgr.isInSystemHeader(loc));

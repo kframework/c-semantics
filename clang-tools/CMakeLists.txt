@@ -74,7 +74,7 @@ set ( LLVM_LIBRARIES
 )
 
 
-target_link_libraries ( clang-kast PRIVATE ${LLVM_LIBRARIES} )
+target_link_libraries ( clang-kast PRIVATE ${LLVM_LIBRARIES} stdc++fs)
 target_link_libraries ( call-sites PRIVATE ${LLVM_LIBRARIES} )
 
 target_link_libraries ( clang-kast PRIVATE ${CURSES_LIBRARIES} )
