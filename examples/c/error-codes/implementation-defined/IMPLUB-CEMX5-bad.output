@@ -1,5 +1,5 @@
 Division by an implementation-defined or unspecified value:
-      > in main at IMPLUB-CEMX5-bad.c:8:9
+      > in main at IMPLUB-CEMX5-bad.c:8:7
 
     Implementation-dependent undefined behavior (IMPLUB-CEMX5):
         see C11 section 6.5.5:5 http://rvdoc.org/C11/6.5.5
