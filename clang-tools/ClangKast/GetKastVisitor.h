@@ -470,6 +470,28 @@ public:
     return cparser()? TraverseFunctionHelper_c(D) : TraverseFunctionHelper_cpp(D);
   }
 
+  C11NoReturnAttr * getNoreturn(const Decl *D) {
+    for (Attr *a : D->attrs()) {
+      if (a->getKind() == attr::Kind::C11NoReturn) {
+        return dyn_cast<C11NoReturnAttr>(a);
+      }
+    }
+    return nullptr;
+  }
+
+  bool isNoreturn(FunctionDecl *D) {
+    if (FunctionType const * FT = dyn_cast<FunctionType>(D->getType().getTypePtr())) {
+      if (FT->getNoReturnAttr())
+        return true;
+    }
+
+    C11NoReturnAttr *nr = getNoreturn(D);
+    if (nr)
+      return true;
+
+    return false;
+  }
+
   bool TraverseFunctionHelper_c(FunctionDecl *D){
     if (D->isThisDeclarationADefinition())
       Kast::add(Kast::KApply("FunctionDefinition", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
@@ -483,6 +505,11 @@ public:
 
     StorageClass(D->getStorageClass());
     Qualifiers(D->getType());
+    if (isNoreturn(D)) {
+      Kast::add(Kast::KApply("addModifierStrict", Sort::KITEM, {Sort::MODIFIER, Sort::KITEM}));
+      Kast::add(Kast::KApply("Noreturn", Sort::FUNCTIONSPECIFIER));
+    }
+
     Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
     Kast::add(Kast::KApply(D->hasWrittenPrototype()? "Prototype2":"NoPrototype2", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST, Sort::BOOL}));
     TraverseType(D->getReturnType());
