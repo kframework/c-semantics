@@ -1,3 +1,7 @@
+IMPLUB-CEB12-bad-static.c:4:7: warning: expression result unused [-Wunused-value]
+      ~0;
+      ^~
+1 warning generated.
 IMPLUB-CEB12-bad-static.c:4:7: error: Potential negative zero produced via bitwise operations, undefined under sign and magnitude or one's complement arithmetic, implementation-defined otherwise.
 
     Implementation-dependent undefined behavior (IMPLUB-CEB12):
