@@ -1686,6 +1686,11 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseConstantArrayType_c(ConstantArrayType *T) {
+    if (T->getSizeModifier() == ArrayType::ArraySizeModifier::Static) {
+      Kast::add(Kast::KApply("addModifierStrict", Sort::KITEM, {Sort::MODIFIER, Sort::KITEM}));
+      Kast::add(Kast::KApply("arrayStatic", Sort::MODIFIER, {Sort::INT}));
+      VisitAPInt(T->getSize());
+    }
     Kast::add(Kast::KApply("createArrayType", Sort::KITEM,{Sort::KITEM, Sort::INT}));
     TRY_TO(TraverseType(T->getElementType()));
     VisitAPInt(T->getSize());
