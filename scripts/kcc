@@ -636,7 +636,7 @@ sub parse {
 
       # use clang-based C parser
       my $std = getStd('c');
-      my @cppParserArgs = ('-x', 'c', '-Wno-incompatible-library-redeclaration','-Wno-everything', $std);
+      my @cppParserArgs = ('-x', 'c', '-Wno-incompatible-library-redeclaration', $std);
       my @clangKastArgs = ('-cparser');
       if (!arg('-nolocation')) {
             push(@clangKastArgs, '-compat-location');
