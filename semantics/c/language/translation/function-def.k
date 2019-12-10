@@ -114,7 +114,7 @@ module C-FUNCTION-DEF
           requires (notBool oldStyle in Mods) andBool isArgvType(T)
           [structural]
      rule (.K => UNDEF("FD4", "Definition of main requires a prototype.") )
-          ~> checkMainDef(t(_, Mods:Set, functionType(ut(_, int), ListItem(T:Type) _)))
+          ~> checkMainDef(t(_, Mods:Set, functionType(ut(_, int #Or signed-int), ListItem(T:Type) _)))
           requires (oldStyle in Mods) andBool notBool isVoidType(T)
           [structural]
      rule (.K => UNDEF("FD5", "Function main must return an int.") )
