@@ -1,4 +1,8 @@
-UB-FD9-bad-static.c:3:1: error: Function main must have zero or two parameters.
+UB-FD9-bad-static.c:3:5: warning: only one parameter on 'main' declaration [-Wmain]
+int main(int n){
+    ^
+1 warning generated.
+UB-FD9-bad-static.c:3:5: error: Function main must have zero or two parameters.
 
     Undefined behavior (UB-FD9):
         see C11 section 5.1.2.2.1:1 http://rvdoc.org/C11/5.1.2.2.1

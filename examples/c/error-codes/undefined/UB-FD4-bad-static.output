@@ -1,4 +1,4 @@
-UB-FD4-bad-static.c:3:1: error: Definition of main requires a prototype.
+UB-FD4-bad-static.c:3:5: error: Definition of main requires a prototype.
 
     Undefined behavior (UB-FD4):
         see C11 section 5.1.2.2.1:1 http://rvdoc.org/C11/5.1.2.2.1

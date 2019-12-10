@@ -1,4 +1,4 @@
-UB-TDR1-bad-static.c:7:1: error: Declaration for inline function not defined in the same translation unit: f.
+UB-TDR1-bad-static.c:6:2: error: Declaration for inline function not defined in the same translation unit: f.
 
     Undefined behavior (UB-TDR1):
         see C11 section 6.7.4:7 http://rvdoc.org/C11/6.7.4

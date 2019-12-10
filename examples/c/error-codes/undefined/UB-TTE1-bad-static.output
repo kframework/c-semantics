@@ -1,3 +1,7 @@
+UB-TTE1-bad-static.c:7:7: warning: expression result unused [-Wunused-value]
+      sizeof(0 ? (int (*) [x]) 
+      ^~~~~~~~~~~~~~~~~~~~~~~~
+1 warning generated.
 UB-TTE1-bad-static.c:7:7: error: Program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated (in an argument to sizeof).
 
     Undefined behavior (UB-TTE1):

@@ -1,5 +1,5 @@
 Trying to write outside the bounds of an object:
-      > in main at UB-EIO2-bad.c:6:3
+      > in main at UB-EIO2-bad.c:6:8
 
     Undefined behavior (UB-EIO2):
         see C11 section 6.5.6:8 http://rvdoc.org/C11/6.5.6

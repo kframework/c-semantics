@@ -1,4 +1,11 @@
-UB-CCV1-bad-static.c:5:2: error: Signed integer overflow.
+UB-CCV1-bad-static.c:5:13: warning: overflow in expression; result is -2147483648 with type 'int' [-Winteger-overflow]
+ 0x7fffffff + 1;
+            ^
+UB-CCV1-bad-static.c:5:13: warning: expression result unused [-Wunused-value]
+ 0x7fffffff + 1;
+ ~~~~~~~~~~ ^ ~
+2 warnings generated.
+UB-CCV1-bad-static.c:5:13: error: Signed integer overflow.
 
     Undefined behavior (UB-CCV1):
         see C11 section 6.5:5 http://rvdoc.org/C11/6.5

@@ -1,6 +1,6 @@
 'va_start' used in a function with fixed args:
-      > in __kcc_va_start at UB-STDARG1-bad.c:6:8
-        in f at UB-STDARG1-bad.c:6:8
+      > in __kcc_va_start at UB-STDARG1-bad.c:6:7
+        in f at UB-STDARG1-bad.c:6:7
         in main at UB-STDARG1-bad.c:11:7
 
     Undefined behavior (UB-STDARG1):

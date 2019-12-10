@@ -1,6 +1,6 @@
 'va_start' called on function whose last fixed argument is not compatible with type after default argument promotions:
-      > in __kcc_va_start at UB-STDARG12-bad.c:5:4
-        in foo at UB-STDARG12-bad.c:5:4
+      > in __kcc_va_start at UB-STDARG12-bad.c:5:3
+        in foo at UB-STDARG12-bad.c:5:3
         in main at UB-STDARG12-bad.c:10:3
 
     Undefined behavior (UB-STDARG12):

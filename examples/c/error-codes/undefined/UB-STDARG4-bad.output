@@ -1,6 +1,6 @@
 'va_copy' called on an uninitialized source va_list:
-      > in __kcc_va_copy at UB-STDARG4-bad.c:7:8
-        in f at UB-STDARG4-bad.c:7:8
+      > in __kcc_va_copy at UB-STDARG4-bad.c:7:7
+        in f at UB-STDARG4-bad.c:7:7
         in main at UB-STDARG4-bad.c:11:7
 
     Undefined behavior (UB-STDARG4):
