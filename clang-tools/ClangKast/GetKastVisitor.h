@@ -505,6 +505,12 @@ public:
 
     StorageClass(D->getStorageClass());
     Qualifiers(D->getType());
+
+    if (D->isInlineSpecified()) {
+      Kast::add(Kast::KApply("addModifierStrict", Sort::KITEM, {Sort::MODIFIER, Sort::KITEM}));
+      Kast::add(Kast::KApply("Inline", Sort::FUNCTIONSPECIFIER));
+    }
+
     if (isNoreturn(D)) {
       Kast::add(Kast::KApply("addModifierStrict", Sort::KITEM, {Sort::MODIFIER, Sort::KITEM}));
       Kast::add(Kast::KApply("Noreturn", Sort::FUNCTIONSPECIFIER));
