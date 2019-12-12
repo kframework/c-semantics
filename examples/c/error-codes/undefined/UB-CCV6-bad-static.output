@@ -1,0 +1,4 @@
+UB-CCV6-bad-static.c:5:9: error: returning 'void' from a function with incompatible result type 'int'
+ return f();
+        ^~~
+1 error generated.

@@ -1,8 +1,7 @@
-UB-TDG11-bad-static.c:5:1: error: Static declaration of f follows non-static declaration.
-
-    Undefined behavior (UB-TDG11):
-        see C11 section 6.2.2:7 http://rvdoc.org/C11/6.2.2
-        see C11 section J.2:1 item 8 http://rvdoc.org/C11/J.2
-        see CERT-C section DCL36-C http://rvdoc.org/CERT-C/DCL36-C
-        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
-
+UB-TDG11-bad-static.c:5:12: error: static declaration of 'f' follows non-static declaration
+static int f(void){
+           ^
+UB-TDG11-bad-static.c:3:5: note: previous declaration is here
+int f(void);
+    ^
+1 error generated.

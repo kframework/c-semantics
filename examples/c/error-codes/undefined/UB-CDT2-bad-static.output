@@ -1,4 +1,11 @@
-UB-CDT2-bad-static.c:3:1: error: Unions must contain a named member.
+UB-CDT2-bad-static.c:19:11: warning: expression result unused [-Wunused-value]
+      s.z.u2;
+      ~~~ ^~
+UB-CDT2-bad-static.c:20:11: warning: expression result unused [-Wunused-value]
+      s.z.u1;
+      ~~~ ^~
+2 warnings generated.
+UB-CDT2-bad-static.c:3:7: error: Unions must contain a named member.
 
     Undefined behavior (UB-CDT2):
         see C11 section 6.7.2.1 http://rvdoc.org/C11/6.7.2.1

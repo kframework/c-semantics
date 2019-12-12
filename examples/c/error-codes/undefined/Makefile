@@ -16,6 +16,12 @@ CFLAGS = -fno-diagnostics-color -std=c11
 
 comparison: ${TEST_COMPARISON}
 
+# does not fail if compilation results in error
+# last lines from failed kcc command contains an absolute path
+%-bad-static.kcc: %-bad-static.c
+	@echo -n "Compiling $<... "
+	@$(KCC) $(KCCFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; if [ $$? -eq 0 ] ; then mv $@.tmp.out $@.out; else head $@.tmp.out --lines=-3 > $@.out; rm $@.tmp.out; fi
+
 %.kcc: %.c
 	@echo -n "Compiling $<... "
 	@$(KCC) $(KCCFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}

@@ -1,4 +1,11 @@
-UB-CEB6-bad-static.c:4:2: error: The right operand in a bitwise shift is negative.
+UB-CEB6-bad-static.c:4:4: warning: expression result unused [-Wunused-value]
+ 5 >> -1;
+ ~ ^  ~~
+UB-CEB6-bad-static.c:4:4: warning: shift count is negative [-Wshift-count-negative]
+ 5 >> -1;
+   ^  ~~
+2 warnings generated.
+UB-CEB6-bad-static.c:4:4: error: The right operand in a bitwise shift is negative.
 
     Undefined behavior (UB-CEB6):
         see C11 section 6.5.7:3 http://rvdoc.org/C11/6.5.7

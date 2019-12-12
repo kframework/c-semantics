@@ -1,5 +1,5 @@
 Trying to modify an object declared with const type:
-      > in main at UB-EIO3-bad.c:8:2
+      > in main at UB-EIO3-bad.c:8:7
 
     Undefined behavior (UB-EIO3):
         see C11 section 6.7.3:6 http://rvdoc.org/C11/6.7.3

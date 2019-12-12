@@ -1,4 +1,11 @@
-UB-CEB4-bad-static.c:5:2: error: The left operand in a bitwise left-shift is negative.
+UB-CEB4-bad-static.c:5:5: warning: expression result unused [-Wunused-value]
+ -1 << 5;
+ ~~ ^  ~
+UB-CEB4-bad-static.c:5:5: warning: shifting a negative signed value is undefined [-Wshift-negative-value]
+ -1 << 5;
+ ~~ ^
+2 warnings generated.
+UB-CEB4-bad-static.c:5:5: error: The left operand in a bitwise left-shift is negative.
 
     Undefined behavior (UB-CEB4):
         see C11 section 6.5.7:4 http://rvdoc.org/C11/6.5.7

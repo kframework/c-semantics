@@ -1,0 +1,4 @@
+UB-STDARG10-bad-static.c:5:37: error: address of register variable requested
+  (__kcc_va_start((&(ap)), ((void*)(&(x)))));
+                                    ^ ~
+1 error generated.

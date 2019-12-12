@@ -1,5 +1,5 @@
 Trying to modify an unmodifiable object returned by a library function:
-      > in main at UB-EIO11-bad.c:4:7
+      > in main at UB-EIO11-bad.c:4:12
 
     Undefined behavior (UB-EIO11):
         see C11 section 7.22.4.6:4 http://rvdoc.org/C11/7.22.4.6

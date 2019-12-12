@@ -1,6 +1,6 @@
 'va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end:
-      > in __kcc_va_start at UB-STDARG2-bad.c:8:8
-        in f at UB-STDARG2-bad.c:8:8
+      > in __kcc_va_start at UB-STDARG2-bad.c:8:7
+        in f at UB-STDARG2-bad.c:8:7
         in main at UB-STDARG2-bad.c:16:7
 
     Undefined behavior (UB-STDARG2):

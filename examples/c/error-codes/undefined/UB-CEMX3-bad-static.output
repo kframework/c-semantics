@@ -1,4 +1,8 @@
-UB-CEMX3-bad-static.c:6:3: error: Signed integer overflow.
+UB-CEMX3-bad-static.c:6:15: warning: expression result unused [-Wunused-value]
+            ) % -1;
+            ~ ^ ~~
+1 warning generated.
+UB-CEMX3-bad-static.c:6:15: error: Signed integer overflow.
 
     Undefined behavior (UB-CEMX3):
         see C11 section 6.5:5 http://rvdoc.org/C11/6.5
