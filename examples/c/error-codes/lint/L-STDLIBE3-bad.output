@@ -1,13 +1,13 @@
 Realloc overflows memory bound, returning null pointer:
-      > in realloc at L-STDLIBE3-bad.c:11:5
-        in main at L-STDLIBE3-bad.c:11:5
+      > in realloc at L-STDLIBE3-bad.c:11:21
+        in main at L-STDLIBE3-bad.c:11:21
 
     Possible unintended behavior (L-STDLIBE3)
 
 Memory malloced but never freed:
     Malloced here:
-      > in malloc at L-STDLIBE3-bad.c:10:5
-        in main at L-STDLIBE3-bad.c:10:5
+      > in malloc at L-STDLIBE3-bad.c:10:11
+        in main at L-STDLIBE3-bad.c:10:11
 
     Possible unintended behavior (L-CEIE1):
         see CERT-C section MEM31-C http://rvdoc.org/CERT-C/MEM31-C

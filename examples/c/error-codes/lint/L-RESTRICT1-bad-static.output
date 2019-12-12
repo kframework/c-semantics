@@ -1,4 +1,4 @@
-L-RESTRICT1-bad-static.c:2:7: warning: Use of the restrict qualifier (a possible source of undefined behavior).
+L-RESTRICT1-bad-static.c:2:22: warning: Use of the restrict qualifier (a possible source of undefined behavior).
 
     Possible unintended behavior (L-RESTRICT1):
         see MISRA-C section 8.8:14 http://rvdoc.org/MISRA-C/8.8

@@ -1,6 +1,6 @@
 Malloc overflows memory bound, returning null pointer:
-      > in malloc at L-STDLIBE2-bad.c:10:5
-        in main at L-STDLIBE2-bad.c:10:5
+      > in malloc at L-STDLIBE2-bad.c:10:11
+        in main at L-STDLIBE2-bad.c:10:11
 
     Possible unintended behavior (L-STDLIBE2)
 

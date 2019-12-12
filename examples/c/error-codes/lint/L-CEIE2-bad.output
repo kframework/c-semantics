@@ -1,7 +1,7 @@
 File opened but never closed:
     Opened here:
-      > in fopen at L-CEIE2-bad.c:9:7
-        in main at L-CEIE2-bad.c:9:7
+      > in fopen at L-CEIE2-bad.c:9:9
+        in main at L-CEIE2-bad.c:9:9
 
     Possible unintended behavior (L-CEIE2):
         see CERT-C section FIO42-C http://rvdoc.org/CERT-C/FIO42-C

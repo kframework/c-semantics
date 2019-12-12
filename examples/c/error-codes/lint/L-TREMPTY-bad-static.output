@@ -1,4 +1,4 @@
-L-TREMPTY-bad-static.c:3:27: warning: Empty block or statement in an if, for, or while.
+L-TREMPTY-bad-static.c:3:29: warning: Empty block or statement in an if, for, or while.
 
     Possible unintended behavior (L-TREMPTY)
 

@@ -1,20 +1,20 @@
-L-TRZERO-bad-static.c:4:7: warning: Test in an if, for, or while will always evaluate to zero.
+L-TRZERO-bad-static.c:4:21: warning: Test in an if, for, or while will always evaluate to zero.
 
     Possible unintended behavior (L-TRZERO)
 
-L-TRZERO-bad-static.c:6:25: warning: Test in an if, for, or while will always evaluate to zero.
+L-TRZERO-bad-static.c:6:27: warning: Test in an if, for, or while will always evaluate to zero.
 
     Possible unintended behavior (L-TRZERO)
 
-L-TRZERO-bad-static.c:7:23: warning: Test in an if, for, or while will always evaluate to zero.
+L-TRZERO-bad-static.c:7:25: warning: Test in an if, for, or while will always evaluate to zero.
 
     Possible unintended behavior (L-TRZERO)
 
-L-TRZERO-bad-static.c:8:17: warning: Test in an if, for, or while will always evaluate to zero.
+L-TRZERO-bad-static.c:8:19: warning: Test in an if, for, or while will always evaluate to zero.
 
     Possible unintended behavior (L-TRZERO)
 
-L-TRZERO-bad-static.c:9:11: warning: Test in an if, for, or while will always evaluate to zero.
+L-TRZERO-bad-static.c:9:13: warning: Test in an if, for, or while will always evaluate to zero.
 
     Possible unintended behavior (L-TRZERO)
 
