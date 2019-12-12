@@ -1,5 +1,5 @@
 Conversion from pointer to integer of a value possibly unrepresentable in the integer type:
-      > in main at UB-CCV7-bad.c:7:9
+      > in main at UB-CCV7-bad.c:7:7
 
     Undefined behavior (UB-CCV7):
         see C11 section 6.3.2.3:6 http://rvdoc.org/C11/6.3.2.3

@@ -1,5 +1,5 @@
 Casting empty value to type other than void:
-      > in f at UB-CCV5-bad.c:4:8
+      > in f at UB-CCV5-bad.c:8:2
         in main at UB-CCV5-bad.c:8:2
 
     Undefined behavior (UB-CCV5):

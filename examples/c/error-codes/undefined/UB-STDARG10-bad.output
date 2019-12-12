@@ -1,0 +1,19 @@
+Unary '&' operator applied to a value with register storage class:
+      > in foo at UB-STDARG10-bad.c:5:4
+        in main at UB-STDARG10-bad.c:11:3
+
+    Constraint violation (CV-CER2):
+        see C11 section 6.5.3.2:1 http://rvdoc.org/C11/6.5.3.2
+        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
+'va_start' called on function whose last fixed argument is declared with the register storage class:
+      > in __kcc_va_start at UB-STDARG10-bad.c:5:4
+        in foo at UB-STDARG10-bad.c:5:4
+        in main at UB-STDARG10-bad.c:11:3
+
+    Undefined behavior (UB-STDARG10):
+        see C11 section 7.16.1.4:4 http://rvdoc.org/C11/7.16.1.4
+        see C11 section J.2:1 item 143 http://rvdoc.org/C11/J.2
+        see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
+

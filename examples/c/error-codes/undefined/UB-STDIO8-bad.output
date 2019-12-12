@@ -1,6 +1,6 @@
 'fopen' or 'freopen': invalid open mode "+w":
-      > in fopen at UB-STDIO8-bad.c:9:14
-        in main at UB-STDIO8-bad.c:9:14
+      > in fopen at UB-STDIO8-bad.c:9:7
+        in main at UB-STDIO8-bad.c:9:7
 
     Undefined behavior (UB-STDIO8):
         see C11 section 7.21.5.3:3 http://rvdoc.org/C11/7.21.5.3
@@ -8,8 +8,8 @@
         see CERT-C section FIO11-C http://rvdoc.org/CERT-C/FIO11-C
 
 'fopen' or 'freopen': invalid open mode "x":
-      > in fopen at UB-STDIO8-bad.c:12:9
-        in main at UB-STDIO8-bad.c:12:9
+      > in fopen at UB-STDIO8-bad.c:12:7
+        in main at UB-STDIO8-bad.c:12:7
 
     Undefined behavior (UB-STDIO8):
         see C11 section 7.21.5.3:3 http://rvdoc.org/C11/7.21.5.3
@@ -17,8 +17,8 @@
         see CERT-C section FIO11-C http://rvdoc.org/CERT-C/FIO11-C
 
 'fopen' or 'freopen': invalid open mode "abc":
-      > in fopen at UB-STDIO8-bad.c:15:9
-        in main at UB-STDIO8-bad.c:15:9
+      > in fopen at UB-STDIO8-bad.c:15:7
+        in main at UB-STDIO8-bad.c:15:7
 
     Undefined behavior (UB-STDIO8):
         see C11 section 7.21.5.3:3 http://rvdoc.org/C11/7.21.5.3

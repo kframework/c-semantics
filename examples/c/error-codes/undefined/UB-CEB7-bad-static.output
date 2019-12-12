@@ -1,7 +1,3 @@
-UB-CEB7-bad-static.c:5:16: warning: shift count >= width of type [-Wshift-count-overflow]
- return (int)1 >> sizeof(int) * 8;
-               ^  ~~~~~~~~~~~~~~~
-1 warning generated.
 UB-CEB7-bad-static.c:5:2: error: The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.
 
     Undefined behavior (UB-CEB7):

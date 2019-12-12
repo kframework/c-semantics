@@ -1,8 +1,4 @@
-UB-CDI1-bad-static.c:4:14: warning: excess elements in scalar initializer
- int x = {0, 1};
-             ^
-1 warning generated.
-UB-CDI1-bad-static.c:4:6: error: Initializer for scalar contains multiple expressions.
+UB-CDI1-bad-static.c:4:2: error: Initializer for scalar contains multiple expressions.
 
     Undefined behavior (UB-CDI1):
         see C11 section 6.7.9:11 http://rvdoc.org/C11/6.7.9

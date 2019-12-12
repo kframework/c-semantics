@@ -1,8 +1,4 @@
-UB-TDR3-bad-static.c:1:1: warning: variable named 'main' with external linkage has undefined behavior [-Wmain]
-int main[] = {195};
-^
-1 warning generated.
-UB-TDR3-bad-static.c:1:5: error: Main is not a function.
+UB-TDR3-bad-static.c:1:1: error: Main is not a function.
 
     Undefined behavior (UB-TDR3):
         see C11 section 5.1.2.2.1:1 http://rvdoc.org/C11/5.1.2.2.1

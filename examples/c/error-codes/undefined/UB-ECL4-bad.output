@@ -1,5 +1,5 @@
 An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type:
-      > in g at UB-ECL4-bad.c:4:16
+      > in g at UB-ECL4-bad.c:4:7
         in main at UB-ECL4-bad.c:10:7
 
     Undefined behavior (UB-ECL4):

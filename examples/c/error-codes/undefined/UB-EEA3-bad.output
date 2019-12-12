@@ -1,5 +1,5 @@
 Attempt to alias restrict qualified pointers associated with incompatible blocks:
-      > in main at UB-EEA3-bad.c:10:5
+      > in main at UB-EEA3-bad.c:10:3
 
     Undefined behavior (UB-EEA3):
         see C11 section 6.7.3.1:4 http://rvdoc.org/C11/6.7.3.1

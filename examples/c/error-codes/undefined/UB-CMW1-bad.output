@@ -1,5 +1,5 @@
 Trying to modify a string literal:
-      > in main at UB-CMW1-bad.c:4:13
+      > in main at UB-CMW1-bad.c:4:2
 
     Undefined behavior (UB-CMW1):
         see C11 section 6.4.5:7 http://rvdoc.org/C11/6.4.5

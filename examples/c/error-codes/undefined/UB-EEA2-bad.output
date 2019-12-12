@@ -1,5 +1,5 @@
 Attempt to alias restrict qualified pointers associated with the same block:
-      > in f at UB-EEA2-bad.c:4:4
+      > in f at UB-EEA2-bad.c:4:2
         in main at UB-EEA2-bad.c:11:2
 
     Undefined behavior (UB-EEA2):

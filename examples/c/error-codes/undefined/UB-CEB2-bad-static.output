@@ -1,11 +1,4 @@
-UB-CEB2-bad-static.c:4:4: warning: expression result unused [-Wunused-value]
- 5 << -1;
- ~ ^  ~~
-UB-CEB2-bad-static.c:4:4: warning: shift count is negative [-Wshift-count-negative]
- 5 << -1;
-   ^  ~~
-2 warnings generated.
-UB-CEB2-bad-static.c:4:4: error: The right operand in a bitwise shift is negative.
+UB-CEB2-bad-static.c:4:2: error: The right operand in a bitwise shift is negative.
 
     Undefined behavior (UB-CEB2):
         see C11 section 6.5.7:3 http://rvdoc.org/C11/6.5.7
@@ -13,7 +6,7 @@ UB-CEB2-bad-static.c:4:4: error: The right operand in a bitwise shift is negativ
         see CERT-C section INT34-C http://rvdoc.org/CERT-C/INT34-C
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
-UB-CEB2-bad-static.c:4:4: error: Signed integer overflow.
+UB-CEB2-bad-static.c:4:2: error: Signed integer overflow.
 
     Undefined behavior (UB-CCV1):
         see C11 section 6.5:5 http://rvdoc.org/C11/6.5
@@ -21,7 +14,7 @@ UB-CEB2-bad-static.c:4:4: error: Signed integer overflow.
         see CERT-C section INT32-C http://rvdoc.org/CERT-C/INT32-C
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
-UB-CEB2-bad-static.c:4:4: error: Potential negative zero produced via bitwise operations, undefined under sign and magnitude or one's complement arithmetic, implementation-defined otherwise.
+UB-CEB2-bad-static.c:4:2: error: Potential negative zero produced via bitwise operations, undefined under sign and magnitude or one's complement arithmetic, implementation-defined otherwise.
 
     Implementation-dependent undefined behavior (IMPLUB-CEB12):
         see C11 section 6.2.6.2:4 http://rvdoc.org/C11/6.2.6.2

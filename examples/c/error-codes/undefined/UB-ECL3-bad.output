@@ -1,5 +1,5 @@
 An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer:
-      > in f at UB-ECL3-bad.c:5:10
+      > in f at UB-ECL3-bad.c:5:7
         in main at UB-ECL3-bad.c:11:7
 
     Undefined behavior (UB-ECL3):

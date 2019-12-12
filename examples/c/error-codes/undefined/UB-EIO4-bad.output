@@ -1,5 +1,5 @@
 Trying to modify an object declared with volatile type through a non-volatile lvalue:
-      > in main at UB-EIO4-bad.c:6:6
+      > in main at UB-EIO4-bad.c:6:3
 
     Undefined behavior (UB-EIO4):
         see C11 section 6.7.3:6 http://rvdoc.org/C11/6.7.3

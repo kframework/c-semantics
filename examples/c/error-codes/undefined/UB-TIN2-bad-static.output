@@ -1,4 +1,4 @@
-UB-TIN2-bad-static-link1.c:4:5: error: Multiple external definitions for a.
+UB-TIN2-bad-static-link1.c:4:1: error: Multiple external definitions for a.
 
     Undefined behavior (UB-TIN2):
         see C11 section 6.9:5 http://rvdoc.org/C11/6.9
