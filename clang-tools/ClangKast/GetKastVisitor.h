@@ -3492,7 +3492,8 @@ private:
 
   void Qualifier(const char * str) {
     if (cparser()) {
-      Kast::add(Kast::KApply("addQualifierStrict", Sort::KITEM, {Sort::QUALIFIER, Sort::TYPE}));
+      Kast::add(Kast::KApply("addMods", Sort::KITEM, {Sort::LIST, Sort::KITEM}));
+      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
     } else {
       Kast::add(Kast::KApply("Qualifier", Sort::ATYPE, {Sort::QUALIFIER, Sort::ATYPE}));
     }
