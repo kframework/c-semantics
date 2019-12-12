@@ -3474,11 +3474,11 @@ private:
     switch (sc) {
       case ThreadStorageClassSpecifier::TSCS_unspecified:
         return;
-      case ThreadStorageClassSpecifier::TSCS_thread_local:
-        if (cparser())
-          addStorage("ThreadLocal");
-        else
-          Specifier("ThreadLocal", Sort::STORAGECLASSSPECIFIER);
+      case ThreadStorageClassSpecifier::TSCS_thread_local: // C++11
+        Specifier("ThreadLocal", Sort::STORAGECLASSSPECIFIER);
+        break;
+      case ThreadStorageClassSpecifier::TSCS__Thread_local: // C11
+        addStorage("ThreadLocal");
         break;
       default:
         throw std::logic_error("unimplemented: thread storage class");
