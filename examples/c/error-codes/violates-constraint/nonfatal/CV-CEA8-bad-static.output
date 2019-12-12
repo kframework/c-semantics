@@ -1,4 +1,8 @@
-CV-CEA8-bad-static.c:6:3: error: Computing pointer minus integer of a pointer not to a complete object type.
+CV-CEA8-bad-static.c:6:4: warning: arithmetic on a pointer to void is a GNU extension [-Wpointer-arith]
+  y--;
+  ~^
+1 warning generated.
+CV-CEA8-bad-static.c:6:4: error: Computing pointer minus integer of a pointer not to a complete object type.
 
     Constraint violation (CV-CEA8):
         see C11 section 6.5.6:3 http://rvdoc.org/C11/6.5.6

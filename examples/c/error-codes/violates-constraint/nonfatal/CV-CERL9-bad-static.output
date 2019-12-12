@@ -1,4 +1,15 @@
-CV-CERL9-bad-static.c:6:3: error: Invalid operand types to !=.
+CV-CERL9-bad-static.c:6:5: warning: comparison of distinct pointer types ('int *' and 'float *') [-Wcompare-distinct-pointer-types]
+  y != b;
+  ~ ^  ~
+CV-CERL9-bad-static.c:6:5: warning: inequality comparison result unused [-Wunused-comparison]
+  y != b;
+  ~~^~~~
+CV-CERL9-bad-static.c:6:5: note: use '|=' to turn this inequality comparison into an or-assignment
+  y != b;
+    ^~
+    |=
+2 warnings generated.
+CV-CERL9-bad-static.c:6:5: error: Invalid operand types to !=.
 
     Constraint violation (CV-CERL9):
         see C11 section 6.5.9:2 http://rvdoc.org/C11/6.5.9

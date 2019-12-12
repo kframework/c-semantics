@@ -1,4 +1,8 @@
-CV-CDI4-bad-static.c:11:1: error: Attempting to initialize nonexistent member.
+CV-CDI4-bad-static.c:12:18: warning: excess elements in struct initializer
+  1, 2, 3, 4, 5, 6
+                 ^
+1 warning generated.
+CV-CDI4-bad-static.c:11:11: error: Attempting to initialize nonexistent member.
 
     Constraint violation (CV-CDI4):
         see C11 section 6.7.9:2 http://rvdoc.org/C11/6.7.9

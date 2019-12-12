@@ -1,7 +1,4 @@
-CV-CTI5-bad-static.c:8:1: error: Structs containing a flexible array member must not be array elements.
-
-    Constraint violation (CV-CTI5):
-        see C11 section 6.7.2.1:2 http://rvdoc.org/C11/6.7.2.1
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-CTI5-bad-static.c:8:13: warning: 'struct s' may not be used as an array element due to flexible array member [-Wflexible-array-extensions]
+struct s arr[5];
+            ^
+1 warning generated.

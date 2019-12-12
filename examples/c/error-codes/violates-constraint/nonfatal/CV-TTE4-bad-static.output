@@ -1,3 +1,7 @@
+CV-TTE4-bad-static.c:6:6: warning: C99 forbids conditional expressions with only one void side [-Wpedantic]
+ 5 ? (void)5 : (signed char)6;
+     ^~~~~~~
+1 warning generated.
 CV-TTE4-bad-static.c:6:2: error: if one of a conditional expression's branches has void type, the other must also have void type.
 
     Constraint violation (CV-TTE4):

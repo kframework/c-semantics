@@ -1,3 +1,7 @@
+CV-CERL5-bad-static.c:5:11: warning: ordered comparison between pointer and zero ('void *' and 'int') is an extension [-Wpedantic]
+ return x <= (1 < 1);
+        ~ ^  ~~~~~~~
+1 warning generated.
 CV-CERL5-bad-static.c:5:2: error: Incompatible types in relational expression.
 
     Constraint violation (CV-CERL5):

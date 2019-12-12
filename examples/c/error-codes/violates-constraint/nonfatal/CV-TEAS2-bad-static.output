@@ -1,4 +1,8 @@
-CV-TEAS2-bad-static.c:9:7: error: Incompatible pointer types in assignment.
+CV-TEAS2-bad-static.c:9:9: warning: incompatible function pointer types assigning to 'int (*)(double)' from 'int (*)(int)' [-Wincompatible-function-pointer-types]
+      x = &f;
+        ^ ~~
+1 warning generated.
+CV-TEAS2-bad-static.c:9:9: error: Incompatible pointer types in assignment.
 
     Constraint violation (CV-TEAS2):
         see C11 section 6.5.16.1:1 http://rvdoc.org/C11/6.5.16.1

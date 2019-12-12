@@ -1,28 +1,13 @@
-CV-TCANON4-bad-static.c:2:7: error: Declaration with no type specifiers.
-
-    Constraint violation (CV-TCANON4):
-        see C11 section 6.7.2:2 http://rvdoc.org/C11/6.7.2
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
-CV-TCANON4-bad-static.c:3:7: error: Declaration with no type specifiers.
-
-    Constraint violation (CV-TCANON4):
-        see C11 section 6.7.2:2 http://rvdoc.org/C11/6.7.2
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
-CV-TCANON4-bad-static.c:4:7: error: Declaration with no type specifiers.
-
-    Constraint violation (CV-TCANON4):
-        see C11 section 6.7.2:2 http://rvdoc.org/C11/6.7.2
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
-CV-TCANON4-bad-static.c:5:7: error: Declaration with no type specifiers.
-
-    Constraint violation (CV-TCANON4):
-        see C11 section 6.7.2:2 http://rvdoc.org/C11/6.7.2
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TCANON4-bad-static.c:2:13: warning: type specifier missing, defaults to 'int' [-Wimplicit-int]
+      const a = 1 << 0;
+      ~~~~~ ^
+CV-TCANON4-bad-static.c:3:16: warning: type specifier missing, defaults to 'int' [-Wimplicit-int]
+      register b = 1 << 1;
+      ~~~~~~~~ ^
+CV-TCANON4-bad-static.c:4:16: warning: type specifier missing, defaults to 'int' [-Wimplicit-int]
+      volatile c = 1 << 2;
+      ~~~~~~~~ ^
+CV-TCANON4-bad-static.c:5:15: warning: type specifier missing, defaults to 'int' [-Wimplicit-int]
+      _Atomic d = 1 << 3;
+      ~~~~~~~ ^
+4 warnings generated.
