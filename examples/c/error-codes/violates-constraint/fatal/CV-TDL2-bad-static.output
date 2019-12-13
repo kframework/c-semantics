@@ -1,8 +1,6 @@
-CV-TDL2-bad-static.c:4:2: error: Extern declaration of a appears at block scope with an initializer.
-
-    Constraint violation (CV-TDL2):
-        see C11 section 6.7.9:5 http://rvdoc.org/C11/6.7.9
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TDL2-bad-static.c:4:13: error: 'extern' variable cannot have an initializer
+ extern int a = 1;
+            ^
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-Eq7xn/pp-94bD3.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

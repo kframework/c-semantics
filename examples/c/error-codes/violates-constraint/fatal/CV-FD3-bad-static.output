@@ -1,8 +1,12 @@
-CV-FD3-bad-static.c:1:1: error: Incomplete parameter type in function definition.
-
-    Constraint violation (CV-FD3):
-        see C11 section 6.7.6.3:4 http://rvdoc.org/C11/6.7.6.3
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-FD3-bad-static.c:2:8: warning: declaration of 'struct foo' will not be visible outside of this function [-Wvisibility]
+struct foo x;
+       ^
+CV-FD3-bad-static.c:2:12: error: variable has incomplete type 'struct foo'
+struct foo x;
+           ^
+CV-FD3-bad-static.c:2:8: note: forward declaration of 'struct foo'
+struct foo x;
+       ^
+1 warning and 1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-CzDJj/pp-1K4vf.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

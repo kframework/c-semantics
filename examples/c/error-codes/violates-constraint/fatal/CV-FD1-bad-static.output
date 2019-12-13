@@ -1,8 +1,12 @@
-CV-FD1-bad-static.c:3:1: error: Duplicate parameters in function definition.
-
-    Constraint violation (CV-FD1):
-        see C11 section 6.7:3 http://rvdoc.org/C11/6.7
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-FD1-bad-static.c:3:10: error: redefinition of parameter 'x'
+int f(x, x)
+         ^
+CV-FD1-bad-static.c:4:14: error: parameter named 'y' is missing
+      int x, y;
+             ^
+CV-FD1-bad-static.c:10:20: warning: too many arguments in call to 'f'
+      return f(0, 0);
+             ~     ^
+1 warning and 2 errors generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-LkTON/pp-YlTKA.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

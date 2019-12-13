@@ -1,7 +1,9 @@
-CV-TCANON1-bad-static.c:3:1: error: Alignas attribute specifying an alignment less strict than would otherwise be required.
-
-    Constraint violation (CV-TCANON1):
-        see C11 section 6.7.5:4 http://rvdoc.org/C11/6.7.5
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TCANON1-bad-static.c:4:6: error: requested alignment is less than minimum alignment of 8 for type 'long long'
+     _Alignas
+     ^
+CV-TCANON1-bad-static.c:3:1: warning: declaration does not declare anything [-Wmissing-declarations]
+struct {
+^
+1 warning and 1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-mih5Z/pp-JTtuh.
+Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

@@ -1,0 +1,6 @@
+CV-CCV10-bad-static.c:8:7: error: used type 'struct str' where arithmetic or pointer type is required
+      (struct str)p;
+      ^           ~
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-ph2Mg/pp-BmcnM.
+Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

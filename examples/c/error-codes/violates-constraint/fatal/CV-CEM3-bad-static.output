@@ -1,8 +1,9 @@
-CV-CEM3-bad-static.c:14:2: error: Attempting to access member but it does not exist.
-
-    Constraint violation (CV-CEM3):
-        see C11 section 6.5.2.3:1 http://rvdoc.org/C11/6.5.2.3
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-CEM3-bad-static.c:14:5: error: no member named 'k' in 'struct v'
+ v1.k = 3;
+ ~~ ^
+CV-CEM3-bad-static.c:15:21: error: no member named 'k' in 'struct v'
+ printf("%ld\n", v1.k);
+                 ~~ ^
+2 errors generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-c9QyD/pp-l3zpK.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

@@ -1,8 +1,12 @@
-CV-EFC1-bad-static.c:8:3: error: Function call with incomplete or invalid return type.
-
-    Constraint violation (CV-EFC1):
-        see C11 section 6.5.2.2:2 http://rvdoc.org/C11/6.5.2.2
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-EFC1-bad-static.c:5:8: error: function cannot return array type 'arr' (aka 'int [5]')
+arr foo(void);
+       ^
+CV-EFC1-bad-static.c:13:8: error: function cannot return array type 'arr' (aka 'int [5]')
+arr foo(void) {
+       ^
+CV-EFC1-bad-static.c:14:10: warning: incompatible pointer to integer conversion returning 'int [5]' from a function with result type 'int' [-Wint-conversion]
+  return x;
+         ^
+1 warning and 2 errors generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-P5_bD/pp-xgiou.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

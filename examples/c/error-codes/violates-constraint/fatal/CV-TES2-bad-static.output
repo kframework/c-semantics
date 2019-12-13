@@ -1,8 +1,9 @@
-CV-TES2-bad-static.c:7:3: error: Trying to compute sizeof of an incomplete or function type.
-
-    Constraint violation (CV-TES2):
-        see C11 section 6.5.3.4:1 http://rvdoc.org/C11/6.5.3.4
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TES2-bad-static.c:7:17: error: invalid application of 'sizeof' to an incomplete type 'struct a'
+  size_t size = sizeof(struct a);
+                ^     ~~~~~~~~~~
+CV-TES2-bad-static.c:4:8: note: forward declaration of 'struct a'
+struct a;
+       ^
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-JqxBB/pp-_N0xl.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

@@ -1,0 +1,6 @@
+CV-CER2-bad-static.c:5:12: error: address of register variable requested
+  int *y = &x;
+           ^~
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-bcgT8/pp-GyUzT.
+Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

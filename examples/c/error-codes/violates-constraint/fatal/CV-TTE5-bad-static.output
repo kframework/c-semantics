@@ -1,8 +1,6 @@
-CV-TTE5-bad-static.c:12:2: error: if one of a conditional expression's branches has struct or union type, the other must have the same type.
-
-    Constraint violation (CV-TTE5):
-        see C11 section 6.5.15:3 http://rvdoc.org/C11/6.5.15
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TTE5-bad-static.c:12:4: error: incompatible operand types ('struct S1' and 'struct S2')
+ 5 ? s1 : s2;
+   ^ ~~   ~~
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-G4xJ3/pp-QnaLD.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

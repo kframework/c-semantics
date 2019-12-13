@@ -1,8 +1,9 @@
-CV-TDG13-bad-static.c:4:1: error: Redefinition of symbol: x.
-
-    Constraint violation (CV-TDG13):
-        see C11 section 6.9:3 http://rvdoc.org/C11/6.9
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TDG13-bad-static.c:4:5: error: redefinition of 'x'
+int x = 7;
+    ^
+CV-TDG13-bad-static.c:3:5: note: previous definition is here
+int x = 5;
+    ^
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-T3dlz/pp-2iSIk.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

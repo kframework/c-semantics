@@ -1,8 +1,9 @@
-CV-FD2-bad-static.c:7:1: error: Invalid return type in function definition.
-
-    Constraint violation (CV-FD2):
-        see C11 section 6.7.6.3:1 http://rvdoc.org/C11/6.7.6.3
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-FD2-bad-static.c:7:8: error: function cannot return array type 'arr' (aka 'int [5]')
+arr foo() {
+       ^
+CV-FD2-bad-static.c:8:10: warning: incompatible pointer to integer conversion returning 'int [5]' from a function with result type 'int' [-Wint-conversion]
+  return x;
+         ^
+1 warning and 1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-lvrAI/pp-4P2zj.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

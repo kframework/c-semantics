@@ -1,8 +1,9 @@
-CV-TDG15-bad-static.c:7:1: error: Redefinition of a struct, union, or enum: foo.
-
-    Constraint violation (CV-TDG15):
-        see C11 section 6.7.2.3:1 http://rvdoc.org/C11/6.7.2.3
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TDG15-bad-static.c:7:8: error: redefinition of 'foo'
+struct foo {
+       ^
+CV-TDG15-bad-static.c:3:8: note: previous definition is here
+struct foo {
+       ^
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-ijhWn/pp-7AVRC.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

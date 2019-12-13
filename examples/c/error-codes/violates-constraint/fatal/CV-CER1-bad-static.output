@@ -1,8 +1,6 @@
-CV-CER1-bad-static.c:16:2: error: Unary '&' operator applied to non-lvalue.
-
-    Constraint violation (CV-CER1):
-        see C11 section 6.5.3.2:1 http://rvdoc.org/C11/6.5.3.2
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-CER1-bad-static.c:16:2: error: cannot take the address of an rvalue of type 'struct node *'
+ &(f().p);
+ ^ ~~~~~
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-WpofP/pp-UUI43.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

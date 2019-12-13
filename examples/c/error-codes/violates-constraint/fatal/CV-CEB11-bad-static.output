@@ -1,8 +1,6 @@
-CV-CEB11-bad-static.c:5:3: error: Both bitwise inclusive OR operands must have integer type.
-
-    Constraint violation (CV-CEB11):
-        see C11 section 6.5.12:2 http://rvdoc.org/C11/6.5.12
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-CEB11-bad-static.c:5:12: error: invalid operands to binary expression ('int' and 'double')
+  return x | 0.0;
+         ~ ^ ~~~
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-q5RSg/pp-4pem1.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

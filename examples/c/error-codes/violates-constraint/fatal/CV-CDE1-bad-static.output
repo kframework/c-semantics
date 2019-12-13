@@ -1,7 +1,6 @@
-CV-CDE1-bad-static.c:3:1: error: Enum initializer not an integer constant expression.
-
-    Constraint violation (CV-CDE1):
-        see C11 section 6.7.2.2:2 http://rvdoc.org/C11/6.7.2.2
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-CDE1-bad-static.c:3:13: error: expression is not an integer constant expression
+enum e {a = 5.5};
+            ^~~
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-sTnxa/pp-CDTXD.
+Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

@@ -1,8 +1,9 @@
-CV-TDL3-bad-static.c:6:7: error: Extern declaration of x with incompatible type.
-
-    Constraint violation (CV-TDL3):
-        see C11 section 6.7:4 http://rvdoc.org/C11/6.7
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TDL3-bad-static.c:6:14: error: redeclaration has different alignment requirement (4 vs 8)
+      extern _Alignas(4) int x;
+             ^
+CV-TDL3-bad-static.c:3:1: note: previous declaration is here
+_Alignas(8) int x = 42;
+^
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-spn4K/pp-9yylP.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

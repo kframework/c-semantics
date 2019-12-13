@@ -1,0 +1,6 @@
+CV-CER5-bad-static.c:3:7: error: address of bit-field requested
+      &t.m;
+      ^~~~
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-ivT7u/pp-I9OPs.
+Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

@@ -1,7 +1,6 @@
-CV-CDT5-bad-static.c:1:1: error: Declaration for zero-length bit-field b has a declarator.
-
-    Constraint violation (CV-CDT5):
-        see C11 section 6.7.2.1:4 http://rvdoc.org/C11/6.7.2.1
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-CDT5-bad-static.c:3:18: error: named bit-field 'b' has zero width
+      signed int b : 0;
+                 ^
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-a0Axw/pp-sZ0n7.
+Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

@@ -1,0 +1,6 @@
+CV-CCV9-bad-static.c:6:10: error: pointer cannot be cast to type 'double'
+ (double)p;
+         ^
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-d8V9y/pp-dhYlj.
+Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

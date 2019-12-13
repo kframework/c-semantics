@@ -1,8 +1,9 @@
-CV-TAL1-bad-static.c:7:3: error: Trying to compute alignof of a type that is incomplete or a function type.
-
-    Constraint violation (CV-TAL1):
-        see C11 section 6.5.3.4:1 http://rvdoc.org/C11/6.5.3.4
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TAL1-bad-static.c:7:9: error: invalid application of 'alignof' to an incomplete type 'struct foo'
+        _Alignof
+        ^
+CV-TAL1-bad-static.c:4:8: note: forward declaration of 'struct foo'
+struct foo;
+       ^
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-Pckxu/pp-5LBab.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

@@ -1,8 +1,9 @@
-CV-TDL1-bad-static.c:5:2: error: Extern declaration of a follows one with no linkage.
-
-    Constraint violation (CV-TDL1):
-        see C11 section 6.7:3 http://rvdoc.org/C11/6.7
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TDL1-bad-static.c:5:13: error: extern declaration of 'a' follows non-extern declaration
+ extern int a;
+            ^
+CV-TDL1-bad-static.c:4:6: note: previous definition is here
+ int a;
+     ^
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-1_AY5/pp-edzt4.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

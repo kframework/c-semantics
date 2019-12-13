@@ -1,8 +1,9 @@
-CV-TEAS6-bad-static.c:8:2: error: Trying to write through a const lvalue.
-
-    Constraint violation (CV-TEAS6):
-        see C11 section 6.5.16:2 http://rvdoc.org/C11/6.5.16
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TEAS6-bad-static.c:8:4: error: cannot assign to variable 'x' with const-qualified type 'const int'
+ x = 5;
+ ~ ^
+CV-TEAS6-bad-static.c:7:12: note: variable 'x' declared const here
+ const int x = 0;
+ ~~~~~~~~~~^~~~~
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-NzZmt/pp-xFOmj.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

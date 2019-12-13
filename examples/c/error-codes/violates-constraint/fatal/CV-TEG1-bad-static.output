@@ -1,7 +1,9 @@
-CV-TEG1-bad-static.c:2:7: error: Generic selection with a controlling expression compatible with multiple types in the association list.
-
-    Constraint violation (CV-TEG1):
-        see C11 section 6.5.1.1:2 http://rvdoc.org/C11/6.5.1.1
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TEG1-bad-static.c:2:67: error: type 'int' in generic association compatible with previously specified type 'int'
+      return _Generic( 'a', char: 1, int: 2, long: 3, default: 0, signed int: 4) != 2;
+                                                                  ^~~~~~~~~~
+CV-TEG1-bad-static.c:2:38: note: compatible type 'int' specified here
+      return _Generic( 'a', char: 1, int: 2, long: 3, default: 0, signed int: 4) != 2;
+                                     ^~~
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-oWFqv/pp-HpvDE.
+Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

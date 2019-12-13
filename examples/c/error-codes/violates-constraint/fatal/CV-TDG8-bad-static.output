@@ -1,8 +1,9 @@
-CV-TDG8-bad-static.c:6:2: error: Declaration has initializer but incomplete type.
-
-    Constraint violation (CV-TDG8):
-        see C11 section 6.7.9:3 http://rvdoc.org/C11/6.7.9
-        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-
+CV-TDG8-bad-static.c:6:11: error: variable has incomplete type 'struct s'
+ struct s s1 = s0;
+          ^
+CV-TDG8-bad-static.c:3:8: note: forward declaration of 'struct s'
+struct s s0;
+       ^
+1 error generated.
+Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-yDT9N/pp-2gaHf.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
