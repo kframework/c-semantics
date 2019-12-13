@@ -2,5 +2,4 @@ CV-CTI3-bad-static.c:4:10: error: expression is not an integer constant expressi
  int s : 5.5;
          ^~~
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-LvfPZ/pp-FovpI.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

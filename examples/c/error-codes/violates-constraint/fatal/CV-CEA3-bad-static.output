@@ -2,5 +2,4 @@ CV-CEA3-bad-static.c:6:11: error: invalid operands to binary expression ('void' 
       f() + 1;
       ~~~ ^ ~
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-VUS_O/pp-9cGXa.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

@@ -2,5 +2,4 @@ CV-TSE3-bad-static.c:7:9: error: initializer element is not a compile-time const
 int x = f();
         ^~~
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-qBZ1H/pp-YmlG0.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

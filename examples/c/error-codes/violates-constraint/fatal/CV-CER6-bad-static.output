@@ -6,5 +6,4 @@ CV-CER6-bad-static.c:6:10: error: cannot take the address of an rvalue of type '
  int c = &a->b;
          ^~~~~
 2 errors generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-Xy93X/pp-MtPap.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

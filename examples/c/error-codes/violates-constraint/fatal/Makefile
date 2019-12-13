@@ -24,6 +24,7 @@ comparison: ${TEST_COMPARISON}
 	@echo -n "Compiling $<... "
 	@$(KCC) $(KCCFLAGS) $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE_FATAL}
 	@sed -i "/kcc -d/d" $@
+	@sed -i "/Error while/d" $@
 
 %-bad.kcc: %-bad.c
 	@echo -n "Compiling $<... "

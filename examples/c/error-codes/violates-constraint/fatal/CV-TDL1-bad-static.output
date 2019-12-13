@@ -5,5 +5,4 @@ CV-TDL1-bad-static.c:4:6: note: previous definition is here
  int a;
      ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-1_AY5/pp-edzt4.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

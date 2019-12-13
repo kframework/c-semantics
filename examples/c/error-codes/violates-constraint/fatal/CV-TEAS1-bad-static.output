@@ -2,5 +2,4 @@ CV-TEAS1-bad-static.c:10:10: error: assigning to 'struct s' from incompatible ty
       s0 = 1;
          ^ ~
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-gCrxa/pp-YsKDZ.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

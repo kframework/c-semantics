@@ -8,5 +8,4 @@ CV-EFC1-bad-static.c:14:10: warning: incompatible pointer to integer conversion 
   return x;
          ^
 1 warning and 2 errors generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-P5_bD/pp-xgiou.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

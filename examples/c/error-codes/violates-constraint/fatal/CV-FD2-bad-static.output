@@ -5,5 +5,4 @@ CV-FD2-bad-static.c:8:10: warning: incompatible pointer to integer conversion re
   return x;
          ^
 1 warning and 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-lvrAI/pp-4P2zj.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

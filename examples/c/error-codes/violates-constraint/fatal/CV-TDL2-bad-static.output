@@ -2,5 +2,4 @@ CV-TDL2-bad-static.c:4:13: error: 'extern' variable cannot have an initializer
  extern int a = 1;
             ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-Eq7xn/pp-94bD3.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

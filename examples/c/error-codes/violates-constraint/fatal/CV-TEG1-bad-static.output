@@ -5,5 +5,4 @@ CV-TEG1-bad-static.c:2:38: note: compatible type 'int' specified here
       return _Generic( 'a', char: 1, int: 2, long: 3, default: 0, signed int: 4) != 2;
                                      ^~~
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-oWFqv/pp-HpvDE.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

@@ -5,5 +5,4 @@ CV-CEM3-bad-static.c:15:21: error: no member named 'k' in 'struct v'
  printf("%ld\n", v1.k);
                  ~~ ^
 2 errors generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-c9QyD/pp-l3zpK.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

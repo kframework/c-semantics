@@ -5,5 +5,4 @@ CV-CDT3-bad-static.c:1:8: note: definition of 'struct s' is not complete until t
 struct s { struct s x; };
        ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-HHelt/pp-fvL4A.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

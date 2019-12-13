@@ -2,5 +2,4 @@ CV-SSA1-bad-static.c:7:16: error: static_assert expression is not an integral co
               (x == 5, "x should be five");
                ^~~~~~
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-euFuX/pp-kQegB.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

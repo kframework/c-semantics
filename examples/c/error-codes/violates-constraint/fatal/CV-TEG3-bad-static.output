@@ -5,5 +5,4 @@ CV-TEG3-bad-static.c:2:64: note: previous default generic association is here
       return _Generic( (unsigned long) 1 + 2, int: 2, long: 3, default: 0, default: 0) != 0;
                                                                ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-hkPGL/pp-lChSq.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

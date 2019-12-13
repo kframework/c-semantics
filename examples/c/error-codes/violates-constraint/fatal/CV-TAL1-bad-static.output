@@ -5,5 +5,4 @@ CV-TAL1-bad-static.c:4:8: note: forward declaration of 'struct foo'
 struct foo;
        ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-Pckxu/pp-5LBab.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

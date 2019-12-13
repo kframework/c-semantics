@@ -5,5 +5,4 @@ CV-TDG8-bad-static.c:3:8: note: forward declaration of 'struct s'
 struct s s0;
        ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-yDT9N/pp-2gaHf.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

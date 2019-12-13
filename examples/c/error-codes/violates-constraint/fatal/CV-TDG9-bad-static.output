@@ -2,5 +2,4 @@ CV-TDG9-bad-static.c:4:5: error: variable length array declaration not allowed a
 int y[x];
     ^ ~
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-jcBg2/pp-elkaq.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

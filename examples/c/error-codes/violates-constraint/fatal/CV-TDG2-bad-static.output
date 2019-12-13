@@ -2,5 +2,4 @@ CV-TDG2-bad-static.c:3:8: error: cannot combine with previous 'extern' declarati
 extern static int x;
        ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-X8GNh/pp-cZV_U.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

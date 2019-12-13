@@ -2,5 +2,4 @@ CV-TTE5-bad-static.c:12:4: error: incompatible operand types ('struct S1' and 's
  5 ? s1 : s2;
    ^ ~~   ~~
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-G4xJ3/pp-QnaLD.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

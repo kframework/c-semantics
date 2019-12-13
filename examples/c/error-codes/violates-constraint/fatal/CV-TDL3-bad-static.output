@@ -5,5 +5,4 @@ CV-TDL3-bad-static.c:3:1: note: previous declaration is here
 _Alignas(8) int x = 42;
 ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-spn4K/pp-9yylP.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

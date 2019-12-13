@@ -5,5 +5,4 @@ CV-TDG13-bad-static.c:3:5: note: previous definition is here
 int x = 5;
     ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-T3dlz/pp-2iSIk.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

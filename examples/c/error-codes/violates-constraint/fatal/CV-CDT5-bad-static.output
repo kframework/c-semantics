@@ -2,5 +2,4 @@ CV-CDT5-bad-static.c:3:18: error: named bit-field 'b' has zero width
       signed int b : 0;
                  ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-a0Axw/pp-sZ0n7.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

@@ -5,5 +5,4 @@ CV-TDG15-bad-static.c:3:8: note: previous definition is here
 struct foo {
        ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-ijhWn/pp-7AVRC.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

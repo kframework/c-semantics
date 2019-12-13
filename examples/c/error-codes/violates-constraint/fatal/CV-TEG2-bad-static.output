@@ -2,5 +2,4 @@ CV-TEG2-bad-static.c:2:24: error: controlling expression type 'char' not compati
       return _Generic( (char)'a', int: 2, long: 3) != 0;
                        ^~~~~~~~~
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-1Bo8V/pp-2fpaM.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

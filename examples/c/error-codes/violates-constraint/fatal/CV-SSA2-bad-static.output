@@ -2,5 +2,4 @@ CV-SSA2-bad-static.c:3:1: error: static_assert failed due to requirement '50 - 5
 _Static_assert(50 - 50, "fifty minus fifty must be 0");
 ^              ~~~~~~~
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-m9bu2/pp-GNMNy.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

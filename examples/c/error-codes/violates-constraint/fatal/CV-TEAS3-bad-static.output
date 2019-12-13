@@ -2,5 +2,4 @@ CV-TEAS3-bad-static.c:4:5: error: expression is not assignable
  42 = 42;
  ~~ ^
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-y6CEd/pp-dOL2e.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:

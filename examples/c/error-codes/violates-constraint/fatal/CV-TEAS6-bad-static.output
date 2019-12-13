@@ -5,5 +5,4 @@ CV-TEAS6-bad-static.c:7:12: note: variable 'x' declared const here
  const int x = 0;
  ~~~~~~~~~~^~~~~
 1 error generated.
-Error while processing /home/jtusil/projects/rv-match/rv-match/c-semantics/examples/c/error-codes/violates-constraint/fatal/.tmp-kcc-NzZmt/pp-xFOmj.
 Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
