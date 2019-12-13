@@ -1,10 +1,13 @@
+UB-CDT2-bad-static.c:3:1: warning: empty union is a GNU extension [-Wgnu-empty-struct]
+union e {
+^
 UB-CDT2-bad-static.c:19:11: warning: expression result unused [-Wunused-value]
       s.z.u2;
       ~~~ ^~
 UB-CDT2-bad-static.c:20:11: warning: expression result unused [-Wunused-value]
       s.z.u1;
       ~~~ ^~
-2 warnings generated.
+3 warnings generated.
 UB-CDT2-bad-static.c:3:7: error: Unions must contain a named member.
 
     Undefined behavior (UB-CDT2):
