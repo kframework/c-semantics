@@ -1173,10 +1173,11 @@ public:
       return 0;
 
     Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
-    SpecifierItem();
+
     if (RecordDecl * rd = dyn_cast<RecordDecl>(nrf->nested_tagtype)) {
       TRY_TO(TraverseRecordDecl(rd, true));
     } else {
+      SpecifierItem();
       TRY_TO(TraverseDecl(nrf->nested_tagtype));
     }
     strictlist();
@@ -1203,6 +1204,19 @@ public:
     if (!cparser())
       return true;
 
+    if (!isUsed)
+      Kast::add(Kast::KApply("OnlyTypedef", Sort::KITEM, {Sort::KITEM}));
+
+    Kast::add(Kast::KApply("Specifier", Sort::SPECIFIER, {Sort::STRICTLIST}));
+    strictlist();
+    bool const isPacked = hasAttrPacked(D);
+
+    // _List_(ListItem(StructDef(...)),ListItem(packed))
+    if (isPacked)
+      Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
+
+    Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+
     if (D->isCompleteDefinition()) {
       if (D->isStruct())
         Kast::add(Kast::KApply("StructDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
@@ -1211,8 +1225,6 @@ public:
       else
         throw std::logic_error("A record that is not a structure or union");
     } else {
-      if (!isUsed)
-        Kast::add(Kast::KApply("OnlyTypedef", Sort::KITEM, {Sort::KITEM}));
       if (D->isStruct())
         Kast::add(Kast::KApply("StructRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
       else if (D->isUnion())
@@ -1251,14 +1263,16 @@ public:
       TRY_TO(TraverseDecl(d));
     }
     emptyList();
+    emptyStrictList();
 
     // __attribute__((packed))
-    strictlist();
-    if (!hasAttrPacked(D))
-      Kast::add(Kast::KApply(".List", Sort::LIST));
-    else {
+    if (isPacked) {
       Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-      Kast::add(Kast::KApply("Packed", Sort::MODIFIER));
+      Kast::add(Kast::KApply("Attribute", Sort::KITEM, {Sort::STRING, Sort::STRICTLIST}));
+      Kast::add(Kast::KToken("__attribute__"));
+      strictlist();
+      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+      Identifier("packed");
     }
 
     return true;
@@ -1808,8 +1822,6 @@ std::string ifc(std::string c, std::string cpp) {
         return true;
       }
 
-      SpecifierItem();
-
       // This is for sizeof(struct {int x;})
       // since there is no visible AST node fore the struct definition.
       // But for sizeof(struct S{int x;}) + sizeof(struct S);
@@ -1817,9 +1829,18 @@ std::string ifc(std::string c, std::string cpp) {
       // that is what `invisibleTagDecls` is for.
       if (!declIsInAst(td) && invisibleTagDecls.count(td) == 0) {
         invisibleTagDecls.insert(td);
-        TraverseDecl(td);
+        if(RecordDecl *RD = dyn_cast<RecordDecl>(td))
+          TraverseRecordDecl(RD, true);
+        else if (isa<EnumDecl>(td)) {
+          SpecifierItem();
+          TraverseDecl(td);
+        } else
+          TraverseDecl(td);
         return true;
       }
+
+      SpecifierItem();
+
       switch(T->getKeyword()) {
         case ETK_Enum:
           Kast::add(Kast::KApply("EnumRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
