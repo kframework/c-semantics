@@ -1,4 +1,3 @@
-#include <stdlib.h>
 typedef union
 {
   int __lock;
