@@ -7,9 +7,6 @@ module C-EXPR-SEQUENCING
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule BinaryComma(E1::KItem, E2::KItem)
-          => Comma(list(ListItem(E1) ListItem(E2)))
-
      syntax KItem ::= commaListHolder(K)
      rule Comma(list(ListItem(K:KItem) L:List))
           => toRVal(K) ~> comma ~> commaListHolder(.K) ~> Comma(list(L))

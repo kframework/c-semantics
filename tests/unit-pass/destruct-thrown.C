@@ -7,14 +7,9 @@ struct E {
 	E(E const &){puts("E(E const &)");}
 };
 
-int bad(){throw 5;}
-
 int main() {
 	try {
 		throw E();
 	} catch(E const &e) {}
 	puts("---");
-	try {
-		throw bad();
-	} catch(...){}
 }

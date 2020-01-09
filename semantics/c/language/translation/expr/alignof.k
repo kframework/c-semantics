@@ -11,11 +11,6 @@ module C-EXPR-ALIGNOF
      imports C-TYPING-SYNTAX
 
      rule (.K => typeof(E)) ~> AlignofExpression(E:KItem)
-          requires notBool isLocation(E)
-
-     rule (.K => Loc) ~>
-          AlignofExpression(CodeLoc(E:KItem, Loc:CabsLoc) => E)
-
      rule typeof(T:Type) ~> AlignofExpression(_) => alignofType(T)
      rule AlignofType(T:Type, K:KItem) => alignofType(DeclType(T, K))
 

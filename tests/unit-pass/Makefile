@@ -5,23 +5,7 @@ Makefile: $(ROOT)/../check-results.mk ;
 include $(ROOT)/../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
-NO_CLANG_PARSER := \
-	./float128.c \
-	./j042.c \
-	./j078.c \
-	./offsetof-1.c \
-	./20051012-1.c \
-	./931110-1.c \
-	./bf-layout-1.c \
-	./bf-sign-1.c \
-	./bitfld-4.c \
-	./j055.c \
-	./pr19689.c \
-	./pr38422.c \
-	./struct-ini-2.c \
-	./zero-bit-field.c \
-	./930630-1.c \
-	./bitfld-1.c
+EXCLUDES :=
 OS_STDIO_EXCLUDES := $(wildcard ./stdio-*.c)
 OS_EXCLUDES := $(OS_STDIO_EXCLUDES) \
                ./pthreads-starve.c \
@@ -58,7 +42,6 @@ KXX := $(ROOT)/../../dist/k++
 
 LDFLAGS := -pthread
 
-parser_selection = $(if $(filter $(1),$(NO_CLANG_PARSER)),--use-ocaml-cparser,)
 
 .PRECIOUS: %.kcc %.out
 
@@ -104,7 +87,7 @@ zeroinit-class-padding.C.cmp:
 
 %.c.kcc: %.c
 	@echo -n "Compiling $<... "
-	@$(KCC) -fno-native-compilation $(call parser_selection,./$<) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(KCC) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.kcc: %.C
 	@echo -n "Compiling $<... "
 	@$(KXX) -fno-native-compilation -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}

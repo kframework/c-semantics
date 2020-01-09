@@ -9,7 +9,7 @@ char* strncpy(char* restrict dest, const char* restrict src, size_t n) {
             if (!n--) {
                   return ret;
             }
-      } while ((*dest++ = *src++));
+      } while (*dest++ = *src++);
       while (n--) {
             *dest++ = 0;
       }

@@ -1,8 +1,8 @@
 #include <stdlib.h>
 typedef struct
 {
-  short s;// __attribute__ ((aligned(2), packed));
-  double d;// __attribute__ ((aligned(2), packed));
+  short s __attribute__ ((aligned(2), packed));
+  double d __attribute__ ((aligned(2), packed));
 } TRIAL;
 
 int

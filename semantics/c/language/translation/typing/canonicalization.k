@@ -62,10 +62,6 @@ module C-TYPING-CANONICALIZATION
                _::List (.List => ListItem(S)))
           requires notBool isTypeSpecifier(S)
                andBool notBool isReducibleSpecifier(S)
-               andBool notBool isLocation(S)
-          [structural]
-     rule (.K => Loc) ~>
-           canonicalizeType'(_::List ListItem(CodeLoc(S::KItem, Loc::CabsLoc) => S), _, _)
           [structural]
      // Canonicalize the specifiers then add the modifiers.
      rule canonicalizeType'(.List, Specs::List, Mods::List)

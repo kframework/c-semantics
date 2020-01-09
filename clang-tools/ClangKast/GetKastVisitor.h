@@ -4,10 +4,8 @@
 #include <unistd.h>
 
 #include "clang/AST/ASTContext.h"
-#include "clang/AST/Expr.h"
 #include "clang/AST/Mangle.h"
 #include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/AST/Type.h"
 
 #include "ClangKast.h"
 
@@ -25,26 +23,6 @@ using namespace clang::tooling;
     if (!getDerived().CALL_EXPR)                                              \
       return true;                                                            \
     } while (0)
-
-
-  bool declIsInAst(TagDecl *decl) {
-    struct DeclFinderVisitor : public RecursiveASTVisitor<DeclFinderVisitor> {
-        TagDecl *decl;
-        bool found = false;
-
-        explicit DeclFinderVisitor(TagDecl *decl)
-                : decl(decl) {}
-
-        bool VisitTagDecl(TagDecl *D) {
-          if (D == decl)
-            found = true;
-          return true;
-        }
-    };
-    DeclFinderVisitor dfv{decl};
-    dfv.TraverseDecl(decl->getASTContext().getTranslationUnitDecl());
-    return dfv.found;
-  }
 
 class GetKastVisitor
   : public RecursiveASTVisitor<GetKastVisitor> {
@@ -78,40 +56,17 @@ public:
     return TraverseType(TL.getType());
   }
 
-  void checkExpressionStatement(Stmt *S) {
-    if (!cparser())
-      return;
-
-    if (isa<Expr>(S))
-      Kast::add(Kast::KApply("Computation", Sort::KITEM, {Sort::K}));
-  }
-
   bool TraverseStmt(Stmt *S) {
     if (!S)
       return RecursiveASTVisitor::TraverseStmt(S);
 
     if (Expr *E = dyn_cast<Expr>(S)) {
       if (!dyn_cast<CXXDefaultArgExpr>(S)) {
-        addExprLoc(E);
+        Kast::add(Kast::KApply("ExprLoc", Sort::EXPRLOC, {Sort::CABSLOC, Sort::EXPR}));
+        CabsLoc(E->getExprLoc());
       }
     }
     return RecursiveASTVisitor::TraverseStmt(S);
-  }
-
-  void addExprLoc(const Expr *E) {
-    // prevent problems in `figureInit`
-    if (isa<StringLiteral>(E))
-      return;
-
-    if (noLocation())
-      return;
-
-    if (cparser()) {
-      Kast::add(Kast::KApply("StatementLoc", Sort::KITEM, {Sort::CABSLOC, Sort::KITEM}));
-    } else {
-      Kast::add(Kast::KApply("ExprLoc", Sort::EXPRLOC, {Sort::CABSLOC, Sort::EXPR}));
-    }
-    CabsLoc(E->getExprLoc());
   }
 
   // copied from RecursiveASTVisitor.h with a change made: D->isImplicit() -> excludedDecl(D)
@@ -122,16 +77,8 @@ public:
     if (excludedDecl(D))
       return true;
 
-    if (!noLocation()) {
-      // For TranslationUnit, getLocation() is empty.
-      if (D->getKind() != Decl::TranslationUnit) {
-        if (cparser())
-          Kast::add(Kast::KApply("DefinitionLoc", Sort::KITEM, {Sort::CABSLOC, Sort::KITEM}));
-        else
-          Kast::add(Kast::KApply("DeclLoc", Sort::DECL, {Sort::CABSLOC, Sort::DECL}));
-        CabsLoc(D->getLocation());
-      }
-    }
+    Kast::add(Kast::KApply("DeclLoc", Sort::DECL, {Sort::CABSLOC, Sort::DECL}));
+    CabsLoc(D->getLocation());
 
     switch (D->getKind()) {
 #define ABSTRACT_DECL(DECL)
@@ -141,8 +88,6 @@ public:
           return false;                                                            \
         break;
 #include "clang/AST/DeclNodes.inc"
-#undef DECL
-#undef ABSTRACT_DECL
     }
 
     return true;
@@ -205,10 +150,6 @@ public:
     return false;
   }
 
-  static void strictlist() {
-    Kast::add(Kast::KApply("list", Sort::STRICTLIST, {Sort::LIST}));
-  }
-
   bool TraverseDeclContextNode(DeclContext *D) {
     for (clang::Decl * d : D->decls()) {
       if (!excludedDecl(d)) TRY_TO(TraverseDecl(d));
@@ -216,41 +157,16 @@ public:
     return true;
   }
 
-  void emptyList() {
-    Kast::add(Kast::KApply(".List", Sort::LIST));
-  }
-
-  void emptyStrictList(){
-    strictlist();
-    emptyList();
-  }
-
   bool VisitTranslationUnitDecl(TranslationUnitDecl *D) {
-    if (cparser())
-      Kast::add(Kast::KApply("TranslationUnit", Sort::KITEM, {Sort::STRING, Sort::STRICTLIST, Sort::STRICTLIST}));
-    else
-      Kast::add(Kast::KApply("TranslationUnit", Sort::DECL, {Sort::STRING, Sort::LIST}));
-
+    Kast::add(Kast::KApply("TranslationUnit", Sort::DECL, {Sort::STRING, Sort::LIST}));
     Kast::add(Kast::KToken(InFile));
-    if (cparser())
-      emptyStrictList();
-
-    if (cparser())
-      strictlist();
     DeclContext(D);
     return false;
   }
 
   bool VisitTypedefDecl(TypedefDecl *D) {
-    if (cparser()) {
-      Kast::add(Kast::KApply("defineType", Sort::KITEM, {Sort::KITEM}));
-      Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::KITEM}));
-    } else {
-      Kast::add(Kast::KApply("TypedefDecl", Sort::DECL, {Sort::CID, Sort::ATYPE}));
-    }
+    Kast::add(Kast::KApply("TypedefDecl", Sort::DECL, {Sort::CID, Sort::ATYPE}));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
-    if (cparser())
-      Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
     return false;
   }
 
@@ -293,13 +209,6 @@ public:
     TRY_TO(TraverseDeclarationAsName(D->getNamespace()));
     TRY_TO(TraverseNestedNameSpecifier(D->getQualifier()));
     return false;
-  }
-
-  bool TraverseDeclRefExpr(DeclRefExpr * S) {
-    if (cparser())
-      return TraverseDeclarationNameInfo(S->getNameInfo());
-
-    return RecursiveASTVisitor::TraverseDeclRefExpr(S);
   }
 
   bool TraverseNestedNameSpecifierLoc(NestedNameSpecifierLoc NNS) {
@@ -432,35 +341,7 @@ public:
     return true;
   }
 
-  bool TraverseFunctionHelper(FunctionDecl *D){
-    return cparser()? TraverseFunctionHelper_c(D) : TraverseFunctionHelper_cpp(D);
-  }
-
-  bool TraverseFunctionHelper_c(FunctionDecl *D){
-    if (D->isThisDeclarationADefinition()) {
-      Kast::add(Kast::KApply("FunctionDefinition", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
-
-      Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
-      TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
-      Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
-      StorageClass(D->getStorageClass());
-      TraverseFunctionDeclParams(D);
-      TRY_TO(TraverseStmt(D->getBody()));
-      return true;
-    }
-
-    // declaration
-    Kast::add(Kast::KApply("declare", Sort::KITEM, {Sort::KITEM, Sort::K}));
-    Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::KITEM}));
-    TRY_TO(TraverseDeclarationName(D->getDeclName()));
-    Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
-    StorageClass(D->getStorageClass());
-    TraverseFunctionDeclParams(D);
-    Kast::add(Kast::KApply("NoInit", Sort::INIT));
-    return true;
-  }
-
-  bool TraverseFunctionHelper_cpp(FunctionDecl *D) {
+  bool TraverseFunctionHelper(FunctionDecl *D) {
     if (const FunctionTemplateSpecializationInfo *FTSI =
             D->getTemplateSpecializationInfo()) {
       if (FTSI->getTemplateSpecializationKind() == TSK_ExplicitSpecialization) {
@@ -507,7 +388,6 @@ public:
     if (D->isInlineSpecified()) {
       Specifier("Inline", Sort::FUNCTIONSPECIFIER);
     }
-
     if (D->isConstexpr()) {
       Specifier("Constexpr", Sort::SPECIFIER);
     }
@@ -517,6 +397,7 @@ public:
     } else {
       Kast::add(Kast::KApply("FunctionDecl", Sort::DECLARATOR, {Sort::NNS, Sort::CID, Sort::CID, Sort::ATYPE, Sort::LIST}));
     }
+
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
 
@@ -618,33 +499,6 @@ public:
   }
 
   bool TraverseVarHelper(VarDecl *D) {
-    return cparser()? TraverseVarHelper_c(D) : TraverseVarHelper_cpp(D);
-  }
-
-  static bool isEmpty(std::unique_ptr<Kast::Node> const &p) {
-    return !p;
-  }
-
-  bool TraverseVarHelper_c(VarDecl *D) {
-    Kast::add(Kast::KApply("declare", Sort::KITEM, {Sort::KITEM, Sort::K}));
-    Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::KITEM}));
-    TRY_TO(TraverseDeclarationName(D->getDeclName()));
-    Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
-    StorageClass(D->getStorageClass());
-    ThreadStorageClass(D->getTSCSpec());
-    addAlignment(D);
-    TRY_TO(TraverseType(D->getType()));
-    if (D->getInit()) {
-      if (!isa<InitListExpr>(D->getInit()))
-        Kast::add(Kast::KApply("SingleInit", Sort::KITEM, {Sort::KITEM}));
-      TRY_TO(TraverseStmt(D->getInit()));
-    } else {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
-    }
-    return true;
-  }
-
-  bool TraverseVarHelper_cpp(VarDecl *D) {
     StorageClass(D->getStorageClass());
     ThreadStorageClass(D->getTSCSpec());
     if (D->isConstexpr()) {
@@ -675,69 +529,6 @@ public:
   }
 
   bool TraverseFieldDecl(FieldDecl *D) {
-    return cparser()? TraverseFieldDecl_c(D) : TraverseFieldDecl_cpp(D);
-  }
-
-  AlignedAttr * getAlignment(const Decl *D) {
-    for (Attr *a : D->attrs()) {
-      if (a->getKind() == attr::Kind::Aligned) {
-        return dyn_cast<AlignedAttr>(a);
-      }
-    }
-    return nullptr;
-  }
-  void addAlignment(Decl const *D) {
-    AlignedAttr * alignment = getAlignment(D);
-    if (!alignment)
-      return;
-
-    Kast::add(Kast::KApply("addMods", Sort::KITEM, {Sort::LIST, Sort::KITEM}));
-    Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-
-    if (alignment->isAlignmentExpr()) {
-      Kast::add(Kast::KApply("AlignasExpression", Sort::SPECIFIERELEM, {Sort::KITEM}));
-      TraverseStmt(alignment->getAlignmentExpr());
-    } else {
-      Kast::add(Kast::KApply("AlignasType", Sort::SPECIFIERELEM, {Sort::KITEM, Sort::KITEM}));
-      TraverseTypeLoc(alignment->getAlignmentType()->getTypeLoc());
-      JustBase();
-    }
-  }
-
-    bool TraverseFieldDecl_c_helper(const FieldDecl *D, bool type) {
-      if (D->isBitField()) {
-        Kast::add(Kast::KApply("BitFieldName", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
-      } else {
-        Kast::add(Kast::KApply("FieldName", Sort::KITEM, {Sort::KITEM}));
-      }
-      Kast::add(Kast::KApply("Name", Sort::NAME, {Sort::CID, Sort::KITEM, Sort::KITEM}));
-      if (!D->getDeclName().getAsIdentifierInfo())
-        Kast::add(Kast::KApply("AnonymousName", Sort::CID));
-      else
-        TRY_TO(TraverseDeclarationName(D->getDeclName()));
-      if (type)
-        TraverseType(D->getType());
-      else
-        JustBase();
-      emptyStrictList();
-
-      if (D->isBitField()) {
-        TRY_TO(TraverseStmt(D->getBitWidth()));
-      }
-      return true;
-    }
-
-  bool TraverseFieldDecl_c(FieldDecl *D) {
-    Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
-    addAlignment(D);
-    TRY_TO(TraverseType(D->getType()));
-    strictlist();
-    Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-    // we do not use the specifier part
-    return TraverseFieldDecl_c_helper(D, false);
-  }
-
-  bool TraverseFieldDecl_cpp(FieldDecl *D) {
     if (D->isMutable()) {
       Specifier("Mutable", Sort::STORAGECLASSSPECIFIER);
     }
@@ -1042,193 +833,7 @@ public:
     return true;
   }
 
-  struct NestedRecordFields {
-      TagDecl * nested_tagtype;
-      std::vector<FieldDecl *> next_fields;
-  };
-
-  static bool baseTypeMatch(QualType qt, TagDecl *base) {
-    while(true) {
-      Type const * t = qt.getTypePtr();
-      if (ElaboratedType const * et = dyn_cast<ElaboratedType>(t)) {
-        qt = et->getNamedType();
-      } else if (ArrayType const *at = dyn_cast<ArrayType>(t)) {
-        qt = at->getElementType();
-      } else if (PointerType const *pt = dyn_cast<PointerType>(t)) {
-        qt = pt->getPointeeType();
-      } else if (ParenType const *pt = dyn_cast<ParenType>(t)) {
-        qt = pt->getInnerType();
-      } else if (FunctionType const *ft = dyn_cast<FunctionType>(t)) {
-        qt = ft->getReturnType();
-      } else if (TagType const *tt = dyn_cast<TagType>(t)) {
-        return tt->getDecl()->getFirstDecl() == base->getFirstDecl();
-      } else {
-        return false;
-      }
-    }
-  }
-
-  std::optional<NestedRecordFields> getNestedRecordField(RecordDecl const *record, DeclContext::decl_iterator it) {
-    // TODO this should work with unions and enums, too.
-    // and maybe the outer type can be union, too
-    NestedRecordFields nrf;
-    nrf.nested_tagtype = dyn_cast<TagDecl>(*it);
-    if (!nrf.nested_tagtype)
-      return std::nullopt;
-
-    for(++it; it != record->decls_end(); ++it) {
-      FieldDecl *next_field = dyn_cast<FieldDecl>(*it);
-      if (!next_field)
-        break;
-      if (!baseTypeMatch(next_field->getType(), nrf.nested_tagtype))
-        break;
-
-      nrf.next_fields.push_back(next_field);
-    }
-    return nrf;
-  }
-
-  size_t processNestedRecordField(RecordDecl const *record, DeclContext::decl_iterator it) {
-    std::optional<NestedRecordFields> nrf = getNestedRecordField(record, it);
-    if (!nrf)
-      return 0;
-
-    Kast::add(Kast::KApply("FieldGroup", Sort::KITEM, {Sort::KITEM, Sort::STRICTLIST}));
-    SpecifierItem();
-    if (RecordDecl * rd = dyn_cast<RecordDecl>(nrf->nested_tagtype)) {
-      TRY_TO(TraverseRecordDecl(rd, true));
-    } else {
-      TRY_TO(TraverseDecl(nrf->nested_tagtype));
-    }
-    strictlist();
-    for(FieldDecl *field : nrf->next_fields) {
-      Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
-      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-
-      assert(nested_tagtype == nullptr);
-      nested_tagtype = nrf->nested_tagtype;
-      TraverseFieldDecl_c_helper(field, true); // we need to add a parameter
-      nested_tagtype = nullptr;
-    }
-    emptyList();
-    return nrf->next_fields.size();
-  }
-
-  TagDecl * nested_tagtype = nullptr;
-
-  bool TraverseRecordDecl(RecordDecl *D) {
-    return TraverseRecordDecl(D, false);
-  }
-
-  bool TraverseRecordDecl(RecordDecl *D, bool isUsed) {
-    if (!cparser())
-      return true;
-
-    if (D->isCompleteDefinition()) {
-      if (D->isStruct())
-        Kast::add(Kast::KApply("StructDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
-      else if (D->isUnion())
-        Kast::add(Kast::KApply("UnionDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
-      else
-        throw std::logic_error("A record that is not a structure or union");
-    } else {
-      if (!isUsed)
-        Kast::add(Kast::KApply("OnlyTypedef", Sort::KITEM, {Sort::KITEM}));
-      if (D->isStruct())
-        Kast::add(Kast::KApply("StructRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
-      else if (D->isUnion())
-        Kast::add(Kast::KApply("UnionRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
-      else
-        throw std::logic_error("A record that is not a structure or union");
-    }
-
-    if (D->isAnonymousStructOrUnion())
-      Kast::add(Kast::KApply("AnonymousName", Sort::CID));
-    else
-      TRY_TO(TraverseDeclarationAsName(D));
-
-    if (!D->isCompleteDefinition()) {
-      emptyStrictList();
-      return true;
-    }
-
-    strictlist();
-
-    for (auto it = D->decls_begin(); it != D->decls_end(); ++it) {
-      clang::Decl * d = *it;
-      if (excludedDecl(d))
-        continue;
-
-      Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
-      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-
-      size_t const count = processNestedRecordField(D, it);
-      if (count > 0) {
-        // skip the following field declarations
-        std::advance(it, count);
-        continue;
-      }
-
-      TRY_TO(TraverseDecl(d));
-    }
-    emptyList();
-
-    // __attribute__((packed))
-    strictlist();
-    if (!hasAttrPacked(D))
-      Kast::add(Kast::KApply(".List", Sort::LIST));
-    else {
-      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-      Kast::add(Kast::KApply("Packed", Sort::MODIFIER));
-    }
-
-    return true;
-  }
-
-  static bool hasAttrPacked(Decl *D) {
-    for (Attr *a : D->attrs()) {
-      if (a->getKind() == attr::Kind::Packed)
-        return true;
-    }
-    return false;
-  }
-
-  bool TraverseEnumDecl_c(EnumDecl *D) {
-    // remove record declarations
-    // (clang adds a record declaration to EnumDecl
-    // in case of
-    // ```
-    // enum e { x = offsetof(struct {int x; int y;}, y)};
-    // ```)
-    std::vector<Decl *> recordDecls;
-    std::copy_if(D->decls_begin(), D->decls_end(), std::back_inserter(recordDecls), [](const clang::Decl * d){
-      return isa<RecordDecl>(d);
-    });
-    for (Decl * d : recordDecls) {
-      D->removeDecl(d);
-    }
-    recordDecls.clear();
-
-    Kast::add(Kast::KApply("EnumDef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K, Sort::STRICTLIST}));
-    TRY_TO(TraverseDeclarationAsName(D));
-    strictlist();
-    DeclContext(D);
-    TraverseDeclContextNode(D);
-    // TODO attribute packed
-    strictlist();
-    if (!hasAttrPacked(D))
-      Kast::add(Kast::KApply(".List", Sort::LIST));
-    else {
-      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-      Kast::add(Kast::KApply("Packed", Sort::MODIFIER));
-    }
-    return true;
-  }
-
   bool TraverseEnumDecl(EnumDecl *D) {
-    if (cparser())
-      return TraverseEnumDecl_c(D);
-
     if (!D->isCompleteDefinition()) {
       Kast::add(Kast::KApply("OpaqueEnumDeclaration", Sort::DECL, {Sort::CID, Sort::BOOL, Sort::ATYPE}));
       TRY_TO(TraverseDeclarationName(D->getDeclName()));
@@ -1249,31 +854,13 @@ public:
     return true;
   }
 
-  bool TraverseEnumConstantDecl(EnumConstantDecl *D){
-    return cparser()? TraverseEnumConstantDecl_c(D) : TraverseEnumConstantDecl_cpp(D);
-  }
-
-  bool TraverseEnumConstantDecl_c(EnumConstantDecl *D) {
-    if (D->getInitExpr()) {
-      Kast::add(Kast::KApply("EnumItemInit", Sort::KITEM, {Sort::CID, Sort::K}));
-      TraverseDeclarationName(D->getDeclName());
-      TraverseStmt(D->getInitExpr());
-    } else {
-      Kast::add(Kast::KApply("EnumItem", Sort::KITEM, {Sort::CID}));
-      TraverseDeclarationName(D->getDeclName());
-    }
-    return true;
-  }
-
-  bool TraverseEnumConstantDecl_cpp(EnumConstantDecl *D) {
+  bool VisitEnumConstantDecl(EnumConstantDecl *D) {
     Kast::add(Kast::KApply("Enumerator", Sort::ENUMERATOR, {Sort::CID, Sort::AEXPR}));
     TraverseDeclarationName(D->getDeclName());
     if (!D->getInitExpr()) {
       NoExpression();
-    } else {
-      TraverseStmt(D->getInitExpr());
     }
-    return true;
+    return false;
   }
 
   bool TraverseClassTemplateSpecializationDecl(ClassTemplateSpecializationDecl *D) {
@@ -1319,38 +906,6 @@ public:
     return true;
   }
 
-  bool TraverseGenericSelectionExpr(GenericSelectionExpr *E) {
-    Kast::add(Kast::KApply("Generic", Sort::KITEM, {Sort::K, Sort::STRICTLIST}));
-    TraverseStmt(E->getControllingExpr());
-    strictlist();
-    KSeqList(E->getNumAssocs());
-    for (unsigned i = 0; i < E->getNumAssocs(); i++) {
-      if (E->getAssocTypeSourceInfo(i)) {
-        Kast::add(Kast::KApply("GenericPair", Sort::KITEM, {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
-        TraverseType(E->getAssocType(i));
-        JustBase();
-      } else {
-        Kast::add(Kast::KApply("GenericDefault", Sort::KITEM, {Sort::KITEM}));
-      }
-      TraverseStmt(E->getAssocExpr(i));
-    }
-    return true;
-  }
-
-  bool TraverseOffsetOfExpr(OffsetOfExpr *E) {
-    Kast::add(Kast::KApply("OffsetOf", Sort::KITEM, {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
-    TraverseTypeLoc(E->getTypeSourceInfo()->getTypeLoc());
-    JustBase();
-    for (unsigned i = 0; i < E->getNumComponents() - 1; i++) {
-      Kast::add(Kast::KApply("Dot", Sort::KITEM, {Sort::KITEM, Sort::CID}));
-    }
-
-    for (unsigned i = 0; i < E->getNumComponents(); i++) {
-      TraverseIdentifierInfo(E->getComponent(i).getFieldName());
-    }
-    return true;
-  }
-
   bool VisitAccessSpecDecl(AccessSpecDecl *D) {
     Kast::add(Kast::KApply("AccessSpec", Sort::DECL, {Sort::ACCESSSPECIFIER}));
     VisitAccessSpecifier(D->getAccess());
@@ -1380,67 +935,7 @@ public:
     return false;
   }
 
-  bool TraverseFunctionNoProtoType(FunctionNoProtoType *T) {
-    // C only
-    TraverseFunctionProtoType_c_helper(T->getReturnType(), 0);
-    return true;
-  }
-
   bool TraverseFunctionProtoType(FunctionProtoType *T) {
-    return cparser()? TraverseFunctionProtoType_c(T) : TraverseFunctionProtoType_cpp(T);
-  }
-
-  void TraverseFunctionProtoType_c_helper(QualType returnType, unsigned int numParams) {
-    Kast::add(Kast::KApply("createFunctionType", Sort::KITEM, {Sort::KITEM, Sort::LIST}));
-    utypeFromType();
-    TraverseType(returnType);
-    KSeqList(numParams);
-  }
-
-  bool TraverseFunctionDeclParams(FunctionDecl *decl) {
-    Qualifiers(decl->getType());
-    if (!decl->hasWrittenPrototype()) {
-      Kast::add(Kast::KApply("addMods", Sort::KITEM, {Sort::LIST, Sort::KITEM}));
-      Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-      Kast::add(Kast::KApply("oldStyle_C-TYPING-SYNTAX", Sort::MODIFIER));
-    }
-    TraverseFunctionProtoType_c_helper(decl->getReturnType(), decl->getNumParams() + (decl->isVariadic()?1:0));
-
-    for (unsigned i = 0; i < decl->getNumParams(); i++) {
-      Kast::add(Kast::KApply("NameAndType", Sort::KITEM, {Sort::CID, Sort::TYPE}));
-      TRY_TO(TraverseDeclarationName(decl->parameters()[i]->getDeclName()));
-      Kast::add(Kast::KApply("adjustParamStrict", Sort::KITEM, {Sort::KITEM}));
-      Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
-      TRY_TO(TraverseType(decl->parameters()[i]->getType()));
-    }
-
-    if (decl->isVariadic()) {
-      Kast::add(Kast::KApply("variadic_C-TYPING-SYNTAX", Sort::VARIADIC));
-    }
-
-    return true;
-  }
-
-  bool TraverseFunctionParams(FunctionProtoType const *T) {
-    for (unsigned i = 0; i < T->getNumParams(); i++) {
-      Kast::add(Kast::KApply("adjustParamStrict", Sort::KITEM, {Sort::KITEM}));
-      Kast::add(Kast::KApply("extractActualTypeFreezer", Sort::KITEM, {Sort::KITEM}));
-      TRY_TO(TraverseType(T->getParamType(i)));
-    }
-
-    if (T->isVariadic()) {
-      Kast::add(Kast::KApply("variadic_C-TYPING-SYNTAX", Sort::VARIADIC));
-    }
-
-    return true;
-  }
-
-  bool TraverseFunctionProtoType_c(FunctionProtoType *T) {
-    TraverseFunctionProtoType_c_helper(T->getReturnType(), T->getNumParams() + (T->isVariadic()?1:0));
-    return TraverseFunctionParams(T);
-  }
-
-  bool TraverseFunctionProtoType_cpp(FunctionProtoType *T) {
     Kast::add(Kast::KApply("FunctionPrototype", Sort::ATYPE, {Sort::ATYPE, Sort::STRICTLIST, Sort::EXCEPTIONSPEC, Sort::BOOL}));
 
     TRY_TO(TraverseType(T->getReturnType()));
@@ -1481,103 +976,88 @@ public:
     return true;
   }
 
-  std::string appendModuleName(std::string c) {
-    if (c == "signed-char" || c == "unsigned-char" || c == "char")
-      return c + "_C-TYPING-MACROS-SYNTAX";
-
-    return c + "_C-TYPING-SYNTAX";
-  }
-
-std::string ifc(std::string c, std::string cpp) {
-    std::string const result = cparser() ? appendModuleName(c) : cpp;
-    if (result == "")
-      throw std::logic_error("Unsupported type");
-    return result;
-  }
-
   bool VisitBuiltinType(BuiltinType *T) {
-    if (!cparser())
-      Kast::add(Kast::KApply("BuiltinType", Sort::ATYPE, {Sort::TYPESPECIFIER}));
-
-    std::string const type_name = [&]{
-        switch(T->getKind()) {
-          case BuiltinType::Void:
-            return ifc("void", "Void");
-          case BuiltinType::Char_S:
-          case BuiltinType::Char_U:
-            return ifc("char", "Char");
-          case BuiltinType::WChar_S:
-          case BuiltinType::WChar_U:
-            return ifc("", "WChar");
-          case BuiltinType::Char16:
-            return ifc("", "Char16");
-          case BuiltinType::Char32:
-            return ifc("", "Char32");
-          case BuiltinType::Bool:
-            return ifc("bool", "Bool");
-          case BuiltinType::UChar:
-            return ifc("unsigned-char", "UChar");
-          case BuiltinType::UShort:
-            return ifc("unsigned-short-int", "UShort");
-          case BuiltinType::UInt:
-            return ifc("unsigned-int", "UInt");
-          case BuiltinType::ULong:
-            return ifc("unsigned-long-int", "ULong");
-          case BuiltinType::ULongLong:
-            return ifc("unsigned-long-long-int", "ULongLong");
-          case BuiltinType::SChar:
-            return ifc("signed-char", "SChar");
-          case BuiltinType::Short:
-            return ifc("short-int", "Short");
-          case BuiltinType::Int:
-            return ifc("int", "Int");
-          case BuiltinType::Long:
-            return ifc("long-int", "Long");
-          case BuiltinType::LongLong:
-            return ifc("long-long-int", "LongLong");
-          case BuiltinType::Float:
-            return ifc("float", "Float");
-          case BuiltinType::Double:
-            return ifc("double", "Double");
-          case BuiltinType::LongDouble:
-            return ifc("long-double", "LongDouble");
-          case BuiltinType::Int128:
-            return ifc("oversized-int", "OversizedInt");
-          case BuiltinType::UInt128:
-            return ifc("unsigned-oversized-int", "OversizedUInt");
-          case BuiltinType::Dependent:
-            return ifc("", "Dependent");
-          case BuiltinType::NullPtr:
-            return ifc("", "NullPtr");
-          default:
-            throw std::logic_error("unimplemented: basic type");
-        }
-    }();
-
-    if (cparser()) {
-      typeFromSimpleType();
-      Kast::add(Kast::KApply(type_name, Sort::SIMPLETYPE));
-    } else {
-      Kast::add(Kast::KApply(type_name, Sort::TYPESPECIFIER));
+    Kast::add(Kast::KApply("BuiltinType", Sort::ATYPE, {Sort::TYPESPECIFIER}));
+    switch (T->getKind()) {
+      case BuiltinType::Void:
+        Kast::add(Kast::KApply("Void", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::Char_S:
+      case BuiltinType::Char_U:
+        Kast::add(Kast::KApply("Char", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::WChar_S:
+      case BuiltinType::WChar_U:
+        Kast::add(Kast::KApply("WChar", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::Char16:
+        Kast::add(Kast::KApply("Char16", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::Char32:
+        Kast::add(Kast::KApply("Char32", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::Bool:
+        Kast::add(Kast::KApply("Bool", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::UChar:
+        Kast::add(Kast::KApply("UChar", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::UShort:
+        Kast::add(Kast::KApply("UShort", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::UInt:
+        Kast::add(Kast::KApply("UInt", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::ULong:
+        Kast::add(Kast::KApply("ULong", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::ULongLong:
+        Kast::add(Kast::KApply("ULongLong", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::SChar:
+        Kast::add(Kast::KApply("SChar", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::Short:
+        Kast::add(Kast::KApply("Short", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::Int:
+        Kast::add(Kast::KApply("Int", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::Long:
+        Kast::add(Kast::KApply("Long", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::LongLong:
+        Kast::add(Kast::KApply("LongLong", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::Float:
+        Kast::add(Kast::KApply("Float", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::Double:
+        Kast::add(Kast::KApply("Double", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::LongDouble:
+        Kast::add(Kast::KApply("LongDouble", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::Int128:
+        Kast::add(Kast::KApply("OversizedInt", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::UInt128:
+        Kast::add(Kast::KApply("OversizedUInt", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::Dependent:
+        Kast::add(Kast::KApply("Dependent", Sort::TYPESPECIFIER));
+        break;
+      case BuiltinType::NullPtr:
+        Kast::add(Kast::KApply("NullPtr", Sort::TYPESPECIFIER));
+        break;
+      default:
+        throw std::logic_error("unimplemented: basic type");
     }
     return false;
   }
 
-  void pointerType() {
-    Kast::add(Kast::KApply("pointerTypeStrict", Sort::SIMPLEPOINTERTYPE, {Sort::TYPE}));
-  }
-
-  void typeFromSimpleType() {
-    Kast::add(Kast::KApply("typeFromSimpleType", Sort::TYPE,{Sort::SIMPLETYPE}));
-  }
-
   bool VisitPointerType(clang::PointerType *T) {
-    if (cparser()) {
-      typeFromSimpleType();
-      pointerType();
-    }
-    else
-      Kast::add(Kast::KApply("PointerType", Sort::ATYPE, {Sort::ATYPE}));
+    Kast::add(Kast::KApply("PointerType", Sort::ATYPE, {Sort::ATYPE}));
     return false;
   }
 
@@ -1596,17 +1076,6 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseConstantArrayType(ConstantArrayType *T) {
-    return cparser()? TraverseConstantArrayType_c(T) : TraverseConstantArrayType_cpp(T);
-  }
-
-  bool TraverseConstantArrayType_c(ConstantArrayType *T) {
-    Kast::add(Kast::KApply("createArrayType", Sort::KITEM,{Sort::KITEM, Sort::INT}));
-    TRY_TO(TraverseType(T->getElementType()));
-    VisitAPInt(T->getSize());
-    return true;
-  }
-
-  bool TraverseConstantArrayType_cpp(ConstantArrayType *T) {
     TRY_TO(TraverseArrayHelper(T, Sort::INT));
     VisitAPInt(T->getSize());
     return true;
@@ -1619,45 +1088,19 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseVariableArrayType(VariableArrayType *T) {
-    return cparser()? TraverseVariableArrayType_c(T) : TraverseVariableArrayType_cpp(T);
-  }
-
-  bool TraverseVariableArrayType_c(VariableArrayType *T) {
-    Kast::add(Kast::KApply("createVariableLengthArrayType", Sort::SIMPLEVARIABLEARRAYTYPE,{Sort::TYPE, Sort::K}));
-    TRY_TO(TraverseType(T->getElementType()));
-    TRY_TO(TraverseStmt(T->getSizeExpr()));
-    return true;
-  }
-
-  bool TraverseVariableArrayType_cpp(VariableArrayType *T) {
     TRY_TO(TraverseArrayHelper(T, Sort::AEXPR));
     TRY_TO(TraverseStmt(T->getSizeExpr()));
     return true;
   }
 
   bool TraverseIncompleteArrayType(IncompleteArrayType *T) {
-    return cparser()? TraverseIncompleteArrayType_c(T) : TraverseIncompleteArrayType_cpp(T);
-  }
-
-  bool TraverseIncompleteArrayType_c(IncompleteArrayType *T) {
-    Kast::add(Kast::KApply("createIncompleteArrayType", Sort::KITEM,{Sort::KITEM}));
-    TRY_TO(TraverseType(T->getElementType()));
-    return true;
-  }
-
-  bool TraverseIncompleteArrayType_cpp(IncompleteArrayType *T) {
     TRY_TO(TraverseArrayHelper(T, Sort::AEXPR));
     NoExpression();
     return true;
   }
 
   bool VisitTypedefType(TypedefType *T) {
-    if (cparser()) {
-      SpecifierItem();
-      Kast::add(Kast::KApply("Named", Sort::ATYPE, {Sort::CID}));
-    }
-    else
-      Kast::add(Kast::KApply("TypedefType", Sort::TYPESPECIFIER, {Sort::CID}));
+    Kast::add(Kast::KApply("TypedefType", Sort::ATYPE, {Sort::CID}));
     TRY_TO(TraverseDeclarationName(T->getDecl()->getDeclName()));
     return false;
   }
@@ -1687,64 +1130,11 @@ std::string ifc(std::string c, std::string cpp) {
     }
   }
 
-  void SpecifierItem() {
-    Kast::add(Kast::KApply("Specifier", Sort::SPECIFIER, {Sort::STRICTLIST}));
-    strictlist();
-    Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-  }
-
-  std::set<TagDecl *> invisibleTagDecls;
-
-  bool TraverseElaboratedType(ElaboratedType *T) {
-    if (cparser()) {
-
-      TagDecl *td = dyn_cast<TagType>(T->getNamedType())->getDecl();
-      assert(td != nullptr);
-
-      if (td == nested_tagtype) {
-        JustBase();
-        return true;
-      }
-
-      SpecifierItem();
-
-      // This is for sizeof(struct {int x;})
-      // since there is no visible AST node fore the struct definition.
-      // But for sizeof(struct S{int x;}) + sizeof(struct S);
-      // we need to prevent duplicate struct definition,
-      // that is what `invisibleTagDecls` is for.
-      if (!declIsInAst(td) && invisibleTagDecls.count(td) == 0) {
-        invisibleTagDecls.insert(td);
-        TraverseDecl(td);
-        return true;
-      }
-      switch(T->getKeyword()) {
-        case ETK_Enum:
-          Kast::add(Kast::KApply("EnumRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
-          break;
-        case ETK_Struct:
-          Kast::add(Kast::KApply("StructRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
-          break;
-        case ETK_Union:
-          Kast::add(Kast::KApply("UnionRef", Sort::TYPESPECIFIER, {Sort::CID, Sort::K}));
-          break;
-        default:
-          throw std::logic_error("unimplemented: type keyword");
-      }
-      TraverseType(T->getNamedType());
-      emptyStrictList();
-      return true;
-    }
+  bool VisitElaboratedType(ElaboratedType *T) {
     Kast::add(Kast::KApply("QualifiedTypeName", Sort::ATYPE, {Sort::TAG, Sort::NNS, Sort::ATYPE}));
     VisitTypeKeyword(T->getKeyword());
-
-    if (T->getQualifier()) {
-      TRY_TO(TraverseNestedNameSpecifier(T->getQualifier()));
-    } else {
-      NoNNS();
-    }
-    TRY_TO(TraverseType(T->getNamedType()));
-    return true;
+    if (!T->getQualifier()) NoNNS();
+    return false;
   }
 
   bool VisitDecltypeType(DecltypeType *T) {
@@ -1765,14 +1155,8 @@ std::string ifc(std::string c, std::string cpp) {
 
   bool VisitTagType(TagType *T) {
     TagDecl *D = T->getDecl();
-    if (!cparser()) {
-      Name();
-      NoNNS();
-    }
-    if (D == nested_tagtype) {
-      JustBase();
-      return false;
-    }
+    Name();
+    NoNNS();
     TRY_TO(TraverseDeclarationAsName(D));
     return false;
   }
@@ -1807,17 +1191,6 @@ std::string ifc(std::string c, std::string cpp) {
     TRY_TO(TraverseTemplateName(T->getTemplateName()));
     KSeqList(T->getNumArgs());
     TRY_TO(TraverseTemplateArguments(T->getArgs(), T->getNumArgs()));
-    return true;
-  }
-
-  bool TraverseAtomicType(AtomicType *T) {
-    if (!cparser())
-      return true;
-
-    Kast::add(Kast::KApply("addQualifierStrict", Sort::KITEM, {Sort::QUALIFIER, Sort::TYPE}));
-    Kast::add(Kast::KApply("Atomic", Sort::QUALIFIER));
-
-    TRY_TO(TraverseType(T->getValueType()));
     return true;
   }
 
@@ -1876,126 +1249,60 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitDeclStmt(DeclStmt *S) {
-    if (!cparser()) {
-      Kast::add(Kast::KApply("DeclStmt", Sort::STMT, {Sort::LIST}));
-      int i = 0;
-      for (auto *I : S->decls()) {
-        i++;
-      }
-      KSeqList(i);
+    Kast::add(Kast::KApply("DeclStmt", Sort::STMT, {Sort::LIST}));
+    int i = 0;
+    for (auto *I : S->decls()) {
+      i++;
     }
+    KSeqList(i);
     return false;
   }
 
   bool VisitBreakStmt(BreakStmt *S) {
-    if (cparser())
-      Kast::add(Kast::KApply("Break", Sort::KITEM));
-    else
-      Kast::add(Kast::KApply("TBreakStmt", Sort::STMT));
+    Kast::add(Kast::KApply("TBreakStmt", Sort::STMT));
     return false;
   }
 
   bool VisitContinueStmt(ContinueStmt *S) {
-    if (cparser())
-      Kast::add(Kast::KApply("Continue", Sort::KITEM));
-    else
-      Kast::add(Kast::KApply("ContinueStmt", Sort::STMT));
+    Kast::add(Kast::KApply("ContinueStmt", Sort::STMT));
     return false;
   }
 
   bool VisitGotoStmt(GotoStmt *S) {
-    if (cparser())
-      Kast::add(Kast::KApply("Goto", Sort::KITEM, {Sort::CID}));
-    else
-      Kast::add(Kast::KApply("GotoStmt", Sort::STMT, {Sort::CID}));
-
+    Kast::add(Kast::KApply("GotoStmt", Sort::STMT, {Sort::CID}));
     TRY_TO(TraverseDeclarationName(S->getLabel()->getDeclName()));
     return false;
   }
 
   bool VisitReturnStmt(ReturnStmt *S) {
-    if (cparser())
-      Kast::add(Kast::KApply("Return", Sort::KITEM, {Sort::K}));
-    else
-      Kast::add(Kast::KApply("ReturnStmt", Sort::STMT, {Sort::INIT}));
-
+    Kast::add(Kast::KApply("ReturnStmt", Sort::STMT, {Sort::INIT}));
     if (!S->getRetValue()) {
-      if (cparser())
-        Kast::add(Kast::KApply("NothingExpression", Sort::KITEM));
-      else
-        Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      Kast::add(Kast::KApply("NoInit", Sort::INIT));
     }
     return false;
   }
 
   bool VisitNullStmt(NullStmt *S) {
-    if (cparser())
-      Kast::add(Kast::KApply("Nop", Sort::KITEM));
-    else
-      Kast::add(Kast::KApply("NullStmt", Sort::STMT));
+    Kast::add(Kast::KApply("NullStmt", Sort::STMT));
     return false;
   }
 
-  unsigned blockTag = 1;
-
-  bool TraverseCompoundStmt(CompoundStmt *S) {
-
-    if (cparser()) {
-      Kast::add(Kast::KApply("Block", Sort::KITEM, {Sort::INT, Sort::STRICTLIST}));
-      Kast::add(Kast::KToken(blockTag++));
-      strictlist();
-    } else {
-      Kast::add(Kast::KApply("CompoundAStmt", Sort::ASTMT, {Sort::LIST}));
-    }
+  bool VisitCompoundStmt(CompoundStmt *S) {
+    Kast::add(Kast::KApply("CompoundAStmt", Sort::ASTMT, {Sort::LIST}));
     StmtChildren(S);
-
-    for (auto &child : S->children()) {
-      if (cparser())
-        checkExpressionStatement(child);
-      TRY_TO(TraverseStmt(child));
-    }
-
-    return true;
-  }
-
-  void insertBlock() {
-    Kast::add(Kast::KApply("Block", Sort::KITEM, {Sort::INT, Sort::STRICTLIST}));
-    Kast::add(Kast::KToken(blockTag++));
-    strictlist();
-    Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-  }
-
-  bool insertBlockOf(Stmt *S) {
-    if (cparser() && !isa<CompoundStmt>(S)) {
-      insertBlock();
-    }
-    checkExpressionStatement(S);
-    TRY_TO(TraverseStmt(S));
-    return true;
+    return false;
   }
 
   bool VisitLabelStmt(LabelStmt *S) {
-    if (cparser())
-      Kast::add(Kast::KApply("Label", Sort::KITEM, {Sort::CID, Sort::K}));
-    else
-      Kast::add(Kast::KApply("LabelAStmt", Sort::ASTMT, {Sort::CID, Sort::LIST}));
+    Kast::add(Kast::KApply("LabelAStmt", Sort::ASTMT, {Sort::CID, Sort::LIST}));
     TRY_TO(TraverseDeclarationName(S->getDecl()->getDeclName()));
-    if (cparser())
-      checkExpressionStatement(S->getSubStmt());
-    else
-      StmtChildren(S);
+    StmtChildren(S);
     return false;
   }
 
   bool TraverseForStmt(ForStmt *S) {
-    if (cparser()) {
-      Kast::add(Kast::KApply("For5", Sort::KITEM, {Sort::INT, Sort::KITEM, Sort::K, Sort::K, Sort::K}));
-      Kast::add(Kast::KToken(blockTag++));
-    } else
-      Kast::add(Kast::KApply("ForAStmt", Sort::ASTMT, {Sort::ASTMT, Sort::AEXPR, Sort::AEXPR, Sort::ASTMT}));
-
+    Kast::add(Kast::KApply("ForAStmt", Sort::ASTMT, {Sort::ASTMT, Sort::AEXPR, Sort::AEXPR, Sort::ASTMT}));
     if (S->getInit()) {
-      checkExpressionStatement(S->getInit());
       TRY_TO(TraverseStmt(S->getInit()));
     } else {
       NoStatement();
@@ -2010,109 +1317,65 @@ std::string ifc(std::string c, std::string cpp) {
     } else {
       NoExpression();
     }
-    insertBlockOf(S->getBody());
+    TRY_TO(TraverseStmt(S->getBody()));
     return true;
   }
 
   bool TraverseWhileStmt(WhileStmt *S) {
-    if (cparser())
-      Kast::add(Kast::KApply("While", Sort::KITEM, {Sort::K, Sort::K}));
-    else
-      Kast::add(Kast::KApply("WhileAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
-
+    Kast::add(Kast::KApply("WhileAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
     if (S->getConditionVariable()) {
       TRY_TO(TraverseDecl(S->getConditionVariable()));
     } else {
       TRY_TO(TraverseStmt(S->getCond()));
     }
-    insertBlockOf(S->getBody());
+    TRY_TO(TraverseStmt(S->getBody()));
     return true;
   }
 
-  bool TraverseDoStmt(DoStmt *S) {
-    if (cparser()) {
-      Kast::add(Kast::KApply("DoWhile3", Sort::KITEM, {Sort::K, Sort::K, Sort::CABSLOC}));
-      TRY_TO(TraverseStmt(S->getCond()));
-      insertBlockOf(S->getBody());
-      CabsLoc(S->getDoLoc());
-    } else {
-      Kast::add(Kast::KApply("DoWhileAStmt", Sort::ASTMT, {Sort::ASTMT, Sort::EXPR}));
-      TRY_TO(TraverseStmt(S->getBody()));
-      TRY_TO(TraverseStmt(S->getCond()));
-    }
-
-    return true;
+  bool VisitDoStmt(DoStmt *S) {
+    Kast::add(Kast::KApply("DoWhileAStmt", Sort::ASTMT, {Sort::ASTMT, Sort::EXPR}));
+    return false;
   }
 
   bool TraverseIfStmt(IfStmt *S) {
-    if (cparser())
-      Kast::add(Kast::KApply("IfThenElse", Sort::KITEM, {Sort::K, Sort::K, Sort::K}));
-    else
-      Kast::add(Kast::KApply("IfAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT, Sort::ASTMT}));
-
+    Kast::add(Kast::KApply("IfAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT, Sort::ASTMT}));
     if (VarDecl *D = S->getConditionVariable()) {
       TRY_TO(TraverseDecl(D));
     } else {
       TRY_TO(TraverseStmt(S->getCond()));
     }
-    insertBlockOf(S->getThen());
+    TRY_TO(TraverseStmt(S->getThen()));
     if (Stmt *Else = S->getElse()) {
-      insertBlockOf(Else);
+      TRY_TO(TraverseStmt(Else));
     } else {
-      if (cparser()) {
-        insertBlock();
-        Kast::add(Kast::KApply("Nop", Sort::KITEM));
-      } else
-        NoStatement();
+      NoStatement();
     }
     return true;
   }
 
-  unsigned switchBlockTag = -1;
-
   bool TraverseSwitchStmt(SwitchStmt *S) {
-    if (cparser()) {
-      Kast::add(Kast::KApply("Switch", Sort::KITEM, {Sort::INT, Sort::K, Sort::K}));
-      switchBlockTag = blockTag;
-      Kast::add(Kast::KToken(blockTag++));
-    } else
-      Kast::add(Kast::KApply("SwitchAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT}));
-
+    Kast::add(Kast::KApply("SwitchAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT}));
     if (VarDecl *D = S->getConditionVariable()) {
       TRY_TO(TraverseDecl(D));
     } else {
       TRY_TO(TraverseStmt(S->getCond()));
     }
-    checkExpressionStatement(S->getBody());
     TRY_TO(TraverseStmt(S->getBody()));
     return true;
   }
 
   bool TraverseCaseStmt(CaseStmt *S) {
-    if (cparser()) {
-      Kast::add(Kast::KApply("Case", Sort::KITEM, {Sort::INT, Sort::INT, Sort::K, Sort::K}));
-      Kast::add(Kast::KToken(switchBlockTag));
-      Kast::add(Kast::KToken(blockTag++));
-    } else
-      Kast::add(Kast::KApply("CaseAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
-
+    Kast::add(Kast::KApply("CaseAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
     if (S->getRHS()) {
       throw std::logic_error("unimplemented: gnu case stmt extensions");
     }
     TRY_TO(TraverseStmt(S->getLHS()));
-    checkExpressionStatement(S->getSubStmt());
     TRY_TO(TraverseStmt(S->getSubStmt()));
     return true;
   }
 
   bool VisitDefaultStmt(DefaultStmt *S) {
-    if (cparser()) {
-      Kast::add(Kast::KApply("Default", Sort::KITEM, {Sort::INT, Sort::KITEM}));
-      Kast::add(Kast::KToken(switchBlockTag));
-      checkExpressionStatement(S->getSubStmt());
-    }
-    else
-      Kast::add(Kast::KApply("DefaultAStmt", Sort::ASTMT, {Sort::ASTMT}));
+    Kast::add(Kast::KApply("DefaultAStmt", Sort::ASTMT, {Sort::ASTMT}));
     return false;
   }
 
@@ -2136,16 +1399,6 @@ std::string ifc(std::string c, std::string cpp) {
 
   template<typename ExprType>
   bool TraverseMemberHelper(ExprType *E) {
-    if (cparser()) {
-      IdentifierInfo * info = E->getMemberNameInfo().getName().getAsIdentifierInfo();
-      if (info)
-        Kast::add(Kast::KApply(E->isArrow()?"Arrow":"Dot", Sort::KITEM, {Sort::KITEM, Sort::CID}));
-      TRY_TO(TraverseStmt(E->getBase()));
-      if (info)
-        TRY_TO(TraverseDeclarationNameInfo(E->getMemberNameInfo()));
-      return true;
-    }
-
     if (E->isImplicitAccess()) {
       Name();
       TRY_TO(TraverseNestedNameSpecifierLoc(E->getQualifierLoc()));
@@ -2175,10 +1428,7 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitArraySubscriptExpr(ArraySubscriptExpr *E) {
-    if (cparser())
-      Kast::add(Kast::KApply("ArrayIndex", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
-    else
-      Kast::add(Kast::KApply("Subscript", Sort::EXPR, {Sort::EXPR, Sort::EXPR}));
+    Kast::add(Kast::KApply("Subscript", Sort::EXPR, {Sort::EXPR, Sort::EXPR}));
     return false;
   }
 
@@ -2187,11 +1437,7 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool TraverseCallExpr(CallExpr *E) {
-    if (cparser())
-      Kast::add(Kast::KApply("Call", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
-    else
-      Kast::add(Kast::KApply("CallExpr", Sort::RESOLVEDEXPR, {Sort::EXPR, Sort::STRICTLIST, Sort::STRICTLISTRESULT}));
-
+    Kast::add(Kast::KApply("CallExpr", Sort::RESOLVEDEXPR, {Sort::EXPR, Sort::STRICTLIST, Sort::STRICTLISTRESULT}));
     unsigned i = 0;
     for (Stmt *SubStmt : E->children()) {
       i++;
@@ -2205,10 +1451,8 @@ std::string ifc(std::string c, std::string cpp) {
       if (first) List(i-1);
       first = false;
     }
-    if (!cparser()) {
-      Kast::add(Kast::KApply("krlist", Sort::STRICTLISTRESULT, {Sort::LIST}));
-      Kast::add(Kast::KApply(".List", Sort::LIST));
-    }
+    Kast::add(Kast::KApply("krlist", Sort::STRICTLISTRESULT, {Sort::LIST}));
+    Kast::add(Kast::KApply(".List", Sort::LIST));
     return true;
   }
 
@@ -2261,33 +1505,7 @@ std::string ifc(std::string c, std::string cpp) {
     }
   }
 
-  void VisitUnaryOperator(UnaryOperatorKind Kind) {
-    return cparser()? VisitUnaryOperator_c(Kind) : VisitUnaryOperator_cpp(Kind);
-  }
-
-  void VisitUnaryOperator_c(UnaryOperatorKind Kind) {
-    switch (Kind) {
-      #define UNARY_OP(Name, Spelling)         \
-      case UO_##Name:                          \
-        Kast::add(Kast::KApply(Spelling, Sort::KITEM, {Sort::KITEM})); \
-        break;
-      UNARY_OP(PostInc, "PostIncrement")
-      UNARY_OP(PostDec, "PostDecrement")
-      UNARY_OP(PreInc, "PreIncrement")
-      UNARY_OP(PreDec, "PreDecrement")
-      UNARY_OP(AddrOf, "Reference")
-      UNARY_OP(Deref, "Dereference")
-      UNARY_OP(Plus, "Positive")
-      UNARY_OP(Minus, "Negative")
-      UNARY_OP(Not, "BitwiseNot")
-      UNARY_OP(LNot, "LogicalNot")
-      default:
-        throw std::logic_error("unsupported unary operator");
-      #undef UNARY_OP
-    }
-  }
-
-  void VisitUnaryOperator_cpp(UnaryOperatorKind Kind) {
+  void VisitOperator(UnaryOperatorKind Kind) {
     switch (Kind) {
       #define UNARY_OP(Name, Spelling)         \
       case UO_##Name:                          \
@@ -2317,57 +1535,10 @@ std::string ifc(std::string c, std::string cpp) {
         break;
       default:
         throw std::logic_error("unsupported unary operator");
-      #undef UNARY_OP
     }
   }
 
-  void VisitBinaryOperator(BinaryOperatorKind Kind) {
-    return cparser() ? VisitBinaryOperator_c(Kind) : VisitBinaryOperator_cpp(Kind);
-  }
-
-  void VisitBinaryOperator_c(BinaryOperatorKind Kind) {
-    switch (Kind) {
-#define BINARY_OP(Name, Spelling)        \
-      case BO_##Name:                          \
-        Kast::add(Kast::KApply(Spelling, Sort::KITEM, {Sort::KITEM, Sort::KITEM})); \
-        break;
-        BINARY_OP(Mul, "Multiply")
-        BINARY_OP(Div, "Divide")
-        BINARY_OP(Rem, "Modulo")
-        BINARY_OP(Add, "Plus")
-        BINARY_OP(Sub, "Minus")
-        BINARY_OP(Shl, "LeftShift")
-        BINARY_OP(Shr, "RightShift")
-        BINARY_OP(LT, "LessThan")
-        BINARY_OP(GT, "GreaterThan")
-        BINARY_OP(LE, "LessThanOrEqual")
-        BINARY_OP(GE, "GreaterThanOrEqual")
-        BINARY_OP(EQ, "Equality")
-        BINARY_OP(NE, "NotEquality")
-        BINARY_OP(And, "BitwiseAnd")
-        BINARY_OP(Xor, "BitwiseXor")
-        BINARY_OP(Or, "BitwiseOr")
-        BINARY_OP(LAnd, "LogicalAnd")
-        BINARY_OP(LOr, "LogicalOr")
-        BINARY_OP(Assign, "Assign")
-        BINARY_OP(MulAssign, "AssignMultiply")
-        BINARY_OP(DivAssign, "AssignDivide")
-        BINARY_OP(RemAssign, "AssignModulo")
-        BINARY_OP(AddAssign, "AssignPlus")
-        BINARY_OP(SubAssign, "AssignMinus")
-        BINARY_OP(ShlAssign, "AssignLeftShift")
-        BINARY_OP(ShrAssign, "AssignRightShift")
-        BINARY_OP(AndAssign, "AssignBitwiseAnd")
-        BINARY_OP(XorAssign, "AssignBitwiseXor")
-        BINARY_OP(OrAssign, "AssignBitwiseOr")
-        BINARY_OP(Comma, "BinaryComma")
-        default:
-          throw std::logic_error("unsupported binary operator");
-      }
-#undef BINARY_OP
-  }
-
-  void VisitBinaryOperator_cpp(BinaryOperatorKind Kind) {
+  void VisitOperator(BinaryOperatorKind Kind) {
     switch (Kind) {
       #define BINARY_OP(Name, Spelling)        \
       case BO_##Name:                          \
@@ -2408,31 +1579,23 @@ std::string ifc(std::string c, std::string cpp) {
       default:
         throw std::logic_error("unsupported binary operator");
     }
-#undef BINARY_OP
   }
 
   bool VisitUnaryOperator(UnaryOperator *E) {
-    if (!cparser()) {
-      UnaryOperator();
-    }
-    VisitUnaryOperator(E->getOpcode());
+    UnaryOperator();
+    VisitOperator(E->getOpcode());
     return false;
   }
 
 
   bool VisitBinaryOperator(BinaryOperator *E) {
-    if (!cparser() ){
-      BinaryOperator();
-    }
-    VisitBinaryOperator(E->getOpcode());
+    BinaryOperator();
+    VisitOperator(E->getOpcode());
     return false;
   }
 
   bool VisitConditionalOperator(ConditionalOperator *E) {
-    if (cparser())
-      Kast::add(Kast::KApply("Conditional", Sort::KITEM, {Sort::KITEM, Sort::KITEM, Sort::KITEM}));
-    else
-      Kast::add(Kast::KApply("ConditionalOperator", Sort::EXPR, {Sort::EXPR, Sort::EXPR, Sort::EXPR}));
+    Kast::add(Kast::KApply("ConditionalOperator", Sort::EXPR, {Sort::EXPR, Sort::EXPR, Sort::EXPR}));
     return false;
   }
 
@@ -2467,12 +1630,12 @@ std::string ifc(std::string c, std::string cpp) {
       case OO_PlusPlus:
         if (E->getNumArgs() == 2) {
           UnaryOperator();
-          VisitUnaryOperator_cpp(UO_PostInc);
+          VisitOperator(UO_PostInc);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else if (E->getNumArgs() == 1) {
           UnaryOperator();
-          VisitUnaryOperator_cpp(UO_PreInc);
+          VisitOperator(UO_PreInc);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else {
@@ -2481,12 +1644,12 @@ std::string ifc(std::string c, std::string cpp) {
       case OO_MinusMinus:
         if (E->getNumArgs() == 2) {
           UnaryOperator();
-          VisitUnaryOperator_cpp(UO_PostDec);
+          VisitOperator(UO_PostDec);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else if (E->getNumArgs() == 1) {
           UnaryOperator();
-          VisitUnaryOperator_cpp(UO_PreDec);
+          VisitOperator(UO_PreDec);
           TRY_TO(TraverseStmt(E->getArg(0)));
           break;
         } else {
@@ -2544,23 +1707,9 @@ std::string ifc(std::string c, std::string cpp) {
     return true;
   }
 
-  void JustBase() {
-    Kast::add(Kast::KApply("JustBase", Sort::KITEM));
-  }
-
-  bool TraverseCStyleCastExpr(CStyleCastExpr *E) {
-    if (cparser()) {
-      Kast::add(Kast::KApply("Cast", Sort::KITEM, {Sort::K, Sort::KITEM, Sort::K}));
-    }
-    else
-      Kast::add(Kast::KApply("ParenthesizedCast", Sort::EXPR, {Sort::ATYPE, Sort::EXPR}));
-
-    TRY_TO(TraverseTypeLoc(E->getTypeInfoAsWritten()->getTypeLoc()));
-    if (cparser())
-      JustBase();
-
-    TRY_TO(TraverseStmt(E->getSubExpr()));
-    return true;
+  bool VisitCStyleCastExpr(CStyleCastExpr *E) {
+    Kast::add(Kast::KApply("ParenthesizedCast", Sort::EXPR, {Sort::ATYPE, Sort::EXPR}));
+    return false;
   }
 
   bool VisitCXXReinterpretCastExpr(CXXReinterpretCastExpr *E) {
@@ -2623,49 +1772,23 @@ std::string ifc(std::string c, std::string cpp) {
     return TraverseCXXConstructHelper(E->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
 
-  bool TraverseUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E) {
-    bool jb = false;
+  bool VisitUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E) {
     if (E->getKind() == UETT_SizeOf) {
       if (E->isArgumentType()) {
-        if (cparser()) {
-          Kast::add(Kast::KApply("SizeofType", Sort::KITEM, {Sort::KITEM, Sort::K}));
-          TraverseType(E->getArgumentType());
-          JustBase();
-          return true;
-        }
         Kast::add(Kast::KApply("SizeofType", Sort::EXPR, {Sort::ATYPE}));
       } else {
-        if (cparser())
-          Kast::add(Kast::KApply("SizeofExpression", Sort::KITEM, {Sort::K}));
-        else
-          Kast::add(Kast::KApply("SizeofExpr", Sort::EXPR, {Sort::EXPR}));
+        Kast::add(Kast::KApply("SizeofExpr", Sort::EXPR, {Sort::EXPR}));
       }
     } else if (E->getKind() == UETT_AlignOf) {
       if (E->isArgumentType()) {
-        if (cparser()) {
-          Kast::add(Kast::KApply("AlignofType", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
-          jb = true;
-        }
-        else
-          Kast::add(Kast::KApply("AlignofType", Sort::EXPR, {Sort::ATYPE}));
+        Kast::add(Kast::KApply("AlignofType", Sort::EXPR, {Sort::ATYPE}));
       } else {
-        if (cparser())
-          Kast::add(Kast::KApply("AlignofExpression", Sort::KITEM, {Sort::KITEM}));
-        else
-          Kast::add(Kast::KApply("AlignofExpr", Sort::EXPR, {Sort::EXPR}));
+        Kast::add(Kast::KApply("AlignofExpr", Sort::EXPR, {Sort::EXPR}));
       }
     } else {
       throw std::logic_error("unimplemented: ??? expr or type trait");
     }
-
-    if (E->isArgumentType())
-      TraverseType(E->getArgumentType());
-    else
-      TraverseStmt(E->getArgumentExpr());
-
-    if (jb)
-      JustBase();
-    return true;
+    return false;
   }
 
   bool VisitSizeOfPackExpr(SizeOfPackExpr *E) {
@@ -2820,46 +1943,23 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitStringLiteral(StringLiteral *Constant) {
-    if (cparser()) {
-      if (Constant->getKind() == StringLiteral::Ascii) {
-        Kast::add(Kast::KApply("StringLiteral", Sort::STRINGLITERAL, {Sort::STRING}));
-        StringRef str = Constant->getBytes();
-        VisitStringRef(str);
-        return false;
-      }
-
-      if (Constant->getKind() != StringLiteral::Wide)
-        throw std::logic_error("Unsupported kind of string literal");
-
-      Kast::add(Kast::KApply("WStringLiteral", Sort::STRINGLITERAL, {Sort::STRICTLIST}));
-      strictlist();
-      for(size_t i = 0; i < Constant->getLength(); i++) {
-        Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
-        Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
-        VisitUnsigned(Constant->getCodeUnit(i));
-      }
-      emptyList();
-      return false;
-    }
-    else {
-      Kast::add(Kast::KApply("StringLiteral", Sort::EXPR, {Sort::CHARKIND, Sort::STRING}));
-      switch (Constant->getKind()) {
-        case StringLiteral::Ascii:
-          Kast::add(Kast::KApply("Ascii", Sort::CHARKIND));
-          break;
-        case StringLiteral::Wide:
-          Kast::add(Kast::KApply("Wide", Sort::CHARKIND));
-          break;
-        case StringLiteral::UTF8:
-          Kast::add(Kast::KApply("UTF8", Sort::CHARKIND));
-          break;
-        case StringLiteral::UTF16:
-          Kast::add(Kast::KApply("UTF16", Sort::CHARKIND));
-          break;
-        case StringLiteral::UTF32:
-          Kast::add(Kast::KApply("UTF32", Sort::CHARKIND));
-          break;
-      }
+    Kast::add(Kast::KApply("StringLiteral", Sort::EXPR, {Sort::CHARKIND, Sort::STRING}));
+    switch (Constant->getKind()) {
+      case StringLiteral::Ascii:
+        Kast::add(Kast::KApply("Ascii", Sort::CHARKIND));
+        break;
+      case StringLiteral::Wide:
+        Kast::add(Kast::KApply("Wide", Sort::CHARKIND));
+        break;
+      case StringLiteral::UTF8:
+        Kast::add(Kast::KApply("UTF8", Sort::CHARKIND));
+        break;
+      case StringLiteral::UTF16:
+        Kast::add(Kast::KApply("UTF16", Sort::CHARKIND));
+        break;
+      case StringLiteral::UTF32:
+        Kast::add(Kast::KApply("UTF32", Sort::CHARKIND));
+        break;
     }
     StringRef str = Constant->getBytes();
     VisitStringRef(str);
@@ -2867,72 +1967,39 @@ std::string ifc(std::string c, std::string cpp) {
   }
 
   bool VisitCharacterLiteral(CharacterLiteral *Constant) {
-    if (cparser()) {
-      switch (Constant->getKind()) {
-        case CharacterLiteral::Ascii:
-          Kast::add(Kast::KApply("CharLiteral", Sort::CONSTANT, {Sort::INT}));
-          break;
-        case CharacterLiteral::Wide:
-          Kast::add(Kast::KApply("WCharLiteral", Sort::CONSTANT, {Sort::INT}));
-          break;
-        default:
-          throw std::logic_error("Unsupported characted literal");
-      }
-    } else {
-      Kast::add(Kast::KApply("CharacterLiteral", Sort::EXPR, {Sort::CHARKIND, Sort::INT}));
-      switch (Constant->getKind()) {
-        case CharacterLiteral::Ascii:
-          Kast::add(Kast::KApply("Ascii", Sort::CHARKIND));
-          break;
-        case CharacterLiteral::Wide:
-          Kast::add(Kast::KApply("Wide", Sort::CHARKIND));
-          break;
-        case CharacterLiteral::UTF8:
-          Kast::add(Kast::KApply("UTF8", Sort::CHARKIND));
-          break;
-        case CharacterLiteral::UTF16:
-          Kast::add(Kast::KApply("UTF16", Sort::CHARKIND));
-          break;
-        case CharacterLiteral::UTF32:
-          Kast::add(Kast::KApply("UTF32", Sort::CHARKIND));
-          break;
-      }
+    Kast::add(Kast::KApply("CharacterLiteral", Sort::EXPR, {Sort::CHARKIND, Sort::INT}));
+    switch (Constant->getKind()) {
+      case CharacterLiteral::Ascii:
+        Kast::add(Kast::KApply("Ascii", Sort::CHARKIND));
+        break;
+      case CharacterLiteral::Wide:
+        Kast::add(Kast::KApply("Wide", Sort::CHARKIND));
+        break;
+      case CharacterLiteral::UTF8:
+        Kast::add(Kast::KApply("UTF8", Sort::CHARKIND));
+        break;
+      case CharacterLiteral::UTF16:
+        Kast::add(Kast::KApply("UTF16", Sort::CHARKIND));
+        break;
+      case CharacterLiteral::UTF32:
+        Kast::add(Kast::KApply("UTF32", Sort::CHARKIND));
+        break;
     }
     Kast::add(Kast::KToken(Constant->getValue()));
     return false;
   }
 
-  void utypeFromType() {
-    Kast::add(Kast::KApply("utypeFromType", Sort::UTYPE, {Sort::TYPE}));
-  }
-
   bool TraverseIntegerLiteral(IntegerLiteral *Constant) {
-    if (cparser()) {
-      Kast::add(Kast::KApply("createTv", Sort::KITEM, {Sort::CVALUE, Sort::KITEM}));
-      VisitAPInt(Constant->getValue());
-      utypeFromType();
-      Kast::add(Kast::KApply("addModifierStrict", Sort::KITEM, {Sort::MODIFIER, Sort::KITEM}));
-      Kast::add(Kast::KApply("IntegerConstant_C-TYPING-SYNTAX", Sort::MODIFIER));
-      TRY_TO(TraverseType(Constant->getType()));
-    } else {
-      Kast::add(Kast::KApply("IntegerLiteral", Sort::EXPR, {Sort::INT, Sort::ATYPE}));
-      VisitAPInt(Constant->getValue());
-      TRY_TO(TraverseType(Constant->getType()));
-    }
+    Kast::add(Kast::KApply("IntegerLiteral", Sort::EXPR, {Sort::INT, Sort::ATYPE}));
+    VisitAPInt(Constant->getValue());
+    TRY_TO(TraverseType(Constant->getType()));
     return true;
   }
 
   bool TraverseFloatingLiteral(FloatingLiteral *Constant) {
-    if (cparser()) {
-      Kast::add(Kast::KApply("createTv", Sort::KITEM, {Sort::CVALUE, Sort::KITEM}));
-      VisitAPFloat(Constant->getValue());
-      utypeFromType();
-      TRY_TO(TraverseType(Constant->getType()));
-    } else {
-      Kast::add(Kast::KApply("FloatingLiteral", Sort::EXPR, {Sort::FLOAT, Sort::ATYPE}));
-      VisitAPFloat(Constant->getValue());
-      TRY_TO(TraverseType(Constant->getType()));
-    }
+    Kast::add(Kast::KApply("FloatingLiteral", Sort::EXPR, {Sort::FLOAT, Sort::ATYPE}));
+    VisitAPFloat(Constant->getValue());
+    TRY_TO(TraverseType(Constant->getType()));
     return true;
   }
 
@@ -2947,47 +2014,11 @@ std::string ifc(std::string c, std::string cpp) {
     return false;
   }
 
-  bool TraverseCompoundLiteralExpr(CompoundLiteralExpr *E) {
-    Kast::add(Kast::KApply("CompoundLiteral", Sort::KITEM, {Sort::INT, Sort::KITEM, Sort::KITEM, Sort::KITEM}));
-    Kast::add(Kast::KToken(blockTag++));
-    TraverseType(E->getType());
-    JustBase();
-    TraverseStmt(E->getInitializer());
-    return true;
-  }
-
   bool TraverseInitListExpr(InitListExpr *E) {
     InitListExpr *Syntactic = E->isSemanticForm() ? E->getSyntacticForm() ? E->getSyntacticForm() : E : E;
-    if (cparser()) {
-      Kast::add(Kast::KApply("CompoundInit", Sort::KITEM, {Sort::STRICTLIST}));
-      strictlist();
-    }
-    else
-      Kast::add(Kast::KApply("BraceInit", Sort::BRACEINIT, {Sort::LIST}));
-
+    Kast::add(Kast::KApply("BraceInit", Sort::BRACEINIT, {Sort::LIST}));
     KSeqList(Syntactic->getNumInits());
     for (Stmt *SubStmt : Syntactic->children()) {
-      if (cparser()) {
-        Kast::add(Kast::KApply("InitFragment", Sort::KITEM, {Sort::KITEM, Sort::KITEM}));
-        Stmt * sub = SubStmt;
-        if (DesignatedInitExpr * D = dyn_cast<DesignatedInitExpr>(SubStmt)) {
-          sub = D->getInit();
-          for (unsigned i = 0; i < D->size(); i++) {
-            if (D->getDesignator(i)->getFieldName()) {
-              Kast::add(Kast::KApply("InFieldInit", Sort::KRESULT, {Sort::CID, Sort::KITEM}));
-              TraverseIdentifierInfo(D->getDesignator(i)->getFieldName());
-            }
-          }
-        }
-        Kast::add(Kast::KApply("NextInit", Sort::KRESULT));
-        if (!isa<InitListExpr>(sub))
-          Kast::add(Kast::KApply("SingleInit", Sort::KITEM, {Sort::KITEM}));
-
-        TRY_TO(TraverseStmt(sub));
-        continue;
-      }
-
-      // cparser() == false
       TRY_TO(TraverseStmt(SubStmt));
     }
     return true;
@@ -3155,19 +2186,11 @@ private:
   }
 
   void NoExpression() {
-    if (cparser())
-      Kast::add(Kast::KApply("NothingExpression", Sort::KITEM));
-    else
-      Kast::add(Kast::KApply("NoExpression", Sort::AEXPR));
+    Kast::add(Kast::KApply("NoExpression", Sort::AEXPR));
   }
 
   void NoStatement() {
-    if (cparser()) {
-      Kast::add(Kast::KApply("Computation", Sort::KITEM, {Sort::K}));
-      Kast::add(Kast::KApply("NothingExpression", Sort::KITEM));
-    }
-    else
-      Kast::add(Kast::KApply("NoStatement", Sort::ASTMT));
+    Kast::add(Kast::KApply("NoStatement", Sort::ASTMT));
   }
 
   void List(int n) {
@@ -3194,11 +2217,6 @@ private:
 
   void Specifier() {
     Kast::add(Kast::KApply("Specifier", Sort::DECL, {Sort::SPECIFIER, Sort::DECL}));
-  }
-
-  void addStorage(const char *str) {
-    Kast::add(Kast::KApply("addStorageStrict", Sort::KITEM, {Sort::STORAGECLASSSPECIFIER, Sort::TYPE}));
-    Kast::add(Kast::KApply(str, Sort::STORAGECLASSSPECIFIER));
   }
 
   void Specifier(const char *str, Sort sort) {
@@ -3230,109 +2248,53 @@ private:
     }
   }
 
-  static bool excludedDecl(clang::Decl const *d) {
-    if (isa<EmptyDecl>(d))
-      return true;
-
+  bool excludedDecl(clang::Decl const *d) const {
     return d->isImplicit() && d->isDefinedOutsideFunctionOrMethod();
-  }
-
-  static bool notExcludedDecl(clang::Decl const *d) {
-    return !excludedDecl(d);
   }
 
   void DeclContext(DeclContext *D) {
     int i = 0;
     for (const clang::Decl * d : D->decls()) {
-      if (excludedDecl(d))
-        continue;
-      i++;
+      if (!excludedDecl(d)) i++;
     }
     KSeqList(i);
   }
 
   void StmtChildren(Stmt *S) {
     int i = 0;
-    for (Stmt::child_iterator iter = S->child_begin(), end = S->child_end(); iter != end; ++i, ++iter){
-      if (DeclStmt *d = dyn_cast<DeclStmt>(*iter)) {
-        if (cparser() && !d->isSingleDecl())
-          i += std::count_if(d->getDeclGroup().begin(), d->getDeclGroup().end(), notExcludedDecl) - 1;
-      }
-    }
-
+    for (Stmt::child_iterator iter = S->child_begin(), end = S->child_end(); iter != end; ++i, ++iter);
     KSeqList(i);
   }
 
-  std::unique_ptr<Kast::Node> getSC(StorageClass sc) {
-    switch (sc) {
-      case StorageClass::SC_None:
-        return {};
-      case StorageClass::SC_Extern:
-        return std::make_unique<Kast::KApply>("Extern", Sort::STORAGECLASSSPECIFIER);
-      case StorageClass::SC_Static:
-        return std::make_unique<Kast::KApply>("Static", Sort::STORAGECLASSSPECIFIER);
-      case StorageClass::SC_Register:
-        return std::make_unique<Kast::KApply>("Register", Sort::STORAGECLASSSPECIFIER);
-      case StorageClass::SC_Auto:
-        return std::make_unique<Kast::KApply>("Auto", Sort::AUTOSPECIFIER);
-      default:
-        throw std::logic_error("unimplemented: storage class");
-    }
-
-  }
-
   void StorageClass(StorageClass sc) {
+    const char *spec;
     switch (sc) {
       case StorageClass::SC_None:
         return;
       case StorageClass::SC_Extern:
-        if (cparser())
-          addStorage("Extern");
-        else
-          Specifier("Extern", Sort::STORAGECLASSSPECIFIER);
+        Specifier("Extern", Sort::STORAGECLASSSPECIFIER);
         break;
       case StorageClass::SC_Static:
-        if (cparser())
-          addStorage("Static");
-        else
-          Specifier("Static", Sort::STORAGECLASSSPECIFIER);
+        Specifier("Static", Sort::STORAGECLASSSPECIFIER);
         break;
       case StorageClass::SC_Register:
-        if (cparser())
-          addStorage("Register");
-        else
-          Specifier("Register", Sort::STORAGECLASSSPECIFIER);
+        Specifier("Register", Sort::STORAGECLASSSPECIFIER);
         break;
       case StorageClass::SC_Auto:
-        if (cparser())
-          addStorage("Auto");
-        else
-          Specifier("Auto", Sort::AUTOSPECIFIER);
+        Specifier("Auto", Sort::AUTOSPECIFIER);
         break;
       default:
         throw std::logic_error("unimplemented: storage class");
     }
   }
 
-  std::unique_ptr<Kast::Node> getTSC(ThreadStorageClassSpecifier sc) {
-    switch (sc) {
-      case ThreadStorageClassSpecifier::TSCS_unspecified:
-        return nullptr;
-      case ThreadStorageClassSpecifier::TSCS_thread_local:
-        return std::make_unique<Kast::KApply>("ThreadLocal", Sort::STORAGECLASSSPECIFIER);
-      default:
-        throw std::logic_error("unimplemented: thread storage class");
-    }
-  }
   void ThreadStorageClass(ThreadStorageClassSpecifier sc) {
+    const char *spec;
     switch (sc) {
       case ThreadStorageClassSpecifier::TSCS_unspecified:
         return;
       case ThreadStorageClassSpecifier::TSCS_thread_local:
-        if (cparser())
-          addStorage("ThreadLocal");
-        else
-          Specifier("ThreadLocal", Sort::STORAGECLASSSPECIFIER);
+        Specifier("ThreadLocal", Sort::STORAGECLASSSPECIFIER);
         break;
       default:
         throw std::logic_error("unimplemented: thread storage class");
@@ -3345,11 +2307,7 @@ private:
   }
 
   void Qualifier(const char * str) {
-    if (cparser()) {
-      Kast::add(Kast::KApply("addQualifierStrict", Sort::KITEM, {Sort::QUALIFIER, Sort::TYPE}));
-    } else {
-      Kast::add(Kast::KApply("Qualifier", Sort::ATYPE, {Sort::QUALIFIER, Sort::ATYPE}));
-    }
+    Kast::add(Kast::KApply("Qualifier", Sort::ATYPE, {Sort::QUALIFIER, Sort::ATYPE}));
     Kast::add(Kast::KApply(str, Sort::QUALIFIER));
   }
 

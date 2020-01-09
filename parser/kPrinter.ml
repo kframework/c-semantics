@@ -510,7 +510,7 @@ and type_spec =
     | Tatomic (s, d)    -> kapply SpecifierElem "TAtomic" [specifier s KItem; decl_type d KItem]
 
 and definition : definition -> csort -> unit printer =
-  let definition_loc a l         = if l.lineno <> -10 then kapply KItem "DefinitionLoc" [cabs_loc l CabsLoc; a KItem] else a in
+  let definition_loc a l         = if l.lineno <> -10 then kapply KItem "DefinitionLoc" [a KItem; cabs_loc l CabsLoc] else a in
   let definition_loc_range a b c = kapply KItem "DefinitionLocRange" [a KItem; cabs_loc b CabsLoc; cabs_loc c CabsLoc] in
   let init_name (a, b)           = kapply KItem "InitName" [name a KItem; init_expression b K] in
   let init_name_group (a, b)     = kapply KItem "InitNameGroup" [specifier a KItem; list_of init_name b StrictList] in
@@ -531,7 +531,7 @@ and statement =
   let for_clause = function
     | FC_EXP exp1  -> kapply1 KItem "ForClauseExpression" (expression exp1 KItem)
     | FC_DECL dec1 -> definition dec1 in
-  let statement_loc s l = kapply KItem "StatementLoc" [cabs_loc l CabsLoc; s KItem] in
+  let statement_loc s l = kapply KItem "StatementLoc" [s KItem; cabs_loc l CabsLoc] in
   let for_statement fc1 exp2 exp3 stat sort = new_counter >>= fun counter ->
     kapply KItem "For5" [ktoken_int counter Int; for_clause fc1 KItem; expression exp2 K; expression exp3 K; new_block_statement stat K] sort in
   let switch exp stat sort = push_switch >>= fun id ->

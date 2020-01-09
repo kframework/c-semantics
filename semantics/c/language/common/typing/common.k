@@ -332,9 +332,6 @@ module C-TYPING-COMMON
      rule adjustParam(t(... st: _:SimpleArrayType) #as T::Type) => arrayToPtrType(T)
      rule adjustParam(T::Type) => T [owise]
 
-     syntax KItem ::= adjustParamStrict(KItem) [strict(1)]
-     rule adjustParamStrict(T:Type) => adjustParam(T)
-
      rule arrayToPtrType(t(Qs::Quals, Mods::Set, _:SimpleArrayType) #as T::Type)
           => t(Qs, Mods, pointerType(innerType(T)))
      rule arrayToPtrType(T::Type) => T [owise]
