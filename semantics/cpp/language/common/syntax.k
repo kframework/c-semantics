@@ -180,7 +180,7 @@ module CPP-SYNTAX
                    | Expr "<<=" Init [strict(c; 1)]
                    | Expr ">>=" Init [strict(c; 1)]
                    | ConditionalOp(Expr, Expr, Expr, ValueCategory, CPPType)
-                   | ThrowOp(init: Expr, obj: K)
+                   | ThrowOp(Expr) [strict(c)]
                    > left:
                      Comma(Expr, Expr) [strict(c; 1)]
      syntax Name ::= Name(NNS, CId)

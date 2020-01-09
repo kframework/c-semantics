@@ -10,6 +10,6 @@ typedef int wchar_t;
 #endif
 
 #define NULL ((void *) 0)
-#define offsetof(t, m) __builtin_offsetof(t, m)
+#define offsetof(t, m) __kcc_offsetof(t, m)
 
 #endif

@@ -1,3 +1,0 @@
-#!/bin/sh
-
-../../dist/clang-tools/bin/clang-kast -cparser -extra-arg=-std=c11 "$@"

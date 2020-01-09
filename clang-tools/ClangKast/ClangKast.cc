@@ -48,16 +48,6 @@ static cl::OptionCategory KastOptionCategory("K++ parser options");
 static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 
 static cl::opt<bool> Kore("kore", cl::desc("Output kore instead of kast."), cl::cat(KastOptionCategory));
-static cl::opt<bool> Cparser("cparser", cl::desc("Parse C instead of C++."), cl::cat(KastOptionCategory));
-static cl::opt<bool> NoLocation("no-location", cl::desc("Do not emit location information (CabsLoc)."), cl::cat(KastOptionCategory));
-
-bool cparser() {
-  return Cparser;
-};
-
-bool noLocation() {
-  return NoLocation;
-}
 
 // *** Sort to string ***
 
@@ -81,13 +71,10 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::CHARKIND:              os << "CharKind"; break;
     case Sort::CID:                   os << "CId"; break;
     case Sort::CLASSKEY:              os << "ClassKey"; break;
-    case Sort::CONSTANT:              os << "Constant"; break;
     case Sort::CTORINIT:              os << "CtorInit"; break;
-    case Sort::CVALUE:                os << "CValue"; break;
     case Sort::DECLARATOR:            os << "Declarator"; break;
     case Sort::DECL:                  os << "Decl"; break;
     case Sort::DESTRUCTORID:          os << "DestructorId"; break;
-    case Sort::DTYPE:                 os << "DType"; break;
     case Sort::ENUMERATOR:            os << "Enumerator"; break;
     case Sort::EXCEPTIONSPEC:         os << "ExceptionSpec"; break;
     case Sort::EXPRESSIONLIST:        os << "ExpressionList"; break;
@@ -97,11 +84,9 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::FUNCTIONSPECIFIER:     os << "FunctionSpecifier"; break;
     case Sort::INIT:                  os << "Init"; break;
     case Sort::INT:                   os << "Int"; break;
-    case Sort::K:                     os << "K"; break;
     case Sort::KITEM:                 os << "KItem"; break;
-    case Sort::KRESULT:               os << "KResult"; break;
+    case Sort::K:                     os << "K"; break;
     case Sort::LIST:                  os << "List"; break;
-    case Sort::MODIFIER:              os << "Modifier"; break;
     case Sort::NAME:                  os << "Name"; break;
     case Sort::NAMESPACE:             os << "Namespeace"; break;
     case Sort::NNS:                   os << "NNS"; break;
@@ -111,33 +96,19 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::QUALIFIER:             os << "Qualifier"; break;
     case Sort::REFQUALIFIER:          os << "RefQualifier"; break;
     case Sort::RESOLVEDEXPR:          os << "ResolvedExpr"; break;
-    case Sort::RVALUE:                os << "RValue"; break;
-    case Sort::SET:                   os << "Set"; break;
-    case Sort::SIMPLEFUNCTIONTYPE:    os << "SimpleFunctionType"; break;
-    case Sort::SIMPLEFIXEDARRAYTYPE:  os << "SimpleFixedArrayType"; break;
-    case Sort::SIMPLEINCOMPLETEARRAYTYPE:  os << "SimpleIncompleteArrayType"; break;
-    case Sort::SIMPLEVARIABLEARRAYTYPE:  os << "SimpleVariableArrayType"; break;
-    case Sort::SIMPLEPOINTERTYPE:     os << "SimplePointerType"; break;
-    case Sort::SIMPLETYPE:            os << "SimpleType"; break;
-    case Sort::SIMPLEUTYPE:           os << "SimpleUType"; break;
     case Sort::SPECIFIER:             os << "Specifier"; break;
-    case Sort::SPECIFIERELEM:         os << "SpecifierElem"; break;
     case Sort::STMT:                  os << "Stmt"; break;
     case Sort::STORAGECLASSSPECIFIER: os << "StorageClassSpecifier"; break;
     case Sort::STRICTLIST:            os << "StrictList"; break;
     case Sort::STRICTLISTRESULT:      os << "StrictListResult"; break;
     case Sort::STRING:                os << "String"; break;
-    case Sort::STRINGLITERAL:         os << "StringLiteral"; break;
     case Sort::TAG:                   os << "Tag"; break;
     case Sort::TEMPLATEARGUMENT:      os << "TemplateArgument"; break;
     case Sort::TEMPLATEPARAMETER:     os << "TemplateParameter"; break;
     case Sort::THIS:                  os << "This"; break;
-    case Sort::TYPE:                  os << "Type"; break;
     case Sort::TYPEID:                os << "TypeId"; break;
     case Sort::TYPESPECIFIER:         os << "TypeSpecifier"; break;
     case Sort::UNNAMEDCID:            os << "UnnamedCId"; break;
-    case Sort::UTYPE:                 os << "UType"; break;
-    case Sort::VARIADIC:              os << "Variadic"; break;
   }
   if (Kore) os << "{}";
   return os;
@@ -276,27 +247,15 @@ string Kast::KToken::toKString(unsigned long long s) {
 }
 
 string Kast::KToken::toKString(llvm::APFloat f) {
-  unsigned precision = f.semanticsPrecision(f.getSemantics());
   const unsigned numBytes = 6      // max length of signed short
                           + 4      // -1.E
                           + 3 + 11 // p4294967295x16
                           + 1      // null byte
-                          + precision;
+                          + f.semanticsPrecision(f.getSemantics());
   char result[numBytes] = {0}, suffix[14] = {0};
   SmallVector<char, 80> buf;
   f.toString(buf, 0, 0);
-  const unsigned range = [&]{
-      if (precision == 24)
-        return 8;
-      if (precision == 53)
-        return 11;
-      if (precision == 64)
-        return 15;
-      throw std::logic_error("Unexpected precision: " + std::to_string(precision));
-  }();
-  if (precision == 64)
-    precision = 65;
-  sprintf(suffix, "p%ux%d", precision, range);
+  sprintf(suffix, "p%ux16", f.semanticsPrecision(f.getSemantics()));
   strncpy(result, buf.data(), buf.size());
   strcat(result, suffix);
   return string(result);
@@ -348,12 +307,16 @@ void Kast::KSequence::print(Sort parentSort, function<void (Sort)> printChild) c
 
 // *** Kast ***
 
+template <class T>
+void Kast::add(const T & node) {
+  static_assert(std::is_base_of<Kast::Node, T>::value, "type parameter must derive from Kast::Node");
+  Kast::Nodes.push_back(make_unique<T>(node));
+}
 
 void Kast::print() { print(Sort::K, 0); }
 
 int Kast::print(Sort parentSort, int idx) {
-  if (idx >= Nodes.size() || !Nodes[idx])
-    throw logic_error("parse error");
+  if (!Nodes[idx]) throw logic_error("parse error");
 
   Nodes[idx]->print(parentSort, [&idx](Sort sort) { idx = print(sort, idx + 1); });
 
@@ -391,25 +354,11 @@ int main(int argc, const char **argv) {
   CommonOptionsParser OptionsParser(argc, argv, KastOptionCategory);
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
-  try {
-    if (int r = Tool.run(newFrontendActionFactory<GetKastAction>().get())) {
-      return r;
-    }
-  }catch(...){
-    cout << "Caught exception. The output will be incomplete\n";
-    try {
-      Kast::print();
-    } catch(...) {
-      std::cout << std::endl;
-    }
-    throw;
+
+  if (int r = Tool.run(newFrontendActionFactory<GetKastAction>().get())) {
+    return r;
   }
 
-  try {
-    Kast::print();
-  } catch(...) {
-    cout << flush;
-    throw;
-  }
+  Kast::print();
   cout << endl;
 }

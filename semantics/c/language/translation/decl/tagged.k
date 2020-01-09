@@ -78,11 +78,6 @@ module C-DECL-TAGGED
 
      syntax KItem ::= defEnumConstants(Bool, CId, Int, Int, Int, List, Map)
 
-     rule (.K => Loc) ~>
-          defEnumConstants(_, _, _, _, _,
-               ListItem(CodeLoc(K::KItem, Loc::CabsLoc) => K) _,
-          _)
-
      rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, Next::Int, ListItem(EnumItem(E::CId)) L::List, M::Map)
           => initEnum(E, tv(Next, ut(SetItem(IntegerConstant), int)))
           ~> defEnumConstants(Pack, X, minInt(Min, Next), maxInt(Max, Next), Next +Int 1, L, M[Next <- E])

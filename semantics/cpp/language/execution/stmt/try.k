@@ -23,21 +23,8 @@ module CPP-EXECUTION-STMT-TRY
      rule <k> enterTryBlock(Catch::List) => .K ...</k>
           <catch-handlers> _ => Catch </catch-handlers>
 
-     context ThrowOp(_, HOLE:Expr) [result(LV)]
-
-     rule <k> ThrowOp(E::Expr, Obj::K)
-          => #if isLV(Old) andBool isLV(Obj) #then
-               destructLocal(true, lcentry({Old}:>LV, false, true, false))
-             #else .K #fi
-          ~> prepareThrow(E)
-          ...</k>
-          <current-exception> Old::K => #if Obj ==K .K #then Old #else Obj #fi </current-exception>
-          requires isLV(Obj) orBool Obj ==K .K
-
-     syntax KItem ::= prepareThrow(init: Expr) [strict(c; 1)]
-
-      rule <k> prepareThrow(V:LVal) => throw(V) ...</k>
-           <uncaught-exception> _ => true </uncaught-exception>
+     rule <k> ThrowOp(V:LVal) => throw(V) ...</k>
+          <uncaught-exception> _ => true </uncaught-exception>
 
      rule <k> (.K => destructLocal(true, LCE)) ~> throw(V::LVal) ...</k>
           <catch-handlers> .List </catch-handlers>

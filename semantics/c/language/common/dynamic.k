@@ -53,7 +53,6 @@ module C-DYNAMIC-SYNTAX
      syntax RValue ::= "emptyValue"
      syntax RValue ::= tv(CValue, UType)
           [latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
-     syntax KItem ::= createTv(CValue, KItem) [strict(2)]
 
      syntax KItem ::= toRVal(K)
 
@@ -262,7 +261,5 @@ module C-DYNAMIC
      rule ofSList(krlist(L1::List) strict:: L2::SList) => L1 ofSList(L2)
      rule ofSList(.SList) => .List
      rule ofSList(K:KItem strict:: L::SList) => ListItem(K) ofSList(L) [owise]
-
-     rule createTv(V:CValue, T:UType) => tv(V, T)
 
 endmodule
