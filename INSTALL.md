@@ -42,7 +42,7 @@ dependencies:
 
 ## From scratch
 
-We recommend using Linux or OSX on a computer with at least 1 GB of memory.
+We recommend using Linux or OSX on a computer with at least 4 GB of memory.
 
 On Ubuntu 18.04, the installation process for our C semantics can be summarized as:
 ```sh
@@ -61,7 +61,6 @@ eval $(opam config env)
 eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
 make -j4 --output-sync=line
 ```
-TODO remove libclang-3.9
 The build artifacts will be placed inside the `dist` directory.
 
 ## Detailed instructions
