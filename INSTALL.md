@@ -47,12 +47,13 @@ We recommend using Linux or OSX on a computer with at least 1 GB of memory.
 On Ubuntu 18.04, the installation process for our C semantics can be summarized as:
 ```sh
 sudo apt-get install --yes \
-  maven git openjdk-8-jdk flex libgmp-dev \
+  maven git openjdk-8-jdk flex libgmp-dev libffi-dev \
   libmpfr-dev build-essential cmake zlib1g-dev \
-  libclang-3.9-dev llvm-3.9 diffutils libuuid-tiny-perl \
+  diffutils libuuid-tiny-perl \
   libstring-escape-perl libstring-shellquote-perl \
   libgetopt-declare-perl opam pkg-config \
-  libapp-fatpacker-perl
+  libapp-fatpacker-perl liblocal-lib-perl \
+  clang-6.0 libclang-6.0-dev
 git clone https://github.com/kframework/c-semantics.git
 cd c-semantics
 git submodule update --init --recursive
@@ -60,17 +61,16 @@ eval $(opam config env)
 eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
 make -j4 --output-sync=line
 ```
+TODO remove libclang-3.9
 The build artifacts will be placed inside the `dist` directory.
-
 
 ## Detailed instructions
 
 ### 1. Install basic dependencies.
-- The GNU C compiler (GCC), Make, diff, and patch. On OSX, these programs are generally part
-  of XCode. On Ubuntu, these programs are part of the "build-essential" and "diffutils" packages
-  and can be installed with the following:
-```
-$ sudo apt-get install build-essential diffutils
+- The GNU C compiler (GCC), Make, diff, patch, CMake, Maven, and libraries.
+```sh
+sudo apt-get install build-essential diffutils bison cmake maven pkg-config \
+  libgmp-dev libffi-dev libmpfr-dev flex
 ```
 - If using Windows, you'll probably want to install cygwin.
 
@@ -78,85 +78,64 @@ $ sudo apt-get install build-essential diffutils
 - Perl 5 will likely already be installed on most Linux and Mac OS X machines.
   But if not, use your package manager to install it.
 - For Windows, see here: <http://www.perl.org/get.html>
-- Install the following Perl modules using `cpan` (or `ppm` with ActiveState
-  Perl in Windows):
+- Install the following Perl modules:
     - App::FatPacker
     - Getopt::Declare
     - String::Escape
     - String::ShellQuote
     - UUID::Tiny
+    - local::lib
 
-You can also install them using apt-get with
+The easiest way is to install them using apt-get:
 ```
-$ sudo apt-get install libuuid-tiny-perl libxml-libxml-perl libgetopt-declare-perl libstring-escape-perl libstring-shellquote-perl libapp-fatpacker-perl
-```
-
-Alternately, to install these modules using cpan:
-```
-$ sudo cpan -i Getopt::Declare String::Escape String::ShellQuote App::FatPacker
-```
-### 3. Install K.
-- This version of the C semantics should be compatible with the latest version
-  of Runtime Verification's version of the K Framework (<https://github.com/runtimeverification/k>).
-- Ensure `kompile` and `krun` are included in your `$PATH`. For example, if you
-  downloaded the K Framework to `~/k` (and add this to your `~/.bashrc` to make
-  this permanent):
-```
-$ export PATH=$PATH:~/k/bin
+$ sudo apt-get install libuuid-tiny-perl libxml-libxml-perl libgetopt-declare-perl libstring-escape-perl libstring-shellquote-perl libapp-fatpacker-perl liblocal-lib-perl
 ```
 
-### 4. Install OCaml K backend.
-- This is a proprietary component used to compile and execute programs written in K.
-  It is Copyright Runtime Verification, Inc. and subject to the Runtime Verification
-  Licenses (<https://runtimeverification.com/licensing/>). 
-  A completely free executable version of the C semantics is not available at this time.
-  From the K source root, you can install it by running:
+Alternatively, to install these modules using cpan:
 ```
-$ mvn dependency:copy -Dartifact=com.runtimeverification.rv_match:ocaml-backend:1.0-SNAPSHOT -DoutputDirectory=k-distribution/target/release/k/lib/java
+$ sudo cpan -i Getopt::Declare String::Escape String::ShellQuote App::FatPacker local::lib
 ```
 
-### 5. Install OCaml.
-- We use a modified version of the C parser from the CIL project, which is
-  written in OCaml.
-- We also now default to using OCaml to execute the C semantics.
-
-For execution the unreleased 4.03 is required, and compiling the semantics
-uses ocamlfind to locate require OCaml packages.
-This is most easily managed with opam - https://opam.ocaml.org/
-To install the required dependencies using OPAM, run
-
+### 3. Install OCaml
+We use ocaml for the C parser and for K OCaml backend. Install OCaml using
+```sh
+sudo apt-get install --yes opam
 ```
-k-configure-opam-dev
+
+### 3. Clone the semantics
+```
+git clone --depth=1 https://github.com/kframework/c-semantics.git
+cd c-semantics
+```
+
+
+### 4. Install K
+An appropriate version of K framework is a submodule of the c-semantics repository.
+To build it, first update all the submodules:
+```
+git submodule update --init --recursive
+```
+then build K:
+```
+pushd .build/k
+mvn package -DskipTests -DskipKTest -Dhaskell.backend.skip -Dllvm.backend.skip
+```
+and install the dependencies of K's OCaml backend:
+```
+./k-distribution/src/main/scripts/bin/k-configure-opam-dev
+popd
 eval `opam config env`
 ```
 
-To check if OCaml is installed:
+### 5. Install Clang
+We use Clang to parse C++ programs. Install Clang 6.0 using
 ```
-$ ocamlfind ocamlopt -version
-        Objective Caml version 4.03.0+dev10-2015-07-29
-
-# 
+sudo apt-get install --yes clang-6.0 libclang-6.0-dev
 ```
 
-(Press ctrl-d to exit.)
-
-(For the parser alone versions 3.11, 3.12, and 4.00 all work, probably many
-more as well, and no special dependency handling is required.
-Installing with your OS package manger or from https://ocaml.org/ will work.
-On Ubuntu, `apt-get install ocaml`)
-
-### 6. Download our C semantics.
-Use the following command if `git` is installed:
-```
-$ git clone --depth=1 https://github.com/kframework/c-semantics.git
-```
-Otherwise, download the latest stable version from github here:
-<https://github.com/kframework/c-semantics/releases/tag/latest>
-
-### 7. Build our C tool.
-- Run `make -j4` in the project root directory.
-- This should take roughly 10 minutes on non-windows machines, and up to
-  60 minutes on windows.
+### 6. Build our C tool.
+- Run `make` (or `make -j4` if you have enough memory) in the project root directory.
+- The build takes about 30 minutes.
 - The `make` process creates a `dist/` directory which you can copy elsewhere
   to install the C tool, or simply leave it where it is. Either way, you will
   probably want to add it to your `$PATH`:
@@ -173,4 +152,12 @@ Hello world
 
 See [README.md](README.md) for a summary of the features supported by the `kcc`
 tool.
+
+# 8. Subsequent builds
+When building in a fresh shell after all dependencies are installed, before the `make` command, run
+```
+eval $(opam config env)
+eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
+```
+
 
