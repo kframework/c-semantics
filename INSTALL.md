@@ -152,7 +152,7 @@ Hello world
 See [README.md](README.md) for a summary of the features supported by the `kcc`
 tool.
 
-# 8. Subsequent builds
+### 8. Subsequent builds
 When building in a fresh shell after all dependencies are installed, before the `make` command, run
 ```
 eval $(opam config env)
