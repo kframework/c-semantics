@@ -86,6 +86,7 @@ module CPP-CLASS-INFO-SYNTAX
      syntax ClassInfo ::= getClassInfo(CPPType) [function]
                         | getClassInfo(Class) [function, klabel(getClassInfoOfClass)]
 
+     syntax ClassCell
      syntax ClassInfo ::= ClassCell | IncompleteInfo
 
 endmodule // CPP-CLASS-INFO-SYNTAX

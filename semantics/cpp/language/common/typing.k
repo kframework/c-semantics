@@ -355,6 +355,7 @@ module CPP-TYPING-SYNTAX
      syntax EnumInfo ::= getEnumInfo(CPPType) [function]
                        | #getEnumInfo(Enum) [function]
 
+     syntax CppenumCell
      syntax EnumInfo ::= CppenumCell | IncompleteInfo
 
      syntax Bool ::= CPPType "==Type" CPPType [function]
