@@ -20,7 +20,7 @@ use RV_Kcc::Opts qw(
       cppArgs suppressions ifdefs ldArgs nativeObjFiles srcFiles objFiles trampolineFiles breakpoints
       RVMAIN BASE_LIBS MAGIC
 );
-use RV_Kcc::Shell qw(shell checkError setShellDebugFile saveArgv debug);
+use RV_Kcc::Shell qw(shell checkError setShellDebugFile setLanguageDefinition saveArgv debug);
 
 # Here we trap control-c (and others) so we can clean up when that happens.
 $SIG{'ABRT'} = 'interruptHandler';
@@ -527,8 +527,8 @@ sub getTranslationCommand {
       my $cTransDef = profileDir("c-translation-kompiled");
       my $cppTransDef = profileDir("cpp-translation-kompiled");
 
-      my @krun = getKRunCommand($output,
-            $lang eq 'c++'? 'cpp-translation-kompiled' : 'c-translation-kompiled');
+      my $def = $lang eq 'c++'? 'cpp-translation-kompiled' : 'c-translation-kompiled';
+      my @krun = getKRunCommand($output, $def);
 
       if (arg('-ftranslation-depth=')) {
             push(@krun, '--depth');
@@ -548,6 +548,7 @@ sub getTranslationCommand {
       my $kast = parse($src, $lang, $trampolines);
       @krun = addArg("PGM", $kast, 'KItem', 'korefile', @krun);
 
+      setLanguageDefinition(profileDir($def));
       setShellDebugFile($output, 1);
       return @krun;
 }
