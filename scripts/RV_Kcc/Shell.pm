@@ -11,12 +11,12 @@ use File::Spec::Functions qw(catfile);
 use String::ShellQuote qw(shell_quote_best_effort);
 use Exporter;
 
-use RV_Kcc::Files qw(tempFile kBinDir IS_CYGWIN);
+use RV_Kcc::Files qw(profileDir tempFile kBinDir IS_CYGWIN);
 
 use constant NULL => '/dev/null';
 
-use constant KBIN2TEXT         => do {
-	my $path = kBinDir('k-bin-to-text');
+use constant KAST         => do {
+	my $path = kBinDir('kast');
 	my $ext = IS_CYGWIN? '.bat' : '';
 	$path . $ext;
 };
@@ -30,6 +30,7 @@ our @EXPORT_OK = qw(
       enableDebugging
       saveArgv
       setShellDebugFile
+      setLanguageDefinition
       shell
       debug
 );
@@ -48,16 +49,22 @@ sub debug {
       }
 }
 
-sub shell {
-      my ($cmd, @args) = @_;
+sub shell_ex {
+      my ($out, $err, $cmd, @args) = @_;
       my $self =
             { CMD => $cmd
             , ARGS => \@args
-            , STDOUT => NULL
-            , STDERR => NULL
+            , STDOUT => $out
+            , STDERR => $err
             , TMP => ''
             };
       return (bless $self);
+}
+
+sub shell {
+      my ($cmd, @args) = @_;
+      return shell_ex(NULL, NULL, $cmd, @args)
+
 }
 
 sub verbose {
@@ -167,11 +174,20 @@ sub commandName {
             ($debugFile, $isBinary) = @_;
       }
 
+      my $languageDefinition;
+      sub setLanguageDefinition {
+            ($languageDefinition) = @_;
+      }
+
       sub checkError {
             my ($retval) = @_;
             if ($retval) {
                   if ($debugFile && $isBinary) {
-                        shell(KBIN2TEXT, $debugFile, 'kcc_config')->result();
+                        shell_ex('kcc_config', NULL, KAST,
+                          '-i', 'kore',
+                          '-o', 'pretty',
+                          '-d', $languageDefinition,
+                          $debugFile)->result();
                   } elsif ($debugFile) {
                         copy($debugFile, 'kcc_config');
                   }
