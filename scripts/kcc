@@ -444,6 +444,9 @@ sub getKRunCommand {
 		  , $dir
                   , '--output-file', $output
                   );
+            if (arg('-d')) {
+                  push(@krun, '-save-temps');
+            }
       } else {
             @krun =
                   ( KRUN
