@@ -279,6 +279,7 @@ $(PROFILE_OUTPUT_DIR)/native/%.o: $(PROFILE_DIR)/native/%.c \
 
 .PHONY: test-build
 test-build: $(LIBC_SO) \
+            $(LIBSTDCXX_SO) \
             $(call timestamp_of,c-cpp)
 
 $(PARSER_BUILD_DIR)/cparser: | $(PARSER_BUILD_DIR)
