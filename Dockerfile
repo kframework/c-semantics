@@ -9,7 +9,8 @@ RUN     apt-get update -q \
           libstdc++6      \
           llvm-6.0        \
           clang++-6.0     \
-          clang-6.0
+          clang-6.0       \
+          z3
 
 # This user is set up in the runtimeverificationinc/kframework:* images.
 USER user:user
