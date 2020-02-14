@@ -24,6 +24,15 @@ RUN   apt-get update -q     \
         libjemalloc-dev     \
         pkg-config
 
+RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.7 \
+    && cd z3                                                        \
+    && python scripts/mk_make.py                                    \
+    && cd build                                                     \
+    && make -j8                                                     \
+    && make install                                                 \
+    && cd ../..                                                     \
+    && rm -rf z3
+
 # This user is set up in the runtimeverificationinc/kframework:* images.
 USER user:user
 

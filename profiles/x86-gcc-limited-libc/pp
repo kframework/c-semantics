@@ -27,9 +27,6 @@ do
             esac
             shift
             ;;
-        -std=*)
-            shift
-            ;;
         --)
             eoo=1
             options+=("$1")
@@ -46,12 +43,7 @@ do
     fi
 done
 
-standard="c11"
-if (gcc -std=c11 |& grep -q unrecognized); then
-  standard="c99"
-fi
-
-gcc -Wall -Wextra -Wmissing-prototypes -x c -std=$standard -nostdlib \
+gcc -Wall -Wextra -Wmissing-prototypes -x c -nostdlib \
       -U __GNUC__ -D__KCC__ \
       -include "$(dirname "$0")/include/kcc_settings.h" \
       -E -I "$(dirname "$0")/include/library" "${options[@]}"

@@ -76,7 +76,7 @@ let get_string_literals : ((unit printer) list) printer = fun s -> (s.string_lit
 let new_counter : int printer = fun s -> (s.counter + 1, {s with counter = s.counter + 1})
 
 let push_switch : int printer = new_counter >>= fun counter s ->
-  (counter, {s with switch_stack = counter :: s.switch_stack; current_switch_id = counter})
+  (counter, {s with switch_stack = s.current_switch_id :: s.switch_stack; current_switch_id = counter})
 
 let pop_switch : unit printer = fun s ->
   ((), {s with switch_stack = List.tl s.switch_stack; current_switch_id = List.hd s.switch_stack})
