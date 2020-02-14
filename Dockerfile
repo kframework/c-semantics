@@ -11,6 +11,15 @@ RUN     apt-get update -q \
           clang++-6.0     \
           clang-6.0
 
+RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.7 \
+    && cd z3                                                        \
+    && python scripts/mk_make.py                                    \
+    && cd build                                                     \
+    && make -j8                                                     \
+    && make install                                                 \
+    && cd ../..                                                     \
+    && rm -rf z3
+
 # This user is set up in the runtimeverificationinc/kframework:* images.
 USER user:user
 
