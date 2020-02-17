@@ -9,6 +9,7 @@ module C-SYNTAX
      imports COMPAT-SORTS
      imports C-REVAL-SYNTAX
      imports INT-SYNTAX
+     imports BOOL
      imports STRING-SYNTAX
      imports COMMON-SYNTAX
 
@@ -251,7 +252,13 @@ module C-SYNTAX
      context HOLE:KItem >>= _
      context _ >>= (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context HOLE:KItem := _ [ndheat]
+     syntax KItem ::= assignHeatLeft(K)
+
+     rule (L := R) => L ~> assignHeatLeft(R)
+     requires notBool isKResult(L) [ndheat]
+
+     rule L:KResult ~> assignHeatLeft(R) => L := R
+
      context _ := (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
      syntax KItem ::= Cast(K, K) [klabel(Cast2)]

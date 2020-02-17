@@ -19,6 +19,7 @@ module C-COMMON-EXPR-EVAL
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -63,9 +64,22 @@ module C-COMMON-EXPR-EVAL
           <linkings> Linkings::Map </linkings>
           requires Loc =/=K NullPointer andBool (base(Loc) in_keys(Linkings))
           [structural]
-     rule <k> lv(Loc::SymLoc, T::Type)
-               => lvalConvert(Loc, T, getLastAccessType(Loc))
-          ...</k>
+
+     // check whether we evaluating a left argument of an assign operator
+     syntax Bool ::= hasAssignHeatLeft(K) [function]
+     rule hasAssignHeatLeft(assignHeatLeft(_) ~> _) => true
+     rule hasAssignHeatLeft(_) => false [owise]
+
+     // do not perform lvalue conversions on left arguments of assign
+     rule <k> (lv(Loc::SymLoc, T::Type)
+               => #if hasAssignHeatLeft(Rest) #then
+                    nclv(Loc, T)
+                  #else
+                    lvalConvert(Loc, T, getLastAccessType(Loc))
+                  #fi
+              )
+             ~> Rest
+          </k>
           <linkings> Linkings::Map </linkings>
           requires Loc =/=K NullPointer andBool notBool base(Loc) in_keys(Linkings)
           [structural]
