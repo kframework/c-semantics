@@ -34,6 +34,8 @@ module COMMON-CONFIGURATION
           <external-decls-loc> .Map </external-decls-loc>
           // CIds |-> CabsLoc
           <external-uses> .Map </external-uses>
+          // linkdepNode |-> (linkdepNode |-> CabsLoc)
+          <linking-deps> .Map </linking-deps>
           // CId |-> CabsLoc
           <external-defs-loc> .Map </external-defs-loc>
           // SymBase |-> Set(ktriple(TU, QualId, Type))
