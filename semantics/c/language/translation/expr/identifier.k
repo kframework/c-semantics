@@ -9,7 +9,13 @@ module C-EXPR-IDENTIFIER
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule <k> X:CId => lv(lnew(Base), T) ...</k>
+     rule <k> X:CId =>
+              #if isRestrictType(T) #then
+                lv(restrictedNew(Base, getRestrictBlock(T)), T)
+              #else
+                lv(lnew(Base), T)
+              #fi
+          ...</k>
           <env>... X |-> Base:DirectBase ...</env>
           <types>... X |-> T::Type ...</types>
           <curr-tu> Tu::String </curr-tu>
@@ -17,20 +23,9 @@ module C-EXPR-IDENTIFIER
           <uses>... .Set => SetItem(X) ...</uses>
           <enums> Enums::Map </enums>
           requires Base =/=K nonStatic
-               andBool notBool isRestrictType(T)
                andBool notBool X in_keys(Enums)
           [structural]
-     rule <k> X:CId => lv(restrictedNew(Base, getRestrictBlock(T)), T) ...</k>
-          <env>... X |-> Base:DirectBase ...</env>
-          <types>... X |-> T::Type ...</types>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <uses>... .Set => SetItem(X) ...</uses>
-          <enums> Enums::Map </enums>
-          requires Base =/=K nonStatic
-               andBool isRestrictType(T)
-               andBool notBool X in_keys(Enums)
-          [structural]
+
      rule <k> X:CId => le(X, T) ...</k>
           <env>... X |-> nonStatic ...</env>
           <types>... X |-> T::Type ...</types>
