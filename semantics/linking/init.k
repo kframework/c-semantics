@@ -15,6 +15,7 @@ module LINKING-INIT
      imports C-TYPING-SORTS
      imports COMMON-BUILTIN-SYNTAX
      imports COMMON-INIT-SYNTAX
+     imports COMMON-LINKING-DEPS-SYNTAX
      imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports COMPAT-SYNTAX
      imports ERROR-SYNTAX
@@ -191,6 +192,7 @@ module LINKING-INIT
                     <external-decls> ExtDecls1:Map </external-decls>
                     <external-decls-loc> ExtDeclsLoc1:Map </external-decls-loc>
                     <external-uses> ExtUses1:Map </external-uses>
+                    <linking-deps> Linkdep1 </linking-deps>
                     <external-defs-loc> ExtDefsLoc1:Map </external-defs-loc>
                     <odr-decls> OdrDecls1:Map </odr-decls>
                     <odr-uses> OdrUses1:Set </odr-uses>
@@ -220,6 +222,7 @@ module LINKING-INIT
                     <external-decls> ExtDecls2:Map </external-decls>
                     <external-decls-loc> ExtDeclsLoc2:Map </external-decls-loc>
                     <external-uses> ExtUses2:Map </external-uses>
+                    <linking-deps> Linkdep2 </linking-deps>
                     <external-defs-loc> ExtDefsLoc2:Map </external-defs-loc>
                     <odr-decls> OdrDecls2:Map </odr-decls>
                     <odr-uses> OdrUses2:Set </odr-uses>
@@ -254,6 +257,7 @@ module LINKING-INIT
                     <external-decls> mergeDecls(ExtDecls1, ExtDecls2) </external-decls>
                     <external-decls-loc> updateMap(ExtDeclsLoc1, ExtDeclsLoc2) </external-decls-loc>
                     <external-uses> updateMap(ExtUses1, ExtUses2) </external-uses>
+                    <linking-deps> mergeLinkdep(Linkdep1, Linkdep2) </linking-deps>
                     <external-defs-loc> updateMap(ExtDefsLoc1, ExtDefsLoc2) </external-defs-loc>
                     <odr-decls> mergeDecls(OdrDecls1, OdrDecls2) </odr-decls>
                     <odr-uses> OdrUses1 OdrUses2 </odr-uses>
