@@ -31,11 +31,26 @@ module C-FUNCTION-DEF
      imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
 
+     // we need to ensure that the use of &X in the function definition
+     // does not count as linking dependency
+     syntax KItem ::= doNotRecordLinkingDeps(KItem)
+                    | #doNotRecordLinkingDeps()
+
+     rule <k> doNotRecordLinkingDeps(X::KItem)
+          => X ~> #doNotRecordLinkingDeps()
+          ...</k>
+          <do-not-record-linking-deps> false => true </do-not-record-linking-deps>
+
+     rule <k> (X:KResult ~> #doNotRecordLinkingDeps())
+          => X
+          ...</k>
+          <do-not-record-linking-deps> true => false </do-not-record-linking-deps>
+
      rule FunctionDefinition(typedDeclaration(t(... st: functionType(...)) #as T::Type, X:CId), Blk:KItem)
           => declare'(
                typedDeclaration(toPrototype(emptyToVoid(T)), X),
                initializer(initFunction(
-                    &(X),
+                    doNotRecordLinkingDeps(&(X)),
                     X,
                     // The return and parameter types from the definition.
                     t(getQualifiers(T), getModifiers(T), functionType(utype(elideDeclParams(innerType(T))),
@@ -146,7 +161,7 @@ module C-FUNCTION-DEF
      rule isArgvType(_) => false [owise]
 
      rule <k> initFunction(tv(Loc:SymLoc, T::UType), X:CId, DefT::Type) => .K ...</k>
-          <elab>... .K => initFunction(&(X), X, DefT) </elab>
+          <elab>... .K => initFunction(doNotRecordLinkingDeps(&(X)), X, DefT) </elab>
           requires isLinkerLoc(Loc)
      rule <k> initFunction(tv(Loc:SymLoc, ut(_, pointerType(t(... st: functionType(...))))), X::CId, DefT::Type)
                => .K

@@ -8,6 +8,14 @@ module C-EXPR-IDENTIFIER
      imports C-MEMORY-READING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMMON-LINKING-DEPS-SYNTAX
+
+     syntax LinkdepNode ::= currentLinkdepNode() [function]
+
+     rule [[currentLinkdepNode() => linkdepNodeFromCId(X)]]
+          <curr-scope> blockScope(... functionId: X::CId) </curr-scope>
+
+     rule currentLinkdepNode() => notAFunction() [owise]
 
      rule <k> X:CId =>
               #if isRestrictType(T) #then
@@ -20,7 +28,18 @@ module C-EXPR-IDENTIFIER
           <types>... X |-> T::Type ...</types>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
+          <externals> Exts </externals>
+          <internals> Ints </internals>
+          <linking-deps> Deps::Map
+          => #if Flag #then Deps #else
+               #if X in_keys(Exts) orBool X in_keys(Ints) #then
+                    updateLinkdep(Deps, currentLinkdepNode(), linkdepNodeFromCId(X), L)
+               #else Deps #fi
+             #fi
+          </linking-deps>
+          <do-not-record-linking-deps> Flag:Bool </do-not-record-linking-deps>
           <uses>... .Set => SetItem(X) ...</uses>
+          <curr-program-loc> L:CabsLoc </curr-program-loc>
           <enums> Enums::Map </enums>
           requires Base =/=K nonStatic
                andBool notBool X in_keys(Enums)
@@ -45,6 +64,12 @@ module C-EXPR-IDENTIFIER
           <tu-id> Tu </tu-id>
           <externals>... X |-> _ ...</externals>
           <external-uses> Uses::Map => Uses[X <- L] </external-uses>
+          <linking-deps> Deps::Map
+          => #if Flag #then Deps #else
+               updateLinkdep(Deps, currentLinkdepNode(), linkdepNodeFromCId(X), L)
+             #fi
+          </linking-deps>
+          <do-not-record-linking-deps> Flag:Bool </do-not-record-linking-deps>
           <uses>... .Set => SetItem(X) ...</uses>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           <enums> Enums::Map </enums>
