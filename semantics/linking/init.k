@@ -72,10 +72,45 @@ module LINKING-INIT
           ~> addCppBuiltins(weakCppBuiltins, false)
           ~> removeUnusedIdentifiers(Tu)
 
+     // returns a map from
+     syntax Map ::= reachableSymbols() [function]
+                  | #reachableSymbols(Map, Map) [function]
+
+     rule reachableSymbols()
+          => #reachableSymbols(.Map, linkdepNode(Identifier("main"), external()) |-> UnknownCabsLoc)
+
+     rule #reachableSymbols(Result, .Map) => Result
+
+     rule [[ #reachableSymbols(Result::Map, M::Map)
+          => #fun(Curr =>
+               #reachableSymbols(
+                    Result[Curr <- M[Curr]],
+                    removeAll(updateMap(M, {Deps[Curr] orDefault .Map}:>Map), keys(Result) SetItem(Curr))
+               )
+             )(choice(M)) ]]
+          <linking-deps> Deps </linking-deps>
+          requires size(M) >=Int 1
+
+     syntax Map ::= onlyExternal(Map) [function]
+
+     rule onlyExternal(.Map) => .Map
+
+     rule onlyExternal(M::Map)
+          => #fun (Curr =>
+               #if linkdepNode(_, external()) :=K Curr #then
+                 linkdepNodeId(Curr) |-> M[Curr]
+               #else .Map #fi
+               onlyExternal(M[Curr <- undef])
+             )(choice(M))
+          requires size(M) >=Int 1
+
+     syntax CId ::= linkdepNodeId(LinkdepNode) [function]
+     rule linkdepNodeId(linkdepNode(X, _)) => X
+
      syntax KItem ::= "resolveReferences"
      rule <k> resolveReferences
                => resolveCPPReferences(OdrUses)
-               ~> resolveCReferences(Uses)
+               ~> resolveCReferences(onlyExternal(reachableSymbols()))
                ~> resolveMain
           ...</k>
           <odr-uses> OdrUses::Set => .Set </odr-uses>
