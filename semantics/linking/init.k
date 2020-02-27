@@ -110,7 +110,11 @@ module LINKING-INIT
      syntax KItem ::= "resolveReferences"
      rule <k> resolveReferences
                => resolveCPPReferences(OdrUses)
-               ~> resolveCReferences(onlyExternal(reachableSymbols()))
+               ~> #if hasCPPMain() #then
+                    resolveCReferences(Uses)
+                  #else
+                    resolveCReferences(onlyExternal(reachableSymbols()))
+                  #fi
                ~> resolveMain
                ~> clearLinkingState()
           ...</k>
