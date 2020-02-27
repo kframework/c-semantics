@@ -2,6 +2,8 @@ module LINKING-CPP-RESOLUTION-SYNTAX
      imports SET
 
      syntax KItem ::= resolveCPPReferences(Set)
+     syntax Bool ::= hasCPPMain() [function]
+
 endmodule
 
 module LINKING-CPP-RESOLUTION
@@ -99,6 +101,11 @@ module LINKING-CPP-RESOLUTION
           ...</k>
           <odr-decls> Decls::Map </odr-decls>
           requires notBool OdrBase in_keys(Decls)
+
+     rule [[ hasCPPMain() => true ]]
+          <odr-defs>... GlobalNamespace() :: Identifier("main") |-> _ ...</odr-defs>
+
+     rule hasCPPMain() => false [owise]
 
      rule <k> resolveMain => .K ...</k>
           <main-tu>... (.Set => SetItem(MainTu)) </main-tu>
