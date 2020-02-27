@@ -112,9 +112,14 @@ module LINKING-INIT
                => resolveCPPReferences(OdrUses)
                ~> resolveCReferences(onlyExternal(reachableSymbols()))
                ~> resolveMain
+               ~> clearLinkingState()
           ...</k>
           <odr-uses> OdrUses::Set => .Set </odr-uses>
           <external-uses> Uses::Map => .Map </external-uses>
+
+     syntax KItem ::= clearLinkingState()
+     rule <k> clearLinkingState() => .K ...</k>
+          (<linking-state>... .Bag ...</linking-state> => .Bag)
 
      syntax KItem ::= makeNs(tu: String, Namespace)
      rule <k> makeNs(Tu::String, N::Namespace) => .K ...</k>

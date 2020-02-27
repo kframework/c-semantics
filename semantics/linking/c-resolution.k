@@ -79,7 +79,6 @@ module LINKING-C-RESOLUTION
      // Remember which TU has the definition of main.
      rule <k> resolveMain => .K ...</k>
           <main-tu>... .Set => SetItem(MainTu) </main-tu>
-          (<linking-state>... .Bag ...</linking-state> => .Bag)
           <external-defs>...
                Identifier("main") |-> (obj(... d: static(MainTu:String)) #as Main::SymBase)
           ...</external-defs>
