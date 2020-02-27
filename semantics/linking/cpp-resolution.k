@@ -102,7 +102,6 @@ module LINKING-CPP-RESOLUTION
 
      rule <k> resolveMain => .K ...</k>
           <main-tu>... (.Set => SetItem(MainTu)) </main-tu>
-          (<linking-state>... .Bag ...</linking-state> => .Bag)
           <odr-defs>... GlobalNamespace() :: Identifier("main") |-> (_::CPPType |-> (_, obj(... d: static(MainTu:String)))) ...</odr-defs>
 
      // TODO(dwightguth): make this a better error message when we take the C++ semantics live
