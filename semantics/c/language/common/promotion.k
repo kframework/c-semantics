@@ -143,8 +143,8 @@ module C-COMMON-PROMOTION
 
      syntax UType ::= stripBitfield(UType) [function]
 
-     rule stripBitfield(ut(_, bitfieldType(T, _))) => utype(T)
-     rule stripBitfield(T) => T [owise]
+     rule stripBitfield(ut(_, bitfieldType(T::SimpleType, _))) => utype(T)
+     rule stripBitfield(T::UType) => T [owise]
 
      rule promote(ut(Mods::Set, bitfieldType(T::SimpleType, Len::Int)))
           => utype(int)
