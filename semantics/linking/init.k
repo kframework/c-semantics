@@ -1,8 +1,9 @@
 module LINKING-INIT-SYNTAX
      imports BASIC-K
+     imports STRING-SYNTAX
 
      syntax KItem ::= load(K) [symbol]
-     syntax KItem ::= "link"
+     syntax KItem ::= linkProgram(entrypoint: String)
 
 endmodule
 
@@ -32,15 +33,16 @@ module LINKING-INIT
      imports CPP-TYPE-MAP-SYNTAX
      imports SYMLOC-SYNTAX
 
-     rule <k> link
+     rule <k> linkProgram(Entrypoint::String)
                => cBuiltinTu("builtin")
                ~> cppBuiltinTu("cpp-builtin")
                ~> nativeTu("native")
-               ~> resolveReferences
+               ~> resolveReferences(Entrypoint)
                ~> reportSuccess
           ...</k>
           <options>... SetItem(Link()) ...</options>
-     rule <k> link => reportSuccess ...</k>
+
+     rule <k> linkProgram(_) => reportSuccess ...</k>
           <options> Opts::Set </options>
           requires notBool Link() in Opts
 
@@ -73,11 +75,11 @@ module LINKING-INIT
           ~> removeUnusedIdentifiers(Tu)
 
      // returns a map from
-     syntax Map ::= reachableSymbols() [function]
+     syntax Map ::= reachableSymbols(entrypoint: String) [function]
                   | #reachableSymbols(Map, Map) [function]
 
-     rule reachableSymbols()
-          => #reachableSymbols(.Map, linkdepNode(Identifier("main"), external()) |-> UnknownCabsLoc)
+     rule reachableSymbols(Entrypoint::String)
+          => #reachableSymbols(.Map, linkdepNode(Identifier(Entrypoint), external()) |-> UnknownCabsLoc)
 
      rule #reachableSymbols(Result, .Map) => Result
 
@@ -107,13 +109,13 @@ module LINKING-INIT
      syntax CId ::= linkdepNodeId(LinkdepNode) [function]
      rule linkdepNodeId(linkdepNode(X, _)) => X
 
-     syntax KItem ::= "resolveReferences"
-     rule <k> resolveReferences
+     syntax KItem ::= resolveReferences(entrypoint: String)
+     rule <k> resolveReferences(Entrypoint::String)
                => resolveCPPReferences(OdrUses)
                ~> #if hasCPPMain() #then
                     resolveCReferences(Uses)
                   #else
-                    resolveCReferences(onlyExternal(reachableSymbols()))
+                    resolveCReferences(onlyExternal(reachableSymbols(Entrypoint)))
                   #fi
                ~> resolveMain
                ~> clearLinkingState()

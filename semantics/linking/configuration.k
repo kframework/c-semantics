@@ -1,5 +1,6 @@
 module C-CONFIGURATION
      imports LINKING-INIT-SYNTAX
+     imports COMMON-INIT-SYNTAX
      imports COMMON-CONFIGURATION
      imports DEFAULT-STRATEGY
      imports CPP-DYNAMIC-SYNTAX
@@ -17,7 +18,7 @@ module C-CONFIGURATION
 <exec>
      <k color="green">
           load($OBJS:K)
-          ~> link
+          ~> linkProgram(getEntryPoint($OPTIONS:Set))
           ~> cleanup
      </k>
 
