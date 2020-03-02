@@ -447,6 +447,7 @@ sub parseOpts {
 			for GCC.
       { RV_Kcc::Opts::pushArg('cppArgs', "-d$chars"); }
   -ftranslation-depth=<depth>	Compile program up to a given depth. [undocumented]
+  -fdebug-translation	Run translation semantics with GDB. [undocumented]
   -flinking-depth=<depth>	Link program up to a given depth. [undocumented]
   -fmessage-length=0	Write all error messages on a single line.
   -frunner-script	Compile program to perl script with analysis tool options. [undocumented]

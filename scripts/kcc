@@ -523,6 +523,10 @@ sub getTranslationCommand {
             push(@krun, arg('-ftranslation-depth='));
       }
 
+      if (arg('-fdebug-translation')) {
+            push(@krun, '--debug');
+      }
+
       my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
       my $json = "\\dv{SortString{}}($rvErrorJson)";
 
