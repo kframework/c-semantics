@@ -10,7 +10,6 @@ module C-EXECUTION-INIT-SYNTAX
      syntax KItem ::= "initMainThread'" "(" String ")"
      syntax KItem ::= "callAtExit" | "callAtQuickExit"
      syntax RValue ::= "NullPointerConstant" [function]
-     syntax String ::= getEntryPoint(Set) [function]
 endmodule
 
 module C-EXECUTION-INIT
@@ -199,9 +198,6 @@ module C-EXECUTION-INIT
           <types>... Identifier(EP) |-> T::Type ...</types>
           <status> _ => mainCalled </status>
           [ndtrans]
-
-     rule getEntryPoint(_ SetItem(EntryPoint(EP::String))) => EP
-     rule getEntryPoint(_) => "main" [owise]
 
      // int main(void) -- also, int main() gets normalized to main(void)
      syntax K ::= #callEntryPoint(String, Int, KItem, Type) [function]

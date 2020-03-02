@@ -1,6 +1,7 @@
 module COMMON-INIT-SYNTAX
      imports BASIC-K
      imports STRING
+     imports SET
 
      syntax KItem ::= loadObj(K)
      // this takes input from a file which is not split by thread, so we don't want to split this rule.
@@ -9,6 +10,8 @@ module COMMON-INIT-SYNTAX
      syntax CId ::= "mainArguments"
 
      syntax KItem ::= removeUnusedIdentifiers(tu: String)
+
+     syntax String ::= getEntryPoint(Set) [function]
 endmodule
 
 module COMMON-INIT
@@ -18,6 +21,9 @@ module COMMON-INIT
      imports K-EQUAL
      imports OPTIONS-SYNTAX
      imports COMMON-TRANSLATION-UNIT-SYNTAX
+
+     rule getEntryPoint(_ SetItem(EntryPoint(EP::String))) => EP
+     rule getEntryPoint(_) => "main" [owise]
 
      rule <k> loadObj(G:GlobalCell) => .K ...</k>
           (<global> _ </global> => G)
