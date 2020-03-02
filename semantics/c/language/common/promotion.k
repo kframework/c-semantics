@@ -138,8 +138,13 @@ module C-COMMON-PROMOTION
                andBool min(utype(int)) <=Int min(T)
                andBool max(utype(int)) >=Int max(T)
 
-     rule promote(T::UType) => T
+     rule promote(T::UType) => stripBitfield(T)
           requires rank(T) >Int rank(utype(int))
+
+     syntax UType ::= stripBitfield(UType) [function]
+
+     rule stripBitfield(ut(_, bitfieldType(T::SimpleType, _))) => utype(T)
+     rule stripBitfield(T::UType) => T [owise]
 
      rule promote(ut(Mods::Set, bitfieldType(T::SimpleType, Len::Int)))
           => utype(int)
