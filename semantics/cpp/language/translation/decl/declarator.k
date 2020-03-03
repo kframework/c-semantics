@@ -8,7 +8,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR-SYNTAX
      imports CPP-SORTS
      imports CPP-TYPING-SORTS
 
-     syntax Decl ::= DeclaratorAndSpecifiers(Decl, Set)
+     syntax Decl ::= DeclaratorAndSpecifiers(Declarator, Set)
                     | declareObject(NNSVal, NNSVal, CId, CId, CPPType, Init, DeclarationType, Linkage, Duration, Set)
                     | defineObject(NNSVal, CId, CId, CPPType, Init, DeclarationType, Set)
                     | initializeObject(NNSVal, CId, CPPType, init: KItem, DeclarationType) [strict(c; 4)]
@@ -53,18 +53,18 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      imports CPP-TRANSLATION-CONSTANT-SYNTAX
      imports CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
 
-     rule FunctionDecl(N::NNS, X::CId, Mangled::CId, T::AType, Params::List)
+     rule FunctionDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Params::List)
           => NormalizedDecl(N, X, Mangled, T, NoInit(), Function(Params)) [anywhere]
 
-     rule VarDecl(N::NNS, X::CId, Mangled::CId, T::AType, Init::Init, IsDirect:Bool)
+     rule VarDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Init::Init, IsDirect:Bool)
           => NormalizedDecl(N, X, Mangled, T, Init, Var(#if IsDirect #then DirectInit() #else CopyInit() #fi)) [anywhere]
 
-     rule FunctionDefinition(N::NNS, X::CId, Mangled::CId, T::AType, Params::List, Body::Stmt)
+     rule FunctionDefinition(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Params::List, Body::Stmt)
           => NormalizedDecl(N, X, Mangled, T, Body, Function(Params)) [anywhere]
 
      rule DeclStmt(L::List) => listToK(L)
 
-     rule Specifier(S::Specifier, D::Decl) => DeclaratorAndSpecifiers(D, SetItem(S))
+     rule Specifier(S::Specifier, D:Declarator) => DeclaratorAndSpecifiers(D, SetItem(S))
           requires S =/=K Auto() [anywhere]
 
      // Auto is a type specifier in C++ so it is handled elsewhere by AutoType
@@ -151,6 +151,8 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule getClassLinkage(_:LocalQualifier :: _) => NoLinkage
 
      // @ref n4296 3.5:4
+     rule getNamespaceLinkage(N:UnnamedNamespace) => InternalLinkage
+
      rule getNamespaceLinkage(GlobalNamespace()) => ExternalLinkage
 
      rule getNamespaceLinkage(Parent::Namespace :: _) => getNamespaceLinkage(Parent) [owise]
@@ -329,12 +331,11 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
           syntax KItem ::= prepareDeclareNonStaticObject(CId, CPPType, init: Init, InitType, s: Set)
 
-          context prepareDeclareNonStaticObject(_, _, HOLE:Expr => evalCoreConstantExpressionUntil(HOLE, isEvalVal), _, S::Set)
+          context prepareDeclareNonStaticObject(...init: HOLE:Expr => evalCoreConstantExpressionUntil(HOLE, isEvalVal), s: S::Set)
                requires Constexpr() in S
 
           rule prepareDeclareNonStaticObject(X::CId, T::CPPType, Init::Init, Type::InitType, S::Set)
                => declareNonStaticObject(X, T, figureInit(le(ExecName(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, Init, Type, AutoStorage), Var(Type), AutoStorage, S)
-               requires (isEvalVal(Init) andBool Constexpr() in S) orBool notBool Constexpr() in S
 
           // NoLinkage, StaticStorage, not previously declared
           rule <k> declareObject(NoNamespace(), _, X::CId, _, T::CPPType, Init::Init, Type::DeclarationType, NoLinkage, StaticStorage, Set::Set)
@@ -416,7 +417,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax CPPType ::= completeDeclaration(CPPType, Init) [function]
 
-     rule completeDeclaration(T::CPPType, (InitLoc(_, I::Init) => I))
+     rule completeDeclaration(T::CPPType, (ExprLoc(_, I::Init) => I))
 
      // @ref n4296 8.5.4:3.2 (char x[] = {"foo"})
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, T:CPPSimpleCharType))), BraceInit(ListItem(StringLiteral(Narrow::CharKind, S::String)))) => t(Q, Mods, arrayType(t(Q', Mods', T), lengthString(S) +Int 1))
@@ -788,12 +789,9 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule stripInitHolds(V::Val) => V
           requires isEvalVal(V)
 
-     context defArgs(_, (HOLE::StrictList => types(HOLE)), _)
+     context defArgs(_, (HOLE:StrictList => types(HOLE)), _)
 
-     context defArgs(_, _, (HOLE::StrictList => cats(HOLE)))
-
-     rule defArgs(A:StrictListResult, B:StrictListResult, C:StrictListResult)
-          => defArgsResult(A, B, C)
+     context defArgs(_, _, (HOLE:StrictList => cats(HOLE)))
 
      syntax DefaultArguments ::= computeDefaultArgs(CPPType, DeclarationType)
 
@@ -842,7 +840,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule #makeFunctionDeclarationType(_, .List) => .List
 
      rule emptyDefaultArguments(t(... st: functionType(...)) #as T::CPPType)
-       => #emptyDefaultArguments(#if hasImplicitParameter(T) #then size(getRealParams(T)) -Int 1 #else size(getRealParams(T)) #fi, defArgsResult(krlist(.List), krlist(.List), krlist(.List)))
+       => #emptyDefaultArguments(#if hasImplicitParameter(T) #then size(getRealParams(T)) -Int 1 #else size(getRealParams(T)) #fi, defArgs(krlist(.List), krlist(.List), krlist(.List)))
 
      rule emptyDefaultArguments(_) => NoDefArgs() [owise]
 
@@ -851,7 +849,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule #emptyDefaultArguments(0, DA::DefaultArgumentsResult) => DA
 
      rule #emptyDefaultArguments(N::Int => N -Int 1,
-            defArgsResult(krlist(_::List (.List => ListItem(NoArg()))),
+            defArgs(krlist(_::List (.List => ListItem(NoArg()))),
                     krlist(_::List (.List => ListItem(NoInitType()))),
                     krlist(_::List (.List => ListItem(NoInitCat()))))) [owise]
 endmodule

@@ -78,35 +78,35 @@ module CPP-TYPING-SYNTAX
                             | CPPSimpleDependentType
                             | CPPSimpleAutoType
 
-     // syntax CPPSimpleSignedType ::= bitfieldType(CPPSimpleSignedType, Int) [klabel(bitfieldTypeCpp)]
+     syntax CPPSimpleSignedType ::= bitfieldType(CPPSimpleSignedType, Int) [klabel(bitfieldTypeCpp)]
 
-     // syntax CPPSimpleUnsignedType ::= bitfieldType(CPPSimpleUnsignedType, Int) [klabel(bitfieldTypeCpp)]
+     syntax CPPSimpleUnsignedType ::= bitfieldType(CPPSimpleUnsignedType, Int) [klabel(bitfieldTypeCpp)]
 
-     // syntax CPPSimpleSignedCharType ::= bitfieldType(CPPSimpleSignedCharType, Int) [klabel(bitfieldTypeCpp)]
+     syntax CPPSimpleSignedCharType ::= bitfieldType(CPPSimpleSignedCharType, Int) [klabel(bitfieldTypeCpp)]
 
-     // syntax CPPSimpleUnsignedCharType ::= bitfieldType(CPPSimpleUnsignedCharType, Int) [klabel(bitfieldTypeCpp)]
+     syntax CPPSimpleUnsignedCharType ::= bitfieldType(CPPSimpleUnsignedCharType, Int) [klabel(bitfieldTypeCpp)]
 
-     // syntax CPPSimpleBoolType ::= bitfieldType(CPPSimpleBoolType, Int) [klabel(bitfieldTypeCpp)]
+     syntax CPPSimpleBoolType ::= bitfieldType(CPPSimpleBoolType, Int) [klabel(bitfieldTypeCpp)]
 
-     // syntax CPPSimpleWideCharType ::= bitfieldType(CPPSimpleWideCharType, Int) [klabel(bitfieldTypeCpp)]
+     syntax CPPSimpleWideCharType ::= bitfieldType(CPPSimpleWideCharType, Int) [klabel(bitfieldTypeCpp)]
 
-     // syntax CPPSimpleScopedEnumType ::= bitfieldType(CPPSimpleScopedEnumType, Int) [klabel(bitfieldTypeCpp)]
+     syntax CPPSimpleScopedEnumType ::= bitfieldType(CPPSimpleScopedEnumType, Int) [klabel(bitfieldTypeCpp)]
 
-     // syntax CPPSimpleUnscopedEnumType ::= bitfieldType(CPPSimpleUnscopedEnumType, Int) [klabel(bitfieldTypeCpp)]
+     syntax CPPSimpleUnscopedEnumType ::= bitfieldType(CPPSimpleUnscopedEnumType, Int) [klabel(bitfieldTypeCpp)]
 
      syntax CPPSimpleBitfieldType ::= bitfieldType(CPPSimpleType, Int) [klabel(bitfieldTypeCpp)]
 
-     // syntax CPPSimpleSignedType ::= CPPSimpleBottomType
-     // syntax CPPSimpleUnsignedType ::= CPPSimpleBottomType
-     // syntax CPPSimpleSignedCharType ::= CPPSimpleBottomType
-     // syntax CPPSimpleUnsignedCharType ::= CPPSimpleBottomType
-     // syntax CPPSimpleBoolType ::= CPPSimpleBottomType
-     // syntax CPPSimpleWideCharType ::= CPPSimpleBottomType
-     // syntax CPPSimpleScopedEnumType ::= CPPSimpleBottomType
-     // syntax CPPSimpleUnscopedEnumType ::= CPPSimpleBottomType
-     // syntax CPPSimpleBitfieldType ::= CPPSimpleBottomType
+     syntax CPPSimpleSignedType ::= CPPSimpleBottomType
+     syntax CPPSimpleUnsignedType ::= CPPSimpleBottomType
+     syntax CPPSimpleSignedCharType ::= CPPSimpleBottomType
+     syntax CPPSimpleUnsignedCharType ::= CPPSimpleBottomType
+     syntax CPPSimpleBoolType ::= CPPSimpleBottomType
+     syntax CPPSimpleWideCharType ::= CPPSimpleBottomType
+     syntax CPPSimpleScopedEnumType ::= CPPSimpleBottomType
+     syntax CPPSimpleUnscopedEnumType ::= CPPSimpleBottomType
+     syntax CPPSimpleBitfieldType ::= CPPSimpleBottomType
 
-     // syntax CPPSimpleBottomType ::= bitfieldType(CPPSimpleBottomType, Int) [klabel(bitfieldTypeCpp)]
+     syntax CPPSimpleBottomType ::= bitfieldType(CPPSimpleBottomType, Int) [klabel(bitfieldTypeCpp)]
 
      syntax CPPSimpleSignedType ::= CPPSimpleSignedCharType | "short" | "int" | "long" | "long-long" | "oversized"
 
@@ -191,11 +191,11 @@ module CPP-TYPING-SYNTAX
                       | "cppFundamentalType"
                       | "cppScalarType"
 
-     rule cppIntegerType => t(_, _, signed-char #Or unsigned-char #Or char #Or bool #Or short #Or int #Or long #Or long-long #Or oversized #Or unsigned-short #Or unsigned #Or unsigned-long #Or unsigned-long-long #Or unsigned-oversized #Or wchar_t #Or char16_t #Or char32_t #Or bitfieldType(signed-char #Or unsigned-char #Or char #Or bool #Or short #Or int #Or long #Or long-long #Or oversized #Or unsigned-short #Or unsigned #Or unsigned-long #Or unsigned-long-long #Or unsigned-oversized #Or wchar_t #Or char16_t #Or char32_t, _)) [macro, unboundVariables(_)]
-     rule cppEnumType => t(_, _, scopedEnum(_, _) #Or unscopedEnum(_, _, _) #Or bitfieldType(scopedEnum(_, _) #Or unscopedEnum(_, _, _), _)) [macro, unboundVariables(_)]
-     rule cppRefType => t(_, _, lvRefType(_) #Or rvRefType(_)) [macro, unboundVariables(_)]
-     rule cppFundamentalType => cppIntegerType #Or t(_, _, void #Or nullptr_t #Or float #Or double #Or long-double) [macro, unboundVariables(_)]
-     rule cppScalarType => cppIntegerType #Or cppEnumType #Or t(_, _, float #Or double #Or long-double #Or pointerType(_) #Or memberPointerType(_, _) #Or nullptr_t) [macro, unboundVariables(_)]
+     rule cppIntegerType => t(?_, ?_, signed-char #Or unsigned-char #Or char #Or bool #Or short #Or int #Or long #Or long-long #Or oversized #Or unsigned-short #Or unsigned #Or unsigned-long #Or unsigned-long-long #Or unsigned-oversized #Or wchar_t #Or char16_t #Or char32_t #Or bitfieldType(signed-char #Or unsigned-char #Or char #Or bool #Or short #Or int #Or long #Or long-long #Or oversized #Or unsigned-short #Or unsigned #Or unsigned-long #Or unsigned-long-long #Or unsigned-oversized #Or wchar_t #Or char16_t #Or char32_t, ?_)) [macro]
+     rule cppEnumType => t(?_, ?_, scopedEnum(?_, ?_) #Or unscopedEnum(?_, ?_, ?_) #Or bitfieldType(scopedEnum(?_, ?_) #Or unscopedEnum(?_, ?_, ?_), ?_)) [macro]
+     rule cppRefType => t(?_, ?_, lvRefType(?_) #Or rvRefType(?_)) [macro]
+     rule cppFundamentalType => cppIntegerType #Or t(?_, ?_, void #Or nullptr_t #Or float #Or double #Or long-double) [macro]
+     rule cppScalarType => cppIntegerType #Or cppEnumType #Or t(?_, ?_, float #Or double #Or long-double #Or pointerType(?_) #Or memberPointerType(?_, ?_) #Or nullptr_t) [macro]
 
      syntax Bool ::= isCPPVoidType(CPPDType) [function]
                    | isCPPUnsignedType(CPPDType) [function]
@@ -1156,6 +1156,8 @@ module C-CPP-TYPING
      rule utype(V:Val)::UType => utype(convertTypeToC(type(V)::CPPType))
 
      rule type(V:Val)::Type => convertTypeToC(type(V))
+
+     rule type(V:TExpr)::Type => convertTypeToC(type(V))
 
      rule isCPPVoidType(t(... st: void)) => true
      rule isCPPVoidType(_) => false [owise]

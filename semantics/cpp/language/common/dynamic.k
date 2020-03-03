@@ -8,6 +8,8 @@ module CPP-NAMESPACE-SORTS
 
      syntax NamespaceSpecifier
 
+     syntax UnnamedNamespace
+
 endmodule // CPP-NAMESPACE-SORTS
 
 module CPP-NAMESPACE-SYNTAX
@@ -18,6 +20,7 @@ module CPP-NAMESPACE-SYNTAX
 
      syntax Namespace ::= Namespace "::" NamespaceSpecifier
                         | NoNamespace() // signifies a declaration at block scope
+                        | UnnamedNamespace
 
      syntax NamespaceSpecifier ::= Namespace(CId)
 
@@ -359,11 +362,6 @@ module CPP-DYNAMIC-OTHER-SORTS
      syntax TemplateArg
 
      syntax CPPValue
-
-     syntax DefaultArguments
-
-     syntax DefaultArgumentsResult
-
 endmodule // CPP-DYNAMIC-OTHER-SORTS
 
 module CPP-REVAL-SYNTAX
@@ -376,7 +374,6 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      imports CPP-CLASS-BASIC-SORTS
      imports CPP-DYNAMIC-OTHER-SORTS
      imports BITS-SORTS
-     imports COMPAT-SORTS
      imports CPP-SYMLOC-SORTS
      imports CPP-TYPING-SORTS
      imports CPP-DEPENDENT-SYNTAX
@@ -389,8 +386,9 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      imports SET
      imports BOOL
 
-     syntax CPPValue ::= BitValueOrEncodable
+     syntax CPPValue ::= BitValue
                        | PtrValue
+                       | Encodable
 
      syntax PtrValue ::= NullPtrVal // value of type std::nullptr_t
                        | MemberPtr
@@ -577,12 +575,6 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      syntax List ::= ofSList(SList) [klabel(ofSListcpp), function]
 
      syntax KItem ::= seqstrict(StrictList) [klabel(seqstrictcpp)]
-
-     syntax DefaultArguments ::= defArgs(vals: StrictList, types: StrictList, cats: StrictList) [strict(1)]
-
-     syntax DefaultArguments ::= DefaultArgumentsResult
-
-     syntax DefaultArgumentsResult ::= defArgsResult(vals: StrictListResult, types: StrictListResult, cats: StrictListResult)
 
 endmodule // CPP-DYNAMIC-OTHER-SYNTAX
 

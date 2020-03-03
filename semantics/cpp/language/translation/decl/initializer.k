@@ -102,7 +102,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax KItem ::= #figureInitHeatBase(destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType, Duration)
 
-     rule <k> #figureInit(... init: InitLoc(L::CabsLoc, I::Init) => I) ...</k>
+     rule <k> #figureInit(... init: ExprLoc(L::CabsLoc, I::Init) => I) ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
 
      // @ref n4296 8.5:6.1
@@ -326,15 +326,13 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax Bool ::= hasInit(CId, Map) [function]
 
-     rule hasInit(X:CId, (X |-> M:Map) _) => #hasInit(M)
+     rule hasInit(X:CId, X |-> M::Map _) => notBool isNoInit(M)
 
-     rule hasInit(_, _) => false [owise]
+     syntax Bool ::= isNoInit(Map) [function]
 
-     syntax Bool ::= #hasInit(Map) [function]
+     rule isNoInit(_ |-> (_, NoInit())) => true
 
-     rule #hasInit(_ |-> (_, NoInit())) => false
-
-     rule #hasInit(_) => true [owise]
+     rule isNoInit(_ |-> _) => false [owise]
 
      syntax Expr ::= classAggInit(base: LVal, fields: List, initList: List, initializers: Map, class: Class, initExp: K, ctype: ConstructorType, duration: Duration)
 
@@ -416,7 +414,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule #evalBraceOrEqualInitializer(_, _, NoInit()) => BraceInit(.List)
 
-     rule #evalBraceOrEqualInitializer(_, _, InitLoc(L::CabsLoc, I::Init) => I)
+     rule #evalBraceOrEqualInitializer(_, _, ExprLoc(L::CabsLoc, I::Init) => I)
 
      rule #evalBraceOrEqualInitializer(C::Class, Base::Expr, BraceInit(L::List))
        => BraceInit(#evalBraceOrEqualInitializers(C, Base, L))

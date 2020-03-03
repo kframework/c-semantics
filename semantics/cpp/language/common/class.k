@@ -10,6 +10,10 @@ module CPP-CLASS-BASIC-SORTS
 
      syntax LocalQualifier
 
+     syntax LocalClass
+
+     syntax InnerClass
+
      syntax ClassSpecifier
 
 endmodule // CPP-CLASS-BASIC-SORTS
@@ -35,20 +39,15 @@ module CPP-CLASS-BASIC-SYNTAX
 
      syntax Class ::= ClassQualifier "::" ClassSpecifier [klabel(classId)]
 
-     // TODO(chathhorn): the stuff below causes parsing ambiguities with the Class production above. Need to resolve in
-     // a better way.
-     syntax InnerClass ::= Class // TODO(chathhorn): added as an interim fix.
-     syntax LocalInnerClass ::= Class // TODO(chathhorn): added as an interim fix.
+     syntax LocalClass ::= LocalQualifier "::" ClassSpecifier [klabel(classId)]
 
-     // syntax LocalClass ::= LocalQualifier "::" ClassSpecifier [klabel(classId)]
+     syntax Class ::= LocalClass
+     syntax Class ::= InnerClass
 
-     // syntax Class ::= LocalClass
-     // syntax Class ::= InnerClass
+     syntax InnerClass ::= Class "::" ClassSpecifier [klabel(classId)]
 
-     // syntax InnerClass ::= Class "::" ClassSpecifier [klabel(classId)]
-
-     // syntax LocalInnerClass ::= LocalClass
-     //                         | LocalInnerClass "::" ClassSpecifier [klabel(classId)]
+     syntax LocalInnerClass ::= LocalClass
+                             | LocalInnerClass "::" ClassSpecifier [klabel(classId)]
 
      syntax ClassSpecifier ::= Class(Tag, CId, TemplateArgs) [klabel(classSpecifier)]
 

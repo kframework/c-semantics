@@ -3,8 +3,7 @@ module COMMON-SORTS
      imports SYMLOC-SORTS
      imports INT-SYNTAX
      imports FLOAT-SYNTAX
-     syntax CValue ::= BitValueOrEncodable | Agg | IntPtr
-     syntax BitValueOrEncodable ::= BitValue | Encodable
+     syntax CValue ::= BitValue | Agg | Encodable | IntPtr
      syntax EffectiveValue ::= Int | Float | CValue
      syntax Agg
      syntax CId

@@ -420,7 +420,7 @@ module CPP-CONVERSION
                andBool broaderTypeThan(Signed, Unsigned)
 
      // 5:10.5.5
-     rule #usualArithmeticConversions2(_, Signed::CPPType) => correspondingUnsignedType(Signed) [owise]
+     rule #usualArithmeticConversions2(_, Signed::CPPType) => correspondingUnsignedType(Signed)
 
      rule isNullPointerConstant(V::PRVal) => true
           requires isCPPNullPtrTType(type(V))

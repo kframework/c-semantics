@@ -56,7 +56,7 @@ module CPP-TRANSLATION-VALUE-CATEGORY
 
      rule ofSCatList(K:KItem cats:: L::SCatList) => ListItem(K) ofSCatList(L) [owise]
 
-     rule (BraceInitLoc(_, BraceInit(L::List)) => BraceInit(L)) cats:: _
+     rule (ExprLoc(_, BraceInit(L::List)) => BraceInit(L)) cats:: _
 
      rule (.K => cats(list(L))) ~> BraceInit(L::List) cats:: _
 

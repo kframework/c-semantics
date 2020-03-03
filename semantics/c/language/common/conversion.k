@@ -358,6 +358,8 @@ module C-CONVERSION
                     | implPointerToInt()
      rule lintCastingAwayQuals() => .K
           requires notBool hasLint
+     rule implPointerToInt() => .K
+          requires notBool hasLint
 
      syntax UType ::= castTypes(UType, UType) [function]
      rule castTypes(ut(_, T'::SimpleUType), ut(Mods::Set, _)) => ut(Mods, T')

@@ -606,7 +606,7 @@ module CPP-TRANSLATION-OVERLOADING
           requires isCPPPointerType(T) andBool isCPPFunctionType(innerType(T))
 
      // only one viable candidate
-     rule bestViable(T::CPPType, envEntry(... base: Base::SymBase, defaultArgs: defArgsResult(... vals: DArgs::StrictListResult)))
+     rule bestViable(T::CPPType, envEntry(... base: Base::SymBase, defaultArgs: defArgs(... vals: DArgs::StrictListResult)))
           ~> #resolveOverload2(cSet(... id: X::QualId), list(Args::List), _, _, E::Expr, _)
           => #if isMethodPure(T) andBool isVirtualCall(hasTrace(E), T) #then .K #else Odr.newUse(Base) #fi
           ~> updateExternalUses(Base)

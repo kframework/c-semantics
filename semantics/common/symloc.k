@@ -212,6 +212,7 @@ module SYMLOC
 
      rule Loc::SymLoc +bits N:Int
           => setBitOffset(N %Int cfg:bitsPerByte, Loc +bytes (N /Int cfg:bitsPerByte))
+     rule NullPointer +bits _ => NullPointer
 
      rule loc(_, A:Int) >bytes loc(_, B:Int) => A >Int B
      rule loc(_, A:Int) >=bytes loc(_, B:Int) => A >=Int B
@@ -325,6 +326,7 @@ module SYMLOC
      rule showSymLoc(loc(Base::SymBase, Offset::Int)) => wrapSymbolic(showSymBase(Base) +String " + " +String showInt(Offset))
      rule showSymLoc(loc(Base::SymBase, Offset::Int, Prov::Set)) => wrapSymbolic(showSymBase(Base) +String " + " +String showInt(Offset) +String showProvSet(Prov))
      rule showSymLoc(NullPointer) => wrapSymbolic("null")
+     rule showSymLoc(V::SymLoc) => showK(V) [owise]
 
      rule showSymBase(obj(B::Int, Align::Int, D:Duration)) => showInt(B) +String " @ " +String showDuration(D) +String "/" +String showInt(Align)
      rule showSymBase(obj(B::Int, Align::Int, D:LinkDuration)) => showInt(B) +String " @ " +String showLinkDuration(D) +String "/" +String showInt(Align)
@@ -350,6 +352,7 @@ module SYMLOC
 
      syntax String ::= showLinkDuration(LinkDuration) [function]
      rule showLinkDuration(link(S::String)) => "link" +String wrapParens(S)
+     rule showLinkDuration(D::LinkDuration) => showK(D) [owise]
 
      syntax String ::= showProvSet(Set) [function]
      rule showProvSet(SetItem(P:Provenance) Prov::Set) => ", " +String showProvenance(P) +String showProvSet(Prov)

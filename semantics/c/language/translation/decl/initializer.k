@@ -186,7 +186,7 @@ module C-DECL-INITIALIZER
      syntax SubObjectControl ::= "next" | "down" | "block"
 
      syntax KItem ::= "subobjectKCell"
-     rule subobjectKCell => fillInit(_) #Or fillInit-aux(_) #Or initializeSingleInit2(_, _) [macro, unboundVariables(_)]
+     rule subobjectKCell => fillInit(?_) #Or fillInit-aux(?_) #Or initializeSingleInit2(?_, ?_) [macro]
 
      syntax Bool ::= isInFieldInit(KItem) [function]
      rule isInFieldInit(fillInit(InitFragment(InFieldInit(_, _), _))) => true

@@ -61,7 +61,7 @@ module CPP-TRANSLATION-TYPING-EXPR
 
      rule ofSTypeList(K:KItem types:: L::STypeList) => ListItem(K) ofSTypeList(L) [owise]
 
-     rule (BraceInitLoc(_, BraceInit(L::List)) => BraceInit(L)) types:: _
+     rule (ExprLoc(_, BraceInit(L::List)) => BraceInit(L)) types:: _
 
      rule (.K => types(list(L))) ~> BraceInit(L::List) types:: _
 
@@ -305,11 +305,9 @@ module CPP-TRANSLATION-TYPING-EXPR
           => typeof(usualArithmeticConversions(T1, T2))
           requires (isCPPArithmeticType(T1) orBool isCPPUnscopedEnumType(T1)) andBool (isCPPArithmeticType(T2) orBool isCPPUnscopedEnumType(T2))
 
-     rule #typeofBuiltinOperator(operator-, t(... st: pointerType(...)) #as T::CPPType, _, T2::CPPType) => typeof(T)
-          requires isCPPArithmeticType(T2)
+     rule #typeofBuiltinOperator(operator-, t(... st: pointerType(...)) #as T::CPPType, _, _) => typeof(T)
 
-     rule #typeofBuiltinOperator(operator-, t(... st: _:CPPSimpleArrayType) #as T::CPPType, _, T2::CPPType) => typeof(revalType(T))
-          requires isCPPArithmeticType(T2)
+     rule #typeofBuiltinOperator(operator-, t(... st: _:CPPSimpleArrayType) #as T::CPPType, _, _) => typeof(revalType(T))
 
      rule #typeofBuiltinOperator(operator-, t(... st: pointerType(...)), _, t(... st: pointerType(...)))
           => typeof(type(ptrdiff_t))

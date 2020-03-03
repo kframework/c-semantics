@@ -61,7 +61,7 @@ module CPP-TRANSLATION-TYPING-CANONICALIZATION
 
      rule MemberPointerType(t(... st: classType(...)) #as D::CPPType, T:CPPType) => t(noQuals, .Set, memberPointerType(D, T))
 
-     rule ArrayTypeAExpr(T:CPPType, NoExpression()) => t(noQuals, .Set, incompleteArrayType(T))
+     rule ArrayType(T:CPPType, NoExpression()) => t(noQuals, .Set, incompleteArrayType(T))
 
      rule ArrayType(T:CPPType, I:Int) => t(noQuals, .Set, arrayType(T, I))
 

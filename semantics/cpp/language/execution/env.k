@@ -12,7 +12,6 @@ endmodule
 module CPP-EXECUTION-ENV
      imports CPP-EXECUTION-ENV-SYNTAX
      imports C-CONFIGURATION
-     imports CPP-DYNAMIC-SYNTAX
 
      rule <k> addToHistory(BlockNum:Int) => .K ...</k>
           <block-history> .List => ListItem(BlockNum) ...</block-history>
