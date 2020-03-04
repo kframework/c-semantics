@@ -7,7 +7,7 @@ module ERROR-SYNTAX
      syntax ErrorMsg ::= ErrorMsg(ErrorCategory, String, String, List)
                        | ErrorMsg(ErrorCategory, String, String) [function, klabel(ErrorMsgS)]
 
-     syntax ErrorTrace ::= errorTrace(String, String)
+     syntax ErrorTrace ::= errorTrace(String, List)
 
      syntax K ::= reportError(ErrorMsg, tu: String, Scope, CabsLoc, Map, K) [function, hook(C_SEMANTICS.error)]
 
