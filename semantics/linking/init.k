@@ -114,13 +114,13 @@ module LINKING-INIT
 
      syntax KItem ::= resolveReferences(entrypoint: String)
      rule <k> resolveReferences(Entrypoint::String)
-               => resolveCPPReferences(OdrUses)
+               => resolveMain
+               ~> resolveCPPReferences(OdrUses)
                ~> #if hasCPPMain() #then
                     resolveCReferences(Uses)
                   #else
                     resolveCReferences(onlyExternal(reachableSymbols(Entrypoint)))
                   #fi
-               ~> resolveMain
                ~> clearLinkingState()
           ...</k>
           <odr-uses> OdrUses::Set => .Set </odr-uses>
