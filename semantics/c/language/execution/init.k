@@ -273,5 +273,7 @@ module C-EXECUTION-INIT
 
      rule [[ nameOfCurrentTranslationUnit() => TU ]]
           <curr-tu>TU::String</curr-tu>
+
+     rule currentSemantics() => CCPP()
 endmodule
 

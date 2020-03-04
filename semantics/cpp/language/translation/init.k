@@ -13,6 +13,7 @@ module CPP-TRANSLATION-INIT
      rule [[ nameOfCurrentTranslationUnit() => TU ]]
           <curr-tr-tu>TU::String</curr-tr-tu>
 
+     rule currentSemantics() => CPPTranslation()
 
      rule [[ Execution() => B ]]
           <compile-time-evaluation> B::Bool </compile-time-evaluation>
