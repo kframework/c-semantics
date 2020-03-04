@@ -22,6 +22,8 @@ module LINKING-INIT
      imports ERROR-SYNTAX
      imports LIBC-TYPES-SYNTAX
      imports OPTIONS-SYNTAX
+     imports SETTINGS-SYNTAX
+     imports SYMLOC-SYNTAX
      imports CPP-BUILTIN-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
@@ -31,7 +33,6 @@ module LINKING-INIT
      imports LINKING-C-BUILTIN-SYNTAX
      imports LINKING-CPP-BUILTIN-SYNTAX
      imports CPP-TYPE-MAP-SYNTAX
-     imports SYMLOC-SYNTAX
 
      rule <k> linkProgram(Entrypoint::String)
                => cBuiltinTu("builtin")
