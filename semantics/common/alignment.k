@@ -15,7 +15,7 @@ module ALIGNMENT
 
      rule getAlign(NullPointer) => cfg:alignofMalloc
      rule getAlign(Loc::SymLoc) => getAlign'(base(Loc), offset(Loc))
-          requires notBool isLinkerLoc(Loc)
+          requires notBool isLinkerLoc(Loc) andBool Loc =/=K NullPointer
      rule [[ getAlign(Loc::SymLoc => resolveLinking(Loc, Linkings)) ]]
           <linkings> Linkings::Map </linkings>
           requires isLinkerLoc(Loc) andBool base(Loc) in_keys(Linkings)
