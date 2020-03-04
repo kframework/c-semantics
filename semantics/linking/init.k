@@ -79,7 +79,10 @@ module LINKING-INIT
                   | #reachableSymbols(Map, Map) [function]
 
      rule reachableSymbols(Entrypoint::String)
-          => #reachableSymbols(.Map, linkdepNode(Identifier(Entrypoint), external()) |-> UnknownCabsLoc)
+          => #reachableSymbols(.Map,
+               (linkdepNode(Identifier(Entrypoint), external()) |-> UnknownCabsLoc)
+               (notAFunction() |-> UnknownCabsLoc)
+               )
 
      rule #reachableSymbols(Result, .Map) => Result
 
