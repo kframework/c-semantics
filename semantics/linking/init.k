@@ -119,7 +119,7 @@ module LINKING-INIT
                ~> #if hasCPPMain() #then
                     resolveCReferences(Uses)
                   #else
-                    resolveCReferences(onlyExternal(reachableSymbols(Entrypoint))[Entrypoint <- undef])
+                    resolveCReferences(onlyExternal(reachableSymbols(Entrypoint))[Identifier(Entrypoint) <- undef])
                   #fi
                ~> clearLinkingState()
           ...</k>
