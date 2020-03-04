@@ -6,7 +6,7 @@ module C-EXECUTION-ERROR-SYNTAX
      imports C-DYNAMIC-SORTS
      imports ERROR-SYNTAX
 
-     syntax String ::= printStackTrace(List, String, Scope, CabsLoc, Map) [function, hook(C_SEMANTICS.printStackTrace)]
+     syntax List ::= printStackTrace(List, String, Scope, CabsLoc, Map) [function, hook(C_SEMANTICS.printStackTrace)]
 endmodule
 
 module C-EXECUTION-ERROR
@@ -28,6 +28,6 @@ module C-EXECUTION-ERROR
           <renv> REnv::Map </renv>
 
      // this rule prevents the open source semantics from getting stuck on this function
-     rule printStackTrace(_, _, _, _, _) => ""
+     rule printStackTrace(_, _, _, _, _) => .List
 
 endmodule
