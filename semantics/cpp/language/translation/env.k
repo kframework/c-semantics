@@ -2,6 +2,7 @@ module CPP-TRANSLATION-ENV-SYNTAX
      imports BASIC-K
      imports BOOL-SYNTAX
      imports COMPAT-SORTS
+     imports CPP-COMMON-ENV-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports CPP-SYMLOC-SORTS
      imports CPP-TYPING-SORTS
@@ -17,14 +18,6 @@ module CPP-TRANSLATION-ENV-SYNTAX
      syntax KItem ::= "pushLocals" | "popLocals"
 
      syntax KItem ::= updateDefaultArguments(QualId, CPPType, DefaultArguments) [strict(3)]
-
-     syntax DefaultArguments ::= defArgs(vals: StrictList, types: StrictList, cats: StrictList) [strict(1)]
-
-     syntax DefaultArguments ::= DefaultArgumentsResult
-
-     syntax DefaultArgumentsResult ::= defArgs(vals: StrictListResult, types: StrictListResult, cats: StrictListResult)
-
-     syntax KResult ::= DefaultArgumentsResult
 
      syntax List ::= getDefaultArgsVals(DefaultArgumentsResult) [function]
 

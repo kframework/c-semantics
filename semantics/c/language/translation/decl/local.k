@@ -90,7 +90,8 @@ module C-DECL-LOCAL
                andBool (notBool isAutoType(T))
           [structural]
      rule declareInternalVariable(_, t(_, _, auto-type) => T, initValue(_, T::Type, _))
-          [structural]
+     rule declareInternalVariable(_, t(_, _, T::SimpleType), initValue(_, _, .K) => NoInit())
+          requires T =/=K auto-type
      // We don't give local extern decls an entry in the "local-types" map in
      // order to detect this case.
      rule <k> (.K => CV("TDL1", "Extern declaration of "

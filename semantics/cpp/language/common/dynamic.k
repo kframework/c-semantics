@@ -386,9 +386,8 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      imports SET
      imports BOOL
 
-     syntax CPPValue ::= BitValue
+     syntax CPPValue ::= BitValueOrEncodable
                        | PtrValue
-                       | Encodable
 
      syntax PtrValue ::= NullPtrVal // value of type std::nullptr_t
                        | MemberPtr

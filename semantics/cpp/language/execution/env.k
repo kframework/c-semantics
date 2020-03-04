@@ -1,6 +1,7 @@
 module CPP-EXECUTION-ENV-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
+     imports CPP-COMMON-ENV-SYNTAX
 
      syntax KItem ::= addToExecEnv(CId, CPPType, SymBase, Bool) [klabel(cppAddToExecEnv)]
 
