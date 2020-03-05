@@ -273,8 +273,8 @@ module CPP-QUALID-SYNTAX
      imports CPP-QUALID-SORTS // self
      imports CPP-SORTS // CId, Name
 
-     syntax NNS ::= NoNNS()
-                  | NNS "::" NNSSpecifier [klabel(NestedName)]
+     syntax NNS ::= NoNNS() [symbol]
+                  | NNS "::" NNSSpecifier [klabel(NestedName), symbol]
 
      syntax NNSSpecifier ::= NNS(CId)
                            | TemplateNNS(CId)
