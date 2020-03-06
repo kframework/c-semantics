@@ -2,7 +2,7 @@ module ALIGNMENT-SYNTAX
      imports SYMLOC-SORTS
      imports INT-SYNTAX
 
-     syntax Int ::= getAlign(SymLoc) [function, withConfig]
+     syntax Int ::= getAlign(SymLoc) [function]
      syntax Int ::= getNativeAlign(address: Int, max: Int) [function]
 endmodule
 
@@ -14,8 +14,6 @@ module ALIGNMENT
      imports C-SETTINGS-SYNTAX
 
      rule getAlign(NullPointer) => cfg:alignofMalloc
-     rule getAlign(Loc::SymLoc) => getAlign'(base(Loc), offset(Loc))
-          requires notBool isLinkerLoc(Loc) andBool Loc =/=K NullPointer
      rule [[ getAlign(Loc::SymLoc => resolveLinking(Loc, Linkings)) ]]
           <linkings> Linkings::Map </linkings>
           requires isLinkerLoc(Loc) andBool base(Loc) in_keys(Linkings)
