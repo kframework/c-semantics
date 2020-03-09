@@ -173,6 +173,7 @@ module CPP-ABSTRACT-SYNTAX
                    | ForTStmt(Stmt, Decl, Stmt, Stmt)
                    | ForTStmt(Expr, Stmt, Stmt)
                    | TemplateDefinitionStmt(K) // synthetic statement created by the body of a function template definition when it's evaluted before instantiation
+                   | TReturnOp(init: Expr, obj: K)
 
      syntax AStmt ::= NoStatement()
                     | CompoundAStmt(List)
@@ -224,7 +225,6 @@ module CPP-ABSTRACT-SYNTAX
                    | Noexcept(Expr)
                    | NewExpr(Bool, AType, AExpr, Init, List) [strict(2)]
                    | DeleteExpr(Bool, Bool, Expr)
-                   | TReturnOp(init: Expr, obj: K)
 
      syntax ResolvedExpr ::= CallExpr(Expr, StrictList, StrictListResult)
 
