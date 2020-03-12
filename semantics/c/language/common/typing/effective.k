@@ -196,16 +196,19 @@ module C-TYPING-EFFECTIVE
      rule setVariantAtOffset(t(... st: unionType(_)) #as T::Type, F::CId, Offset::Int)
           => setActiveVariant(setVariantAtOffset(getActiveVariant(T), F, Offset), T)
           requires Offset =/=Int 0
+
      rule setVariantAtOffset(t(... st: unionType(_)) #as T::Type, F::CId, 0)
           => setActiveVariantId(F, T)
           requires notBool isNoType(getFieldType(F, T))
                andBool isNoType(getActiveVariant(T))
+
      rule setVariantAtOffset(t(... st: unionType(_)) #as T::Type, F::CId, 0)
           => #if notBool isNoType(findFieldType(F, getActiveVariant(T)))
                #then setActiveVariant(setVariantAtOffset(getActiveVariant(T), F, 0), T)
                #else setActiveVariantId(F, T) #fi
-          requires notBool isNoType(getFieldType(F, T))
+          requires (notBool isNoType(getFieldType(F, T)) orBool isNoType(findFieldType(F, T)))
                andBool notBool isNoType(getActiveVariant(T))
+
      rule setVariantAtOffset(t(... st: unionType(_)) #as T::Type, F::CId, 0)
           => setActiveVariant(setVariantAtOffset(getFieldType(getUnnamed(F, T), T), F, 0), setActiveVariantId(getUnnamed(F, T), T))
           requires isNoType(getFieldType(F, T))
