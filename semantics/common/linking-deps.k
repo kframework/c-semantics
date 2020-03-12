@@ -31,10 +31,10 @@ module COMMON-LINKING-DEPS
 
      rule mergeLinkdep(M1, .Map) => M1
 
-     // generally, the keys of two maps will be independent,
-     // since keys corresponds to function definition
+     // Generally, the keys of two maps will be independent,
+     // since keys corresponds to function definitions
      // and every function may be defined only once.
-     // But for C++, we want a special not-a-function key corresponding
+     // However, for C++ we want a special not-a-function key corresponding
      // to situations where a symbol is used from outside a function,
      // e.g. from the global namespace, and this key may be present
      // in both maps.
@@ -45,7 +45,8 @@ module COMMON-LINKING-DEPS
              )(choice(M2))
           requires size(M2) >=Int 1
 
-     // but what if the rule in global fires earlier than when externals/internals are filled?
+     // But what if the rule in global fires earlier than when
+     // externals/internals are filled?
      rule [[linkdepNodeFromCId(X) => linkdepNode(X, external())]]
           <externals>... X |-> _ ...</externals>
      rule [[linkdepNodeFromCId(X) => linkdepNode(X, internal(TU))]]
