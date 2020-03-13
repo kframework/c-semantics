@@ -60,7 +60,7 @@ module LINKING-C-RESOLUTION
           requires (notBool (X in_keys(Defs)) orBool notBool (X in_keys(Types)))
                andBool isMangledName(X)
           [structural]
-     rule <k>  (resolveCReference(X:CId, ErrorHandling:LinkErrorHandling) => setTranslationLoc(L)
+     rule <k>  (resolveCReference(X:CId, ErrorHandling::LinkErrorHandling) => setTranslationLoc(L)
                     ~> EXT-UNDEF("TDR2",
                          "No definition for symbol with external linkage: "
                          +String showCId(X) +String ".")
