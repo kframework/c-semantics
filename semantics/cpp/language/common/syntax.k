@@ -32,60 +32,60 @@ module CPP-SYNTAX
      imports CPP-TYPING-SORTS
      imports COMPAT-SORTS
 
-     syntax OpId ::= "operatornew"
-                   | "operatordelete"
-                   | "operatornew[]"
-                   | "operatordelete[]"
-                   | "operator+"
-                   | "operator-"
-                   | "operator*"
-                   | "operator/"
-                   | "operator%"
-                   | "operator^"
-                   | "operator&"
-                   | "operator|"
-                   | "operator~"
-                   | "operator!"
-                   | "operator="
-                   | "operator<"
-                   | "operator>"
-                   | "operator+="
-                   | "operator-="
-                   | "operator*="
-                   | "operator/="
-                   | "operator%="
-                   | "operator^="
-                   | "operator&="
-                   | "operator|="
-                   | "operator<<"
-                   | "operator>>"
-                   | "operator<<="
-                   | "operator>>="
-                   | "operator=="
-                   | "operator!="
-                   | "operator<="
-                   | "operator>="
-                   | "operator&&"
-                   | "operator||"
-                   | "operator++"
-                   | "operator--"
-                   | "operator,"
-                   | "operator->*"
-                   | "operator->"
-                   | "operator()"
-                   | "operator[]"
+     syntax OpId ::= "operatornew" [symbol]
+                   | "operatordelete" [symbol]
+                   | "operatornew[]" [symbol]
+                   | "operatordelete[]" [symbol]
+                   | "operator+" [symbol]
+                   | "operator-" [symbol]
+                   | "operator*" [symbol]
+                   | "operator/" [symbol]
+                   | "operator%" [symbol]
+                   | "operator^" [symbol]
+                   | "operator&" [symbol]
+                   | "operator|" [symbol]
+                   | "operator~" [symbol]
+                   | "operator!" [symbol]
+                   | "operator=" [symbol]
+                   | "operator<" [symbol]
+                   | "operator>" [symbol]
+                   | "operator+=" [symbol]
+                   | "operator-=" [symbol]
+                   | "operator*=" [symbol]
+                   | "operator/=" [symbol]
+                   | "operator%=" [symbol]
+                   | "operator^=" [symbol]
+                   | "operator&=" [symbol]
+                   | "operator|=" [symbol]
+                   | "operator<<" [symbol]
+                   | "operator>>" [symbol]
+                   | "operator<<=" [symbol]
+                   | "operator>>=" [symbol]
+                   | "operator==" [symbol]
+                   | "operator!=" [symbol]
+                   | "operator<=" [symbol]
+                   | "operator>=" [symbol]
+                   | "operator&&" [symbol]
+                   | "operator||" [symbol]
+                   | "operator++" [symbol]
+                   | "operator--" [symbol]
+                   | "operator," [symbol]
+                   | "operator->*" [symbol]
+                   | "operator->" [symbol]
+                   | "operator()" [symbol]
+                   | "operator[]" [symbol]
 
      // not technically operator ids, but used internally in order to process
      // syntax from the parser
-     syntax OpId ::= "operator."
-                   | "operator.*"
-                   | "operator?"
-                   | "operator_++"
-                   | "operator++_"
-                   | "operator_--"
-                   | "operator--_"
+     syntax OpId ::= "operator." [symbol]
+                   | "operator.*" [symbol]
+                   | "operator?" [symbol]
+                   | "operator_++" [symbol]
+                   | "operator++_" [symbol]
+                   | "operator_--" [symbol]
+                   | "operator--_" [symbol]
 
-     syntax Specifier ::= Alignas(Int)
+     syntax Specifier ::= Alignas(Int) [symbol]
 
      syntax Expr ::= temp(Int, CPPType)
                    | newSize(Int)
@@ -97,11 +97,11 @@ module CPP-SYNTAX
      syntax CId ::= TypeId
                   | ConversionId(CPPType)
 
-     syntax ClassKey ::= Struct() | Union() | Class()
+     syntax ClassKey ::= Struct() [symbol] | Union() [symbol] | Class() [symbol]
 
-     syntax Tag ::= ClassKey | Enum() | Typename() | NoTag()
+     syntax Tag ::= ClassKey | Enum() [symbol] | Typename() [symbol] | NoTag() [symbol]
 
-     syntax AccessSpecifier ::= Public() | Private() | Protected() | NoAccessSpec()
+     syntax AccessSpecifier ::= Public() [symbol] | Private() [symbol] | Protected() [symbol] | NoAccessSpec()
 
      syntax RefQualifier ::= RefLValue() | RefRValue() | RefNone()
 
