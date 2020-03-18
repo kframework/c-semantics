@@ -316,7 +316,7 @@ all-semantics:
 	@$(MAKE) -C semantics all BUILD_DIR=$(PROFILE_OUTPUT_DIR) PROFILE_DIR=$(PROFILE_DIR)
 
 .PHONY: check
-check: | pass fail fail-compile warning-compile
+check: | pass fail fail-compile
 
 .PHONY: pass
 pass:	| test-build
@@ -329,10 +329,6 @@ fail:	| test-build
 .PHONY: fail-compile
 fail-compile:	| test-build
 	@$(MAKE) -C tests/unit-fail-compilation comparison
-
-.PHONY: warning-compile
-warning-compile:	| test-build
-	@$(MAKE) -C tests/unit-warning-compilation comparison
 
 
 # Intended as a simple test to verify the build.  If you invoke from the

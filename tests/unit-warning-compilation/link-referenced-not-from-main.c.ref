@@ -1,7 +1,0 @@
-link-referenced-not-from-main.c:1:1: error: No definition for symbol with external linkage: f.
-
-    Undefined behavior (UB-TDR2):
-        see C11 section 6.9:5 http://rvdoc.org/C11/6.9
-        see C11 section J.2:1 item 84 http://rvdoc.org/C11/J.2
-        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
-        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
