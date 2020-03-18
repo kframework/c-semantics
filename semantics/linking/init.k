@@ -74,7 +74,7 @@ module LINKING-INIT
           ~> addCppBuiltins(weakCppBuiltins, false)
           ~> removeUnusedIdentifiers(Tu)
 
-     // returns a map from
+     // Returns a map from LinkdepNode to CabsLoc
      syntax Map ::= reachableSymbols(entrypoint: String) [function]
                   | #reachableSymbols(Map, Map) [function]
 
@@ -117,14 +117,18 @@ module LINKING-INIT
                => resolveMain
                ~> resolveCPPReferences(OdrUses)
                ~> #if hasCPPMain() #then
-                    resolveCReferences(Uses)
+                    resolveCReferences(Uses, linkErrors)
                   #else
-                    resolveCReferences(onlyExternal(reachableSymbols(Entrypoint))[Identifier(Entrypoint) <- undef])
+                    #fun (Reachable =>
+                         resolveCReferences(Reachable[Identifier(Entrypoint) <- undef], linkErrors)
+                         ~> resolveCReferences(removeAll(Uses, keys(Reachable))[Identifier(Entrypoint) <- undef], linkWarnings)
+                    )(onlyExternal(reachableSymbols(Entrypoint)))
                   #fi
                ~> clearLinkingState()
           ...</k>
           <odr-uses> OdrUses::Set => .Set </odr-uses>
           <external-uses> Uses::Map => .Map </external-uses>
+          <linking-deps> Deps </linking-deps>
 
      syntax KItem ::= clearLinkingState()
      rule <k> clearLinkingState() => .K ...</k>
