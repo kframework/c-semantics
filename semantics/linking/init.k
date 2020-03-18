@@ -120,9 +120,9 @@ module LINKING-INIT
                     resolveCReferences(Uses, linkErrors)
                   #else
                     #fun (Reachable =>
-                         resolveCReferences(onlyExternal(Reachable)[Identifier(Entrypoint) <- undef], linkErrors)
-                         ~> resolveCReferences((Uses -Map Reachable)[Identifier(Entrypoint) <- undef], linkWarnings)
-                    )(reachableSymbols(Entrypoint))
+                         resolveCReferences(Reachable[Identifier(Entrypoint) <- undef], linkErrors)
+                         ~> resolveCReferences(removeAll(Uses, keys(Reachable))[Identifier(Entrypoint) <- undef], linkWarnings)
+                    )(onlyExternal(reachableSymbols(Entrypoint)))
                   #fi
                ~> clearLinkingState()
           ...</k>

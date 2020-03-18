@@ -27,7 +27,9 @@ module LINKING-C-RESOLUTION
 
      syntax KItem ::= resolveCReference(CId, LinkErrorHandling)
      rule (.K => setTranslationLoc(L) ~> resolveCReference(X, ErrorHandling))
-               ~> resolveCReferences((X:CId |-> L:CabsLoc => .Map) _, ErrorHandling)
+               ~> resolveCReferences(
+                    (X:CId |-> L:CabsLoc => .Map) _,
+                    ErrorHandling::LinkErrorHandling)
           [structural]
 
      rule <k> resolveCReference(X:CId, _) ...</k>
