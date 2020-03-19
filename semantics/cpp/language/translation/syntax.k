@@ -30,243 +30,268 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax SymBase ::= "nonStatic"
 
-     syntax TypeId ::= TypeId(AType)
-     syntax DestructorId ::= DestructorTypeId(AType)
+     syntax TypeId ::= TypeId(AType) [symbol]
+     syntax DestructorId ::= DestructorTypeId(AType) [symbol]
 
      syntax CId ::= TypeId
 
-     syntax Decl ::= TranslationUnit(String, List)
-                   | TypedefDecl(CId, AType) [strict(2)]
-                   | TypeAliasDecl(CId, AType) [strict(2)]
-                   | LinkageSpec(String, Bool, List)
-                   | NamespaceDecl(CId, Bool, List)
-                   | NamespaceAliasDecl(CId, CId, NNS)
-                   | Specifier(Specifier, Decl)
+     syntax Decl ::= TranslationUnit(String, List) [symbol]
+                   | TypedefDecl(CId, AType) [strict(2), symbol]
+                   | TypeAliasDecl(CId, AType) [strict(2), symbol]
+                   | LinkageSpec(String, Bool, List) [symbol]
+                   | NamespaceDecl(CId, Bool, List) [symbol]
+                   | NamespaceAliasDecl(CId, CId, NNS) [symbol]
+                   | Specifier(Specifier, Decl) [symbol]
                    | Declarator
-                   | DeclLoc(CabsLoc, Decl)
-                   | FriendDecl(Decl)
+                   | DeclLoc(CabsLoc, Decl) [symbol]
+                   | FriendDecl(Decl) [symbol]
 
-     syntax CtorInit ::= ConstructorBase(AType, Bool, Bool, Init)
-                      | ConstructorMember(CId, Init)
-                      | ConstructorDelegating(Init)
+     syntax CtorInit ::= ConstructorBase(AType, Bool, Bool, Init) [symbol]
+                      | ConstructorMember(CId, Init) [symbol]
+                      | ConstructorDelegating(Init) [symbol]
 
-     syntax Declarator ::= FunctionDefinition(NNS, CId, CId, AType, List, AStmt) [strict(4)]
-                         | FunctionDecl(NNS, CId, CId, AType, List) [strict(4)]
-                         | VarDecl(NNS, CId, CId, AType, Init, isDirect: Bool) [strict(4)]
-                         | FieldDecl(NNS, CId, AType, Init) [strict(3)]
-                         | BitFieldDecl(NNS, CId, AType, Expr) [strict(3)]
+     syntax Declarator ::= FunctionDefinition(NNS, CId, CId, AType, List, AStmt) [strict(4), symbol]
+                         | FunctionDecl(NNS, CId, CId, AType, List) [strict(4), symbol]
+                         | VarDecl(NNS, CId, CId, AType, Init, isDirect: Bool) [strict(4), symbol]
+                         | FieldDecl(NNS, CId, AType, Init) [strict(3), symbol]
+                         | BitFieldDecl(NNS, CId, AType, Expr) [strict(3), symbol]
 
-     syntax InitOnlyIfOdrUsed ::= OnlyIfOdrUsed(Init)
+     syntax InitOnlyIfOdrUsed ::= OnlyIfOdrUsed(Init) [symbol]
      syntax Stmt ::= InitOnlyIfOdrUsed
 
-     syntax StorageClassSpecifier ::= Mutable()
+     syntax StorageClassSpecifier ::= Mutable() [symbol]
 
      syntax FunctionSpecifier ::= Explicit()
 
      syntax Specifier ::= StorageClassSpecifier | FunctionSpecifier
-                        | Constexpr() | AutoSpecifier
+                        | Constexpr() [symbol]
+                        | AutoSpecifier
 
-     syntax Decl ::= Template(Decl, List)
-                   | TemplateWithInstantiations(Decl, List, List)
+     syntax Decl ::= Template(Decl, List) [symbol]
+                   | TemplateWithInstantiations(Decl, List, List) [symbol]
 
-     syntax TemplateParameter ::= TypeTemplateParam(Bool, Bool, AType, AType)
-                                | ValueTemplateParam(Bool, NNS, CId, AType, AExpr)
-                                | TemplateTemplateParam(Bool, CId, AType, List)
+     syntax TemplateParameter ::= TypeTemplateParam(Bool, Bool, AType, AType) [symbol]
+                                | ValueTemplateParam(Bool, NNS, CId, AType, AExpr) [symbol]
+                                | TemplateTemplateParam(Bool, CId, AType, List) [symbol]
 
-     syntax TemplateArgument ::= TypeArg(AType) [strict]
-                               | TemplateArg(CId)
-                               | ExprArg(Expr)
-                               | PackArg(List)
+     syntax TemplateArgument ::= TypeArg(AType) [strict, symbol]
+                               | TemplateArg(CId) [symbol]
+                               | ExprArg(Expr) [symbol]
+                               | PackArg(List) [symbol]
 
-     syntax Decl ::= TemplateSpecialization(AType, Decl)
-                   | TemplateInstantiationDeclaration(AType, Decl)
-                   | TemplateInstantiationDefinition(AType, Decl)
-                   | PartialSpecialization(List, List, Decl)
+     syntax Decl ::= TemplateSpecialization(AType, Decl) [symbol]
+                   | TemplateInstantiationDeclaration(AType, Decl) [symbol]
+                   | TemplateInstantiationDefinition(AType, Decl) [symbol]
+                   | PartialSpecialization(List, List, Decl) [symbol]
 
-     syntax Decl ::= ClassDef(Tag, CId, NNS, List, List, Bool)
-                   | TypeDecl(AType)
-                   | EnumDef(id: CId, nns: NNS, scoped: Bool, fixed: Bool, ut: AType, List) [strict(5)]
-                   | OpaqueEnumDeclaration(id: CId, scoped: Bool, ut: AType) [strict(3)]
-                   | AccessSpec(AccessSpecifier)
-                   | StaticAssert(Expr, Expr)
-                   | UsingDecl(Bool, NNS, CId)
-                   | UsingDirective(CId, NNS)
+     syntax Decl ::= ClassDef(Tag, CId, NNS, List, List, Bool) [symbol]
+                   | TypeDecl(AType) [symbol]
+                   | EnumDef(id: CId, nns: NNS, scoped: Bool, fixed: Bool, ut: AType, List) [strict(5), symbol]
+                   | OpaqueEnumDeclaration(id: CId, scoped: Bool, ut: AType) [strict(3), symbol]
+                   | AccessSpec(AccessSpecifier) [symbol]
+                   | StaticAssert(Expr, Expr) [symbol]
+                   | UsingDecl(Bool, NNS, CId) [symbol]
+                   | UsingDirective(CId, NNS) [symbol]
 
-     syntax Decl ::= DeclLoc(CabsLoc, Decl)
-                   | NoDecl()
+     syntax Decl ::= DeclLoc(CabsLoc, Decl) [symbol]
+                   | NoDecl() [symbol]
 
-     syntax BaseSpecifier ::= BaseClass(Bool, Bool, AccessSpecifier, AType)
+     syntax BaseSpecifier ::= BaseClass(Bool, Bool, AccessSpecifier, AType) [symbol]
 
-     syntax Enumerator ::= Enumerator(CId, AExpr)
+     syntax Enumerator ::= Enumerator(CId, AExpr) [symbol]
 
      syntax CPPType // defined in CPP-TYPING-SYNTAX
 
-     syntax ATypeResult ::= NoType()
+     syntax ATypeResult ::= NoType() [symbol]
 
      syntax KResult ::= ATypeResult
 
      syntax AType ::= CPPType
                     | ATypeResult
-                    | ElaboratedTypeSpecifier(Tag, CId, NNS)
+                    | ElaboratedTypeSpecifier(Tag, CId, NNS) [symbol]
                     | ElaboratedTypeSpecifier(Tag, CId, NNS, List)
-                    | FunctionPrototype(AType, StrictList, ExceptionSpec, Bool) [strict(1)]
-                    | MethodPrototype(Bool, Bool, AType, AType) [strict(3, 4)]
-                    | StaticMethodPrototype(AType) [strict]
-                    | Virtual(AType) [strict]
-                    | Pure(AType) [strict]
-                    | Explicit(AType) [strict]
-                    | BuiltinType(TypeSpecifier)
-                    | PointerType(AType) [strict]
-                    | MemberPointerType(AType, AType) [strict]
-                    | ArrayType(AType, Int) [strict(1)]
-                    | ArrayType(AType, AExpr) [strict(1)]
-                    | TypedefType(CId)
-                    | QualifiedTypeName(Tag, NNS, AType)
-                    | Decltype(Expr)
-                    | TemplateParameterType(CId)
-                    | LValRefType(AType) [strict]
-                    | RValRefType(AType) [strict]
-                    | TemplateSpecializationType(CId)
-                    | TemplateSpecializationType(CId, List)
-                    | PackExpansionType(AType)
-                    | AutoType(Bool)
+                    | FunctionPrototype(AType, StrictList, ExceptionSpec, Bool) [strict(1), symbol]
+                    | MethodPrototype(Bool, Bool, AType, AType) [strict(3, 4), symbol]
+                    | StaticMethodPrototype(AType) [strict, symbol]
+                    | Virtual(AType) [strict, symbol]
+                    | Pure(AType) [strict, symbol]
+                    | Explicit(AType) [strict, symbol]
+                    | BuiltinType(TypeSpecifier) [symbol]
+                    | PointerType(AType) [strict, symbol]
+                    | MemberPointerType(AType, AType) [strict, symbol]
+                    | ArrayType(AType, Int) [strict(1), symbol]
+                    | ArrayTypeAExpr(AType, AExpr) [strict(1), symbol]
+                    | TypedefType(CId) [symbol]
+                    | QualifiedTypeName(Tag, NNS, AType) [symbol]
+                    | Decltype(Expr) [symbol]
+                    | TemplateParameterType(CId) [symbol]
+                    | LValRefType(AType) [strict, symbol]
+                    | RValRefType(AType) [strict, symbol]
+                    | TemplateSpecializationType(CId, List) [symbol]
+                    | TemplateSpecializationType2(CId) [symbol]
+                    | PackExpansionType(AType) [symbol]
+                    | AutoType(Bool) [symbol]
                     | Name
 
      context FunctionPrototype(_, HOLE:StrictList => typeStrict(HOLE), _, _)
 
      // extensions
-     syntax AType ::= GnuEnumUnderlyingType2(AType, AType)
-                    | GnuEnumUnderlyingType1(AType)
-                    | TypeofExpression(Expr) | TypeofType(AType)
+     syntax AType ::= GnuEnumUnderlyingType2(AType, AType) [symbol]
+                    | GnuEnumUnderlyingType1(AType) [symbol]
+                    | TypeofExpression(Expr) [symbol]
+                    | TypeofType(AType) [symbol]
 
-     syntax ExceptionSpec ::= NoExceptionSpec()
-                            | NoexceptSpec(AExpr)
-                            | ThrowSpec(StrictList) [strict]
+     syntax ExceptionSpec ::= NoExceptionSpec() [symbol]
+                            | NoexceptSpec(AExpr) [symbol]
+                            | ThrowSpec(StrictList) [strict, symbol]
 
-     syntax TypeSpecifier ::= Void() | Char() | WChar() | Char16() | Char32()
-                            | Bool() | UChar() | UShort() | UInt() | ULong()
-                            | ULongLong() | SChar() | Short() | Int() | Long()
-                            | LongLong() | Float() | Double() | LongDouble()
-                            | OversizedInt() | OversizedUInt()
-                            | Dependent() | NullPtr()
+     syntax TypeSpecifier ::= Void() [symbol]
+                            | Char() [symbol]
+                            | WChar() [symbol]
+                            | Char16() [symbol]
+                            | Char32() [symbol]
+                            | Bool() [symbol]
+                            | UChar() [symbol]
+                            | UShort() [symbol]
+                            | UInt() [symbol]
+                            | ULong() [symbol]
+                            | ULongLong() [symbol]
+                            | SChar() [symbol]
+                            | Short() [symbol]
+                            | Int() [symbol]
+                            | Long() [symbol]
+                            | LongLong() [symbol]
+                            | Float() [symbol]
+                            | Double() [symbol]
+                            | LongDouble() [symbol]
+                            | OversizedInt() [symbol]
+                            | OversizedUInt() [symbol]
+                            | Dependent() [symbol]
+                            | NullPtr() [symbol]
 
-     syntax AType ::= RefQualifier(RefQualifier, AType) [strict(2)]
+     syntax AType ::= RefQualifier(RefQualifier, AType) [strict(2), symbol]
 
-     syntax AType ::= Qualifier(Qualifier, AType) [strict(2)]
+     syntax AType ::= Qualifier(Qualifier, AType) [strict(2), symbol]
 
      syntax AStmt ::= Stmt
 
-     syntax Stmt ::= DeclStmt(List)
-                   | TGotoStmt(CId)
-                   | TExpressionStmt(Expr) [strict(c)]
-                   | TLabelStmt(CId, List)
-                   | TCatchAnyOp(Stmt)
-                   | TBreakStmt()
-                   | ContinueStmt()
-                   | ReturnStmt(Init)
+     syntax Stmt ::= DeclStmt(List) [symbol]
+                   | TGotoStmt(CId) [symbol]
+                   | TExpressionStmt(Expr) [strict(c), symbol]
+                   | TLabelStmt(CId, List) [symbol]
+                   | TCatchAnyOp(Stmt) [symbol]
+                   | TBreakStmt() [symbol]
+                   | ContinueStmt() [symbol]
+                   | ReturnStmt(Init) [symbol]
                    | IfTStmt(Decl, Stmt, Stmt)
                    | IfTStmt(Expr, Stmt, Stmt)
                    | WhileTStmt(Decl, Stmt)
                    | WhileTStmt(Expr, Stmt)
-                   | NullStmt()
+                   | NullStmt() [symbol]
                    | ForTStmt(Stmt, Expr, Stmt, Stmt)
                    | ForTStmt(Stmt, Decl, Stmt, Stmt)
                    | ForTStmt(Expr, Stmt, Stmt)
-                   | TemplateDefinitionStmt(K) // synthetic statement created by the body of a function template definition when it's evaluted before instantiation
+                   | TemplateDefinitionStmt(K) [symbol] // synthetic statement created by the body of a function template definition when it's evaluted before instantiation
                    | TReturnOp(init: Expr, obj: K)
 
-     syntax AStmt ::= NoStatement()
-                    | CompoundAStmt(List)
-                    | LabelAStmt(CId, List)
-                    | ForAStmt(AStmt, AExpr, AExpr, AStmt)
+     syntax AStmt ::= NoStatement() [symbol]
+                    | CompoundAStmt(List) [symbol]
+                    | LabelAStmt(CId, List) [symbol]
+                    | ForAStmt(AStmt, AExpr, AExpr, AStmt) [symbol]
                     | ForAStmt(AStmt, Decl, AExpr, AStmt)
                     | WhileAStmt(Decl, AStmt)
-                    | WhileAStmt(Expr, AStmt)
-                    | DoWhileAStmt(AStmt, Expr)
-                    | IfAStmt(Decl, AStmt, AStmt)
+                    | WhileAStmt(Expr, AStmt) [symbol]
+                    | DoWhileAStmt(AStmt, Expr) [symbol]
+                    | IfAStmt(Decl, AStmt, AStmt) [symbol]
                     | IfAStmt(Expr, AStmt, AStmt)
-                    | SwitchAStmt(Decl, AStmt)
+                    | SwitchAStmt(Decl, AStmt) [symbol]
                     | SwitchAStmt(Expr, AStmt)
-                    | CaseAStmt(Expr, AStmt)
-                    | DefaultAStmt(AStmt)
-                    | TryAStmt(AStmt, List)
-                    | CatchAStmt(CatchDecl, AStmt)
-                    | CatchStmt(Decl, Stmt)
+                    | CaseAStmt(Expr, AStmt) [symbol]
+                    | DefaultAStmt(AStmt) [symbol]
+                    | TryAStmt(AStmt, List) [symbol]
+                    | CatchAStmt(CatchDecl, AStmt) [symbol]
+                    | CatchStmt(Decl, Stmt) [symbol]
                     | Expr //expression statement, handled later
 
-     syntax Stmt ::= Defaulted()
-                    | Deleted()
-                    | Constructor(List, Stmt)
-                    | Destructor()
+     syntax Stmt ::= Defaulted() [symbol]
+                    | Deleted() [symbol]
+                    | Constructor(List, Stmt) [symbol]
+                    | Destructor() [symbol]
 
-     syntax CatchDecl ::= Decl | Ellipsis()
+     syntax CatchDecl ::= Decl | Ellipsis() [symbol]
 
      syntax AExpr ::= Expr
-                    | NoExpression()
+                    | NoExpression() [symbol]
 
-     syntax Expr ::= MemberExpr(Bool, Bool, Name, Expr)
-                   | AnonymousUnionObject(AType)
-                   | Subscript(Expr, Expr)
+     syntax Expr ::= MemberExpr(Bool, Bool, Name, Expr) [symbol]
+                   | AnonymousUnionObject(AType) [symbol]
+                   | Subscript(Expr, Expr) [symbol]
                    | Name
-                   | OverloadedCall()
-                   | UnaryOperator(OpId, Expr)
-                   | BinaryOperator(OpId, Expr, Init)
-                   | ConditionalOperator(Expr, Expr, Expr)
-                   | ParenthesizedCast(AType, Expr) [strict(c)]
-                   | StaticCast(AType, Expr) [strict(c)]
-                   | DynamicCast(AType, Expr)
-                   | FunctionalCast(AType, List) [strict(1)]
-                   | SizeofType(AType) [strict]
-                   | SizeofExpr(Expr)
-                   | AlignofType(AType)
-                   | AlignofExpr(Expr)
-                   | SizeofPack(CId)
-                   | PseudoDestructor(Expr, Bool, NNS, AType, AType)
-                   | Noexcept(Expr)
-                   | NewExpr(Bool, AType, AExpr, Init, List) [strict(2)]
-                   | DeleteExpr(Bool, Bool, Expr)
+                   | OverloadedCall() [symbol]
+                   | UnaryOperator(OpId, Expr) [symbol]
+                   | BinaryOperator(OpId, Expr, Init) [symbol]
+                   | ConditionalOperator(Expr, Expr, Expr) [symbol]
+                   | ParenthesizedCast(AType, Expr) [strict(c), symbol]
+                   | StaticCast(AType, Expr) [strict(c), symbol]
+                   | DynamicCast(AType, Expr) [symbol]
+                   | FunctionalCast(AType, List) [strict(1), symbol]
+                   | SizeofType(AType) [strict, symbol]
+                   | SizeofExpr(Expr) [symbol]
+                   | AlignofType(AType) [symbol]
+                   | AlignofExpr(Expr) [symbol]
+                   | SizeofPack(CId) [symbol]
+                   | PseudoDestructor(Expr, Bool, NNS, AType, AType) [symbol]
+                   | Noexcept(Expr) [symbol]
+                   | NewExpr(Bool, AType, AExpr, Init, List) [strict(2), symbol]
+                   | DeleteExpr(Bool, Bool, Expr) [symbol]
 
-     syntax ResolvedExpr ::= CallExpr(Expr, StrictList, StrictListResult)
+     syntax ResolvedExpr ::= CallExpr(Expr, StrictList, StrictListResult) [symbol]
 
-     syntax Expr ::= Lambda(CaptureDefault, List, AType, AStmt)
-                   | PackExpansionExpr(Expr)
-                   | StringLiteral(CharKind, String)
-                   | CharacterLiteral(CharKind, Int)
-                   | IntegerLiteral(Int, AType) [strict(2)]
-                   | FloatingLiteral(Float, AType) [strict(2)]
-                   | NullPointerLiteral()
-                   | BoolLiteral(Bool)
-                   | Throw(AExpr)
+     syntax Expr ::= Lambda(CaptureDefault, List, AType, AStmt) [symbol]
+                   | PackExpansionExpr(Expr) [symbol]
+                   | StringLiteral(CharKind, String) [symbol]
+                   | CharacterLiteral(CharKind, Int) [symbol]
+                   | IntegerLiteral(Int, AType) [strict(2), symbol]
+                   | FloatingLiteral(Float, AType) [strict(2), symbol]
+                   | NullPointerLiteral() [symbol]
+                   | BoolLiteral(Bool) [symbol]
+                   | Throw(AExpr) [symbol]
 
-     syntax CaptureDefault ::= NoCaptureDefault() | CopyCapture() | RefCapture()
+     syntax CaptureDefault ::= NoCaptureDefault() [symbol]
+                             | CopyCapture() [symbol]
+                             | RefCapture() [symbol]
 
-     syntax Capture ::= LambdaCapture(CaptureKind, Bool)
+     syntax Capture ::= LambdaCapture(CaptureKind, Bool) [symbol]
 
-     syntax CaptureKind ::= Decl | This | RefCapture(Decl) [klabel(RefCapture1)]
+     syntax CaptureKind ::= Decl | This | RefCapture(Decl) [klabel(RefCapture1), symbol]
 
-     syntax CharKind ::= Ascii() | Wide() | UTF8() | UTF16() | UTF32()
+     syntax CharKind ::= Ascii() [symbol]
+                       | Wide() [symbol]
+                       | UTF8() [symbol]
+                       | UTF16() [symbol]
+                       | UTF32() [symbol]
 
-     syntax BraceInit ::= BraceInit(List)
+     syntax BraceInit ::= BraceInit(List) [symbol]
 
      syntax Init ::= BraceInit
 
-     syntax ExpressionList ::= ExpressionList(List)
+     syntax ExpressionList ::= ExpressionList(List) [symbol]
 
      syntax Init ::= ExpressionList
 
      // extensions
-     syntax Expr ::= GnuTypeTrait(String, List)
-                   | GnuAtomicExpr(String, List)
+     syntax Expr ::= GnuTypeTrait(String, List) [symbol]
+                   | GnuAtomicExpr(String, List) [symbol]
 
      // things that are not technically expressions, but will be transformed out
      // of existence by the semantics
-     syntax Expr ::= MaterializeTemporaryExpr(Expr)
-                   | UnresolvedConstructorCall(AType, List)
-                   | TemporaryObjectExpr(AType, List)
-                   | ParenList(List)
-     syntax Init ::= ConstructorCall(Bool, AType, List)
+     syntax Expr ::= MaterializeTemporaryExpr(Expr) [symbol]
+                   | UnresolvedConstructorCall(AType, List) [symbol]
+                   | TemporaryObjectExpr(AType, List) [symbol]
+                   | ParenList(List) [symbol]
+     syntax Init ::= ConstructorCall(Bool, AType, List) [symbol]
 
-     syntax AStmt ::= StmtLoc(CabsLoc, AStmt)
+     syntax AStmt ::= StmtLoc(CabsLoc, AStmt) [symbol]
 
 endmodule
 
