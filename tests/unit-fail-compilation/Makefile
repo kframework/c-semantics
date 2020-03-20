@@ -5,7 +5,7 @@ Makefile: $(ROOT)/../check-results.mk ;
 include $(ROOT)/../check-results.mk
 
 TUS := $(wildcard ./*.c) $(wildcard ./*.C)
-EXCLUDES :=
+EXCLUDES := ./link-referenced-not-from-main.c
 TESTS := $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
 CPP_TESTS := $(filter-out %.c, ${TESTS})
 C_TESTS := $(filter-out %.C, ${TESTS})
