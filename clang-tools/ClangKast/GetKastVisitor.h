@@ -2250,7 +2250,7 @@ private:
       VisitUnsigned(presumed.getColumn());
       VisitBool(mgr.isInSystemHeader(loc));
     } else {
-      Kast::add(Kast::KApply("UnknownCabsLoc_COMMON-SYNTAX", Sort::CABSLOC));
+      Kast::add(Kast::KApply("UnknownCabsLoc_COMMON-SYNTAX_CabsLoc", Sort::CABSLOC));
     }
   }
 
