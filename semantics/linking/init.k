@@ -1,8 +1,9 @@
 module LINKING-INIT-SYNTAX
      imports BASIC-K
+     imports STRING-SYNTAX
 
      syntax KItem ::= load(K) [symbol]
-     syntax KItem ::= "link"
+     syntax KItem ::= linkProgram(entrypoint: String)
 
 endmodule
 
@@ -15,6 +16,7 @@ module LINKING-INIT
      imports C-TYPING-SORTS
      imports COMMON-BUILTIN-SYNTAX
      imports COMMON-INIT-SYNTAX
+     imports COMMON-LINKING-DEPS-SYNTAX
      imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports COMPAT-SYNTAX
      imports ERROR-SYNTAX
@@ -31,15 +33,16 @@ module LINKING-INIT
      imports CPP-TYPE-MAP-SYNTAX
      imports SYMLOC-SYNTAX
 
-     rule <k> link
+     rule <k> linkProgram(Entrypoint::String)
                => cBuiltinTu("builtin")
                ~> cppBuiltinTu("cpp-builtin")
                ~> nativeTu("native")
-               ~> resolveReferences
+               ~> resolveReferences(Entrypoint)
                ~> reportSuccess
           ...</k>
           <options>... SetItem(Link()) ...</options>
-     rule <k> link => reportSuccess ...</k>
+
+     rule <k> linkProgram(_) => reportSuccess ...</k>
           <options> Opts::Set </options>
           requires notBool Link() in Opts
 
@@ -71,14 +74,65 @@ module LINKING-INIT
           ~> addCppBuiltins(weakCppBuiltins, false)
           ~> removeUnusedIdentifiers(Tu)
 
-     syntax KItem ::= "resolveReferences"
-     rule <k> resolveReferences
-               => resolveCPPReferences(OdrUses)
-               ~> resolveCReferences(Uses)
-               ~> resolveMain
+     // Returns a map from LinkdepNode to CabsLoc
+     syntax Map ::= reachableSymbols(entrypoint: String) [function]
+                  | #reachableSymbols(Map, Map) [function]
+
+     rule reachableSymbols(Entrypoint::String)
+          => #reachableSymbols(.Map,
+               (linkdepNode(Identifier(Entrypoint), external()) |-> UnknownCabsLoc)
+               (notAFunction() |-> UnknownCabsLoc)
+               )
+
+     rule #reachableSymbols(Result, .Map) => Result
+
+     rule [[ #reachableSymbols(Result::Map, M::Map)
+          => #fun(Curr =>
+               #reachableSymbols(
+                    Result[Curr <- M[Curr]],
+                    removeAll(updateMap(M, {Deps[Curr] orDefault .Map}:>Map), keys(Result) SetItem(Curr))
+               )
+             )(choice(M)) ]]
+          <linking-deps> Deps </linking-deps>
+          requires size(M) >=Int 1
+
+     syntax Map ::= onlyExternal(Map) [function]
+
+     rule onlyExternal(.Map) => .Map
+
+     rule onlyExternal(M::Map)
+          => #fun (Curr =>
+               #if linkdepNode(_, external()) :=K Curr #then
+                 linkdepNodeId(Curr) |-> M[Curr]
+               #else .Map #fi
+               onlyExternal(M[Curr <- undef])
+             )(choice(M))
+          requires size(M) >=Int 1
+
+     syntax CId ::= linkdepNodeId(LinkdepNode) [function]
+     rule linkdepNodeId(linkdepNode(X, _)) => X
+
+     syntax KItem ::= resolveReferences(entrypoint: String)
+     rule <k> resolveReferences(Entrypoint::String)
+               => resolveMain
+               ~> resolveCPPReferences(OdrUses)
+               ~> #if hasCPPMain() #then
+                    resolveCReferences(Uses, linkErrors)
+                  #else
+                    #fun (Reachable =>
+                         resolveCReferences(Reachable[Identifier(Entrypoint) <- undef], linkErrors)
+                         ~> resolveCReferences(removeAll(Uses, keys(Reachable))[Identifier(Entrypoint) <- undef], linkWarnings)
+                    )(onlyExternal(reachableSymbols(Entrypoint)))
+                  #fi
+               ~> clearLinkingState()
           ...</k>
           <odr-uses> OdrUses::Set => .Set </odr-uses>
           <external-uses> Uses::Map => .Map </external-uses>
+          <linking-deps> Deps </linking-deps>
+
+     syntax KItem ::= clearLinkingState()
+     rule <k> clearLinkingState() => .K ...</k>
+          (<linking-state>... .Bag ...</linking-state> => .Bag)
 
      syntax KItem ::= makeNs(tu: String, Namespace)
      rule <k> makeNs(Tu::String, N::Namespace) => .K ...</k>
@@ -191,6 +245,7 @@ module LINKING-INIT
                     <external-decls> ExtDecls1:Map </external-decls>
                     <external-decls-loc> ExtDeclsLoc1:Map </external-decls-loc>
                     <external-uses> ExtUses1:Map </external-uses>
+                    <linking-deps> Linkdep1 </linking-deps>
                     <external-defs-loc> ExtDefsLoc1:Map </external-defs-loc>
                     <odr-decls> OdrDecls1:Map </odr-decls>
                     <odr-uses> OdrUses1:Set </odr-uses>
@@ -220,6 +275,7 @@ module LINKING-INIT
                     <external-decls> ExtDecls2:Map </external-decls>
                     <external-decls-loc> ExtDeclsLoc2:Map </external-decls-loc>
                     <external-uses> ExtUses2:Map </external-uses>
+                    <linking-deps> Linkdep2 </linking-deps>
                     <external-defs-loc> ExtDefsLoc2:Map </external-defs-loc>
                     <odr-decls> OdrDecls2:Map </odr-decls>
                     <odr-uses> OdrUses2:Set </odr-uses>
@@ -254,6 +310,7 @@ module LINKING-INIT
                     <external-decls> mergeDecls(ExtDecls1, ExtDecls2) </external-decls>
                     <external-decls-loc> updateMap(ExtDeclsLoc1, ExtDeclsLoc2) </external-decls-loc>
                     <external-uses> updateMap(ExtUses1, ExtUses2) </external-uses>
+                    <linking-deps> mergeLinkdep(Linkdep1, Linkdep2) </linking-deps>
                     <external-defs-loc> updateMap(ExtDefsLoc1, ExtDefsLoc2) </external-defs-loc>
                     <odr-decls> mergeDecls(OdrDecls1, OdrDecls2) </odr-decls>
                     <odr-uses> OdrUses1 OdrUses2 </odr-uses>

@@ -5,6 +5,7 @@ require "compat.k"
 require "configuration.k"
 require "error.k"
 require "init.k"
+require "linking-deps.k"
 require "memory.k"
 require "options.k"
 require "settings.k"
@@ -17,6 +18,7 @@ module COMMON
      imports BITS
      imports COMMON-BUILTIN
      imports COMMON-INIT
+     imports COMMON-LINKING-DEPS
      imports COMMON-TRANSLATION-UNIT
      imports COMPAT
      imports ERROR

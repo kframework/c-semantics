@@ -89,6 +89,8 @@ module C-CONFIGURATION
                .K
           </decl-type-holder>
      </init-calc>
+
+     <do-not-record-linking-deps> false </do-not-record-linking-deps>
 </exec>
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>
