@@ -12,8 +12,8 @@ module CPP-CONVERSION-SYNTAX
 
      syntax Expr ::= convertTypeHold(CPPType, Expr)
 
-     syntax Expr ::= convertLVal(GLExpr) [function]
-                   | convertLVal(GLVal) [function]
+     syntax KItem
+     syntax Expr ::= convertLVal(KItem) [function]
                    | convertArray(Val) [function]
                    | convertFunction(LVal) [function]
                    | convertReval(Val) [function]
