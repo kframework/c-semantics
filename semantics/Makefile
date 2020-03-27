@@ -27,6 +27,7 @@ KOMPILE_FLAGS += --no-prelude
 KOMPILE_FLAGS += -w all
 KOMPILE_FLAGS += -v
 KOMPILE_FLAGS += --debug
+KOMPILE_FLAGS += -ccopt -g
 
 
 # Used specifically in the timestamp_of rules.
