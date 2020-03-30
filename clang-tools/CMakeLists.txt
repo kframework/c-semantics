@@ -17,6 +17,9 @@ include_directories ( ${CURSES_INCLUDE_DIRS} )
 add_compile_options (
   -Wall
   -Wno-unused-variable
+  -Wno-unused-parameter
+  -Wno-vla
+  -Wno-comment
 )
 
 add_executable(clang-kast ClangKast/ClangKast.cc)
