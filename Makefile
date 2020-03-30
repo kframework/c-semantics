@@ -306,6 +306,7 @@ $(CDECL_BUILD_DIR)/Makefile: $(CDECL_BUILD_DIR)/Makefile.in
 	@$(LOGGER) "Configuring $@"
 	@cd $(CDECL_BUILD_DIR) && ./configure --without-readline
 
+$(CDECL_BIN)/cdecl: CFLAGS += -Wno-error
 $(CDECL_BIN)/cdecl: $(CDECL_BUILD_DIR)/Makefile
 	@$(LOGGER) "Entering target $@"
 	@$(MAKE) -C $(CDECL_BUILD_DIR)
