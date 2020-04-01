@@ -330,7 +330,7 @@ void Kast::add(const T & node) {
   Kast::Nodes.push_back(make_unique<T>(node));
 }
 
-void Kast::print() { print(Sort::K, 0); }
+void Kast::print() { print(Sort::KITEM, 0); }
 
 int Kast::print(Sort parentSort, int idx) {
   if (!Nodes[idx]) throw logic_error("parse error");
