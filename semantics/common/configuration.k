@@ -6,6 +6,9 @@ module COMMON-CONFIGURATION
   imports STRING-SYNTAX
   imports COMMON-SYNTAX
 
+  syntax Enum ::= DummyEnum()
+  syntax Class ::= DummyClass()
+
   configuration
   <global>
      <mem> .Map </mem>
@@ -101,7 +104,7 @@ module COMMON-CONFIGURATION
 
                <classes color="lightgray">
                     <class multiplicity="*" type="Map">
-                         <class-id> .K </class-id>
+                         <class-id> DummyClass() </class-id>
                          <class-type> .K </class-type>
                          <is-aggregate> true </is-aggregate>
                          <base-classes> .List </base-classes>
@@ -127,7 +130,7 @@ module COMMON-CONFIGURATION
 
                <cpp-enums>
                     <cppenum multiplicity="*" type="Map">
-                         <enum-id> .K </enum-id>
+                         <enum-id> DummyEnum() </enum-id>
                          <enum-type> .K </enum-type>
                          <scoped> false </scoped>
                          <enumerators> .Map </enumerators>
