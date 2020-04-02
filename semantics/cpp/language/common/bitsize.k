@@ -38,6 +38,10 @@ module CPP-BITSIZE
      rule byteSizeofClass(<class>... <sizeof> V::Int </sizeof> ...</class>)
           => V
 
+     syntax Int ::= bitSizeofClass(ClassInfo) [function]
+
+     rule bitSizeofClass(C::ClassInfo) => byteSizeofClass(C) *Int cfg:bitsPerByte
+
      rule byteSizeofType(pointerType(_)) => cfg:ptrsize
 
      rule byteSizeofType(lvRefType(_)) => cfg:refsize
