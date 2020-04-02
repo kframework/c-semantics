@@ -685,7 +685,7 @@ sub getRVErrorJson {
                   $messageLength = arg('-fmessage-length=');
             }
 
-            quote(printable(quote(printable
+            quote(printable
                   ( "{\"suppressions\": [$allSuppress]"
                   . ",\"message_length\": $messageLength"
                   . ",\"format\": \"$format\""
@@ -693,7 +693,7 @@ sub getRVErrorJson {
                   . ",\"fatal_errors\": " . (arg('-Wfatal-errors')? 'true' : 'false')
                   . ",\"rv_error\": $rvError"
                   . "$output}"
-                  ))));
+                  ));
       };
       return $json;
 }
