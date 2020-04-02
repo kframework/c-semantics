@@ -266,7 +266,7 @@ public:
   bool TraverseIdentifierInfo(const IdentifierInfo *info, uintptr_t decl) {
     if (!info) {
       if (decl == 0) {
-        Kast::add(Kast::KApply("#NoName_COMMON-SYNTAX", Sort::NONAME));
+        Kast::add(Kast::KApply("#NoName_COMMON-SYNTAX_NoName", Sort::NONAME));
       } else {
         Kast::add(Kast::KApply("unnamed", Sort::UNNAMEDCID, {Sort::INT, Sort::STRING}));
         VisitUnsigned((unsigned long long)decl);
