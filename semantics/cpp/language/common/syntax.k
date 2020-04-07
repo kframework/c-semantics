@@ -193,11 +193,9 @@ module CPP-SYNTAX
      syntax Expr ::= ConvertType(CPPType, Expr)
                    | ExprLoc
 
-     syntax ExprLoc ::= ExprLoc(CabsLoc, Expr)
+     syntax ExprLoc ::= ExprLoc(CabsLoc, KItem)
 
-     syntax Init ::= ExprLoc(CabsLoc, Init)
-
-     syntax BraceInit ::= ExprLoc(CabsLoc, BraceInit)
+     syntax Init ::= ExprLoc
 
      syntax Block ::= BlockStmt(List)
                     | BlockStmt(Int, List)

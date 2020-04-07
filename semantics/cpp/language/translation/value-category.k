@@ -64,13 +64,14 @@ module CPP-TRANSLATION-VALUE-CATEGORY
 
      rule (NoInit() => NoInitCat()) cats:: _
 
-     context (HOLE:CatExpr => catof(HOLE)) cats:: _ [result(ValueCategory)]
+     context (HOLE:CatExpr => catof(HOLE)) cats:: _
+          requires notBool isSpuriousExpr(HOLE) [result(ValueCategory)]
 
      context K:KResult cats:: HOLE:SCatList
 
      // --------------------------------
 
-     rule catof(ExprLoc(_, E::Expr) => E)
+     rule catof(ExprLoc(_, E:Expr) => E)
 
      rule catof(StringLiteral(_, _) => lvalue)
 

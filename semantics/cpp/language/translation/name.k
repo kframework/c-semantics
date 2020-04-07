@@ -379,7 +379,7 @@ module CPP-TRANSLATION-NAME
 
      rule (.K => argDependentNameLookup(X, Args)) ~> CallExpr(Name(NoNNS(), X::CId), Args::StrictList, krlist(.List))
 
-     rule <k> CallExpr((ExprLoc(L::CabsLoc, E::Expr) => E), Args::StrictList, krlist(.List)) ...</k>
+     rule <k> CallExpr((ExprLoc(L::CabsLoc, E:Expr) => E), Args::StrictList, krlist(.List)) ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
 
      context CallExpr(Name(HOLE:NNS, _), _, _)
@@ -431,7 +431,7 @@ module CPP-TRANSLATION-NAME
      context & HOLE:Expr
              requires notBool isName(HOLE) andBool notBool isExprLoc(HOLE)
 
-     rule <k> & (ExprLoc(L::CabsLoc, E::Expr) => E) ...</k>
+     rule <k> & (ExprLoc(L::CabsLoc, E:Expr) => E) ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
 
      rule ElaboratedTypeSpecifier(T::Tag, X::CId, NoNNS()) => resolveElabSpecifier(T, nameLookup(X, T, typeMask))

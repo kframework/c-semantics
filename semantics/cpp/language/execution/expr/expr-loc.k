@@ -10,7 +10,7 @@ module CPP-EXECUTION-EXPR-EXPRLOC
      imports C-CONFIGURATION
      imports CPP-DYNAMIC-SYNTAX // Execution()
 
-     rule <k> ExprLoc(L::CabsLoc, E::Expr) => #ExecExprLoc(L, E) ...</k>
+     rule <k> ExprLoc(L::CabsLoc, E:Expr) => #ExecExprLoc(L, E) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
           requires Execution()
 

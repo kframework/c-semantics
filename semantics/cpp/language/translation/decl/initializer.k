@@ -79,9 +79,11 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      context defaultInit(HOLE:Expr, _, _) [result(LVal)]
 
-     context #figureInit(... srcT: HOLE:TypeExpr => typeof(HOLE)) [result(CPPType)]
+     context #figureInit(... srcT: HOLE:TypeExpr => typeof(HOLE))
+          requires notBool isSpuriousExpr(HOLE) [result(CPPType)]
 
-     context #figureInit(... srcCat: HOLE:CatExpr => catof(HOLE)) [result(ValueCategory)]
+     context #figureInit(... srcCat: HOLE:CatExpr => catof(HOLE))
+          requires notBool isSpuriousExpr(HOLE) [result(ValueCategory)]
 
      rule <k> #figureInit(Base::Expr, DestT::CPPType, IType::InitType,
                I::Init, SrcType::CPPType, SrcCat::ValueCategory,
@@ -102,7 +104,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax KItem ::= #figureInitHeatBase(destT: CPPType, type: InitType, init: Init, srcT: K, srcCat: K, ConstructorType, Duration)
 
-     rule <k> #figureInit(... init: ExprLoc(L::CabsLoc, I::Init) => I) ...</k>
+     rule <k> #figureInit(... init: ExprLoc(L::CabsLoc, I:Init) => I) ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
 
      // @ref n4296 8.5:6.1
@@ -225,6 +227,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // @ref n4296 8.5:17.2 (reference destination type)
      rule #figureInit(Base:LVal, cppRefType #as DestT::CPPType, _, E:Expr, _, _, _, D::Duration)
           => bindReference(Base, E, D)
+          requires ExprLoc(...) :/=K E
 
      // @ref n4296 8.5:17.3 (string literal)
      rule #figureInit(Base:LVal, t(... st: _:CPPSimpleArrayType) #as DestT::CPPType, _, StringLiteral(Kind::CharKind, S::String), _, _, _, _)
@@ -239,7 +242,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // @ref n4296 8.5:17.6.1 (direct init or copy init from derived class)
      rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)) #as DestT::CPPType, Type::InitType, E:Expr, SrcT::CPPType, _, IsConstructor::ConstructorType, _)
           => constructorInit(Base, Type, DestC, ListItem(E), IsConstructor)
-          requires Type ==K DirectInit() orBool (isCPPClassType(SrcT) andBool isBaseClassOf(DestT, SrcT))
+          requires ExprLoc(...) :/=K E andBool (Type ==K DirectInit() orBool (isCPPClassType(SrcT) andBool isBaseClassOf(DestT, SrcT)))
 
      rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)), DirectInit(), ExpressionList(L::List), _, _, IsConstructor::ConstructorType, _)
           => constructorInit(Base, DirectInit(), DestC, L, IsConstructor)
@@ -249,7 +252,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // expression initializer, non-class type
      rule #figureInit(Base:LVal, DestT::CPPType, _, E:Expr, SrcT:CPPType, SrcCat:ValueCategory, _, _)
           => #if canConvertWithStandardConversion(DestT, SrcT, SrcCat) #then le(Base, trace(Base), DestT) :=init E #else ill-formed #fi
-          requires notBool isCPPRefType(DestT) andBool notBool isCPPArrayType(DestT) andBool notBool isCPPClassType(DestT) andBool notBool isCPPClassType(SrcT)
+          requires ExprLoc(...) :/=K E andBool  notBool isCPPRefType(DestT) andBool notBool isCPPArrayType(DestT) andBool notBool isCPPClassType(DestT) andBool notBool isCPPClassType(SrcT)
 
      rule #figureInit(... base: lv(loc(Base::SymBase, _), _, _), init: S:Stmt)
           => functionDef(Base, S)
@@ -368,7 +371,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                            initializers: (F |-> (_::CPPType |-> (T::CPPType, _))) _,
                            class: C::Class,
                            duration: D::Duration)
-          requires (notBool isAggregateType(T) orBool isBraceInit(Init))
+          requires (notBool isAggregateType(T) orBool #isBraceInit(Init))
 
      rule (.K => #figureInit0(Base . no-template Name(C, F), T,
                     CopyInit(), BraceInit(L), ConstructorInit(false), D))
@@ -379,7 +382,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                            class: C::Class,
                            duration: D::Duration)
           requires isAggregateType(T)
-           andBool notBool isBraceInit(Init)
+           andBool notBool #isBraceInit(Init)
 
      rule (classAggInit(... fields: .List, initList: L::List, initExp: E2::MaybeExpr) => .K)
           ~> classAggInit(... initList: .List => L, initExp: E1::MaybeExpr => compoundInitJoin(E1, E2))
@@ -414,7 +417,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule #evalBraceOrEqualInitializer(_, _, NoInit()) => BraceInit(.List)
 
-     rule #evalBraceOrEqualInitializer(_, _, ExprLoc(L::CabsLoc, I::Init) => I)
+     rule #evalBraceOrEqualInitializer(_, _, ExprLoc(L::CabsLoc, I:Init) => I)
 
      rule #evalBraceOrEqualInitializer(C::Class, Base::Expr, BraceInit(L::List))
        => BraceInit(#evalBraceOrEqualInitializers(C, Base, L))
@@ -467,7 +470,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                current:  I::Int,
                initList: ListItem(Init::Init) _
           )
-          requires (notBool isAggregateType(T) orBool isBraceInit(Init))
+          requires (notBool isAggregateType(T) orBool #isBraceInit(Init))
            andBool Size >Int I
 
      rule (.K => braceElisionMaybe(Init, T)) ~>
@@ -476,7 +479,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
                current:  I::Int,
                initList: (ListItem(Init::Init) _) #as L::List
           )
-          requires notBool isBraceInit(Init)
+          requires notBool #isBraceInit(Init)
            andBool isAggregateType(T)
            andBool Size >Int I
 
@@ -489,9 +492,11 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // If the initializer is neither BraceInit nor Expr, then this rule may not apply.
      rule braceElisionMaybe(E:Expr, T::CPPType) => braceElisionMaybe2(E, E, E, T)
 
-     context braceElisionMaybe2(... initType: (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
+     context braceElisionMaybe2(... initType: (HOLE:TypeExpr => typeof(HOLE)))
+          requires notBool isSpuriousExpr(HOLE) [result(CPPDType)]
 
-     context braceElisionMaybe2(... initCat: (HOLE:CatExpr => catof(HOLE))) [result(ValueCategory)]
+     context braceElisionMaybe2(... initCat: (HOLE:CatExpr => catof(HOLE)))
+          requires notBool isSpuriousExpr(HOLE) [result(ValueCategory)]
 
      rule braceElisionMaybe2(...
                init:     From::Expr,
