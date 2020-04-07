@@ -294,14 +294,31 @@ string Kast::KToken::escape(const string & str) {
 // *** Kast::KSequence
 
 void Kast::KSequence::print(Sort parentSort, function<void (Sort)> printChild) const {
-  if (size == 0) {
-    cout << (Kore ? "dotk{}()" : ".K");
-  }
-  for (int i = 0; i < size; i++) {
-    printChild(Sort::KITEM);
-    if (i != size - 1) {
-      cout << (Kore ? ", " : "~>");
+
+  if (Kore) {
+    for (int i = 0; i < size; i++) {
+      cout << "kseq{}(";
+      printChild(Sort::KITEM);
+      cout << ", ";
     }
+
+    cout << "dotk{}()";
+
+    for (int i = 0; i < size; i++) {
+      cout << ")";
+    }
+
+  } else {
+    if (size == 0) {
+      cout << ".K";
+    }
+    for (int i = 0; i < size; i++) {
+      printChild(Sort::KITEM);
+      if (i != size - 1) {
+        cout << "~>";
+      }
+    }
+
   }
 }
 

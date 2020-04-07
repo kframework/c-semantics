@@ -69,9 +69,7 @@ module CPP-EXPR-CAST
 
      rule #convertStatic(T::CPPType, V:PRVal) => inverseConvertType(T, V)
 
-     syntax K ::= inverseConvertType(CPPType, PRVal) [function]
-
-     syntax K ::= inverseConvertType(CPPType, PRExpr) [function]
+     syntax K ::= inverseConvertType(CPPType, KItem) [function]
 
      syntax KItem ::= inverseConvertTypeHold(CPPType, PRVal)
 
