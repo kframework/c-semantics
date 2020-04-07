@@ -5,6 +5,7 @@ module CPP-TRANSLATION-TEMPORARY-SYNTAX
      imports CPP-TYPING-SORTS
 
      syntax Expr ::= CreateTemporary
+     syntax KItem
      syntax CreateTemporary ::= createTemporary(temporary: Expr, type: CPPType, init: KItem) [strict(3)]
 endmodule
 

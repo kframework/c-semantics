@@ -43,7 +43,6 @@ module CPP-ABSTRACT-SYNTAX
                    | NamespaceAliasDecl(CId, CId, NNS) [symbol]
                    | Specifier(Specifier, Decl) [symbol]
                    | Declarator
-                   | DeclLoc(CabsLoc, Decl) [symbol]
                    | FriendDecl(Decl) [symbol]
 
      syntax CtorInit ::= ConstructorBase(AType, Bool, Bool, Init) [symbol]
