@@ -103,7 +103,7 @@ module CPP-SYNTAX
 
      syntax AccessSpecifier ::= Public() [symbol] | Private() [symbol] | Protected() [symbol] | NoAccessSpec()
 
-     syntax RefQualifier ::= RefLValue() | RefRValue() | RefNone()
+     syntax RefQualifier ::= RefLValue() [symbol] | RefRValue() [symbol] | RefNone() [symbol]
 
      syntax TemplateKeyword ::= "template" | "no-template"
 
@@ -205,7 +205,7 @@ module CPP-SYNTAX
      syntax Decl
 
      syntax Stmt ::= LabelStmt(CId, List)
-                   | GotoStmt(CId)
+                   | GotoStmt(CId) [symbol]
                    | ExpressionStmt(Expr) [strict(c)]
                    | PRValExpressionStmt(Expr) [strict(c)]
                    | BreakStmt()
