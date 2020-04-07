@@ -44,9 +44,9 @@ module CPP-TRANSLATION-EXPR-CONDITIONAL
 
      syntax KItem ::= typeAndCatOfConditional(Expr, TypeExpr, CatExpr, Expr, TypeExpr, CatExpr) [klabel(typeAndCatOfConditional0)]
 
-     rule typeAndCatOfConditional(ExprLoc(_, E::Expr) => E, _)
+     rule typeAndCatOfConditional(ExprLoc(_, E:Expr) => E, _)
 
-     rule typeAndCatOfConditional(_, ExprLoc(_, E::Expr) => E)
+     rule typeAndCatOfConditional(_, ExprLoc(_, E:Expr) => E)
 
      rule typeAndCatOfConditional(E1::Expr, E2::Expr) => typeAndCatOfConditional(E1, E1, E1, E2, E2, E2) [owise]
 

@@ -76,7 +76,7 @@ module CPP-TRANSLATION-INIT
           <curr-program-loc> _ => L </curr-program-loc>
           requires Execution()
 
-     rule <k> ExprLoc(L::CabsLoc, E::Expr) => #ExprLoc(L, E) ...</k>
+     rule <k> ExprLoc(L::CabsLoc, E:Expr) => #ExprLoc(L, E) ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
           requires Translation()
 

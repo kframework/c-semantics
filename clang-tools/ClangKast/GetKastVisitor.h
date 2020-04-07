@@ -62,7 +62,7 @@ public:
 
     if (Expr *E = dyn_cast<Expr>(S)) {
       if (!dyn_cast<CXXDefaultArgExpr>(S)) {
-        Kast::add(Kast::KApply("ExprLoc", Sort::EXPRLOC, {Sort::CABSLOC, Sort::EXPR}));
+        Kast::add(Kast::KApply("ExprLoc", Sort::EXPRLOC, {Sort::CABSLOC, Sort::KITEM}));
         CabsLoc(E->getExprLoc());
       }
     }
