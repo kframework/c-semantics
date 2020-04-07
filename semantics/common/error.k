@@ -9,7 +9,7 @@ module ERROR-SYNTAX
 
      syntax ErrorTrace ::= errorTrace(String, List)
 
-     syntax K ::= reportError(ErrorMsg, tu: String, Scope, CabsLoc, Map, K) [function, hook(C_SEMANTICS.error)]
+     syntax K ::= reportError(ErrorMsg, tu: String, Scope, CabsLoc, Map, K) [function]
 
      syntax ErrorCategory ::= Undef(LanguageLinkage) | Unspec(LanguageLinkage) | Impl(LanguageLinkage) | ImplUB(LanguageLinkage) | Cond() | Ill() | Drafting(LanguageLinkage) | Constraint() | Syntax(LanguageLinkage)
      syntax KItem ::= EXIT(ErrorMsg)
