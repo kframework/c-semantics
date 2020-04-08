@@ -575,6 +575,8 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KItem ::= seqstrict(StrictList) [klabel(seqstrictcpp)]
 
+     syntax Bool ::= isSpuriousExpr(KItem) [function]
+
 endmodule // CPP-DYNAMIC-OTHER-SYNTAX
 
 module CPP-DYNAMIC-OTHER
@@ -1075,6 +1077,14 @@ module CPP-DYNAMIC-OTHER
      rule idOf(Class(_, X::CId, _)) => X
 
      rule idOf(_ :: S::ClassSpecifier) => idOf(S)
+
+     rule isSpuriousExpr(ExprLoc(_, X::KItem) => X)
+
+     rule isSpuriousExpr(X::KItem) => true
+          requires notBool isExpr(X)
+
+     rule isSpuriousExpr(E:Expr) => false
+          requires ExprLoc(...) :/=K E
 
 endmodule // CPP-DYNAMIC-OTHER
 

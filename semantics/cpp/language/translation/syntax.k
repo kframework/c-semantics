@@ -270,9 +270,7 @@ module CPP-ABSTRACT-SYNTAX
                        | UTF16() [symbol]
                        | UTF32() [symbol]
 
-     syntax BraceInit ::= BraceInit(List) [symbol]
-
-     syntax Init ::= BraceInit
+     syntax Init ::= BraceInit(List) [symbol]
 
      syntax ExpressionList ::= ExpressionList(List) [symbol]
 
@@ -291,6 +289,8 @@ module CPP-ABSTRACT-SYNTAX
      syntax Init ::= ConstructorCall(Bool, AType, List) [symbol]
 
      syntax AStmt ::= StmtLoc(CabsLoc, AStmt) [symbol]
+
+     syntax Bool ::= "#isBraceInit" "(" KItem ")" [function]
 
 endmodule
 
@@ -313,7 +313,7 @@ module CPP-TRANSLATION-ABSTRACT-REWRITING
 
      syntax Bool ::= hasAnonymousUnionObject(Expr) [function]
 
-     rule hasAnonymousUnionObject(ExprLoc(_, E::Expr) => E)
+     rule hasAnonymousUnionObject(ExprLoc(_, E:Expr) => E)
 
      rule hasAnonymousUnionObject(Name(NoNNS(), #NoName)) => true
 
@@ -343,5 +343,11 @@ module CPP-TRANSLATION-ABSTRACT-REWRITING
      rule DestructorTypeId(Name(NoNNS(), X::CId)) => DestructorId(X) [anywhere]
 
      context IfTStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
+
+     rule #isBraceInit(ExprLoc(_, X::KItem) => X)
+
+     rule #isBraceInit(BraceInit(_)) => true
+
+     rule #isBraceInit(_) => false [owise]
 
 endmodule

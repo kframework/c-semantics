@@ -417,7 +417,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax CPPType ::= completeDeclaration(CPPType, Init) [function]
 
-     rule completeDeclaration(T::CPPType, (ExprLoc(_, I::Init) => I))
+     rule completeDeclaration(T::CPPType, (ExprLoc(_, I:Init) => I))
 
      // @ref n4296 8.5.4:3.2 (char x[] = {"foo"})
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, T:CPPSimpleCharType))), BraceInit(ListItem(StringLiteral(Narrow::CharKind, S::String)))) => t(Q, Mods, arrayType(t(Q', Mods', T), lengthString(S) +Int 1))
@@ -441,11 +441,11 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)), BraceInit(ListItem(Init::Init) L::List)) => t(Q, Mods, arrayType(T, size(L) +Int 1))
           requires (size(L) =/=Int 0 orBool StringLiteral(...) :/=K Init)
-               andBool (notBool isAggregateType(T) orBool isBraceInit(Init))
+               andBool (notBool isAggregateType(T) orBool #isBraceInit(Init))
 
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(... st: classType(...)) #as T::CPPType)), BraceInit((ListItem(Init::Init) _) #as L::List)) => t(Q, Mods, arrayType(T, computeAggArraySize(getClassInfo(T), L)))
           requires isAggregateType(T)
-               andBool notBool isBraceInit(Init)
+               andBool notBool #isBraceInit(Init)
 
      rule completeDeclaration(T::CPPType, _) => T [owise]
 
@@ -465,7 +465,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                            types: (F |-> (_::CPPType |-> (T::CPPType, _))) _,
                            initList: (ListItem(Init::Expr) => .List) _
                            )
-          requires (notBool isAggregateType(T) orBool isBraceInit(Init))
+          requires (notBool isAggregateType(T) orBool #isBraceInit(Init))
 
      rule #computeAggArraySize(...
                            fields: (ListItem(Class.DataMember(F:CId, _)) Fields::List => Class.getNonStaticDataMembers(getClassInfo(T))),
@@ -474,7 +474,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                            callStack: (.List => ListItem(kpair(Fields, Types))) _
                            )
           requires isAggregateType(T)
-               andBool notBool isBraceInit(Init)
+               andBool notBool #isBraceInit(Init)
 
      syntax Decl ::= lazyDefineObject(NNSVal, CId, CId, CPPType, Init, DeclarationType, Set, SymBase)
 

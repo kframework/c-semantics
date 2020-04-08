@@ -71,13 +71,14 @@ module CPP-TRANSLATION-TYPING-EXPR
 
      syntax KResult ::= NoInitType
 
-     context (HOLE:TypeExpr => typeof(HOLE)) types:: _ [result(CPPDType)]
+     context (HOLE:TypeExpr => typeof(HOLE)) types:: _
+          requires notBool isSpuriousExpr(HOLE) [result(CPPDType)]
 
      context K:KResult types:: HOLE:STypeList
 
      // ----------------------------------
 
-     rule typeof(ExprLoc(_, E::Expr) => E)
+     rule typeof(ExprLoc(_, E:Expr) => E)
 
      rule typeof(StringLiteral(Ascii(), S::String) => type(arrayType(const(char), lengthString(S) +Int 1)))
 
