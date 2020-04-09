@@ -779,7 +779,7 @@ module CPP-DYNAMIC-OTHER
 
      rule toTemplateArgs(.List) => .TemplateArgs
 
-     rule toCPPTypes(ListItem(A::CPPType) L::List) => A, toCPPTypes(L)
+     rule toCPPTypes(ListItem(A::CPPDType) L::List) => A, toCPPTypes(L)
 
      rule toCPPTypes(.List) => .CPPTypes
 
