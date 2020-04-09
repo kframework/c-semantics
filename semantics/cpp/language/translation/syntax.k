@@ -49,9 +49,9 @@ module CPP-ABSTRACT-SYNTAX
                       | ConstructorMember(CId, Init) [symbol]
                       | ConstructorDelegating(Init) [symbol]
 
-     syntax Declarator ::= FunctionDefinition(NNS, CId, CId, AType, List, AStmt) [strict(4), symbol]
-                         | FunctionDecl(NNS, CId, CId, AType, List) [strict(4), symbol]
-                         | VarDecl(NNS, CId, CId, AType, Init, isDirect: Bool) [strict(4), symbol]
+     syntax Declarator ::= FunctionDefinition(NNS, CId, CId, AType, List, AStmt) [symbol]
+                         | FunctionDecl(NNS, CId, CId, AType, List) [symbol]
+                         | VarDecl(NNS, CId, CId, AType, Init, isDirect: Bool) [symbol]
                          | FieldDecl(NNS, CId, AType, Init) [strict(3), symbol]
                          | BitFieldDecl(NNS, CId, AType, Expr) [strict(3), symbol]
 
