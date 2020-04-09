@@ -28,7 +28,7 @@ module COMPAT-SYNTAX
 
      syntax List ::= removeListItem(List, K) [function]
 
-     syntax StrictListResult ::= krlist(List)
+     syntax StrictListResult ::= krlist(List) [symbol]
      syntax StrictList ::= StrictListResult
      syntax KResult ::= StrictListResult
 

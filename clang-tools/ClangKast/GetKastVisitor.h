@@ -224,22 +224,21 @@ public:
       Kast::add(Kast::KApply("NestedName", Sort::NNS, {Sort::NNS, Sort::NNSSPECIFIER}));
       TRY_TO(TraverseNestedNameSpecifier(NNS->getPrefix()));
     }
-    auto nns = Kast::KApply("NNS", Sort::NNSSPECIFIER, {Sort::CID});
     switch (NNS->getKind()) {
       case NestedNameSpecifier::Identifier:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSCId", Sort::NNSSPECIFIER, {Sort::CID}));
         TRY_TO(TraverseIdentifierInfo(NNS->getAsIdentifier()));
         break;
       case NestedNameSpecifier::Namespace:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSName", Sort::NNSSPECIFIER, {Sort::NAME}));
         TRY_TO(TraverseDeclarationName(NNS->getAsNamespace()->getDeclName()));
         break;
       case NestedNameSpecifier::NamespaceAlias:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSName", Sort::NNSSPECIFIER, {Sort::NAME}));
         TRY_TO(TraverseDeclarationName(NNS->getAsNamespaceAlias()->getDeclName()));
         break;
       case NestedNameSpecifier::TypeSpec:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSCId", Sort::NNSSPECIFIER, {Sort::CID}));
         TRY_TO(TraverseType(QualType(NNS->getAsType(), 0)));
         break;
       case NestedNameSpecifier::TypeSpecWithTemplate:

@@ -276,9 +276,9 @@ module CPP-QUALID-SYNTAX
      syntax NNS ::= NoNNS() [symbol]
                   | NNS "::" NNSSpecifier [klabel(NestedName), symbol]
 
-     syntax NNSSpecifier ::= NNS(CId)
+     syntax NNSSpecifier ::= NNS(CId) [klabel(NNSCId), symbol]
                            | TemplateNNS(CId)
-                           | NNS(Name)
+                           | NNS(Name) [klabel(NNSName), symbol]
 
      syntax QualId ::= NNSVal "::" CId [klabel(QualId)]
 

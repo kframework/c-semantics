@@ -52,7 +52,7 @@ module COMMON-SYNTAX
      syntax Bool ::= Quals "<=Quals" Quals [function]
      syntax Bool ::= Quals ">Quals" Quals [function]
 
-     syntax Namespace ::= GlobalNamespace()
+     syntax Namespace ::= GlobalNamespace() [symbol]
 
      syntax Scope ::= "none" | FileScope
      syntax FileScope ::= "fileScope"

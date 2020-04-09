@@ -117,8 +117,8 @@ module CPP-SYNTAX
                    | Expr "++" [strict(c)]
                    | Expr "--" [strict(c)]
                    | BuiltinCallOp(Expr, Bool, List)
-                   | ReinterpretCast(AType, Expr) [strict(c)]
-                   | ConstCast(AType, Expr) [strict(c)]
+                   | ReinterpretCast(AType, Expr) [strict(c), symbol]
+                   | ConstCast(AType, Expr) [strict(c), symbol]
                    > right:
                      "++" Expr [strict(c)]
                    | "--" Expr [strict(c)]
@@ -183,8 +183,8 @@ module CPP-SYNTAX
                    | ThrowOp(Expr) [strict(c)]
                    > left:
                      Comma(Expr, Expr) [strict(c; 1)]
-     syntax Name ::= Name(NNS, CId)
-                   | Name(NNS, CId, List)
+     syntax Name ::= Name(NNS, CId) [symbol]
+                   | Name(NNS, CId, List) [klabel(Name3)]
 
      syntax ExecName ::= ExecName(NNS, CId)
 
@@ -193,7 +193,7 @@ module CPP-SYNTAX
      syntax Expr ::= ConvertType(CPPType, Expr)
                    | ExprLoc
 
-     syntax ExprLoc ::= ExprLoc(CabsLoc, KItem)
+     syntax ExprLoc ::= ExprLoc(CabsLoc, KItem) [symbol]
 
      syntax Init ::= ExprLoc
 
