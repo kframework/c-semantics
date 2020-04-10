@@ -286,6 +286,7 @@ module CPP-QUALID-SYNTAX
 
      syntax CId ::= getId(QualId) [function]
 
+     syntax QualId ::= toQualId(Enum) [function]
 endmodule // CPP-QUALID-SYNTAX
 
 module CPP-QUALID
@@ -294,6 +295,9 @@ module CPP-QUALID
     rule getId(_ :: X::CId) => X
 
     rule getQual(N::NNSVal :: _) => N
+
+    rule toQualId(N:Namespace :: Enum(X)) => N :: X
+    rule toQualId(C:Class :: Enum(X)) => C :: X
 
 endmodule // CPP-QUALID
 
