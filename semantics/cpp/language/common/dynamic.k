@@ -292,6 +292,7 @@ endmodule // CPP-QUALID-SYNTAX
 module CPP-QUALID
      imports CPP-QUALID-SYNTAX // self
      imports CPP-DYNAMIC-OTHER-SYNTAX
+     imports CPP-CLASS-BASIC-SYNTAX
 
      rule getId(_ :: X::CId) => X
 
