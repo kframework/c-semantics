@@ -291,13 +291,14 @@ endmodule // CPP-QUALID-SYNTAX
 
 module CPP-QUALID
      imports CPP-QUALID-SYNTAX // self
+     imports CPP-DYNAMIC-OTHER-SYNTAX
 
-    rule getId(_ :: X::CId) => X
+     rule getId(_ :: X::CId) => X
 
-    rule getQual(N::NNSVal :: _) => N
+     rule getQual(N::NNSVal :: _) => N
 
-    rule toQualId(N:Namespace :: Enum(X)) => N :: X
-    rule toQualId(C:Class :: Enum(X)) => C :: X
+     rule toQualId(N:Namespace :: Enum(X)) => N :: X
+     rule toQualId(C:Class :: Enum(X)) => C :: X
 
 endmodule // CPP-QUALID
 
