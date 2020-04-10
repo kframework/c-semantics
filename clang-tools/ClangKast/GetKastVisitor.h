@@ -497,6 +497,10 @@ public:
     return TraverseFunctionHelper(D);
   }
 
+  void NoInit() {
+      Kast::add(Kast::KApply("NoInit", Sort::NOINIT));
+  }
+
   bool TraverseVarHelper(VarDecl *D) {
     StorageClass(D->getStorageClass());
     ThreadStorageClass(D->getTSCSpec());
@@ -517,7 +521,7 @@ public:
     if (D->getInit()) {
       TRY_TO(TraverseStmt(D->getInit()));
     } else {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     VisitBool(D->isDirectInit());
     return true;
@@ -544,7 +548,7 @@ public:
     } else if (D->hasInClassInitializer()) {
       TRY_TO(TraverseStmt(D->getInClassInitializer()));
     } else {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     return true;
   }
@@ -1282,7 +1286,7 @@ public:
   bool VisitReturnStmt(ReturnStmt *S) {
     Kast::add(Kast::KApply("ReturnStmt", Sort::STMT, {Sort::INIT}));
     if (!S->getRetValue()) {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     return false;
   }
@@ -1837,7 +1841,7 @@ public:
     if (E->hasInitializer()) {
       TRY_TO(TraverseStmt(E->getInitializer()));
     } else {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     KSeqList(E->getNumPlacementArgs());
     for (unsigned i = 0; i < E->getNumPlacementArgs(); i++) {

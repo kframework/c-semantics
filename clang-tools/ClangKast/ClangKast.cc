@@ -91,6 +91,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::NAMESPACE:             os << "Namespeace"; break;
     case Sort::NNS:                   os << "NNS"; break;
     case Sort::NNSSPECIFIER:          os << "NNSSpecifier"; break;
+    case Sort::NOINIT:                os << "NoInit"; break;
     case Sort::NONAME:                os << "NoName"; break;
     case Sort::OPID:                  os << "OpId"; break;
     case Sort::QUALIFIER:             os << "Qualifier"; break;

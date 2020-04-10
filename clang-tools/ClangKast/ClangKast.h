@@ -39,6 +39,7 @@ enum class Sort {
   NAMESPACE,
   NNS,
   NNSSPECIFIER,
+  NOINIT,
   NONAME,
   OPID,
   QUALIFIER,
