@@ -779,6 +779,8 @@ module CPP-TYPING
 
      rule stripTypes(T::CPPType, Ts::TemplateArgs) => stripType(T), stripTypes(Ts)
 
+     rule stripTypes(variadic, Ts::TemplateArgs) => variadic, stripTypes(Ts)
+
      rule stripTypes(.TemplateArgs) => .TemplateArgs
 
      rule T1::CPPType ==Type T2::CPPType => stripType(T1) ==K stripType(T2)
