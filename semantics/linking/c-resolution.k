@@ -1,7 +1,7 @@
 module LINKING-C-RESOLUTION-SYNTAX
      imports MAP
 
-     syntax LinkErrorHandling ::= "linkErrors" | "linkWarnings"
+     syntax LinkErrorHandling ::= "linkErrors" | "linkWarnings" | "linkIgnore"
 
      syntax KItem ::= resolveCReferences(Map, LinkErrorHandling)
                     | "resolveMain"
@@ -18,9 +18,21 @@ module LINKING-C-RESOLUTION
      imports ERROR-SYNTAX
      imports SYMLOC-SYNTAX
 
-     syntax KItem ::= errorRecovery(LinkErrorHandling, KItem, KItem) [function, functional]
-     rule errorRecovery(linkErrors, _, OnError:KItem) => OnError
-     rule errorRecovery(linkWarnings, OnWarning:KItem, _) => OnWarning
+     syntax K ::= handleUnresolvedReference(CId, CabsLoc, LinkErrorHandling) [function, functional]
+     rule handleUnresolvedReference(X::CId, L::CabsLoc, linkErrors)
+               => setTranslationLoc(L)
+               ~> EXT-UNDEF("TDR2",
+                    "No definition for symbol with external linkage: "
+                    +String showCId(X) +String ".")
+               ~> resolveCReference(X:CId, linkErrors)
+     rule handleUnresolvedReference(X::CId, L::CabsLoc, linkWarnings)
+               => setTranslationLoc(L)
+               ~> EXT-UNDEF("TDR2",
+                    "No definition for symbol with external linkage: "
+                    +String showCId(X) +String ".")
+               ~> recoverFromError(.K)
+     rule handleUnresolvedReference(_, _, linkIgnore)
+               => .K
 
      // Add the real location at which an external reference is defined to the
      // environment of every TU where it appears.
@@ -62,15 +74,8 @@ module LINKING-C-RESOLUTION
           requires (notBool (X in_keys(Defs)) orBool notBool (X in_keys(Types)))
                andBool isMangledName(X)
           [structural]
-     rule <k>  (resolveCReference(X:CId, ErrorHandling::LinkErrorHandling) => setTranslationLoc(L)
-                    ~> EXT-UNDEF("TDR2",
-                         "No definition for symbol with external linkage: "
-                         +String showCId(X) +String ".")
-                    ~> errorRecovery(
-                         ErrorHandling,
-                         recoverFromError(.K),
-                         resolveCReference(X:CId, ErrorHandling))
-               )
+     rule <k>  (resolveCReference(X:CId, ErrorHandling::LinkErrorHandling)
+                    => handleUnresolvedReference(X, L, ErrorHandling))
                ...
           </k>
           <external-defs> Defs:Map </external-defs>

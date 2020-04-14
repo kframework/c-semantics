@@ -353,6 +353,21 @@ sub makeOptions {
             push(@options, "`FatalErrors`(.KList)");
       }
 
+      if (arg('-funresolved-symbols=')) {
+            my $string_arg = arg('-funresolved-symbols=');
+            if ($string_arg eq 'ignore-all') {
+                  push(@options, "`UnresolvedSymbols`(`IgnoreAll`(.KList))");
+            } elsif ($string_arg eq 'warn-all') {
+                  push(@options, "`UnresolvedSymbols`(`WarnAll`(.KList))");
+            } elsif ($string_arg eq 'report-all') {
+                  push(@options, "`UnresolvedSymbols`(`ReportAll`(.KList))");
+            } elsif ($string_arg eq 'warn-unreachable') {
+                  push(@options, "`UnresolvedSymbols`(`WarnUnreachable`(.KList))");
+            }
+      } else {
+            push(@options, "`UnresolvedSymbols`(`ReportAll`(.KList))");
+      }
+
       for (breakpoints()) {
             my ($file, $line) = @{$_};
             $file = quote(printable(quote(rel2abs($file))));

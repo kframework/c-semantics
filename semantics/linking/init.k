@@ -113,16 +113,34 @@ module LINKING-INIT
      syntax CId ::= linkdepNodeId(LinkdepNode) [function]
      rule linkdepNodeId(linkdepNode(X, _)) => X
 
+     syntax SymbolReachability ::= "reachable" | "unreachable"
+
+     syntax LinkErrorHandling ::= unresolvedSymbolHandling(SymbolReachability)  [function, functional]
+
+     rule [[unresolvedSymbolHandling(_) => linkIgnore]]
+          <options> ... SetItem(UnresolvedSymbols(IgnoreAll())) ... </options>
+
+     rule [[unresolvedSymbolHandling(reachable) => linkErrors]]
+          <options> ... SetItem(UnresolvedSymbols(WarnUnreachable())) ... </options>
+     rule [[unresolvedSymbolHandling(unreachable) => linkWarnings]]
+          <options> ... SetItem(UnresolvedSymbols(WarnUnreachable())) ... </options>
+
+     rule [[unresolvedSymbolHandling(_) => linkErrors]]
+          <options> ... SetItem(UnresolvedSymbols(ReportAll())) ... </options>
+
+     rule [[unresolvedSymbolHandling(_) => linkWarnings]]
+          <options> ... SetItem(UnresolvedSymbols(WarnAll())) ... </options>
+
      syntax KItem ::= resolveReferences(entrypoint: String)
      rule <k> resolveReferences(Entrypoint::String)
                => resolveMain
                ~> resolveCPPReferences(OdrUses)
                ~> #if hasCPPMain() #then
-                    resolveCReferences(Uses, linkErrors)
+                    resolveCReferences(Uses, unresolvedSymbolHandling(reachable))
                   #else
                     #fun (Reachable =>
-                         resolveCReferences(Reachable[Identifier(Entrypoint) <- undef], linkErrors)
-                         ~> resolveCReferences(removeAll(Uses, keys(Reachable))[Identifier(Entrypoint) <- undef], linkWarnings)
+                         resolveCReferences(Reachable[Identifier(Entrypoint) <- undef], unresolvedSymbolHandling(reachable))
+                         ~> resolveCReferences(removeAll(Uses, keys(Reachable))[Identifier(Entrypoint) <- undef], unresolvedSymbolHandling(unreachable))
                     )(onlyExternal(reachableSymbols(Entrypoint)))
                   #fi
                ~> clearLinkingState()
