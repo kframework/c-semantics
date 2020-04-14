@@ -2,6 +2,7 @@ module C-IO-SYNTAX
      imports INT-SYNTAX
      imports LIST
      imports MAP
+     imports MEMORY-SORTS
      imports SYMLOC-SORTS
 
      syntax KItem ::= realloc(SymBase, SymBase, Int, Int)
