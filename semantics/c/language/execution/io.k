@@ -5,6 +5,7 @@ module C-IO-SYNTAX
      imports SYMLOC-SORTS
 
      syntax KItem ::= realloc(SymBase, SymBase, Int, Int)
+     syntax Bits ::= getUninitializedBits(SymLoc, EffectiveType) [function]
 
 endmodule
 
@@ -261,7 +262,6 @@ module C-IO
              dataList(Aux)
           [structural]
 
-     syntax Bits ::= getUninitializedBits(SymLoc, EffectiveType) [function]
      rule getUninitializedBits(L::SymLoc, _) => piece(trap, cfg:bitsPerByte)
           requires notBool (isStaticDuration(L) orBool isThreadDuration(L))
      rule getUninitializedBits(L::SymLoc, dynamicType(T::Type))
