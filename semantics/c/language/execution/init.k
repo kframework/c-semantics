@@ -24,6 +24,7 @@ module C-EXECUTION-INIT
      imports COMMON-BUILTIN-SYNTAX
      imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports OPTIONS-SYNTAX
+     imports SETTINGS-SYNTAX
 
      imports C-CHECK-RESTRICT-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -273,5 +274,7 @@ module C-EXECUTION-INIT
 
      rule [[ nameOfCurrentTranslationUnit() => TU ]]
           <curr-tu>TU::String</curr-tu>
+
+     rule currentSemantics() => ExecutionSemantics()
 endmodule
 

@@ -4,6 +4,7 @@ module C-TRANSLATION-INIT
      imports STRING
      imports COMPAT-SYNTAX
      imports OPTIONS-SYNTAX
+     imports SETTINGS-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-CONFIGURATION
      imports C-DECL-RESOLUTION-SYNTAX
@@ -62,6 +63,8 @@ module C-TRANSLATION-INIT
 
      rule [[ nameOfCurrentTranslationUnit() => Tu ]]
           <curr-tu> Tu::String </curr-tu>
+
+     rule currentSemantics() => CTranslation()
 
      context alias [c]: HERE:K
 
