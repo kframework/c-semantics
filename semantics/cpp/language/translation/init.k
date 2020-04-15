@@ -1,5 +1,6 @@
 module CPP-TRANSLATION-INIT
      imports K-REFLECTION
+     imports SETTINGS-SYNTAX
      imports COMMON-INIT-SYNTAX
      imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
@@ -13,6 +14,7 @@ module CPP-TRANSLATION-INIT
      rule [[ nameOfCurrentTranslationUnit() => TU ]]
           <curr-tr-tu>TU::String</curr-tr-tu>
 
+     rule currentSemantics() => CPPTranslation()
 
      rule [[ Execution() => B ]]
           <compile-time-evaluation> B::Bool </compile-time-evaluation>
