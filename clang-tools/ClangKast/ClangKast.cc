@@ -224,7 +224,7 @@ void Kast::KApply::print(Sort parentSort, function<void (Sort)> printChild) cons
 // *** Kast::KToken ***
 
 string Kast::KToken::toKString(const string & s) {
-  return string(Kore ? escape(s) : "\"" + escape(s) + "\"");
+  return string(Kore ? s : "\"" + escape(s) + "\"");
 }
 
 string Kast::KToken::toKString(bool b) {
