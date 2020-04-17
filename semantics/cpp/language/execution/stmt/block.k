@@ -99,7 +99,7 @@ module CPP-EXECUTION-STMT-BLOCK
      rule <k> (.K => destructLocal(IsException, Entry))
               ~> destructLocals(IsException:Bool)
           ...</k>
-          <locally-constructed> ListItem(Entry::KTuple) => .List ...</locally-constructed>
+          <locally-constructed> ListItem(Entry::KItem) => .List ...</locally-constructed>
 
      rule <k> destructLocals(...) => .K ...</k>
           <locally-constructed> .List </locally-constructed>
