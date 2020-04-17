@@ -141,7 +141,7 @@ string Kast::Node::escapeKLabel(const string & label) {
       case '#':  subst = "Hash'"; break;
       case '$':  subst = "Dolr'"; break;
       case '%':  subst = "Perc'"; break;
-      case '&':  subst = "And'" ; break;
+      case '&':  subst = "And-'"; break;
       case '\'': subst = "Apos'"; break;
       case '(':  subst = "LPar'"; break;
       case ')':  subst = "RPar'"; break;
