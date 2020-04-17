@@ -365,7 +365,7 @@ sub makeOptions {
                   push(@options, "`UnresolvedSymbols`(`WarnUnreachable`(.KList))");
             }
       } else {
-            push(@options, "`UnresolvedSymbols`(`ReportAll`(.KList))");
+            push(@options, "`UnresolvedSymbols`(`WarnUnreachable`(.KList))");
       }
 
       for (breakpoints()) {

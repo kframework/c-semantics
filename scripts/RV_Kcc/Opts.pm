@@ -546,9 +546,10 @@ sub parseOpts {
   -funresolved-symbols=<method>	Determine how to handle unresolved symbols. Possible values for method:
 			ignore-all - Do not report any unresolved symbols.
 			warn-all - Report warnings for all unresolved symbols.
-			report-all - Report errors for all unresolved symbols. This is the default.
+			report-all - Report errors for all unresolved symbols.
 			warn-unreachable - Report all unresolved symbols.
 					Warn if they are not accessible form main(), error otherwise.
+					This is the default.
   -fno-native-compilation	Disables compilation of code with native
 				compiler in order to improve error reporting in
 				programs which fail to compile under the native
