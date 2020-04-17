@@ -115,7 +115,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax Duration ::= getDuration(Set, Scope) [function]
 
-     syntax Namespace ::= getInnermostNamespace(NNSVal, Scope) [function]
+     syntax NNSVal ::= getInnermostNamespace(NNSVal, Scope) [function]
 
      rule getPreviousLinkage(X::QualId, T::CPPType, X |-> (stripType(T) |-> _ _::Map) _::Map, _) => ExternalLinkage
 
@@ -186,7 +186,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule getInnermostNamespace(NoNamespace(), blockScope((localQual(Scope::BlockScope) :: _:ClassSpecifier) :: _, _, _) => Scope)
 
-     rule getInnermostNamespace(N::Namespace, _) => N
+     rule getInnermostNamespace(N::NNSVal, _) => N
           requires N =/=K NoNamespace()
 
      /* After everything is computed */
