@@ -2027,7 +2027,7 @@ public:
 
   bool TraverseInitListExpr(InitListExpr *E) {
     InitListExpr *Syntactic = E->isSemanticForm() ? E->getSyntacticForm() ? E->getSyntacticForm() : E : E;
-    Kast::add(Kast::KApply("BraceInit", Sort::BRACEINIT, {Sort::LIST}));
+    Kast::add(Kast::KApply("BraceInit", Sort::INIT, {Sort::LIST}));
     KSeqList(Syntactic->getNumInits());
     for (Stmt *SubStmt : Syntactic->children()) {
       TRY_TO(TraverseStmt(SubStmt));
