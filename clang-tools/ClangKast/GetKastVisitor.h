@@ -1347,10 +1347,11 @@ public:
   }
 
   bool TraverseIfStmt(IfStmt *S) {
-    Kast::add(Kast::KApply("IfAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT, Sort::ASTMT}));
     if (VarDecl *D = S->getConditionVariable()) {
+      Kast::add(Kast::KApply("IfAStmtD", Sort::ASTMT, {Sort::DECL, Sort::ASTMT, Sort::ASTMT}));
       TRY_TO(TraverseDecl(D));
     } else {
+      Kast::add(Kast::KApply("IfAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT, Sort::ASTMT}));
       TRY_TO(TraverseStmt(S->getCond()));
     }
     TRY_TO(TraverseStmt(S->getThen()));
@@ -1363,10 +1364,11 @@ public:
   }
 
   bool TraverseSwitchStmt(SwitchStmt *S) {
-    Kast::add(Kast::KApply("SwitchAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT}));
     if (VarDecl *D = S->getConditionVariable()) {
+      Kast::add(Kast::KApply("SwitchAStmtD", Sort::ASTMT, {Sort::DECL, Sort::ASTMT}));
       TRY_TO(TraverseDecl(D));
     } else {
+      Kast::add(Kast::KApply("SwitchAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
       TRY_TO(TraverseStmt(S->getCond()));
     }
     TRY_TO(TraverseStmt(S->getBody()));
