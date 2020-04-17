@@ -1508,7 +1508,7 @@ public:
     switch (Kind) {
       #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
       case OO_##Name:                                                          \
-        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", Sort::OPID));                                 \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX_OpId", Sort::OPID));                                 \
         break;
       #include "clang/Basic/OperatorKinds.def"
       default:
@@ -1520,7 +1520,7 @@ public:
     switch (Kind) {
       #define UNARY_OP(Name, Spelling)         \
       case UO_##Name:                          \
-        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", Sort::OPID)); \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX_OpId", Sort::OPID)); \
         break;
       UNARY_OP(PostInc, "_++")
       UNARY_OP(PostDec, "_--")
@@ -1553,7 +1553,7 @@ public:
     switch (Kind) {
       #define BINARY_OP(Name, Spelling)        \
       case BO_##Name:                          \
-        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", Sort::OPID)); \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX_OpId", Sort::OPID)); \
         break;
       BINARY_OP(PtrMemD, ".*")
       BINARY_OP(PtrMemI, "->*")
