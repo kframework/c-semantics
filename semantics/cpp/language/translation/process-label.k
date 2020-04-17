@@ -106,7 +106,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
      rule <k> waitingOnGotoMap ...</k>
           <goto-calc>
                <computation>
-                    (ForStmt(Control:Expr, Post::Stmt, S::Stmt) => .K)
+                    (ForStmt(Control:Expr, Post::Stmt, S::K) => .K)
                     ~> K:K
                </computation>
                <computation-tail> Tail:K </computation-tail>
@@ -141,7 +141,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
      rule <k> waitingOnGotoMap ...</k>
           <computation>
                (.K => S ~> loopMarked)
-               ~> WhileStmt(_:Expr, S::Stmt)
+               ~> WhileStmt(_:Expr, S::K)
                ~> (.K => popLoop)
                ~> K:K
           </computation>
@@ -159,7 +159,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
      rule <k> waitingOnGotoMap ...</k>
           <goto-calc>
                <computation>
-                    (IfStmt(_:Expr, S1::Block, S2::Block) => .K) ~> K:K
+                    (IfStmt(_:Expr, S1::K, S2::K) => .K) ~> K:K
                </computation>
                <computation-tail> Tail:K </computation-tail>
                B::Bag
@@ -182,7 +182,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
      rule <k> waitingOnGotoMap ...</k>
           <goto-calc>
                <computation>
-                    (TryStmt(S::Block, .List) => .K) ~> K:K
+                    (TryStmt(S::K, .List) => .K) ~> K:K
                </computation>
                <computation-tail> Tail:K </computation-tail>
                B::Bag
@@ -196,7 +196,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
      rule <k> waitingOnGotoMap ...</k>
           <goto-calc>
                <computation>
-                    TryStmt(_, (ListItem(CatchOp(T::CPPType, S::Block)) => .List) L::List) ~> K:K
+                    TryStmt(_, (ListItem(CatchOp(T::CPPType, S::K)) => .List) L::List) ~> K:K
                </computation>
                <computation-tail> Tail:K </computation-tail>
                B::Bag
@@ -210,7 +210,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
      rule <k> waitingOnGotoMap ...</k>
           <goto-calc>
                <computation>
-                    TryStmt(_, (ListItem(CatchAnyOp(S::Block)) => .List) L::List) ~> K:K
+                    TryStmt(_, (ListItem(CatchAnyOp(S::K)) => .List) L::List) ~> K:K
                </computation>
                <computation-tail> Tail:K </computation-tail>
                B::Bag
