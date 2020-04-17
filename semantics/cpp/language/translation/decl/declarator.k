@@ -403,8 +403,9 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule <k> stripAuto => .K ...</k>
           <template-arguments>... auto |-> _ => .Map ...</template-arguments>
 
-    rule declareNonStaticObject(ID::CId, T::CPPType, Init:KResult, DT::DeclarationType, DU::Duration, S::Set)
+    rule declareNonStaticObject(ID::CId, T::CPPType, Init:KItem, DT::DeclarationType, DU::Duration, S::Set)
           =>  declareNonStaticObject2(declareNonStaticObjectExec(ID, T, Init, DT, DU, S), Constexpr() in S)
+         requires isKResult(Init)
 
      syntax KItem ::= declareNonStaticObject2(K, Bool)
 
