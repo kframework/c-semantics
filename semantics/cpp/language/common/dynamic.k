@@ -565,7 +565,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KItem ::= odrDecl(String, QualId, CId, LanguageLinkage, CPPType)
 
-     syntax Stmt ::= compoundStmt(Stmt, Stmt)
+     syntax Stmt ::= compoundStmt(K, Stmt)
      syntax Stmt ::= nullStmt()
 
      syntax SSList ::= toSSList(List) [klabel(toSSListcpp), function]
@@ -1071,7 +1071,7 @@ module CPP-DYNAMIC-OTHER
 
      rule Translation() => notBool Execution()
 
-     rule compoundStmt(S1::Stmt, S2::Stmt) => S1 ~> S2
+     rule compoundStmt(S1::K, S2::Stmt) => S1 ~> S2
      rule nullStmt() => .K
 
      rule idOf(Class(_, X::CId, _)) => X
