@@ -7,6 +7,13 @@ module OPTIONS-SYNTAX
      imports INT
      imports STRING
 
+     syntax UnresolvedSymbolsOpt ::= IgnoreAll() [symbol]
+                                   | ReportAll() [symbol]
+                                   | WarnAll() [symbol]
+                                   | WarnUnreachable() [symbol]
+
+     syntax String ::= showUnresolvedSymbolsOpt(UnresolvedSymbolsOpt)
+
      syntax Opt ::= Debug() [symbol]
                   | Link() [symbol]                         // Resolve uses to definitions.
                   | NoNativeFallback() [symbol]             // Don't attempt linking with native defs.
@@ -20,6 +27,7 @@ module OPTIONS-SYNTAX
                   | InteractiveFail() [symbol]                   // Enter interactive mode when recovery fails.
                   | FatalErrors() [symbol]                       // Don't attempt any error recovery.
                   | Lint() [symbol]                              // Enable extra warnings.
+                  | UnresolvedSymbols(UnresolvedSymbolsOpt) [symbol]             // How to handle unresolved symbols.
 
      syntax String ::= showOpt(Opt) [function]
 
@@ -43,6 +51,12 @@ module OPTIONS
      rule showOpt(InteractiveFail()) => "interactive-fail"
      rule showOpt(FatalErrors()) => "fatal-errors"
      rule showOpt(Lint()) => "lint"
+     rule showOpt(UnresolvedSymbols(O::UnresolvedSymbolsOpt)) => "unresolved-symbols=" +String showUnresolvedSymbolsOpt(O)
      rule showOpt(Opt::Opt) => showK(Opt) [owise]
+
+     rule showUnresolvedSymbolsOpt(IgnoreAll()) => "ignore-all"
+     rule showUnresolvedSymbolsOpt(WarnAll()) => "warn-all"
+     rule showUnresolvedSymbolsOpt(ReportAll()) => "report-all"
+     rule showUnresolvedSymbolsOpt(WarnUnreachable()) => "warn-unreachable"
 
 endmodule

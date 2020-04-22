@@ -42,29 +42,48 @@ module C-CHECK-USE
           <linkings> Linkings::Map </linkings>
           [structural]
 
+     syntax Error ::= "errorLinkUnresolved"
+     rule <k> checkLoc(loc(Base:LinkBase, _))
+               => EXT-UNDEF("TDR2", "No definition for symbol with external linkage.")
+               ~> errorLinkUnresolved
+          ...</k>
+          requires currentSemantics() ==K ExecutionSemantics()
+          [structural]
+     rule <k> checkLoc(loc(Base:LinkBase, _, _))
+               => EXT-UNDEF("TDR2", "No definition for symbol with external linkage.")
+               ~> errorLinkUnresolved
+          ...</k>
+          requires currentSemantics() ==K ExecutionSemantics()
+          [structural]
+     rule <k> checkLoc(Loc::SymLoc) => checkLocAllowLink(Loc)
+          ...</k>
+          [structural, owise]
+
+     syntax KItem ::= checkLocAllowLink(SymLoc)
+
      syntax Error ::= "errorLocBounds"
      syntax KItem ::= "errorLocInvalid"
-     rule checkLoc(NullPointer) => .K
+     rule checkLocAllowLink(NullPointer) => .K
           [structural]
-     rule checkLoc(loc(_, _, _) #as Loc::SymLoc => stripProv(Loc))
+     rule checkLocAllowLink(loc(_, _, _) #as Loc::SymLoc => stripProv(Loc))
           [structural]
-     rule <k> checkLoc(loc(Base::SymBase, Offset::Int)) => .K ...</k>
+     rule <k> checkLocAllowLink(loc(Base::SymBase, Offset::Int)) => .K ...</k>
           <mem>... Base |-> object(_, Sz::Int, _) ...</mem>
           requires (Offset <=Int Sz) andBool (Offset >=Int 0)
           [structural]
-     rule <k> checkLoc(loc(Base::SymBase, Offset::Int))
+     rule <k> checkLocAllowLink(loc(Base::SymBase, Offset::Int))
                => UNDEF("CEE3", "Found pointer that refers outside the bounds of an object + 1.")
                ~> errorLocBounds
           ...</k>
           <mem>... Base |-> object(_, Sz::Int, _) ...</mem>
           requires (Offset >Int Sz) orBool (Offset <Int 0)
           [structural]
-     rule <k> checkLoc(loc(_, _) #as Loc::SymLoc) => .K ...</k>
+     rule <k> checkLocAllowLink(loc(_, _) #as Loc::SymLoc) => .K ...</k>
           <mem> Mem::Map </mem>
           requires (isStaticDuration(Loc) orBool isNativeLoc(Loc))
                andBool notBool (base(Loc) in_keys(Mem))
           [structural]
-     rule <k> checkLoc(loc(_, _) #as Loc::SymLoc)
+     rule <k> checkLocAllowLink(loc(_, _) #as Loc::SymLoc)
                => UNDEF("CEE4", "Referring to an object outside of its lifetime.")
                ~> errorLocInvalid
           ...</k>

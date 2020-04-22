@@ -543,6 +543,13 @@ sub parseOpts {
 			WARNING: This can change the semantics of tools like
 			autoconf which analyze the exit code of the compiler to
 			trigger unexpected or undesirable results.
+  -funresolved-symbols=<method>	Determine how to handle unresolved symbols. Possible values for method:
+			ignore-all - Do not report any unresolved symbols.
+			warn-all - Report warnings for all unresolved symbols.
+			report-all - Report errors for all unresolved symbols.
+			warn-unreachable - Report all unresolved symbols.
+					Warn if they are not accessible form main(), error otherwise.
+					This is the default.
   -fno-native-compilation	Disables compilation of code with native
 				compiler in order to improve error reporting in
 				programs which fail to compile under the native
