@@ -358,16 +358,16 @@ sub makeOptions {
       if (arg('-funresolved-symbols=')) {
             my $string_arg = arg('-funresolved-symbols=');
             if ($string_arg eq 'ignore-all') {
-                  push(@options, "`UnresolvedSymbols`(`IgnoreAll`(.KList))");
+                  push(@options, "LblUnresolvedSymbols{}(LblIgnoreAll{}())");
             } elsif ($string_arg eq 'warn-all') {
-                  push(@options, "`UnresolvedSymbols`(`WarnAll`(.KList))");
+                  push(@options, "LblUnresolvedSymbols{}(LblWarnAll{}())");
             } elsif ($string_arg eq 'report-all') {
-                  push(@options, "`UnresolvedSymbols`(`ReportAll`(.KList))");
+                  push(@options, "LblUnresolvedSymbols{}(LblReportAll{}())");
             } elsif ($string_arg eq 'warn-unreachable') {
-                  push(@options, "`UnresolvedSymbols`(`WarnUnreachable`(.KList))");
+                  push(@options, "LblUnresolvedSymbols{}(LblWarnUnreachable{}())");
             }
       } else {
-            push(@options, "`UnresolvedSymbols`(`WarnUnreachable`(.KList))");
+            push(@options, "LblUnresolvedSymbols{}(LblWarnUnreachable{}())");
       }
 
       for (breakpoints()) {
