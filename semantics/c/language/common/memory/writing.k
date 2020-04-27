@@ -25,6 +25,8 @@ module C-MEMORY-WRITING-SYNTAX
      // TODO(chathhorn): For trans/symbolic-value.k
      syntax List ::= splitBytes(RValue) [function, klabel(splitBytesC)]
 
+     syntax List ::= splitPartialBytes(RValue) [function, klabel(splitPartialBytesC)]
+
      // No null terminator.
      syntax KItem ::= writeChars(SymLoc, String)
      // Null terminates.
@@ -278,6 +280,18 @@ module C-MEMORY-WRITING
      rule splitBytes(tv(agg(L:List), structOrUnionUType #as T::UType))
           => splitStructBytes(L, T, byteSizeofType(T))
 
+     rule splitPartialBytes(tv(V:Encodable, T:UType))
+          => splitToPartialBytes(encode(V, 0, bitSizeofType(T)))
+          requires notBool isUnknown(V)
+     rule splitPartialBytes(tv(V:EncodedPtr, T:UType))
+          => splitToPartialBytes(piece(V, bitSizeofType(T)))
+     rule splitPartialBytes(tv(V:EncodedValue, T:UType))
+          => splitToPartialBytes(piece(V, bitSizeofType(T)))
+     rule splitPartialBytes(tv(unknown(I:Int), T::UType))
+          => makeUnknownBytes(splitPartialBytes(tv(I, T)))
+     rule splitPartialBytes(tv(agg(L:List), structOrUnionUType #as T::UType))
+          => splitStructPartialBytes(L, T, bitSizeofType(T))
+
      syntax List ::= makeUnknownBytes(List) [function]
      rule makeUnknownBytes(ListItem(piece(I:Int, PieceLen:Int)) L::List)
           => ListItem(piece(unknown(I), PieceLen)) makeUnknownBytes(L)
@@ -298,6 +312,20 @@ module C-MEMORY-WRITING
           requires isPaddingOffset(byteSizeofType(T) -Int Len, getFields(T))
                andBool notBool isUnknown(N)
      rule splitStructBytes(_, _, 0) => .List
+
+     syntax List ::= splitStructPartialBytes(List, UType, Int) [function]
+     rule splitStructPartialBytes(ListItem(piece(N::BitValue, PieceLen:Int)) Rest:List,
+               T::UType, Len:Int)
+          => ListItem(piece(N, PieceLen)) splitStructPartialBytes(Rest, T, Len -Int PieceLen)
+          requires PieceLen <=Int cfg:bitsPerByte
+               andBool Len >Int 0
+               andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, getFields(T))
+                    orBool isUnknown(N))
+     rule splitStructPartialBytes(ListItem(piece((N::BitValue => unknown(#if isInt(N) #then N #else 0 #fi)), _)) _,
+               T::UType, Len::Int)
+          requires isPaddingOffset(byteSizeofType(T) -Int Len, getFields(T))
+               andBool notBool isUnknown(N)
+     rule splitStructPartialBytes(_, _, 0) => .List
 
      syntax Bool ::= isPaddingOffset(Int, K) [function]
      rule isPaddingOffset(Offset::Int, fieldInfo(_, _, _, _, PaddingOffs::Set))

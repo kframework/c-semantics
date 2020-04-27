@@ -48,6 +48,7 @@ module BITS-SYNTAX
 
      syntax List ::= explodeToBits(List) [function]
      syntax List ::= splitToBytes(Bits) [function]
+     syntax List ::= splitToPartialBytes(Bits) [function]
 
      syntax BitValue ::= joinBytes(List) [function]
 
@@ -142,6 +143,7 @@ module BITS
      rule explodeToBits(.List) => .List
 
      rule splitToBytes(piece(V::BitValue, Len::Int)) => splinter(V, 0, Len, cfg:bitsPerByte)
+     rule splitToPartialBytes(piece(V::BitValue, Len::Int)) => splinterPartial(V, 0, Len, cfg:bitsPerByte)
 
      syntax List ::= splinter(BitValue, Int, Int, Int) [function]
      rule splinter(encodedPtr(V::PtrValue, From::Int, To::Int), Pos::Int, Len::Int, ChunkSize::Int)
@@ -157,6 +159,32 @@ module BITS
                splinter(V, Pos +Int ChunkSize, Len, ChunkSize)
           requires (Pos <Int Len) andBool isEncodable(V)
      rule splinter(V::BitValue, _, _, _) => .List
+          requires notBool isPieces(V)
+          [owise]
+
+     syntax List ::= splinterPartial(BitValue, Int, Int, Int) [function]
+     rule splinterPartial(encodedPtr(V::PtrValue, From::Int, To::Int), Pos::Int, Len::Int, ChunkSize::Int)
+          => ListItem(piece(encodedPtr(V, From, From +Int ChunkSize), ChunkSize))
+               splinterPartial(encodedPtr(V, From +Int ChunkSize, To), Pos +Int ChunkSize, Len, ChunkSize)
+          requires (From <Int To) andBool (Pos <Int Len) andBool (From +Int ChunkSize) <=Int To
+     rule splinterPartial(encodedPtr(V::PtrValue, From::Int, To::Int), Pos::Int, Len::Int, ChunkSize::Int)
+          => ListItem(piece(encodedPtr(V, From, To), To -Int From))
+          requires (From <Int To) andBool (Pos <Int Len) andBool (From +Int ChunkSize) >Int To
+     rule splinterPartial(encodedValue(V::EncodableValue, From::Int, To::Int), Pos::Int, Len::Int, ChunkSize::Int)
+          => ListItem(piece(encodedValue(V, From, From +Int ChunkSize), ChunkSize))
+               splinterPartial(encodedValue(V, From +Int ChunkSize, To), Pos +Int ChunkSize, Len, ChunkSize)
+          requires (From <Int To) andBool (Pos <Int Len) andBool (From +Int ChunkSize) <=Int To
+     rule splinterPartial(encodedValue(V::EncodableValue, From::Int, To::Int), Pos::Int, Len::Int, ChunkSize::Int)
+          => ListItem(piece(encodedValue(V, From, To), To -Int From))
+          requires (From <Int To) andBool (Pos <Int Len) andBool (From +Int ChunkSize) >Int To
+     rule splinterPartial(V::BitValue, Pos::Int, Len::Int, ChunkSize::Int)
+          => ListItem(encode({V}:>Encodable, Pos, Pos +Int ChunkSize))
+               splinterPartial(V, Pos +Int ChunkSize, Len, ChunkSize)
+          requires (Pos <Int Len) andBool isEncodable(V) andBool (Pos +Int ChunkSize) <=Int Len
+     rule splinterPartial(V::BitValue, Pos::Int, Len::Int, ChunkSize::Int)
+          => ListItem(encode({V}:>Encodable, Pos, Len))
+          requires (Pos <Int Len) andBool isEncodable(V) andBool (Pos +Int ChunkSize) >Int Len
+     rule splinterPartial(V::BitValue, _, _, _) => .List
           requires notBool isPieces(V)
           [owise]
 
