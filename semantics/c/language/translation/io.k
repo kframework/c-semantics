@@ -64,7 +64,7 @@ module C-IO
      rule readBytes'(_, 0, Aux:List) => dataList(Aux)
           [structural]
 
-     rule checkEffectiveType(_, _, _) => .K
+     rule checkEffectiveType(...) => .K
      rule adjustPointerBounds(V::RValue) => V
 
 endmodule
