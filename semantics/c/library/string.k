@@ -27,7 +27,7 @@ module LIBC-STRING
           => tv(Dest, utype(pointerType(type(unsigned-char)))) + tv(N, utype(int)) // Verify address is valid.
           ~> discard
           ~> writeBytesFill(Dest, N, piece(V, cfg:bitsPerByte))
-          ~> tv(Dest, T)
+          ~> tv(setLastAccessType(Dest, type(no-type)), T)
           [structural]
 
      // try to use getString
