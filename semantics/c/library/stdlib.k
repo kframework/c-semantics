@@ -76,7 +76,7 @@ module LIBC-STDLIB
 
      rule <k> alignedAlloc(Align::Int, Sz::Int)
                => alloc(obj(!I:Int, Align, alloc), type(no-type), Sz)
-               ~> tv(addProv(fromArray(0, Sz), lnew(obj(!I, Align, alloc))),
+               ~> tv(addProv(fromArray(0, Sz, dynamicType(type(no-type))), lnew(obj(!I, Align, alloc))),
                     utype(pointerType(type(void))))
           ...</k>
           <malloced>... .Map => obj(!I, Align, alloc) |-> Sz ...</malloced>
@@ -113,9 +113,10 @@ module LIBC-STDLIB
      rule [realloc]:
           <k> builtin("realloc", tv(loc(OldBase:SymBase, 0), _), tv(NewLen:Int, _))
                => realloc(OldBase, bnew(!I:Int, type(no-type), alloc), OldLen, NewLen)
-               ~> tv(loc(bnew(!I, type(no-type), alloc), 0, SetItem(fromArray(0, NewLen))),
+               ~> tv(loc(bnew(!I, type(no-type), alloc), 0, SetItem(fromArray(0, NewLen, T))),
                     utype(pointerType(type(void))))
           ...</k>
+          <mem>... OldBase |-> object(T::EffectiveType, _, _) ...</mem>
           <malloced>...
                (OldBase => bnew(!I, type(no-type), alloc)) |-> (OldLen:Int => NewLen)
           ...</malloced>

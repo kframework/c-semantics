@@ -65,8 +65,8 @@ module C-CHECK-EFFECTIVE
           [owise]
 
      syntax SymLoc ::= adjustBounds(SymLoc, Type) [function]
-     rule adjustBounds(loc(_, _, SetItem(fromArray(_, N::Int)) _) #as Loc::SymLoc, T::Type)
-          => addProv(fromArray(0, byteSizeofType(T)), stripFromArray(Loc))
+     rule adjustBounds(loc(_, _, SetItem(fromArray(_, N::Int, _)) _) #as Loc::SymLoc, T::Type)
+          => addProv(fromArray(0, byteSizeofType(T), T), stripFromArray(Loc))
           requires byteSizeofType(T) >Int N
      // TODO(chathhorn): only allow adjusting the size up for now (because we
      // need to be able to distinguish a pointer into an array of T from a

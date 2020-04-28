@@ -15,7 +15,7 @@ module LIBCPP-NEW
 
      rule <k> builtin(GlobalNamespace() :: operatornew, prv(Len::Int, _, _))
               => allocObject(bnew(!I:Int, type(no-type), .Set, dynamic), type(no-type), Len)
-              ~> prv(addProv(fromArray(0, Len), lnew(bnew(!I, type(no-type), .Set, dynamic))), noTrace,
+              ~> prv(addProv(fromArray(0, Len, type(no-type)), lnew(bnew(!I, type(no-type), .Set, dynamic))), noTrace,
                    type(pointerType(type(void))))
           ...</k>
           <malloced>... .Map => bnew(!I, type(no-type), .Set, dynamic) |-> Len ...</malloced>

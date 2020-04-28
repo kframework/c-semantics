@@ -47,11 +47,11 @@ module C-SYMLOC
           requires notBool isFromArray(Loc)
 
      syntax Bool ::= #ifFromArrayInBounds(K, Set, UType, Int) [function]
-     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T::UType, I:Int)
+     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int, _), _, T::UType, I:Int)
           => true
           requires (Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int 0)
                andBool (Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len)
-     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T::UType, I:Int)
+     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int, _), _, T::UType, I:Int)
           => false
           requires (Offset +Int (I *Int byteSizeofType(innerType(T))) <Int 0)
                orBool (Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len)

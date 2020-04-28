@@ -244,8 +244,8 @@ module CPP-CONVERSION
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, CPPType) [function, klabel(arrayToPtrLocCpp)]
 
-     rule arrayToPtrLoc(Loc::SymLoc, t(_, _, arrayType(T::CPPType, N::Int)))
-          => addProv(fromArray(0, byteSizeofType(T) *Int N), Loc)
+     rule arrayToPtrLoc(Loc::SymLoc, t(_, _, arrayType(...)) #as T::CPPType)
+          => addProv(fromArray(0, byteSizeofType(T), T), Loc)
 
      rule arrayToPtrLoc(Loc::SymLoc, _) => Loc [owise]
 

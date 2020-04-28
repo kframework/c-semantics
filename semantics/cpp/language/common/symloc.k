@@ -75,7 +75,7 @@ module CPP-SYMLOC
 
      rule ifFromArrayInBounds(Loc::SymLoc, T::CPPType, I::Int) => #ifFromArrayInBounds(getFromArray(Loc), byteSizeofType(innerType(T)) *Int I)
 
-     rule #ifFromArrayInBounds(fromArray(Offset::Int, Len::Int), NewOffset::Int) => Offset +Int NewOffset >=Int 0 andBool Offset +Int NewOffset <=Int Len
+     rule #ifFromArrayInBounds(fromArray(Offset::Int, Len::Int, _), NewOffset::Int) => Offset +Int NewOffset >=Int 0 andBool Offset +Int NewOffset <=Int Len
 
      rule #ifFromArrayInBounds(.K, _) => true
 

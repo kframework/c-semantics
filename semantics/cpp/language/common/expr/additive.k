@@ -36,8 +36,8 @@ module CPP-EXPR-ADDITIVE
      rule newFromArray(Loc::SymLoc, T::CPPType, I::Int)
           => #newFromArray(Loc, getFromArray(Loc), byteSizeofType(innerType(T)) *Int I)
 
-     rule #newFromArray(Loc::SymLoc, fromArray(ArrOffset::Int, Len::Int), NewOffset::Int)
-          => addProv(fromArray(ArrOffset +Int NewOffset, Len), stripFromArray(Loc))
+     rule #newFromArray(Loc::SymLoc, fromArray(ArrOffset::Int, Len::Int, Eff::EffectiveType), NewOffset::Int)
+          => addProv(fromArray(ArrOffset +Int NewOffset, Len, Eff), stripFromArray(Loc))
 
      rule #newFromArray(Loc::SymLoc, .K, _) => Loc
 

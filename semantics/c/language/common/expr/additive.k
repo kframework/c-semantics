@@ -182,17 +182,17 @@ module C-COMMON-EXPR-ADDITIVE
      rule newFromArray(Loc:SymLoc, _, _) => Loc
           requires notBool isFromArray(Loc)
 
-     rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int, Len:Int),
+     rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int, Len:Int, Eff::EffectiveType),
                .Set, Prov:Set, T::UType, I:Int)
           => loc(Base, Offset, SetItem(
-               fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
+               fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len, Eff)) Prov)
      rule #newFromArray(Base:SymBase, Offset:Int, K:KItem, .Set, Prov:Set, _, _)
           => loc(Base, Offset, SetItem(K) Prov)
           requires fromArray(...) :/=K K
-     rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int, Len:Int),
+     rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int, Len:Int, Eff::EffectiveType),
                SetItem(K':KItem) S:Set, Prov:Set, T::UType, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(fromArray(ArrOffset +Int
-               I *Int byteSizeofType(innerType(T)), Len)) Prov, T, I)
+               I *Int byteSizeofType(innerType(T)), Len, Eff)) Prov, T, I)
      rule #newFromArray(Base:SymBase, Offset:Int, K:KItem, SetItem(K':KItem)
                S:Set, Prov:Set, T::UType, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(K) Prov, T, I)

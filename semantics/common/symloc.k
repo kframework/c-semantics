@@ -7,6 +7,7 @@ endmodule
 
 module SYMLOC-SYNTAX
      imports SYMLOC-SORTS
+     imports MEMORY-SORTS
      imports LIST
      imports COMPAT-SYNTAX
 
@@ -103,7 +104,7 @@ module SYMLOC-SYNTAX
      // Pointers from an array need to be checked that they don't go out of
      // bounds of that array, even if that array happens to be part of a larger
      // object (i.e., surrounded by valid addresses).
-     syntax Provenance ::= fromArray(Int, Int)
+     syntax Provenance ::= fromArray(Int, Int, EffectiveType)
 
      syntax Bool ::= isFromArray(SymLoc) [function]
 
@@ -360,7 +361,7 @@ module SYMLOC
      rule showProvSet(SetItem(P:KItem) Prov::Set) => ", " +String showK(P) +String showProvSet(Prov) [owise]
 
      syntax String ::= showProvenance(Provenance) [function]
-     rule showProvenance(fromArray(A::Int, B::Int)) => "array" +String wrapParens(showInt(A) +String ", " +String showInt(B))
+     rule showProvenance(fromArray(A::Int, B::Int, _)) => "array" +String wrapParens(showInt(A) +String ", " +String showInt(B))
      rule showProvenance(basedOn(B::SymBase, _)) => "based" +String wrapParens(showSymBase(B))
      rule showProvenance(objectType(T::EffectiveType)) => showEffectiveType(T)
      rule showProvenance(P::Provenance) => showK(P) [owise]

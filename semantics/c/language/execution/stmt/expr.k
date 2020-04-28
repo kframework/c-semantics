@@ -60,13 +60,13 @@ module C-STMT-EXPR
           requires notBool isFromArray(Loc)
 
      rule checkArrayStaticAssign'(T:Type,
-               arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
+               arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int, _))
           => .K
           requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
      rule (.K => UNDEF("EEA5",
                "Passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size."))
           ~> checkArrayStaticAssign'(T:Type,
-               arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
+               arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int, _))
           requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
 
      syntax Modifier ::= getArrayStatic(Set) [function]

@@ -107,7 +107,7 @@ module C-COMMON-EXPR-EVAL
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
      rule arrayToPtrLoc(Loc::SymLoc, t(... st: _:SimpleFixedArrayType) #as T::Type)
-          => addProv(fromArray(0, byteSizeofType(T)), Loc)
+          => addProv(fromArray(0, byteSizeofType(T), T), Loc)
      rule arrayToPtrLoc(Loc::SymLoc, _) => Loc [owise]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{4}}}{

@@ -27,7 +27,7 @@ module C-COMMON-EXPR-REFERENCE
      }
      */
      rule &(nclv(Loc:SymLoc, T::Type))
-          => checkUse(tv(addProv(fromArray(0, byteSizeofType(T)), Loc),
+          => checkUse(tv(addProv(fromArray(0, byteSizeofType(T), T), Loc),
                utype(pointerType(T))))
           requires notBool isRegisterLoc(Loc)
                andBool notBool isBitfieldType(T)
