@@ -92,13 +92,6 @@ pipeline {
             img = docker.build 'runtimeverificationinc/c-semantics:latest'
           }
         } }
-        stage ( 'Push to dockerhub' ) { steps {
-          script {
-            docker.withRegistry ( '', 'rvdockerhub' ) {
-              img.push()
-            }
-          }
-        } }
       } // stages of 'Merged to master'
     }   // 'Merged to master'
 
