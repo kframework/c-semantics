@@ -21,15 +21,20 @@ module C-CHECK-EFFECTIVE
      // variants. When a write occurs through a SymLoc, its attached
      // last-access type becomes the effective type of the object.
 
-     rule checkEffectiveType(L::Type, Offset::Int, LAT:Type)
+     syntax K ::= #checkEffectiveType(Type, Int, EffectiveType) [function]
+     rule #checkEffectiveType(L::Type, Offset::Int, LAT:Type)
           => effTypeUB(L, LAT) ~> effectiveTypeViolation(L, Offset, LAT)
           requires notBool effectivelyCompat(L, getTypesAtOffset(LAT, Offset))
-     rule checkEffectiveType(L::Type, Offset::Int, dynamicType(LAT::Type))
+     rule #checkEffectiveType(L::Type, Offset::Int, dynamicType(LAT::Type))
           => effTypeUB(L, LAT) ~> effectiveTypeViolation(L, Offset, dynamicType(LAT))
           requires notBool (effectivelyCompat(L, getTypesAtOffset(LAT, Offset))
                orBool effectivelyCompat(LAT, getTypesAtOffset(L, Offset))
                orBool isNoType(LAT))
-     rule checkEffectiveType(_, _, _) => .K [owise]
+     rule #checkEffectiveType(...) => .K [owise]
+     rule checkEffectiveType(L::Type, ByteOffset::Int, BitOffset::Int, fromArray(FromArrayOffset::Int, _, LAT::EffectiveType), _)
+          => checkEffectiveType(L, FromArrayOffset, BitOffset, .K, LAT)
+     rule checkEffectiveType(L::Type, ByteOffset::Int, BitOffset::Int, .K, LAT::EffectiveType)
+          => #checkEffectiveType(L, ByteOffset *Int cfg:bitsPerByte +Int BitOffset, LAT)
 
      syntax KItem ::= effectiveTypeViolation(Type, Int, EffectiveType)
      syntax KItem ::= effTypeUB(Type, Type) [function]

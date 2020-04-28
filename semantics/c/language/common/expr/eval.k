@@ -74,7 +74,7 @@ module C-COMMON-EXPR-EVAL
 
      syntax KItem ::= lvalConvert(SymLoc, Type, KItem) [strict(3)]
      rule <k> lvalConvert(Loc::SymLoc, T::Type, LAT:EffectiveType)
-               => checkEffectiveType(T, bitOffset(Loc), LAT)
+               => checkEffectiveType(T, offset(Loc), bitOffsetIntoLastByte(Loc), getFromArray(Loc), LAT)
                // The new last access type becomes a composite of the current
                // last-access object type and the type of the current lvalue
                // expression.

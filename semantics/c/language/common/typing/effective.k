@@ -5,7 +5,7 @@ module C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SORTS
      imports SYMLOC-SORTS
 
-     syntax K ::= checkEffectiveType(Type, Int, EffectiveType) [function]
+     syntax K ::= checkEffectiveType(Type, Int, Int, K, EffectiveType) [function]
      syntax KItem ::= adjustPointerBounds(RValue)
 
      syntax KItem ::= getLastAccessType(SymLoc)
