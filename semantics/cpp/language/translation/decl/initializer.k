@@ -575,7 +575,8 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      // *** </ Aggregate initialization of an array >
 
 
-     rule <k> (.K => resolveOverload(cSet(#if Type ==K DirectInit() #then M #else stripExplicit(M) #fi, C :: ConstructorId(X)), list(L), constructor))
+     rule <k> (.K => resolveOverload(cSet(#if Type ==K DirectInit() #then M #else stripExplicit(M) #fi, C :: ConstructorId(X)), list(L), constructor)
+              ~> stripResolveOverloadResult())
               ~> constructorInit(Base::LVal, Type::InitType, _ :: Class(_, X::CId, _) #as C::Class, L::List, _)
           ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>

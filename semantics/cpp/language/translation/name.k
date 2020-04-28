@@ -10,6 +10,7 @@ module CPP-TRANSLATION-NAME-SYNTAX
      syntax Expr ::= nameLookup(CId, Tag, mask: Set)
                    | qualifiedNameLookup(CId, NNS, mask: Set)
 
+     // evaluates to `resolveOverloadResult(_)`
      syntax Expr ::= resolveOverloadedOperator(OpId, Expr, TypeExpr)
                    | resolveOverloadedOperator(OpId, Expr, TypeExpr, Init, K)
 
@@ -20,6 +21,7 @@ module CPP-TRANSLATION-NAME-SYNTAX
                   | "namespaceMask" [function]
                   | "nnsMask" [function]
                   | "typeMask" [function]
+
 endmodule
 
 module CPP-TRANSLATION-NAME
@@ -396,6 +398,7 @@ module CPP-TRANSLATION-NAME
 
      rule cSet(Y::Map, X::QualId) ~> CallExpr(E::Expr, Args::StrictList, krlist(.List))
           => resolveOverload(cSet(Y, X), Args, E)
+          ~> stripResolveOverloadResult()
 
      rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> (lv(_, _, t(... st: classType(C::Class))) #Or xv(_, _, t(... st: classType(C::Class))) #Or prv(_, _, t(... st: classType(C::Class)))) . no-template Name(NoNNS(), X::CId)
 
@@ -748,24 +751,29 @@ module CPP-TRANSLATION-NAME
 
      syntax Expr ::= resolveEmptyOverload(CandidateSet, StrictList, Expr, Expr)
                    | resolveEmptyOverloadArrow(CandidateSet, StrictList, Expr, Expr, Name)
-                   | #resolveEmptyOverload(Expr, Expr, K)
+                   | #resolveEmptyOverload(Expr, K)
 
      rule resolveEmptyOverload(C::CandidateSet, Args::StrictList, Builtin::Expr, E::Expr)
-          => #resolveEmptyOverload(resolveOverload(C, Args, E), Builtin, .K)
+          => resolveOverload(C, Args, E) ~> #resolveEmptyOverload(Builtin, .K)
 
      rule resolveEmptyOverloadArrow(C::CandidateSet, Args::StrictList, Builtin::Expr, E::Expr, N::Name)
-          => #resolveEmptyOverload(resolveOverload(C, Args, E), Builtin, N)
+          => resolveOverload(C, Args, E) ~> #resolveEmptyOverload(Builtin, N)
 
-     context #resolveEmptyOverload(HOLE:Expr, _, _) [result(ResolvedExpr), structural]
 
-     rule #resolveEmptyOverload(E:ResolvedExpr, _, .K) => E
+     rule resolveOverloadResult(E:ResolvedExpr)
+          ~> #resolveEmptyOverload(_, .K)
+          => resolveOverloadResult(E)
           requires notBool isNotFoundNameRef(E)
 
-     rule #resolveEmptyOverload(E:ResolvedExpr, _, N:Name) => BinaryOperator(operator->, E, N)
+     rule resolveOverloadResult(E:ResolvedExpr)
+          ~> #resolveEmptyOverload(_, N:Name)
+          => resolveOverloadResult(BinaryOperator(operator->, E, N))
           requires notBool isNotFoundNameRef(E)
 
      // no viable candidates
-     rule #resolveEmptyOverload(notFound(_), E::Expr, _) => E
+     rule notFound(_)
+          ~> #resolveEmptyOverload(E::Expr, _)
+          => resolveOverloadResult(E)
 
      rule addBuiltinCandidates(O::OpId, E1::Expr, T1::CPPType, _, E2::Expr, T2::CPPType, _, C1:CandidateSet, C2:CandidateSet)
           => resolveOverload(cSetUnion2(C1, cSetUnion2(C2, builtinCandidates(O, T1, T2, C2, builtinOperator(O, E1, E2)))), list(ListItem(E1) ListItem(E2)), BinaryOperator(O, E1, E2))

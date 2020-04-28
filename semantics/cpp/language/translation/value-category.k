@@ -26,6 +26,7 @@ module CPP-TRANSLATION-VALUE-CATEGORY
      imports CPP-TRANSLATION-EXPR-CONDITIONAL-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
+     imports CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
@@ -191,12 +192,16 @@ module CPP-TRANSLATION-VALUE-CATEGORY
           requires isCPPClassType(T1) orBool isCPPClassType(T2)
                orBool isCPPEnumType(T1) orBool isCPPEnumType(T2)
 
-     // these contexts require the structural attribute to ensure that they always apply prior to the rules
-     // for evaluating expressions. Otherwise we might evaluate too far even though this expression
-     // is not potentially evaluated in this context.
-     context catof(resolveOverloadedOperator(_, _, _) #as HOLE:Expr) [result(ResolvedExpr), structural]
+     rule catof(resolveOverloadedOperator(_, _, _) #as X:Expr)
+          => X ~> catofResolveOverloadedOperatorFreezer()
 
-     context catof(resolveOverloadedOperator(_, _, _, _, _) #as HOLE:Expr) [result(ResolvedExpr), structural]
+     rule catof(resolveOverloadedOperator(_, _, _, _, _) #as X:Expr)
+          => X ~> catofResolveOverloadedOperatorFreezer()
+
+     rule resolveOverloadResult(X:Expr) ~> catofResolveOverloadedOperatorFreezer()
+          => catof(X)
+
+     syntax KItem ::= catofResolveOverloadedOperatorFreezer()
 
      rule catofBuiltinOperator(O::OpId, T1:CPPDType, C:ValueCategory, T2:CPPDType)
           => #catofBuiltinOperator(O, T1, C, T2)
