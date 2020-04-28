@@ -14,6 +14,7 @@ module LIBC-STRING
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
+     imports C-TYPING-EFFECTIVE
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
