@@ -28,6 +28,7 @@ module CPP-TRANSLATION-TYPING-EXPR
      imports CPP-CLASS-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-TRANSLATION-EXPR-CONDITIONAL-SYNTAX
+     imports CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
@@ -228,12 +229,16 @@ module CPP-TRANSLATION-TYPING-EXPR
           requires isCPPClassType(T1) orBool isCPPClassType(T2)
                orBool isCPPEnumType(T1) orBool isCPPEnumType(T2)
 
-     // these contexts require the structural attribute to ensure that they always apply prior to the rules
-     // for evaluating expressions. Otherwise we might evaluate too far even though this expression
-     // is not potentially evaluated in this context.
-     context typeof(resolveOverloadedOperator(_, _, _) #as HOLE:Expr) [result(ResolvedExpr), structural]
+     rule typeof(resolveOverloadedOperator(_, _, _) #as X:Expr)
+          => X ~> typeofResolveOverloadedOperatorFreezer()
 
-     context typeof(resolveOverloadedOperator(_, _, _, _, _) #as HOLE:Expr) [result(ResolvedExpr), structural]
+     rule typeof(resolveOverloadedOperator(_, _, _, _, _) #as X:Expr)
+          => X ~> typeofResolveOverloadedOperatorFreezer()
+
+     rule resolveOverloadResult(X:Expr) ~> typeofResolveOverloadedOperatorFreezer()
+          => typeof(X)
+
+     syntax KItem ::= typeofResolveOverloadedOperatorFreezer()
 
      rule typeofBuiltinOperator(O::OpId, T1:CPPDType, E::Expr, T2:CPPDType)
           => #typeofBuiltinOperator(O, T1, E, T2)

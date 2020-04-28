@@ -584,7 +584,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule checkCtorAndDtor(K:K, X::CId, T::CPPType, B::Bool, _, t(... st: classType(M::Class)))
           => checkDtor(M) ~> figureConstructItem(K, X, T, B) [owise]
 
-     rule <k> (.K => resolve(resolveOverload(cSet(Candidates, M :: ConstructorId(X)), list(.List), constructor)))
+     rule <k> (.K => resolveOverload(cSet(Candidates, M :: ConstructorId(X)), list(.List), constructor))
               ~> checkCtor(_ :: Class(_, X::CId, _) #as M::Class)
           ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -592,10 +592,9 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <class-id> M </class-id>
           <cenv>... ConstructorId(X) |-> Candidates::Map ...</cenv>
 
-     rule resolve(E:ResolvedExpr) ~> checkCtor(_) => .K
-          requires notBool isNotFoundNameRef(E)
+     rule resolveOverloadResult(E:ResolvedExpr) ~> checkCtor(_) => .K
 
-     rule <k> (.K => resolve(checkAccess(CallExpr(lv(lnew(Base), hasTrace(Name(NoNNS(), DestructorId(X))), T), list(.List), krlist(.List)))))
+     rule <k> (.K => checkAccess(CallExpr(lv(lnew(Base), hasTrace(Name(NoNNS(), DestructorId(X))), T), list(.List), krlist(.List))))
               ~> checkDtor(_ :: Class(_, X::CId, _) #as M::Class)
           ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
@@ -603,8 +602,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <class-id> M </class-id>
           <cenv>... DestructorId(X) |-> (_::CPPType |-> (T::CPPType, envEntry(... base: Base::SymBase))) ...</cenv>
 
-     rule resolve(E:ResolvedExpr) ~> checkDtor(_) => .K
-          requires notBool isNotFoundNameRef(E)
+     rule resolveOverloadResult(E:ResolvedExpr) ~> checkDtor(_) => .K
 
      syntax Bool  ::= isDeletedDefaultConstructor(CId, CPPType, Class, CPPType, Set, Init) [function]
 
@@ -880,11 +878,10 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <functions>... Base |-> functionObject(_, FuncT::CPPType, _, _) ...</functions>
           requires isMethodVirtual(FuncT)
 
-     rule (cSet(... candidates: Cands::Map, id: Q::QualId) #as C:CandidateSet => resolve(resolveOverload(C, list(ListItem(prv(NullPointer, noTrace, type(pointerType(type(void))))) getSecondDeleteArg(Cands, prv(0, noTrace, type(size_t)))), Name(NoNNS(), operatordelete))))
+     rule (cSet(... candidates: Cands::Map, id: Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(prv(NullPointer, noTrace, type(pointerType(type(void))))) getSecondDeleteArg(Cands, prv(0, noTrace, type(size_t)))), Name(NoNNS(), operatordelete)))
           ~> figureDestruct(...)
 
-     rule resolve(E:ResolvedExpr) ~> figureDestruct(.List, .List, Res:K) => Res
-          requires notBool isNotFoundNameRef(E)
+     rule resolveOverloadResult(E:ResolvedExpr) ~> figureDestruct(.List, .List, Res:K) => Res
 
      syntax KItem ::= TaddToConstructed(Expr, CPPType) [strict(c; 1)]
 

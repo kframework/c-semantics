@@ -555,8 +555,6 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KResult ::= ValResult
 
-     syntax KItem ::= resolve(Expr)
-
      // used by destructors
      syntax KItem ::= addToConstructed(Expr, CPPType) [strict(c; 1)]
 
@@ -1045,8 +1043,6 @@ module CPP-DYNAMIC-OTHER
                false,
                .List
              )
-
-     context resolve(HOLE:Expr) [result(ResolvedExpr), structural]
 
      rule cat(prv(...)) => prvalue
 

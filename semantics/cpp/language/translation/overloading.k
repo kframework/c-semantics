@@ -9,12 +9,14 @@ module CPP-TRANSLATION-OVERLOADING-SYNTAX
 
      syntax CandidateSet ::= cSet(candidates: Map, id: QualId)
 
+     // evaluates to `resolveOverloadResult(_)` or `notFound(_)`
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, Expr)
                    | resolveConversionOverload(CandidateSet, StrictList, Expr, CPPType)
                    | resolveRefConversionOverload(CandidateSet, StrictList, Expr, CPPType)
-                   | resolveUniqueDecl(KItem, Expr, Bool) [strict(1)]
-                   | cSetUnion(KItem, KItem) [strict]
                    | checkAccess(Expr)
+
+     syntax Expr ::= resolveUniqueDecl(KItem, Expr, Bool) [strict(1)]
+                   | cSetUnion(KItem, KItem) [strict]
 
      // not a real expression, but getArgs understands it.
      syntax Expr ::= "constructor"
@@ -24,6 +26,9 @@ module CPP-TRANSLATION-OVERLOADING-SYNTAX
      syntax BuiltinOp ::= builtinOp(Expr)
 
      syntax KItem ::= canBeImplicitlyConvertedTo(fromType: CPPType, fromCat: ValueCategory, toType: CPPType)
+
+     syntax KItem ::= resolveOverloadResult(KItem)
+                    | stripResolveOverloadResult()
 endmodule
 
 module CPP-TRANSLATION-OVERLOADING
@@ -52,8 +57,12 @@ module CPP-TRANSLATION-OVERLOADING
      imports CPP-TRANSLATION-VALUE-CATEGORY-SYNTAX
      imports ERROR-SYNTAX
 
+     rule resolveOverloadResult(X)
+          ~> stripResolveOverloadResult()
+          => X
+
      // access checking stub (not implemented yet)
-     rule checkAccess(E::Expr) => E
+     rule checkAccess(E::Expr) => resolveOverloadResult(E)
 
      syntax Expr ::= resolveOverloadWithType(CandidateSet, StrictList, Expr, OverloadType)
 
@@ -612,7 +621,8 @@ module CPP-TRANSLATION-OVERLOADING
           ~> updateExternalUses(Base)
           ~> checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), DArgs))
 
-     rule bestViable(T::CPPType, builtinOp(E::Expr)) ~> #resolveOverload2(...) => E
+     rule bestViable(T::CPPType, builtinOp(E::Expr)) ~> #resolveOverload2(...)
+          => resolveOverloadResult(E)
 
      rule (.K => computeBestViable(M, Types, Cats, O))
           ~> #resolveOverload2(cSet(... candidates: M::Map), list(Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)

@@ -49,12 +49,14 @@ module CPP-TRANSLATION-EXPR-NEW
 
      rule (cSet(... id: Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(pre(newSize(!I), noTrace, type(size_t)) * prv(byteSizeofType(T), noTrace, type(size_t))) P),
                                              Name(NoNNS(), operatornew[]))
+          ~> stripResolveOverloadResult()
           ~> !I:Int)
           ~> NewExpr(_, T::CPPType, _, _, P::List)
           requires getId(Q) ==K operatornew[]
 
      rule (cSet(... id: Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(prv(byteSizeofType(T), noTrace, type(size_t))) P),
-                                                                          Name(NoNNS(), operatornew)))
+                                                                          Name(NoNNS(), operatornew))
+          ~> stripResolveOverloadResult())
           ~> NewExpr(_, T:CPPType, _, _, P::List)
           requires getId(Q) ==K operatornew
 
@@ -156,6 +158,7 @@ module CPP-TRANSLATION-EXPR-NEW
                  ),
                  Name(NoNNS(), operatordelete)
                )
+            ~> stripResolveOverloadResult()
             ~> !I:Int
           )
           ~> DeleteExpr(_, false, V::PRVal)

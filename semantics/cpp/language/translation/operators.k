@@ -10,6 +10,7 @@ module CPP-TRANSLATION-OPERATORS
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
+     imports CPP-TRANSLATION-OVERLOADING-SYNTAX
      imports CPP-TRANSLATION-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
@@ -40,6 +41,7 @@ module CPP-TRANSLATION-OPERATORS
 
      rule #BinaryOperator(O::OpId, E1::Expr, T1:CPPType, E2::Init, T2:CPPType)
           => resolveOverloadedOperator(O, E1, T1, E2, T2)
+          ~> stripResolveOverloadResult()
           requires isCPPClassType(T1) orBool isCPPClassType(T2)
                orBool isCPPEnumType(T1) orBool isCPPEnumType(T2)
 
@@ -49,6 +51,7 @@ module CPP-TRANSLATION-OPERATORS
 
      rule #UnaryOperator(O::OpId, E1::Expr, T1:CPPDType)
           => resolveOverloadedOperator(O, E1, T1)
+          ~> stripResolveOverloadResult()
           requires isCPPClassType(T1) orBool isCPPEnumType(T1)
 
 
