@@ -55,10 +55,10 @@ module C-CHECK-EFFECTIVE
      syntax RValue ::= "adjustPointerBounds'" "(" SymLoc "," UType "," Type "," EffectiveType ")" [function]
      rule adjustPointerBounds'(Loc::SymLoc, T::UType, T'::Type, t(...) #as Eff::Type)
           => tv(adjustBounds(Loc, T'), T)
-          requires notBool isCharType(T') andBool effectivelyCompat(T', getTypesAtOffset(Eff, offset(Loc)))
+          requires notBool isCharType(T') andBool effectivelyCompat(T', getTypesAtOffset(Eff, bitOffset(Loc)))
      rule adjustPointerBounds'(Loc::SymLoc, T::UType, T'::Type, dynamicType(Eff::Type))
           => tv(adjustBounds(Loc, T'), T)
-          requires notBool isCharType(T') andBool (effectivelyCompat(T', getTypesAtOffset(Eff, offset(Loc)))
+          requires notBool isCharType(T') andBool (effectivelyCompat(T', getTypesAtOffset(Eff, bitOffset(Loc)))
                orBool effectivelyCompat(Eff, getTypesAtOffset(T', offset(Loc))))
      rule adjustPointerBounds'(Loc::SymLoc, T::UType, _, _)
           => tv(Loc, T)
