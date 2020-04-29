@@ -101,7 +101,7 @@ module CPP-SYNTAX
 
      syntax Tag ::= ClassKey | Enum() [symbol] | Typename() [symbol] | NoTag() [symbol]
 
-     syntax AccessSpecifier ::= Public() [symbol] | Private() [symbol] | Protected() [symbol] | NoAccessSpec()
+     syntax AccessSpecifier ::= Public() [symbol] | Private() [symbol] | Protected() [symbol] | NoAccessSpec() [symbol]
 
      syntax RefQualifier ::= RefLValue() [symbol] | RefRValue() [symbol] | RefNone() [symbol]
 
