@@ -12,7 +12,7 @@ module OPTIONS-SYNTAX
                                    | WarnAll() [symbol]
                                    | WarnUnreachable() [symbol]
 
-     syntax String ::= showUnresolvedSymbolsOpt(UnresolvedSymbolsOpt)
+     syntax String ::= showUnresolvedSymbolsOpt(UnresolvedSymbolsOpt) [function]
 
      syntax Opt ::= Debug() [symbol]
                   | Link() [symbol]                         // Resolve uses to definitions.
