@@ -55,21 +55,21 @@ module CPP-EXECUTION-EXPR-ASSIGNMENT
      rule compoundOp(compoundExprs(_, R::Expr) #as E:ResolvedExpr) => E
           requires isKResult(R) andBool Execution()
 
-     rule fillRHoles(V::PRVal, pre(L::Expr := E::Expr, Tr::Trace, T::CPPType)) => pre(L := fillRHoles(V, E), Tr, T)
-     rule fillRHoles(V::PRVal, V':PRV) => V'
-     rule fillRHoles(V::PRVal, ConvertType(T::CPPType, E::Expr)) => ConvertType(T, fillRHoles(V, E))
-     rule fillRHoles(V::PRVal, compoundOp(E::Expr)) => compoundOp(fillRHoles(V, E))
-     rule fillRHoles(V::PRVal, RHOLE) => V
-     rule fillRHoles(V::PRVal, L::Expr + R::Expr) => fillRHoles(V, L) + R
-     rule fillRHoles(V::PRVal, L::Expr - R::Expr) => fillRHoles(V, L) - R
-     rule fillRHoles(V::PRVal, L::Expr * R::Expr) => fillRHoles(V, L) * R
-     rule fillRHoles(V::PRVal, L::Expr / R::Expr) => fillRHoles(V, L) / R
-     rule fillRHoles(V::PRVal, L::Expr % R::Expr) => fillRHoles(V, L) % R
-     rule fillRHoles(V::PRVal, L::Expr & R::Expr) => fillRHoles(V, L) & R
-     rule fillRHoles(V::PRVal, L::Expr ^ R::Expr) => fillRHoles(V, L) ^ R
-     rule fillRHoles(V::PRVal, L::Expr | R::Expr) => fillRHoles(V, L) | R
-     rule fillRHoles(V::PRVal, L::Expr << R::Expr) => fillRHoles(V, L) << R
-     rule fillRHoles(V::PRVal, L::Expr >> R::Expr) => fillRHoles(V, L) >> R
+     rule fillRHoles(V::Expr, pre(L::Expr := E::Expr, Tr::Trace, T::CPPType)) => pre(L := fillRHoles(V, E), Tr, T)
+     rule fillRHoles(V::Expr, V':PRV) => V'
+     rule fillRHoles(V::Expr, ConvertType(T::CPPType, E::Expr)) => ConvertType(T, fillRHoles(V, E))
+     rule fillRHoles(V::Expr, compoundOp(E::Expr)) => compoundOp(fillRHoles(V, E))
+     rule fillRHoles(V::Expr, RHOLE) => V
+     rule fillRHoles(V::Expr, L::Expr + R::Expr) => fillRHoles(V, L) + R
+     rule fillRHoles(V::Expr, L::Expr - R::Expr) => fillRHoles(V, L) - R
+     rule fillRHoles(V::Expr, L::Expr * R::Expr) => fillRHoles(V, L) * R
+     rule fillRHoles(V::Expr, L::Expr / R::Expr) => fillRHoles(V, L) / R
+     rule fillRHoles(V::Expr, L::Expr % R::Expr) => fillRHoles(V, L) % R
+     rule fillRHoles(V::Expr, L::Expr & R::Expr) => fillRHoles(V, L) & R
+     rule fillRHoles(V::Expr, L::Expr ^ R::Expr) => fillRHoles(V, L) ^ R
+     rule fillRHoles(V::Expr, L::Expr | R::Expr) => fillRHoles(V, L) | R
+     rule fillRHoles(V::Expr, L::Expr << R::Expr) => fillRHoles(V, L) << R
+     rule fillRHoles(V::Expr, L::Expr >> R::Expr) => fillRHoles(V, L) >> R
 
      rule fillLHoles(LV::Expr, pre(LHOLE := R::Expr, Tr::Trace, T::CPPType))
           => pre(LV := R, Tr, T)

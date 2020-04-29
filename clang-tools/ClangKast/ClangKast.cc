@@ -91,6 +91,7 @@ std::ostream& operator<<(std::ostream & os, const Sort & sort) {
     case Sort::NAMESPACE:             os << "Namespeace"; break;
     case Sort::NNS:                   os << "NNS"; break;
     case Sort::NNSSPECIFIER:          os << "NNSSpecifier"; break;
+    case Sort::NOINIT:                os << "NoInit"; break;
     case Sort::NONAME:                os << "NoName"; break;
     case Sort::OPID:                  os << "OpId"; break;
     case Sort::QUALIFIER:             os << "Qualifier"; break;
@@ -140,7 +141,7 @@ string Kast::Node::escapeKLabel(const string & label) {
       case '#':  subst = "Hash'"; break;
       case '$':  subst = "Dolr'"; break;
       case '%':  subst = "Perc'"; break;
-      case '&':  subst = "And'" ; break;
+      case '&':  subst = "And-'"; break;
       case '\'': subst = "Apos'"; break;
       case '(':  subst = "LPar'"; break;
       case ')':  subst = "RPar'"; break;
@@ -223,7 +224,7 @@ void Kast::KApply::print(Sort parentSort, function<void (Sort)> printChild) cons
 // *** Kast::KToken ***
 
 string Kast::KToken::toKString(const string & s) {
-  return string(Kore ? escape(s) : "\"" + escape(s) + "\"");
+  return string(Kore ? s : "\"" + escape(s) + "\"");
 }
 
 string Kast::KToken::toKString(bool b) {

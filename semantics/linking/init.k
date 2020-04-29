@@ -371,4 +371,6 @@ module LINKING-INIT
      syntax Map ::= getOverridden(Map, Map) [function]
      rule getOverridden(_, _) => .Map::Map [owise]
 
+     rule hasTrace(_) => noTrace [anywhere]
+
 endmodule

@@ -131,7 +131,7 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
               ~> K:K
               => sequencePoint
               ~> enterRestrictBlock(blockScope(X, Base, 0))
-              ~> #if Obj ==K .K #then .K #else setThis(& Obj) #fi
+              ~> #if Obj ==K .K #then .K #else setThis(& {Obj}:>Expr) #fi
               ~> bind(Params, getParams(DefT), L)
               ~> Blk
           </k>
@@ -149,7 +149,7 @@ module CPP-EXECUTION-EXPR-FUNCTION-CALL
                </call-stack-frame>
           ) ...</call-stack>
           (<function-control> C::Bag
-               <constructing> Obj::Expr </constructing>
+               <constructing> Obj:K </constructing>
                <curr-program-loc> _ </curr-program-loc>
                <most-derived-class> MDC:K </most-derived-class>
           </function-control>

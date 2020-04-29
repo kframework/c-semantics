@@ -86,7 +86,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           requires notBool isSpuriousExpr(HOLE) [result(ValueCategory)]
 
      rule <k> #figureInit(Base::Expr, DestT::CPPType, IType::InitType,
-               I::Init, SrcType::CPPType, SrcCat::ValueCategory,
+               I::Init, SrcType::K, SrcCat::K,
                CT::ConstructorType, D::Duration)
           =>
           Base ~> #figureInitHeatBase(DestT, IType, I, SrcType, SrcCat, CT, D)
@@ -95,7 +95,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           requires notBool isLVal(Base)
 
      rule <k> Base:LVal ~> #figureInitHeatBase(DestT::CPPType, IType::InitType,
-               I::Init, SrcType::CPPType, SrcCat::ValueCategory,
+               I::Init, SrcType::K, SrcCat::K,
                CT::ConstructorType, D::Duration)
           =>
           #figureInit(Base, DestT, IType, I, SrcType, SrcCat, CT, D)

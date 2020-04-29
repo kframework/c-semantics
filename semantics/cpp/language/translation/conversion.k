@@ -12,7 +12,7 @@ module CPP-TRANSLATION-CONVERSION
 
      rule convertType(t(... st: memberPointerType(...)) #as T::CPPType, prv(0, hasTrace(IntegerLiteral(0, T2::CPPType)), _)) => prv(NullMemberPointer, hasTrace(IntegerLiteral(0, T2)), T)
 
-     rule convertType(T::CPPType, pre(E::Expr, Tr::Trace, _)) => pre(ConvertType(T, E), Tr, T)
+     rule convertType(T::CPPType, pre(E:Expr, Tr::Trace, _)) => pre(ConvertType(T, E), Tr, T)
 
      rule isNullPointerConstant(prv(_, hasTrace(IntegerLiteral(0, _)), _)) => true
 

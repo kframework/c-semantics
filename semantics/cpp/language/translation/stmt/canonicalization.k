@@ -44,7 +44,7 @@ module CPP-TRANSLATION-STMT-CANONICALIZATION
 
       rule canonicalizeAStmts(ListItem(E:Expr) L::List) => ListItem(TExpressionStmt(E)) canonicalizeAStmts(L)
 
-      rule canonicalizeAStmts(ListItem(S::Stmt) L::List) => ListItem(S) canonicalizeAStmts(L) [owise]
+      rule canonicalizeAStmts(ListItem(S:AStmt) L::List) => ListItem(S) canonicalizeAStmts(L) [owise]
 
       rule canonicalizeAStmts(.List) => .List
 

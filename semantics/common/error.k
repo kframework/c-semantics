@@ -20,7 +20,7 @@ module ERROR-SYNTAX
      syntax ErrorResult ::= errorFuncResult(K, K)
 
      syntax Error
-     syntax K ::= assert(Bool, Error)
+     syntax KItem ::= assert(Bool, Error)
 
      syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String ")" [function, klabel(LinkUndef)]
      syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String "," List ")"
@@ -47,6 +47,6 @@ module ERROR
 
      rule errorFuncResult(K1:K, K2:K) => K1 ~> K2
 
-     rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
+     rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi
 
 endmodule

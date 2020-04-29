@@ -145,10 +145,10 @@ module CPP-EXECUTION-STMT-TRY
           requires size(S) >Int 0
 
      rule <k> throw(V::LVal) => catchWithHandler(CatchAnyOp(S), V) ...</k>
-          <catch-handlers> ListItem(CatchAnyOp(S::Stmt)) ...</catch-handlers>
+          <catch-handlers> ListItem(CatchAnyOp(S::K)) ...</catch-handlers>
 
      rule <k> throw(V::LVal) => catchWithHandler(CatchOp(T, S), V) ...</k>
-          <catch-handlers> ListItem(CatchOp(T::CPPType, S::Stmt)) ...</catch-handlers>
+          <catch-handlers> ListItem(CatchOp(T::CPPType, S::K)) ...</catch-handlers>
           requires handlerMatches(T, type(V))
 
      rule <k> throw(V::LVal) ... </k>

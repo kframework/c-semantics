@@ -224,22 +224,21 @@ public:
       Kast::add(Kast::KApply("NestedName", Sort::NNS, {Sort::NNS, Sort::NNSSPECIFIER}));
       TRY_TO(TraverseNestedNameSpecifier(NNS->getPrefix()));
     }
-    auto nns = Kast::KApply("NNS", Sort::NNSSPECIFIER, {Sort::CID});
     switch (NNS->getKind()) {
       case NestedNameSpecifier::Identifier:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSCId", Sort::NNSSPECIFIER, {Sort::CID}));
         TRY_TO(TraverseIdentifierInfo(NNS->getAsIdentifier()));
         break;
       case NestedNameSpecifier::Namespace:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSName", Sort::NNSSPECIFIER, {Sort::NAME}));
         TRY_TO(TraverseDeclarationName(NNS->getAsNamespace()->getDeclName()));
         break;
       case NestedNameSpecifier::NamespaceAlias:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSName", Sort::NNSSPECIFIER, {Sort::NAME}));
         TRY_TO(TraverseDeclarationName(NNS->getAsNamespaceAlias()->getDeclName()));
         break;
       case NestedNameSpecifier::TypeSpec:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSCId", Sort::NNSSPECIFIER, {Sort::CID}));
         TRY_TO(TraverseType(QualType(NNS->getAsType(), 0)));
         break;
       case NestedNameSpecifier::TypeSpecWithTemplate:
@@ -498,6 +497,10 @@ public:
     return TraverseFunctionHelper(D);
   }
 
+  void NoInit() {
+      Kast::add(Kast::KApply("NoInit", Sort::NOINIT));
+  }
+
   bool TraverseVarHelper(VarDecl *D) {
     StorageClass(D->getStorageClass());
     ThreadStorageClass(D->getTSCSpec());
@@ -518,7 +521,7 @@ public:
     if (D->getInit()) {
       TRY_TO(TraverseStmt(D->getInit()));
     } else {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     VisitBool(D->isDirectInit());
     return true;
@@ -545,7 +548,7 @@ public:
     } else if (D->hasInClassInitializer()) {
       TRY_TO(TraverseStmt(D->getInClassInitializer()));
     } else {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     return true;
   }
@@ -1283,7 +1286,7 @@ public:
   bool VisitReturnStmt(ReturnStmt *S) {
     Kast::add(Kast::KApply("ReturnStmt", Sort::STMT, {Sort::INIT}));
     if (!S->getRetValue()) {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     return false;
   }
@@ -1344,10 +1347,11 @@ public:
   }
 
   bool TraverseIfStmt(IfStmt *S) {
-    Kast::add(Kast::KApply("IfAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT, Sort::ASTMT}));
     if (VarDecl *D = S->getConditionVariable()) {
+      Kast::add(Kast::KApply("IfAStmtD", Sort::ASTMT, {Sort::DECL, Sort::ASTMT, Sort::ASTMT}));
       TRY_TO(TraverseDecl(D));
     } else {
+      Kast::add(Kast::KApply("IfAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT, Sort::ASTMT}));
       TRY_TO(TraverseStmt(S->getCond()));
     }
     TRY_TO(TraverseStmt(S->getThen()));
@@ -1360,10 +1364,11 @@ public:
   }
 
   bool TraverseSwitchStmt(SwitchStmt *S) {
-    Kast::add(Kast::KApply("SwitchAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT}));
     if (VarDecl *D = S->getConditionVariable()) {
+      Kast::add(Kast::KApply("SwitchAStmtD", Sort::ASTMT, {Sort::DECL, Sort::ASTMT}));
       TRY_TO(TraverseDecl(D));
     } else {
+      Kast::add(Kast::KApply("SwitchAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
       TRY_TO(TraverseStmt(S->getCond()));
     }
     TRY_TO(TraverseStmt(S->getBody()));
@@ -1503,7 +1508,7 @@ public:
     switch (Kind) {
       #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
       case OO_##Name:                                                          \
-        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", Sort::OPID));                                 \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX_OpId", Sort::OPID));                                 \
         break;
       #include "clang/Basic/OperatorKinds.def"
       default:
@@ -1515,7 +1520,7 @@ public:
     switch (Kind) {
       #define UNARY_OP(Name, Spelling)         \
       case UO_##Name:                          \
-        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", Sort::OPID)); \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX_OpId", Sort::OPID)); \
         break;
       UNARY_OP(PostInc, "_++")
       UNARY_OP(PostDec, "_--")
@@ -1548,7 +1553,7 @@ public:
     switch (Kind) {
       #define BINARY_OP(Name, Spelling)        \
       case BO_##Name:                          \
-        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", Sort::OPID)); \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX_OpId", Sort::OPID)); \
         break;
       BINARY_OP(PtrMemD, ".*")
       BINARY_OP(PtrMemI, "->*")
@@ -1838,7 +1843,7 @@ public:
     if (E->hasInitializer()) {
       TRY_TO(TraverseStmt(E->getInitializer()));
     } else {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     KSeqList(E->getNumPlacementArgs());
     for (unsigned i = 0; i < E->getNumPlacementArgs(); i++) {
@@ -2022,7 +2027,7 @@ public:
 
   bool TraverseInitListExpr(InitListExpr *E) {
     InitListExpr *Syntactic = E->isSemanticForm() ? E->getSyntacticForm() ? E->getSyntacticForm() : E : E;
-    Kast::add(Kast::KApply("BraceInit", Sort::BRACEINIT, {Sort::LIST}));
+    Kast::add(Kast::KApply("BraceInit", Sort::INIT, {Sort::LIST}));
     KSeqList(Syntactic->getNumInits());
     for (Stmt *SubStmt : Syntactic->children()) {
       TRY_TO(TraverseStmt(SubStmt));
