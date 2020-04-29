@@ -26,6 +26,7 @@ module C-MEMORY-WRITING-SYNTAX
      syntax List ::= splitBytes(RValue) [function, klabel(splitBytesC)]
 
      syntax List ::= splitPartialBytes(RValue) [function, klabel(splitPartialBytesC)]
+     syntax List ::= partialBytesToBytes(List) [function, klabel(partialBytesToBytesC)]
 
      // No null terminator.
      syntax KItem ::= writeChars(SymLoc, String)
@@ -291,6 +292,25 @@ module C-MEMORY-WRITING
           => makeUnknownBytes(splitPartialBytes(tv(I, T)))
      rule splitPartialBytes(tv(agg(L:List), structOrUnionUType #as T::UType))
           => splitStructPartialBytes(L, T, bitSizeofType(T))
+
+     rule partialBytesToBytes(L:List) => #partialBytesToBytes(L, piece(0, 0))
+
+     syntax List ::= #partialBytesToBytes(List, Bits) [function]
+     rule #partialBytesToBytes(ListItem(piece(I:Int, PieceLen:Int)) L:List, piece(Previous:Int, PreviousLen:Int))
+          => #partialBytesToBytes(L, piece(Previous +Int (I *Int (2 ^Int PreviousLen)), PieceLen +Int PreviousLen))
+          requires PieceLen +Int PreviousLen <Int cfg:bitsPerByte
+     rule #partialBytesToBytes(ListItem(piece(I:Int, PieceLen:Int)) L:List, piece(Previous:Int, PreviousLen:Int))
+          =>  ListItem(piece((Previous +Int (I *Int (2 ^Int PreviousLen))) %Int (2 ^Int cfg:bitsPerByte), cfg:bitsPerByte))
+              #partialBytesToBytes(
+                   L,
+                   piece(
+                        I /Int (2 ^Int (cfg:bitsPerByte -Int PreviousLen)), 
+                        PieceLen +Int PreviousLen -Int cfg:bitsPerByte))
+          requires PieceLen +Int PreviousLen >=Int cfg:bitsPerByte
+     rule #partialBytesToBytes(.List, piece(_, 0)) => .List
+     rule #partialBytesToBytes(ListItem(piece(Item, PieceLen:Int)) L:List, piece(Previous:Int, PreviousLen:Int))
+          => ListItem(piece(Item, PieceLen:Int)) #partialBytesToBytes(L, piece(0, 0))
+          requires PreviousLen ==Int 0 andBool PieceLen ==Int cfg:bitsPerByte andBool notBool isInt(Item)
 
      syntax List ::= makeUnknownBytes(List) [function]
      rule makeUnknownBytes(ListItem(piece(I:Int, PieceLen:Int)) L::List)
