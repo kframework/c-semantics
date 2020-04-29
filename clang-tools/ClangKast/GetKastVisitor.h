@@ -564,21 +564,16 @@ public:
   }
 
   void VisitAccessSpecifier(AccessSpecifier Spec) {
-    const char *spec;
-    switch (Spec) {
-      case AS_public:
-        spec = "Public";
-        break;
-      case AS_protected:
-        spec = "Protected";
-        break;
-      case AS_private:
-        spec = "Private";
-        break;
-      case AS_none:
-        spec = "NoAccessSpec";
-        break;
-    }
+    const char * const spec = [&]{
+      switch (Spec) {
+        case AS_public:    return "Public";
+        case AS_protected: return "Protected";
+        case AS_private:   return "Private";
+        case AS_none:      return "NoAccessSpec";
+      }
+      assert(false && "Unknown access specifier");
+      return (const char *)nullptr;
+    }();
     Kast::add(Kast::KApply(spec, Sort::ACCESSSPECIFIER));
   }
 
