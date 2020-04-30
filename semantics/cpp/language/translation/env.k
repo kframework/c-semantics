@@ -17,7 +17,7 @@ module CPP-TRANSLATION-ENV-SYNTAX
 
      syntax KItem ::= "pushLocals" | "popLocals"
 
-     syntax KItem ::= updateDefaultArguments(QualId, CPPType, DefaultArguments) [strict(3)]
+     syntax KItem ::= updateDefaultArguments(QualId, CPPType, DefaultArguments)
 
      syntax List ::= getDefaultArgsVals(DefaultArgumentsResult) [function]
 
@@ -41,6 +41,11 @@ module CPP-TRANSLATION-ENV
 
     rule updateDefaultArguments(_, T::CPPType, _) => .K
          requires notBool isCPPFunctionType(T)
+
+     // if T is not a function type, the HOLE evaluates to `krlist`,
+     // which is not of sort `DefaultArguments`
+     context updateDefaultArguments(_, T::CPPType, HOLE:DefaultArguments)
+          requires isCPPFunctionType(T)
 
     rule <k> addToEnv(N:Namespace :: X::CId, t(... st: functionType(...)) #as T::CPPType, Base::SymBase, IsUsing::Bool)
              => .K
