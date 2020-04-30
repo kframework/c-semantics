@@ -373,4 +373,7 @@ module LINKING-INIT
 
      rule hasTrace(_) => noTrace [anywhere]
 
+     rule <initializers> M => .Map </initializers>
+          requires M =/=K .Map [anywhere]
+
 endmodule
