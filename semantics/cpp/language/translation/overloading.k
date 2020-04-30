@@ -126,8 +126,7 @@ module CPP-TRANSLATION-OVERLOADING
      // strict version
      rule cSetUnion(notFound(_), E::Expr) => E
 
-     rule cSetUnion(E:KResult, notFound(_)) => E
-          requires notFound(_) :/=K E andBool cSet(_,_) :/=K E
+     rule cSetUnion(E::Expr, notFound(_)) => E
 
      rule cSetUnion(cSet(M1::Map, QX::QualId), cSet(M2::Map, QX)) => cSet(M1 M2, QX)
 
