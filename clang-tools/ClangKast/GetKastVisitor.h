@@ -455,7 +455,7 @@ public:
 
     if (D->isThisDeclarationADefinition()) {
       if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
-        Kast::add(Kast::KApply("Constructor", Sort::STMT, {Sort::LIST, Sort::STMT}));
+        Kast::add(Kast::KApply("Constructor", Sort::STMT, {Sort::LIST, Sort::ASTMT}));
         int i = 0;
         for (auto *I : Ctor->inits()) {
           if (I->isWritten()) i++;

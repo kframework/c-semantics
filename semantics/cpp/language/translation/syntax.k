@@ -214,7 +214,7 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax Stmt ::= Defaulted() [symbol]
                     | Deleted() [symbol]
-                    | Constructor(List, Stmt) [symbol]
+                    | Constructor(List, AStmt) [symbol]
                     | Destructor() [symbol]
 
      syntax CatchDecl ::= Decl | Ellipsis() [symbol]
