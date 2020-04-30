@@ -124,9 +124,9 @@ module CPP-TRANSLATION-OVERLOADING
      rule getArgs(Args::List, _, constructor, _) => Args
 
      // strict version
-     rule cSetUnion(notFound(_), E::Expr) => E
+     rule cSetUnion(notFound(_), E::KItem) => E
 
-     rule cSetUnion(E::Expr, notFound(_)) => E
+     rule cSetUnion(E::KItem, notFound(_)) => E
 
      rule cSetUnion(cSet(M1::Map, QX::QualId), cSet(M2::Map, QX)) => cSet(M1 M2, QX)
 
