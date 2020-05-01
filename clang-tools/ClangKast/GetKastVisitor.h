@@ -1444,19 +1444,23 @@ public:
 
   bool TraverseCallExpr(CallExpr *E) {
     Kast::add(Kast::KApply("CallExpr", Sort::RESOLVEDEXPR, {Sort::EXPR, Sort::STRICTLIST, Sort::STRICTLISTRESULT}));
-    unsigned i = 0;
-    for (Stmt *SubStmt : E->children()) {
-      i++;
-    }
-    if (i-1 != E->getNumArgs()) {
-      throw std::logic_error("unimplemented: pre_args???");
-    }
-    bool first = true;
-    for (Stmt *SubStmt : E->children()) {
-      TRY_TO(TraverseStmt(SubStmt));
-      if (first) List(i-1);
-      first = false;
-    }
+
+    // 1
+    TRY_TO(TraverseStmt(E->getCallee()));
+
+    // 2
+    Kast::add(Kast::KApply("list", Sort::STRICTLIST, {Sort::LIST}));
+	for (unsigned int i = 0; i < E->getNumArgs(); i++) {
+	    clang::Expr * arg = E->getArg(i);
+		if (!isa<CXXDefaultArgExpr>(arg)) {
+            Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
+            Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+            TRY_TO(TraverseStmt(arg));
+        }
+	}
+    Kast::add(Kast::KApply(".List", Sort::LIST));
+
+    // 3
     Kast::add(Kast::KApply("krlist", Sort::STRICTLISTRESULT, {Sort::LIST}));
     Kast::add(Kast::KApply(".List", Sort::LIST));
     return true;
