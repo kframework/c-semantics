@@ -295,22 +295,21 @@ module C-MEMORY-WRITING
 
      rule partialBytesToBytes(L:List) => #partialBytesToBytes(L, piece(0, 0))
 
+     syntax Int ::= byteMask() [function]
+     rule byteMask() => (1 <<Int cfg:bitsPerByte) -Int 1
+
      syntax List ::= #partialBytesToBytes(List, Bits) [function]
-     rule #partialBytesToBytes(ListItem(piece(I:Int, PieceLen:Int)) L:List, piece(Previous:Int, PreviousLen:Int))
-          => #partialBytesToBytes(L, piece(Previous +Int (I *Int (2 ^Int PreviousLen)), PieceLen +Int PreviousLen))
-          requires PieceLen +Int PreviousLen <Int cfg:bitsPerByte
-     rule #partialBytesToBytes(ListItem(piece(I:Int, PieceLen:Int)) L:List, piece(Previous:Int, PreviousLen:Int))
-          =>  ListItem(piece((Previous +Int (I *Int (2 ^Int PreviousLen))) %Int (2 ^Int cfg:bitsPerByte), cfg:bitsPerByte))
-              #partialBytesToBytes(
-                   L,
-                   piece(
-                        I /Int (2 ^Int (cfg:bitsPerByte -Int PreviousLen)), 
-                        PieceLen +Int PreviousLen -Int cfg:bitsPerByte))
-          requires PieceLen +Int PreviousLen >=Int cfg:bitsPerByte
-     rule #partialBytesToBytes(.List, piece(_, 0)) => .List
-     rule #partialBytesToBytes(ListItem(piece(Item, PieceLen:Int)) L:List, piece(Previous:Int, PreviousLen:Int))
-          => ListItem(piece(Item, PieceLen:Int)) #partialBytesToBytes(L, piece(0, 0))
+     rule #partialBytesToBytes(L:List, piece(Previous:Int, PreviousLen:Int))
+          => ListItem(piece(Previous &Int byteMask(), cfg:bitsPerByte))
+             #partialBytesToBytes(L, piece(Previous >>Int cfg:bitsPerByte, PreviousLen -Int cfg:bitsPerByte))
+          requires PreviousLen >=Int cfg:bitsPerByte
+     rule #partialBytesToBytes(ListItem(piece(Item:BitValue, _:Int) #as Current:Bits) L:List, piece(_:Int, PreviousLen:Int) #as Previous::Bits)
+          => #partialBytesToBytes(L, Previous bit:: Current)
+          requires PreviousLen <Int cfg:bitsPerByte andBool isInt(Item)
+     rule #partialBytesToBytes(ListItem(piece(Item:BitValue, PieceLen:Int) #as Current::Bits) L:List, piece(Previous:Int, PreviousLen:Int))
+          => ListItem(Current) #partialBytesToBytes(L, piece(0, 0))
           requires PreviousLen ==Int 0 andBool PieceLen ==Int cfg:bitsPerByte andBool notBool isInt(Item)
+     rule #partialBytesToBytes(.List, piece(_, 0)) => .List
 
      syntax List ::= makeUnknownBytes(List) [function]
      rule makeUnknownBytes(ListItem(piece(I:Int, PieceLen:Int)) L::List)
