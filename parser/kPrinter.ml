@@ -12,8 +12,16 @@ type printer_state =
   ; buffer : Buffer.t
   }
 
+and ('a, 'value) arg_printer = 'a -> 'value printer
+
 (* State monad. *)
-and 'a printer = printer_state -> ('a * printer_state)
+and 'value printer =
+  | Printer of (printer_state -> 'value * printer_state)
+  | LazyPrinter : ('a, 'value) arg_printer * 'a -> 'value printer
+
+let rec apply_printer (printer: 'a printer) (s: printer_state) : 'a * printer_state = match printer with
+  | Printer p -> p s
+  | LazyPrinter (p, a) -> apply_printer (p a) s
 
 type attribute = Attrib of string * string
 
@@ -58,34 +66,35 @@ let csort_to_string : csort -> string = function
   | IntConstant           -> "IntConstant"
 
 (* Getting/setting state. *)
-let return (a : 'a) : 'a printer = fun s -> (a, s)
+let return (a : 'a) : 'a printer = Printer (fun s -> (a, s))
 
-let (>>=) (m : 'a printer) (f : 'a -> 'b printer) : 'b printer = fun s ->
-  let (a_intr, s_intr) = m s in
-  (f a_intr) s_intr
+let (>>=) (m : 'a printer) (f : 'a -> 'b printer) : 'b printer = 
+  Printer (fun s ->
+    let (a_intr, s_intr) = apply_printer m s in
+    apply_printer (f a_intr) s_intr)
 
 let (>>) ma mb = ma >>= fun _ -> mb
 
-let puts (str : string) : unit printer = fun s -> (Buffer.add_string s.buffer str, s)
+let puts (str : string) : unit printer = Printer (fun s -> (Buffer.add_string s.buffer str, s))
 
 let save_string_literal (str : csort -> unit printer) (sort : csort) : unit printer =
-  str sort >> fun s -> ((), {s with string_literals = str sort :: s.string_literals})
+  str sort >> Printer (fun s ->((), {s with string_literals = str sort :: s.string_literals}))
 
-let get_string_literals : ((unit printer) list) printer = fun s -> (s.string_literals, s)
+let get_string_literals : ((unit printer) list) printer = Printer (fun s -> (s.string_literals, s))
 
-let new_counter : int printer = fun s -> (s.counter + 1, {s with counter = s.counter + 1})
+let new_counter : int printer = Printer (fun s -> (s.counter + 1, {s with counter = s.counter + 1}))
 
-let push_switch : int printer = new_counter >>= fun counter s ->
-  (counter, {s with switch_stack = s.current_switch_id :: s.switch_stack; current_switch_id = counter})
+let push_switch : int printer = new_counter >>= fun counter -> Printer (fun s ->
+    (counter, {s with switch_stack = s.current_switch_id :: s.switch_stack; current_switch_id = counter}))
 
-let pop_switch : unit printer = fun s ->
-  ((), {s with switch_stack = List.tl s.switch_stack; current_switch_id = List.hd s.switch_stack})
+let pop_switch : unit printer = Printer (fun s ->
+  ((), {s with switch_stack = List.tl s.switch_stack; current_switch_id = List.hd s.switch_stack}))
 
-let current_switch : int printer = fun s -> (s.current_switch_id, s)
+let current_switch : int printer = Printer (fun s -> (s.current_switch_id, s))
 
 (* Branch on whether kore is set. *)
-let if_kore (kore_true : 'a printer) (kore_false : 'a printer) : 'a printer = fun s ->
-   if s.kore then kore_true s else kore_false s
+let if_kore (kore_true : 'a printer) (kore_false : 'a printer) : 'a printer =
+  Printer (fun s -> apply_printer (if s.kore then kore_true else kore_false) s)
 
 let if_kore_strict (kore_true : 'a) (kore_false : 'a) : 'a printer =
   if_kore
@@ -220,11 +229,13 @@ let kapply0 (subsort : csort) (label : string) : csort -> unit printer =
 let kapply1 (subsort : csort) (label : string) (contents : unit printer) : csort -> unit printer =
   kapply subsort label [contents]
 
-let list_of (f : 'a -> csort -> unit printer) (elems : 'a list) : csort -> unit printer =
-  let op k l = kapply_us "_List_" [k; l] in
-  let dot_list : unit printer = kapply0 KItem ".List" KItem in
-  let items = List.map (fun x -> kapply1 KItem "ListItem" (f x KItem) KItem) elems in
-  kapply1 StrictList "list" (List.fold_right op items dot_list)
+let list_of (f : 'a -> csort -> unit printer) (elems : 'a list) (sort: csort) : unit printer =
+  let rec helper elem_list = match elem_list with
+    [] -> kapply0 KItem ".List" KItem
+    | elem :: remainder ->
+      kapply KItem "_List_" [kapply1 KItem "ListItem" (f elem KItem) KItem; LazyPrinter (helper, remainder)] sort
+    in
+  kapply1 StrictList "list" (LazyPrinter (helper, elems)) sort
 
 (* This is where the recursive printer starts. *)
 
@@ -564,10 +575,12 @@ and statement =
 
 let translation_unit (filename : string) (defs : definition list) (s : printer_state) =
   (* Finangling here to extract string literals. *)
-  let (_, s_intr) = list_of definition defs StrictList s in
+  let (_, s_intr) = apply_printer (list_of definition defs StrictList) s in
   let strings s   = get_string_literals >>= fun strings -> list_of (kapply1 KItem "Constant") strings s in
-  let ast         = fun s -> (Buffer.add_buffer s.buffer s_intr.buffer; ((), s)) in
-  kapply KItem "TranslationUnit" [ktoken_string filename String; strings StrictList; ast] KItem {s_intr with buffer = Buffer.create 100}
+  let ast         = Printer (fun s -> (Buffer.add_buffer s.buffer s_intr.buffer; ((), s))) in
+  apply_printer
+    (kapply KItem "TranslationUnit" [ktoken_string filename String; strings StrictList; ast] KItem)
+    {s_intr with buffer = Buffer.create 100}
 
 let cabs_to_kast (defs : definition list) (filename : string) : Buffer.t =
   let (_, final_state) = translation_unit filename defs init_state in
