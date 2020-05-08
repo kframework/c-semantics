@@ -17,11 +17,11 @@ and ('a, 'value) arg_printer = 'a -> 'value printer
 (* State monad. *)
 and 'value printer =
   | Printer of (printer_state -> 'value * printer_state)
-  | Unapplied : ('a, 'value) arg_printer * 'a -> 'value printer
+  | LazyPrinter : ('a, 'value) arg_printer * 'a -> 'value printer
 
 let rec apply_printer (printer: 'a printer) (s: printer_state) : 'a * printer_state = match printer with
   | Printer p -> p s
-  | Unapplied (p, a) -> apply_printer (p a) s
+  | LazyPrinter (p, a) -> apply_printer (p a) s
 
 type attribute = Attrib of string * string
 
@@ -233,9 +233,9 @@ let list_of (f : 'a -> csort -> unit printer) (elems : 'a list) (sort: csort) : 
   let rec helper elem_list = match elem_list with
     [] -> kapply0 KItem ".List" KItem
     | elem :: remainder ->
-      kapply KItem "_List_" [kapply1 KItem "ListItem" (f elem KItem) KItem; Unapplied (helper, remainder)] sort
+      kapply KItem "_List_" [kapply1 KItem "ListItem" (f elem KItem) KItem; LazyPrinter (helper, remainder)] sort
     in
-  kapply1 StrictList "list" (Unapplied (helper, elems)) sort
+  kapply1 StrictList "list" (LazyPrinter (helper, elems)) sort
 
 (* This is where the recursive printer starts. *)
 
