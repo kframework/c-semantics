@@ -359,7 +359,7 @@ let rec specifier_elem : Cabs.spec_elem -> csort -> unit printer = function
     | CV_ATOMIC                      -> kapply0 Qualifier "Atomic"
     | CV_RESTRICT                    -> kapply0 Qualifier "Restrict"
     | CV_RESTRICT_RESERVED (kwd,loc) -> kapply Qualifier "RestrictReserved" [ktoken_string kwd String; cabs_loc loc CabsLoc])
-  | SpecAttr (a, b)  -> kapply KItem "Attribute" [ktoken_string a String; list_of expression b StrictList]
+  | SpecAttr (a, b)  -> kapply KItem "Attribute" [ktoken_string a String; list_of lazy_expression b StrictList]
   | SpecStorage sto  -> (match sto with
     | NO_STORAGE                     -> kapply0 StorageClassSpecifier "NoStorage"
     | THREAD_LOCAL                   -> kapply0 StorageClassSpecifier "ThreadLocal"
@@ -370,39 +370,47 @@ let rec specifier_elem : Cabs.spec_elem -> csort -> unit printer = function
   | SpecInline       -> kapply0 FunctionSpecifier "Inline"
   | SpecNoReturn     -> kapply0 FunctionSpecifier "Noreturn"
   | SpecAlignment a  -> (match a with
-    | EXPR_ALIGNAS e                 -> kapply SpecifierElem "AlignasExpression" [expression e KItem]
-    | TYPE_ALIGNAS (s, d)            -> kapply SpecifierElem "AlignasType" [specifier s KItem; decl_type d KItem])
-  | SpecType bt      -> type_spec bt
+    | EXPR_ALIGNAS e                 -> kapply SpecifierElem "AlignasExpression" [lazy_expression e KItem]
+    | TYPE_ALIGNAS (s, d)            -> kapply SpecifierElem "AlignasType" [lazy_specifier s KItem; lazy_decl_type d KItem])
+  | SpecType bt      -> lazy_type_spec bt
   | SpecPattern n    -> kapply SpecifierElem "SpecPattern" [identifier n CId]
-and specifier a = kapply Specifier "Specifier" [list_of specifier_elem a StrictList]
-and name (a, b, c, d) = kapply KItem "Name" [identifier a CId; decl_type b KItem; list_of specifier_elem c KItem]
-and single_name (a, b) = kapply KItem "SingleName" [specifier a KItem; name b KItem]
+and lazy_specifier_elem = fun a sort -> LazyPrinter ((fun aa -> specifier_elem aa sort), a)
+and specifier a = kapply Specifier "Specifier" [list_of lazy_specifier_elem a StrictList]
+and lazy_specifier = fun a sort -> LazyPrinter ((fun aa -> specifier aa sort), a)
+and name (a, b, c, d) = kapply KItem "Name" [identifier a CId; lazy_decl_type b KItem; list_of lazy_specifier_elem c KItem]
+and lazy_name = fun a sort -> LazyPrinter ((fun aa -> name aa sort), a)
+and single_name (a, b) = kapply KItem "SingleName" [lazy_specifier a KItem; lazy_name b KItem]
+and lazy_single_name = fun a sort -> LazyPrinter ((fun aa -> single_name aa sort), a)
 and init_expression = function
   | NO_INIT         -> kapply0 NoInit "NoInit"
-  | SINGLE_INIT exp -> kapply KItem "SingleInit" [expression exp KItem]
-  | COMPOUND_INIT a -> kapply KItem "CompoundInit" [list_of init_fragment a StrictList]
+  | SINGLE_INIT exp -> kapply KItem "SingleInit" [lazy_expression exp KItem]
+  | COMPOUND_INIT a -> kapply KItem "CompoundInit" [list_of lazy_init_fragment a StrictList]
+and lazy_init_expression = fun a sort -> LazyPrinter ((fun aa -> init_expression aa sort), a)
 and init_fragment (a, b) =
   let rec init_what = function
     | NEXT_INIT                      -> kapply0 KResult "NextInit"
     | INFIELD_INIT (id, what)        -> kapply KResult "InFieldInit" [identifier id CId; init_what what KItem]
-    | ATINDEX_INIT (exp, what)       -> kapply KResult "AtIndexInit" [expression exp K; init_what what KItem]
-    | ATINDEXRANGE_INIT (exp1, exp2) -> kapply KResult "AtIndexRangeInit" [expression exp1 KItem; expression exp2 KItem] in
-  kapply KItem "InitFragment" [init_what a KItem; init_expression b KItem]
+    | ATINDEX_INIT (exp, what)       -> kapply KResult "AtIndexInit" [lazy_expression exp K; init_what what KItem]
+    | ATINDEXRANGE_INIT (exp1, exp2) -> kapply KResult "AtIndexRangeInit" [lazy_expression exp1 KItem; lazy_expression exp2 KItem] in
+  kapply KItem "InitFragment" [init_what a KItem; lazy_init_expression b KItem]
+and lazy_init_fragment = fun a sort -> LazyPrinter ((fun aa -> init_fragment aa sort), a)
 and block a sort = new_counter >>= fun blockNum ->
-  kapply KItem "Block3" [ktoken_int blockNum Int; list_of ktoken_string a.blabels StrictList; list_of statement a.bstmts StrictList] sort
+  kapply KItem "Block3" [ktoken_int blockNum Int; list_of ktoken_string a.blabels StrictList; list_of lazy_statement a.bstmts StrictList] sort
+and lazy_block = fun a sort -> LazyPrinter ((fun aa -> block aa sort), a)
 
 and decl_type = function
   | JUSTBASE            -> kapply0 KItem "JustBase"
-  | PARENTYPE (a, b, c) -> kapply KItem "FunctionType" [decl_type b KItem]
-  | ARRAY (a, b, c, d)  -> kapply KItem "ArrayType" [decl_type a KItem; expression c K; specifier (b@d) KItem]
-  | PTR (a, b)          -> kapply KItem "PointerType" [specifier a Specifier; decl_type b KItem]
-  | PROTO (a, b, c)     -> kapply KItem "Prototype" [decl_type a KItem; list_of single_name b StrictList; ktoken_bool c Bool]
-  | NOPROTO (a, b, c)   -> kapply KItem "NoPrototype" [decl_type a KItem; list_of single_name b StrictList; ktoken_bool c Bool]
+  | PARENTYPE (a, b, c) -> kapply KItem "FunctionType" [lazy_decl_type b KItem]
+  | ARRAY (a, b, c, d)  -> kapply KItem "ArrayType" [lazy_decl_type a KItem; lazy_expression c K; lazy_specifier (b@d) KItem]
+  | PTR (a, b)          -> kapply KItem "PointerType" [lazy_specifier a Specifier; lazy_decl_type b KItem]
+  | PROTO (a, b, c)     -> kapply KItem "Prototype" [lazy_decl_type a KItem; list_of lazy_single_name b StrictList; ktoken_bool c Bool]
+  | NOPROTO (a, b, c)   -> kapply KItem "NoPrototype" [lazy_decl_type a KItem; list_of lazy_single_name b StrictList; ktoken_bool c Bool]
+and lazy_decl_type = fun a sort -> LazyPrinter ((fun aa -> decl_type aa sort), a)
 
 and expression =
   let generic_assoc = function
-    | GENERIC_PAIR ((spec, declType), exp) -> kapply KItem "GenericPair" [specifier spec KItem; decl_type declType KItem; expression exp KItem]
-    | GENERIC_DEFAULT exp                  -> kapply KItem "GenericDefault" [expression exp KItem] in
+    | GENERIC_PAIR ((spec, declType), exp) -> kapply KItem "GenericPair" [lazy_specifier spec KItem; lazy_decl_type declType KItem; lazy_expression exp KItem]
+    | GENERIC_DEFAULT exp                  -> kapply KItem "GenericDefault" [lazy_expression exp KItem] in
   let unary_expression op exp =
     let unary_operator = function
       | MINUS   -> "Negative"
@@ -415,7 +423,7 @@ and expression =
       | PREDECR -> "PreDecrement"
       | POSINCR -> "PostIncrement"
       | POSDECR -> "PostDecrement" in
-    kapply KItem (unary_operator op) [expression exp KItem] in
+    kapply KItem (unary_operator op) [lazy_expression exp KItem] in
   let binary_expression op exp1 exp2 =
     let binary_operator = function
       | MUL         -> "Multiply"
@@ -447,55 +455,56 @@ and expression =
       | XOR_ASSIGN  -> "AssignBitwiseXor"
       | SHL_ASSIGN  -> "AssignLeftShift"
       | SHR_ASSIGN  -> "AssignRightShift" in
-    kapply KItem (binary_operator op) [expression exp1 KItem; expression exp2 KItem] in
+    kapply KItem (binary_operator op) [lazy_expression exp1 KItem; lazy_expression exp2 KItem] in
   function
-    | OFFSETOF ((spec, declType), exp, loc)                      -> kapply KItem "OffsetOf" [specifier spec KItem; decl_type declType KItem; expression exp KItem]
-    | TYPES_COMPAT ((spec1, declType1), (spec2, declType2), loc) -> kapply KItem "TypesCompat" [specifier spec1 KItem; decl_type declType1 KItem; specifier spec2 KItem; decl_type declType2 KItem]
-    | GENERIC (exp, assocs)                                      -> kapply KItem "Generic" [expression exp K; list_of generic_assoc assocs StrictList]
-    | LOCEXP (exp, loc)                                          -> expression exp
+    | OFFSETOF ((spec, declType), exp, loc)                      -> kapply KItem "OffsetOf" [lazy_specifier spec KItem; lazy_decl_type declType KItem; lazy_expression exp KItem]
+    | TYPES_COMPAT ((spec1, declType1), (spec2, declType2), loc) -> kapply KItem "TypesCompat" [lazy_specifier spec1 KItem; lazy_decl_type declType1 KItem; lazy_specifier spec2 KItem; lazy_decl_type declType2 KItem]
+    | GENERIC (exp, assocs)                                      -> kapply KItem "Generic" [lazy_expression exp K; list_of generic_assoc assocs StrictList]
+    | LOCEXP (exp, loc)                                          -> lazy_expression exp
     | UNARY (op, exp1)                                           -> unary_expression op exp1
     | BINARY (op, exp1, exp2)                                    -> binary_expression op exp1 exp2
     | NOTHING                                                    -> kapply0 KItem "NothingExpression"
     | UNSPECIFIED                                                -> kapply0 RValue "UnspecifiedSizeExpression"
-    | PAREN (exp1)                                               -> expression exp1
-    | QUESTION (exp1, exp2, exp3)                                -> kapply KItem "Conditional" [expression exp1 KItem; expression exp2 KItem; expression exp3 KItem]
+    | PAREN (exp1)                                               -> lazy_expression exp1
+    | QUESTION (exp1, exp2, exp3)                                -> kapply KItem "Conditional" [lazy_expression exp1 KItem; lazy_expression exp2 KItem; lazy_expression exp3 KItem]
     (* Special case below for the compound literals. I don't know why this isn't in the ast... *)
     | CAST ((spec, declType), initExp)                           -> fun sort -> (new_counter >>= fun id -> match initExp with
         | NO_INIT         -> kapply1 KItem "Error" (puts "cast with a NO_INIT inside doesn't make sense") sort
-        | SINGLE_INIT exp -> kapply KItem "Cast" [specifier spec K; decl_type declType KItem; expression exp K] sort
-        | COMPOUND_INIT a -> kapply KItem "CompoundLiteral" [ktoken_int id Int; specifier spec KItem; decl_type declType KItem; kapply KItem "CompoundInit" [list_of init_fragment a StrictList] KItem] sort)
-    | CALL (exp1, expList)                                       -> kapply KItem "Call" [expression exp1 KItem; list_of expression expList KItem]
-    | COMMA expList                                              -> kapply KItem "Comma" [list_of expression expList StrictList]
+        | SINGLE_INIT exp -> kapply KItem "Cast" [lazy_specifier spec K; lazy_decl_type declType KItem; lazy_expression exp K] sort
+        | COMPOUND_INIT a -> kapply KItem "CompoundLiteral" [ktoken_int id Int; lazy_specifier spec KItem; lazy_decl_type declType KItem; kapply KItem "CompoundInit" [list_of lazy_init_fragment a StrictList] KItem] sort)
+    | CALL (exp1, expList)                                       -> kapply KItem "Call" [lazy_expression exp1 KItem; list_of lazy_expression expList KItem]
+    | COMMA expList                                              -> kapply KItem "Comma" [list_of lazy_expression expList StrictList]
     | CONSTANT (const)                                           -> kapply KItem "Constant" [constant const KItem]
-    | VARIABLE name                                              -> identifier name
-    | EXPR_SIZEOF exp                                            -> kapply KItem "SizeofExpression" [expression exp K]
-    | TYPE_SIZEOF (spec, declType)                               -> kapply KItem "SizeofType" [specifier spec KItem; decl_type declType K]
-    | EXPR_ALIGNOF exp                                           -> kapply KItem "AlignofExpression" [expression exp KItem]
-    | TYPE_ALIGNOF (spec, declType)                              -> kapply KItem "AlignofType" [specifier spec KItem; decl_type declType KItem]
-    | INDEX (exp, idx)                                           -> kapply KItem "ArrayIndex" [expression exp KItem; expression idx KItem]
-    | MEMBEROF (exp, fld)                                        -> kapply KItem "Dot" [expression exp KItem; identifier fld CId]
-    | MEMBEROFPTR (exp, fld)                                     -> kapply KItem "Arrow" [expression exp KItem; identifier fld CId]
-    | GNU_BODY blk                                               -> kapply KItem "GnuBody" [block blk KItem]
-    | BITMEMBEROF (exp, fld)                                     -> kapply KItem "DotBit" [expression exp KItem; identifier fld CId]
+    | VARIABLE lazy_name                                              -> identifier lazy_name
+    | EXPR_SIZEOF exp                                            -> kapply KItem "SizeofExpression" [lazy_expression exp K]
+    | TYPE_SIZEOF (spec, declType)                               -> kapply KItem "SizeofType" [lazy_specifier spec KItem; lazy_decl_type declType K]
+    | EXPR_ALIGNOF exp                                           -> kapply KItem "AlignofExpression" [lazy_expression exp KItem]
+    | TYPE_ALIGNOF (spec, declType)                              -> kapply KItem "AlignofType" [lazy_specifier spec KItem; lazy_decl_type declType KItem]
+    | INDEX (exp, idx)                                           -> kapply KItem "ArrayIndex" [lazy_expression exp KItem; lazy_expression idx KItem]
+    | MEMBEROF (exp, fld)                                        -> kapply KItem "Dot" [lazy_expression exp KItem; identifier fld CId]
+    | MEMBEROFPTR (exp, fld)                                     -> kapply KItem "Arrow" [lazy_expression exp KItem; identifier fld CId]
+    | GNU_BODY blk                                               -> kapply KItem "GnuBody" [lazy_block blk KItem]
+    | BITMEMBEROF (exp, fld)                                     -> kapply KItem "DotBit" [lazy_expression exp KItem; identifier fld CId]
     | EXPR_PATTERN s                                             -> kapply KItem "ExpressionPattern" [ktoken_string s String]
+and lazy_expression = fun a sort -> LazyPrinter ((fun aa -> expression aa sort), a)
 
 and type_spec =
   let field (n, expOpt) = match expOpt with
-    | None     -> kapply KItem "FieldName" [name n KItem]
-    | Some exp -> kapply KItem "BitFieldName" [name n KItem; expression exp KItem] in
-  let field_group (spec, fields) = kapply KItem "FieldGroup" [specifier spec KItem; list_of field fields StrictList] in
+    | None     -> kapply KItem "FieldName" [lazy_name n KItem]
+    | Some exp -> kapply KItem "BitFieldName" [lazy_name n KItem; lazy_expression exp KItem] in
+  let field_group (spec, fields) = kapply KItem "FieldGroup" [lazy_specifier spec KItem; list_of field fields StrictList] in
   let struct_type a c = function
-    | None   -> kapply TypeSpecifier "StructRef" [identifier a CId; list_of specifier_elem c K]
-    | Some b -> kapply TypeSpecifier "StructDef" [identifier a CId; list_of field_group b K; list_of specifier_elem c StrictList] in
+    | None   -> kapply TypeSpecifier "StructRef" [identifier a CId; list_of lazy_specifier_elem c K]
+    | Some b -> kapply TypeSpecifier "StructDef" [identifier a CId; list_of field_group b K; list_of lazy_specifier_elem c StrictList] in
   let union_type a c = function
-    | None   -> kapply TypeSpecifier "UnionRef" [identifier a CId; list_of specifier_elem c K]
-    | Some b -> kapply TypeSpecifier "UnionDef" [identifier a CId; list_of field_group b K; list_of specifier_elem c StrictList] in
+    | None   -> kapply TypeSpecifier "UnionRef" [identifier a CId; list_of lazy_specifier_elem c K]
+    | Some b -> kapply TypeSpecifier "UnionDef" [identifier a CId; list_of field_group b K; list_of lazy_specifier_elem c StrictList] in
   let enum_item (str, exp, _) = match exp with
     | NOTHING -> kapply KItem "EnumItem" [identifier str CId]
-    | exp     -> kapply KItem "EnumItemInit" [identifier str CId; expression exp K] in
+    | exp     -> kapply KItem "EnumItemInit" [identifier str CId; lazy_expression exp K] in
   let enum_type a c = function
-    | None   -> kapply TypeSpecifier "EnumRef" [identifier a CId; list_of specifier_elem c K]
-    | Some b -> kapply TypeSpecifier "EnumDef" [identifier a CId; list_of enum_item b K; list_of specifier_elem c StrictList] in
+    | None   -> kapply TypeSpecifier "EnumRef" [identifier a CId; list_of lazy_specifier_elem c K]
+    | Some b -> kapply TypeSpecifier "EnumDef" [identifier a CId; list_of enum_item b K; list_of lazy_specifier_elem c StrictList] in
   function
     | Tvoid             -> kapply0 TypeSpecifier "Void"
     | Tchar             -> kapply0 TypeSpecifier "Char"
@@ -513,69 +522,72 @@ and type_spec =
     | Tstruct (a, b, c) -> struct_type a c b
     | Tunion (a, b, c)  -> union_type a c b
     | Tenum (a, b, c)   -> enum_type a c b
-    | TtypeofE e        -> kapply SpecifierElem "TypeofExpression" [expression e KItem]
-    | TtypeofT (s, d)   -> kapply SpecifierElem "TypeofType" [specifier s KItem; decl_type d KItem]
+    | TtypeofE e        -> kapply SpecifierElem "TypeofExpression" [lazy_expression e KItem]
+    | TtypeofT (s, d)   -> kapply SpecifierElem "TypeofType" [lazy_specifier s KItem; lazy_decl_type d KItem]
     | TautoType         -> kapply0 TypeSpecifier "AutoType"
     | Tcomplex          -> kapply0 TypeSpecifier "Complex"
     | Timaginary        -> kapply0 TypeSpecifier "Imaginary"
-    | Tatomic (s, d)    -> kapply SpecifierElem "TAtomic" [specifier s KItem; decl_type d KItem]
+    | Tatomic (s, d)    -> kapply SpecifierElem "TAtomic" [lazy_specifier s KItem; lazy_decl_type d KItem]
+and lazy_type_spec = fun a sort -> LazyPrinter ((fun aa -> type_spec aa sort), a)
 
 and definition : definition -> csort -> unit printer =
   let definition_loc a l         = if l.lineno <> -10 then kapply KItem "DefinitionLoc" [a KItem; cabs_loc l CabsLoc] else a in
   let definition_loc_range a b c = kapply KItem "DefinitionLocRange" [a KItem; cabs_loc b CabsLoc; cabs_loc c CabsLoc] in
-  let init_name (a, b)           = kapply KItem "InitName" [name a KItem; init_expression b K] in
-  let init_name_group (a, b)     = kapply KItem "InitNameGroup" [specifier a KItem; list_of init_name b StrictList] in
-  let name_group (a, b)          = kapply KItem "NameGroup" [specifier a KItem; list_of name b StrictList] in
+  let init_name (a, b)           = kapply KItem "InitName" [lazy_name a KItem; lazy_init_expression b K] in
+  let init_name_group (a, b)     = kapply KItem "InitNameGroup" [lazy_specifier a KItem; list_of init_name b StrictList] in
+  let name_group (a, b)          = kapply KItem "NameGroup" [lazy_specifier a KItem; list_of lazy_name b StrictList] in
   function
-    | FUNDEF (a, b, c, d)     -> definition_loc_range (kapply KItem "FunctionDefinition" [single_name a KItem; block b KItem]) c d
+    | FUNDEF (a, b, c, d)     -> definition_loc_range (kapply KItem "FunctionDefinition" [lazy_single_name a KItem; lazy_block b KItem]) c d
     | DECDEF (a, b)           -> definition_loc (kapply KItem "DeclarationDefinition" [init_name_group a KItem]) b
     | TYPEDEF (a, b)          -> definition_loc (kapply KItem "Typedef" [name_group a KItem]) b
-    | ONLYTYPEDEF (a, b)      -> definition_loc (kapply KItem "OnlyTypedef" [specifier a KItem]) b
+    | ONLYTYPEDEF (a, b)      -> definition_loc (kapply KItem "OnlyTypedef" [lazy_specifier a KItem]) b
     | GLOBASM (a, b)          -> definition_loc (kapply KItem "GlobAsm" [ktoken_string a String]) b
-    | PRAGMA (a, b)           -> definition_loc (kapply KItem "Pragma" [expression a KItem]) b
-    | LINKAGE (a, b, c)       -> definition_loc (kapply KItem "Linkage" [ktoken_string a String; list_of definition c StrictList]) b
-    | STATIC_ASSERT (a, b, c) -> definition_loc (kapply KItem "StaticAssert" [expression a K; constant b KItem]) c
+    | PRAGMA (a, b)           -> definition_loc (kapply KItem "Pragma" [lazy_expression a KItem]) b
+    | LINKAGE (a, b, c)       -> definition_loc (kapply KItem "Linkage" [ktoken_string a String; list_of lazy_definition c StrictList]) b
+    | STATIC_ASSERT (a, b, c) -> definition_loc (kapply KItem "StaticAssert" [lazy_expression a K; constant b KItem]) c
+and lazy_definition = fun a sort -> LazyPrinter ((fun aa -> definition aa sort), a)
 
 and statement =
-  let block_statement blk = kapply KItem "BlockStatement" [block blk KItem] in
+  let block_statement blk = kapply KItem "BlockStatement" [lazy_block blk KItem] in
   let new_block_statement s = block_statement { blabels = []; battrs = []; bstmts = [s] } in
   let for_clause = function
-    | FC_EXP exp1  -> kapply1 KItem "ForClauseExpression" (expression exp1 KItem)
-    | FC_DECL dec1 -> definition dec1 in
+    | FC_EXP exp1  -> kapply1 KItem "ForClauseExpression" (lazy_expression exp1 KItem)
+    | FC_DECL dec1 -> lazy_definition dec1 in
   let statement_loc s l = kapply KItem "StatementLoc" [s KItem; cabs_loc l CabsLoc] in
   let for_statement fc1 exp2 exp3 stat sort = new_counter >>= fun counter ->
-    kapply KItem "For5" [ktoken_int counter Int; for_clause fc1 KItem; expression exp2 K; expression exp3 K; new_block_statement stat K] sort in
+    kapply KItem "For5" [ktoken_int counter Int; for_clause fc1 KItem; lazy_expression exp2 K; lazy_expression exp3 K; new_block_statement stat K] sort in
   let switch exp stat sort = push_switch >>= fun id ->
-    kapply KItem "Switch" [ktoken_int id Int; expression exp K; new_block_statement stat K] sort
+    kapply KItem "Switch" [ktoken_int id Int; lazy_expression exp K; new_block_statement stat K] sort
     >> pop_switch in
   let case exp stat sort = current_switch >>= fun switch_id -> new_counter >>= fun case_id ->
-    kapply KItem "Case" [ktoken_int switch_id Int; ktoken_int case_id Int; expression exp K; statement stat K] sort in
+    kapply KItem "Case" [ktoken_int switch_id Int; ktoken_int case_id Int; lazy_expression exp K; lazy_statement stat K] sort in
   let default stat sort = current_switch >>= fun switch_id ->
-    kapply KItem "Default" [ktoken_int switch_id Int; statement stat K] sort in
+    kapply KItem "Default" [ktoken_int switch_id Int; lazy_statement stat K] sort in
   function
     | NOP loc                           -> statement_loc (kapply0 KItem "Nop") loc
-    | COMPUTATION (exp, loc)            -> statement_loc (kapply KItem "Computation" [expression exp K]) loc
+    | COMPUTATION (exp, loc)            -> statement_loc (kapply KItem "Computation" [lazy_expression exp K]) loc
     | BLOCK (blk, loc)                  -> statement_loc (block_statement blk) loc
-    | IF (exp, s1, s2, loc)             -> statement_loc (kapply KItem "IfThenElse" [expression exp K; new_block_statement s1 K; new_block_statement s2 K]) loc
-    | WHILE (exp, stat, loc)            -> statement_loc (kapply KItem "While" [expression exp K; new_block_statement stat K]) loc
-    | DOWHILE (exp, stat, loc, wloc)    -> statement_loc (kapply KItem "DoWhile3" [expression exp K; new_block_statement stat KItem; cabs_loc wloc CabsLoc]) loc
+    | IF (exp, s1, s2, loc)             -> statement_loc (kapply KItem "IfThenElse" [lazy_expression exp K; new_block_statement s1 K; new_block_statement s2 K]) loc
+    | WHILE (exp, stat, loc)            -> statement_loc (kapply KItem "While" [lazy_expression exp K; new_block_statement stat K]) loc
+    | DOWHILE (exp, stat, loc, wloc)    -> statement_loc (kapply KItem "DoWhile3" [lazy_expression exp K; new_block_statement stat KItem; cabs_loc wloc CabsLoc]) loc
     | FOR (fc1, exp2, exp3, stat, loc)  -> statement_loc (for_statement fc1 exp2 exp3 stat) loc
     | BREAK loc                         -> statement_loc (kapply0 KItem "Break") loc
     | CONTINUE loc                      -> statement_loc (kapply0 KItem "Continue") loc
-    | RETURN (exp, loc)                 -> statement_loc (kapply KItem "Return" [expression exp K]) loc
+    | RETURN (exp, loc)                 -> statement_loc (kapply KItem "Return" [lazy_expression exp K]) loc
     | SWITCH (exp, stat, loc)           -> statement_loc (switch exp stat) loc
     | CASE (exp, stat, loc)             -> statement_loc (case exp stat) loc
-    | CASERANGE (exp1, exp2, stat, loc) -> statement_loc (kapply KItem "CaseRange" [expression exp1 KItem; expression exp2 KItem; statement stat KItem]) loc (* GCC's extension *)
+    | CASERANGE (exp1, exp2, stat, loc) -> statement_loc (kapply KItem "CaseRange" [lazy_expression exp1 KItem; lazy_expression exp2 KItem; lazy_statement stat KItem]) loc (* GCC's extension *)
     | DEFAULT (stat, loc)               -> statement_loc (default stat) loc
-    | LABEL (str, stat, loc)            -> statement_loc (kapply KItem "Label" [identifier str CId; statement stat K]) loc
-    | GOTO (name, loc)                  -> statement_loc (kapply KItem "Goto" [identifier name CId]) loc
-    | COMPGOTO (exp, loc)               -> statement_loc (kapply KItem "CompGoto" [expression exp KItem]) loc (* GCC's "goto *exp" *)
-    | DEFINITION d                      -> definition d
+    | LABEL (str, stat, loc)            -> statement_loc (kapply KItem "Label" [identifier str CId; lazy_statement stat K]) loc
+    | GOTO (lazy_name, loc)                  -> statement_loc (kapply KItem "Goto" [identifier lazy_name CId]) loc
+    | COMPGOTO (exp, loc)               -> statement_loc (kapply KItem "CompGoto" [lazy_expression exp KItem]) loc (* GCC's "goto *exp" *)
+    | DEFINITION d                      -> lazy_definition d
     | _                                 -> kapply0 KItem "OtherStatement"
+and lazy_statement = fun a sort -> LazyPrinter ((fun aa -> statement aa sort), a)
 
 let translation_unit (filename : string) (defs : definition list) (s : printer_state) =
   (* Finangling here to extract string literals. *)
-  let (_, s_intr) = apply_printer (list_of definition defs StrictList) s in
+  let (_, s_intr) = apply_printer (list_of lazy_definition defs StrictList) s in
   let strings s   = get_string_literals >>= fun strings -> list_of (kapply1 KItem "Constant") strings s in
   let ast         = Printer (fun s -> (Buffer.add_buffer s.buffer s_intr.buffer; ((), s))) in
   apply_printer
