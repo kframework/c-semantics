@@ -56,7 +56,7 @@ module CPP-EXECUTION-TEMPORARY
      rule <k> (.K => destructLocal(IsException, Entry))
               ~> destructTemporaries(IsException:Bool)
           ...</k>
-          <constructed-temporaries> ListItem(Entry::KTuple) => .List ...</constructed-temporaries>
+          <constructed-temporaries> ListItem(Entry::KItem) => .List ...</constructed-temporaries>
 
      rule <k> destructTemporaries(...) => .K ...</k>
           <constructed-temporaries> .List </constructed-temporaries>

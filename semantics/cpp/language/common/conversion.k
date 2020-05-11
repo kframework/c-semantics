@@ -6,9 +6,7 @@ module CPP-CONVERSION-SYNTAX
      syntax Expr ::= instantiate(SymLoc, Trace, CPPType) [klabel(instantiateCpp)]
 
      // performs standard type conversions only
-     syntax PRVal ::= convertType(CPPType, PRVal) [function]
-
-     syntax PRExpr ::= convertType(CPPType, PRExpr) [function]
+     syntax Expr ::= convertType(CPPType, Expr) [function]
 
      syntax Expr ::= convertTypeHold(CPPType, Expr)
 
@@ -216,7 +214,7 @@ module CPP-CONVERSION
           requires X1 ==Type X2 andBool isSimilar(T1, T2)
                andBool cvQualificationSignature(T1) <=QualSig cvQualificationSignature(T2)
 
-     rule convertType(_::CPPType, _::PRExpr) => cannot-convert [owise]
+     rule convertType(_::CPPType, _:PRExpr) => cannot-convert [owise]
 
      rule isSimilar(t(_, _, pointerType(T1::CPPType)), t(_, _, pointerType(T2::CPPType)))
           => isSimilar(T1, T2)

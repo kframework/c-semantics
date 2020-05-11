@@ -224,22 +224,21 @@ public:
       Kast::add(Kast::KApply("NestedName", Sort::NNS, {Sort::NNS, Sort::NNSSPECIFIER}));
       TRY_TO(TraverseNestedNameSpecifier(NNS->getPrefix()));
     }
-    auto nns = Kast::KApply("NNS", Sort::NNSSPECIFIER, {Sort::CID});
     switch (NNS->getKind()) {
       case NestedNameSpecifier::Identifier:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSCId", Sort::NNSSPECIFIER, {Sort::CID}));
         TRY_TO(TraverseIdentifierInfo(NNS->getAsIdentifier()));
         break;
       case NestedNameSpecifier::Namespace:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSName", Sort::NNSSPECIFIER, {Sort::NAME}));
         TRY_TO(TraverseDeclarationName(NNS->getAsNamespace()->getDeclName()));
         break;
       case NestedNameSpecifier::NamespaceAlias:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSName", Sort::NNSSPECIFIER, {Sort::NAME}));
         TRY_TO(TraverseDeclarationName(NNS->getAsNamespaceAlias()->getDeclName()));
         break;
       case NestedNameSpecifier::TypeSpec:
-        Kast::add(nns);
+        Kast::add(Kast::KApply("NNSCId", Sort::NNSSPECIFIER, {Sort::CID}));
         TRY_TO(TraverseType(QualType(NNS->getAsType(), 0)));
         break;
       case NestedNameSpecifier::TypeSpecWithTemplate:
@@ -266,7 +265,7 @@ public:
   bool TraverseIdentifierInfo(const IdentifierInfo *info, uintptr_t decl) {
     if (!info) {
       if (decl == 0) {
-        Kast::add(Kast::KApply("#NoName_COMMON-SYNTAX", Sort::NONAME));
+        Kast::add(Kast::KApply("#NoName_COMMON-SYNTAX_NoName", Sort::NONAME));
       } else {
         Kast::add(Kast::KApply("unnamed", Sort::UNNAMEDCID, {Sort::INT, Sort::STRING}));
         VisitUnsigned((unsigned long long)decl);
@@ -456,7 +455,7 @@ public:
 
     if (D->isThisDeclarationADefinition()) {
       if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
-        Kast::add(Kast::KApply("Constructor", Sort::STMT, {Sort::LIST, Sort::STMT}));
+        Kast::add(Kast::KApply("Constructor", Sort::STMT, {Sort::LIST, Sort::ASTMT}));
         int i = 0;
         for (auto *I : Ctor->inits()) {
           if (I->isWritten()) i++;
@@ -498,6 +497,10 @@ public:
     return TraverseFunctionHelper(D);
   }
 
+  void NoInit() {
+      Kast::add(Kast::KApply("NoInit", Sort::NOINIT));
+  }
+
   bool TraverseVarHelper(VarDecl *D) {
     StorageClass(D->getStorageClass());
     ThreadStorageClass(D->getTSCSpec());
@@ -518,7 +521,7 @@ public:
     if (D->getInit()) {
       TRY_TO(TraverseStmt(D->getInit()));
     } else {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     VisitBool(D->isDirectInit());
     return true;
@@ -545,7 +548,7 @@ public:
     } else if (D->hasInClassInitializer()) {
       TRY_TO(TraverseStmt(D->getInClassInitializer()));
     } else {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     return true;
   }
@@ -561,21 +564,16 @@ public:
   }
 
   void VisitAccessSpecifier(AccessSpecifier Spec) {
-    const char *spec;
-    switch (Spec) {
-      case AS_public:
-        spec = "Public";
-        break;
-      case AS_protected:
-        spec = "Protected";
-        break;
-      case AS_private:
-        spec = "Private";
-        break;
-      case AS_none:
-        spec = "NoAccessSpec";
-        break;
-    }
+    const char * const spec = [&]{
+      switch (Spec) {
+        case AS_public:    return "Public";
+        case AS_protected: return "Protected";
+        case AS_private:   return "Private";
+        case AS_none:      return "NoAccessSpec";
+      }
+      assert(false && "Unknown access specifier");
+      return (const char *)nullptr;
+    }();
     Kast::add(Kast::KApply(spec, Sort::ACCESSSPECIFIER));
   }
 
@@ -1283,7 +1281,7 @@ public:
   bool VisitReturnStmt(ReturnStmt *S) {
     Kast::add(Kast::KApply("ReturnStmt", Sort::STMT, {Sort::INIT}));
     if (!S->getRetValue()) {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     return false;
   }
@@ -1344,10 +1342,11 @@ public:
   }
 
   bool TraverseIfStmt(IfStmt *S) {
-    Kast::add(Kast::KApply("IfAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT, Sort::ASTMT}));
     if (VarDecl *D = S->getConditionVariable()) {
+      Kast::add(Kast::KApply("IfAStmtD", Sort::ASTMT, {Sort::DECL, Sort::ASTMT, Sort::ASTMT}));
       TRY_TO(TraverseDecl(D));
     } else {
+      Kast::add(Kast::KApply("IfAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT, Sort::ASTMT}));
       TRY_TO(TraverseStmt(S->getCond()));
     }
     TRY_TO(TraverseStmt(S->getThen()));
@@ -1360,10 +1359,11 @@ public:
   }
 
   bool TraverseSwitchStmt(SwitchStmt *S) {
-    Kast::add(Kast::KApply("SwitchAStmt", Sort::ASTMT, {Sort::DECL, Sort::ASTMT}));
     if (VarDecl *D = S->getConditionVariable()) {
+      Kast::add(Kast::KApply("SwitchAStmtD", Sort::ASTMT, {Sort::DECL, Sort::ASTMT}));
       TRY_TO(TraverseDecl(D));
     } else {
+      Kast::add(Kast::KApply("SwitchAStmt", Sort::ASTMT, {Sort::EXPR, Sort::ASTMT}));
       TRY_TO(TraverseStmt(S->getCond()));
     }
     TRY_TO(TraverseStmt(S->getBody()));
@@ -1444,19 +1444,23 @@ public:
 
   bool TraverseCallExpr(CallExpr *E) {
     Kast::add(Kast::KApply("CallExpr", Sort::RESOLVEDEXPR, {Sort::EXPR, Sort::STRICTLIST, Sort::STRICTLISTRESULT}));
-    unsigned i = 0;
-    for (Stmt *SubStmt : E->children()) {
-      i++;
-    }
-    if (i-1 != E->getNumArgs()) {
-      throw std::logic_error("unimplemented: pre_args???");
-    }
-    bool first = true;
-    for (Stmt *SubStmt : E->children()) {
-      TRY_TO(TraverseStmt(SubStmt));
-      if (first) List(i-1);
-      first = false;
-    }
+
+    // 1
+    TRY_TO(TraverseStmt(E->getCallee()));
+
+    // 2
+    Kast::add(Kast::KApply("list", Sort::STRICTLIST, {Sort::LIST}));
+	for (unsigned int i = 0; i < E->getNumArgs(); i++) {
+	    clang::Expr * arg = E->getArg(i);
+		if (!isa<CXXDefaultArgExpr>(arg)) {
+            Kast::add(Kast::KApply("_List_", Sort::LIST, {Sort::LIST, Sort::LIST}));
+            Kast::add(Kast::KApply("ListItem", Sort::LIST, {Sort::KITEM}));
+            TRY_TO(TraverseStmt(arg));
+        }
+	}
+    Kast::add(Kast::KApply(".List", Sort::LIST));
+
+    // 3
     Kast::add(Kast::KApply("krlist", Sort::STRICTLISTRESULT, {Sort::LIST}));
     Kast::add(Kast::KApply(".List", Sort::LIST));
     return true;
@@ -1503,7 +1507,7 @@ public:
     switch (Kind) {
       #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
       case OO_##Name:                                                          \
-        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", Sort::OPID));                                 \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX_OpId", Sort::OPID));                                 \
         break;
       #include "clang/Basic/OperatorKinds.def"
       default:
@@ -1515,7 +1519,7 @@ public:
     switch (Kind) {
       #define UNARY_OP(Name, Spelling)         \
       case UO_##Name:                          \
-        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", Sort::OPID)); \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX_OpId", Sort::OPID)); \
         break;
       UNARY_OP(PostInc, "_++")
       UNARY_OP(PostDec, "_--")
@@ -1548,7 +1552,7 @@ public:
     switch (Kind) {
       #define BINARY_OP(Name, Spelling)        \
       case BO_##Name:                          \
-        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX", Sort::OPID)); \
+        Kast::add(Kast::KApply("operator" Spelling "_CPP-SYNTAX_OpId", Sort::OPID)); \
         break;
       BINARY_OP(PtrMemD, ".*")
       BINARY_OP(PtrMemI, "->*")
@@ -1838,7 +1842,7 @@ public:
     if (E->hasInitializer()) {
       TRY_TO(TraverseStmt(E->getInitializer()));
     } else {
-      Kast::add(Kast::KApply("NoInit", Sort::INIT));
+      NoInit();
     }
     KSeqList(E->getNumPlacementArgs());
     for (unsigned i = 0; i < E->getNumPlacementArgs(); i++) {
@@ -2022,7 +2026,7 @@ public:
 
   bool TraverseInitListExpr(InitListExpr *E) {
     InitListExpr *Syntactic = E->isSemanticForm() ? E->getSyntacticForm() ? E->getSyntacticForm() : E : E;
-    Kast::add(Kast::KApply("BraceInit", Sort::BRACEINIT, {Sort::LIST}));
+    Kast::add(Kast::KApply("BraceInit", Sort::INIT, {Sort::LIST}));
     KSeqList(Syntactic->getNumInits());
     for (Stmt *SubStmt : Syntactic->children()) {
       TRY_TO(TraverseStmt(SubStmt));
@@ -2250,7 +2254,7 @@ private:
       VisitUnsigned(presumed.getColumn());
       VisitBool(mgr.isInSystemHeader(loc));
     } else {
-      Kast::add(Kast::KApply("UnknownCabsLoc_COMMON-SYNTAX", Sort::CABSLOC));
+      Kast::add(Kast::KApply("UnknownCabsLoc_COMMON-SYNTAX_CabsLoc", Sort::CABSLOC));
     }
   }
 

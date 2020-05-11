@@ -53,13 +53,13 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      imports CPP-TRANSLATION-CONSTANT-SYNTAX
      imports CPP-TRANSLATION-DECL-CLASS-DESTRUCTOR
 
-     rule FunctionDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Params::List)
+     rule FunctionDecl(N::NNS, X::CId, Mangled::CId, T::AType, Params::List)
           => NormalizedDecl(N, X, Mangled, T, NoInit(), Function(Params)) [anywhere]
 
-     rule VarDecl(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Init::Init, IsDirect:Bool)
+     rule VarDecl(N::NNS, X::CId, Mangled::CId, T::AType, Init::Init, IsDirect:Bool)
           => NormalizedDecl(N, X, Mangled, T, Init, Var(#if IsDirect #then DirectInit() #else CopyInit() #fi)) [anywhere]
 
-     rule FunctionDefinition(N::NNSVal, X::CId, Mangled::CId, T::CPPType, Params::List, Body::Stmt)
+     rule FunctionDefinition(N::NNS, X::CId, Mangled::CId, T::AType, Params::List, Body::Stmt)
           => NormalizedDecl(N, X, Mangled, T, Body, Function(Params)) [anywhere]
 
      rule DeclStmt(L::List) => listToK(L)
@@ -72,7 +72,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule Specifier(Spec::Specifier, DeclaratorAndSpecifiers(D::Declarator, S::Set)) => DeclaratorAndSpecifiers(D, S SetItem(Spec)) [anywhere]
 
-     rule NormalizedDecl(N::NNSVal, X::CId, Mangled::CId, T::AType, Init::Init, Type::DeclarationType)
+     rule NormalizedDecl(N::NNS, X::CId, Mangled::CId, T::AType, Init::Init, Type::DeclarationType)
           => DeclaratorAndSpecifiers(NormalizedDecl(N, X, Mangled, T, Init, Type), .Set)
 
      context DeclaratorAndSpecifiers(NormalizedDecl(... nns: HOLE:NNS), _)
@@ -115,7 +115,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax Duration ::= getDuration(Set, Scope) [function]
 
-     syntax Namespace ::= getInnermostNamespace(NNSVal, Scope) [function]
+     syntax NNSVal ::= getInnermostNamespace(NNSVal, Scope) [function]
 
      rule getPreviousLinkage(X::QualId, T::CPPType, X |-> (stripType(T) |-> _ _::Map) _::Map, _) => ExternalLinkage
 
@@ -186,7 +186,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule getInnermostNamespace(NoNamespace(), blockScope((localQual(Scope::BlockScope) :: _:ClassSpecifier) :: _, _, _) => Scope)
 
-     rule getInnermostNamespace(N::Namespace, _) => N
+     rule getInnermostNamespace(N::NNSVal, _) => N
           requires N =/=K NoNamespace()
 
      /* After everything is computed */
@@ -403,8 +403,9 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule <k> stripAuto => .K ...</k>
           <template-arguments>... auto |-> _ => .Map ...</template-arguments>
 
-    rule declareNonStaticObject(ID::CId, T::CPPType, Init:KResult, DT::DeclarationType, DU::Duration, S::Set)
+    rule declareNonStaticObject(ID::CId, T::CPPType, Init:KItem, DT::DeclarationType, DU::Duration, S::Set)
           =>  declareNonStaticObject2(declareNonStaticObjectExec(ID, T, Init, DT, DU, S), Constexpr() in S)
+         requires isKResult(Init)
 
      syntax KItem ::= declareNonStaticObject2(K, Bool)
 

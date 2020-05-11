@@ -8,7 +8,7 @@ module CPP-BINDING-SYNTAX
 
      syntax KItem ::= bindParam(CId, CPPType, Init) [klabel(bindParamCpp3)]
 
-     syntax KItem ::= setThis(Expr) [strict(c)]
+     syntax KItem ::= setThis(K)
 endmodule
 
 module CPP-EXECUTION-BINDING
@@ -23,6 +23,13 @@ module CPP-EXECUTION-BINDING
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
+     rule <k> setThis(.K) => .K ...</k>
+          <this> _ => .K </this>
+
+     rule setThis(E:Expr) => #setThis(E)
+
+     syntax KItem ::= #setThis(Expr) [strict(c)]
+
      rule <k> (.K => bindParam(X, T, V))
           ~> bind(
                (ListItem(X::CId) => .List) _,
@@ -30,7 +37,7 @@ module CPP-EXECUTION-BINDING
                (ListItem(V::Init) => .List) _)
           ...</k>
 
-     rule <k> (.K => setThis(V))
+     rule <k> (.K => #setThis(V))
           ~> bind(
                _,
                (ListItem(implicitObjectParameter(T::CPPType)) => .List) _,
@@ -52,7 +59,7 @@ module CPP-EXECUTION-BINDING
 
      rule bindVariadics(.List) => .K
 
-     rule <k> setThis(Obj:PRVal) => .K ...</k>
+     rule <k> #setThis(Obj:PRVal) => .K ...</k>
           <this> _ => Obj </this>
 
      rule <k> beginConstruction(Obj:LVal, IsBaseClassSubobject:Bool) => Obj ...</k>

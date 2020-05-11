@@ -409,7 +409,7 @@ module CPP-TYPING
 
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(... constructor: true)))) => toList(L)
 
-     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, _, _, C::Class, _, false)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
+     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, _, _, C::K, _, false)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
 
      rule getRealParams(T::CPPType) => #getRealParams(getParams(T))
 
@@ -451,7 +451,7 @@ module CPP-TYPING
      rule hasImplicitParameter(_) => false [owise]
 
      // TODO(traiansf): Handle conversion functions and functions introduced by using declarations
-     syntax CPPType ::= getImpliedParamType(RefQualifier, Quals, static: Bool, Class) [function]
+     syntax CPPType ::= getImpliedParamType(RefQualifier, Quals, static: Bool, class: K) [function]
 
      // 13.3.1:4
      rule getImpliedParamType(... static: true) => type(no-type)
@@ -778,6 +778,8 @@ module CPP-TYPING
      syntax TemplateArgs ::= stripTypes(TemplateArgs) [function]
 
      rule stripTypes(T::CPPType, Ts::TemplateArgs) => stripType(T), stripTypes(Ts)
+
+     rule stripTypes(variadic, Ts::TemplateArgs) => variadic, stripTypes(Ts)
 
      rule stripTypes(.TemplateArgs) => .TemplateArgs
 

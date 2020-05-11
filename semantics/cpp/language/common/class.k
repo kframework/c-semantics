@@ -171,7 +171,7 @@ module CPP-CLASS-SYNTAX
 
      syntax KItem ::= returnFromBraceOrEqualInitializer(LVal, Scope)
 
-     syntax This ::= This()
+     syntax This ::= This() [symbol]
 
      syntax Expr ::= This
 

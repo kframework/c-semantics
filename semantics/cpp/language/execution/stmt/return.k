@@ -81,7 +81,7 @@ module CPP-EXECUTION-STMT-RETURN
           (<function-control>
                <live-va-lists> .Set </live-va-lists>
                <block-stack> .List </block-stack>
-               <ret-constructed-temporary> LCE::KItem  </ret-constructed-temporary>
+               <ret-constructed-temporary> LCE::K  </ret-constructed-temporary>
           ...</function-control> => C)
           <call-stack>
                ListItem(

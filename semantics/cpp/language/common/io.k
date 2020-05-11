@@ -4,7 +4,7 @@ module CPP-COMMON-IO-SYNTAX
 
      syntax CPPType
 
-     syntax K ::= assertInBounds(Int, Int) [klabel(cppAssertInBounds)]
+     syntax KItem ::= assertInBounds(Int, Int) [klabel(cppAssertInBounds)]
 
      syntax Bits ::= getUninitializedBits(SymLoc, CPPType) [function, klabel(getUninitializedBitsCpp)]
 
@@ -25,7 +25,7 @@ module CPP-COMMON-IO
      syntax Error ::= "errorReadOutOfBounds"
 
      rule assertInBounds(Offset::Int, Len::Int)
-          => assert(Offset <Int Len, errorReadOutOfBounds) [macro]
+          => assert(Offset <Int Len, errorReadOutOfBounds)
 
      rule (.K => DRAFTING("EIO1",
                "Reading outside the bounds of an object."))

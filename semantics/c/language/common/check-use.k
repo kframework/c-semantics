@@ -3,7 +3,7 @@ module C-CHECK-USE-SYNTAX
      imports SYMLOC-SORTS
 
      syntax KItem ::= checkUse(KItem) [strict]
-     syntax KItem ::= checkLoc(SymLoc)
+     syntax K ::= checkLoc(SymLoc) [function]
 
 endmodule
 
@@ -43,21 +43,18 @@ module C-CHECK-USE
           [structural]
 
      syntax Error ::= "errorLinkUnresolved"
-     rule <k> checkLoc(loc(Base:LinkBase, _))
+     rule checkLoc(loc(Base:LinkBase, _))
                => EXT-UNDEF("TDR2", "No definition for symbol with external linkage.")
                ~> errorLinkUnresolved
-          ...</k>
           requires currentSemantics() ==K ExecutionSemantics()
-          [structural]
-     rule <k> checkLoc(loc(Base:LinkBase, _, _))
+
+     rule checkLoc(loc(Base:LinkBase, _, _))
                => EXT-UNDEF("TDR2", "No definition for symbol with external linkage.")
                ~> errorLinkUnresolved
-          ...</k>
           requires currentSemantics() ==K ExecutionSemantics()
-          [structural]
-     rule <k> checkLoc(Loc::SymLoc) => checkLocAllowLink(Loc)
-          ...</k>
-          [structural, owise]
+
+     rule checkLoc(Loc::SymLoc) => checkLocAllowLink(Loc)
+          [owise]
 
      syntax KItem ::= checkLocAllowLink(SymLoc)
 

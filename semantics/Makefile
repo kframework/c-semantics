@@ -8,9 +8,7 @@ OUTPUT_DIR := $(abspath $(BUILD_DIR))
 PROFILE_DIR := $(realpath $(CURDIR)/../profiles/x86-gcc-limited-libc)
 
 # Appending to whatever the environment provided.
-KOMPILE_FLAGS += --backend ocaml
-KOMPILE_FLAGS += --non-strict
-KOMPILE_FLAGS += --smt none
+KOMPILE_FLAGS += --backend llvm
 
 # Generate a makefile list from a colon-separated one.
 # K_INCLUDE_PATH comes from the environment.
@@ -29,6 +27,7 @@ KOMPILE_FLAGS += --no-prelude
 KOMPILE_FLAGS += -w all
 KOMPILE_FLAGS += -v
 KOMPILE_FLAGS += --debug
+KOMPILE_FLAGS += -ccopt -g
 
 
 # Used specifically in the timestamp_of rules.

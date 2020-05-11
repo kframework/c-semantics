@@ -17,7 +17,7 @@ module C-CONFIGURATION
 
 <exec>
      <k color="green">
-          load($OBJS:K)
+          $OBJS:KItem
           ~> linkProgram(getEntryPoint($OPTIONS:Set))
           ~> cleanup
      </k>

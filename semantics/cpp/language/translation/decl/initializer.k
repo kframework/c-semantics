@@ -86,7 +86,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           requires notBool isSpuriousExpr(HOLE) [result(ValueCategory)]
 
      rule <k> #figureInit(Base::Expr, DestT::CPPType, IType::InitType,
-               I::Init, SrcType::CPPType, SrcCat::ValueCategory,
+               I::Init, SrcType::K, SrcCat::K,
                CT::ConstructorType, D::Duration)
           =>
           Base ~> #figureInitHeatBase(DestT, IType, I, SrcType, SrcCat, CT, D)
@@ -95,7 +95,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           requires notBool isLVal(Base)
 
      rule <k> Base:LVal ~> #figureInitHeatBase(DestT::CPPType, IType::InitType,
-               I::Init, SrcType::CPPType, SrcCat::ValueCategory,
+               I::Init, SrcType::K, SrcCat::K,
                CT::ConstructorType, D::Duration)
           =>
           #figureInit(Base, DestT, IType, I, SrcType, SrcCat, CT, D)
@@ -329,13 +329,13 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      syntax Bool ::= hasInit(CId, Map) [function]
 
-     rule hasInit(X:CId, X |-> M::Map _) => notBool isNoInit(M)
+     rule hasInit(X:CId, X |-> M::Map _) => notBool hasNoInit(M)
 
-     syntax Bool ::= isNoInit(Map) [function]
+     syntax Bool ::= hasNoInit(Map) [function]
 
-     rule isNoInit(_ |-> (_, NoInit())) => true
+     rule hasNoInit(_ |-> (_, NoInit())) => true
 
-     rule isNoInit(_ |-> _) => false [owise]
+     rule hasNoInit(_ |-> _) => false [owise]
 
      syntax Expr ::= classAggInit(base: LVal, fields: List, initList: List, initializers: Map, class: Class, initExp: K, ctype: ConstructorType, duration: Duration)
 

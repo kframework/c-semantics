@@ -101,9 +101,9 @@ module CPP-SYNTAX
 
      syntax Tag ::= ClassKey | Enum() [symbol] | Typename() [symbol] | NoTag() [symbol]
 
-     syntax AccessSpecifier ::= Public() [symbol] | Private() [symbol] | Protected() [symbol] | NoAccessSpec()
+     syntax AccessSpecifier ::= Public() [symbol] | Private() [symbol] | Protected() [symbol] | NoAccessSpec() [symbol]
 
-     syntax RefQualifier ::= RefLValue() | RefRValue() | RefNone()
+     syntax RefQualifier ::= RefLValue() [symbol] | RefRValue() [symbol] | RefNone() [symbol]
 
      syntax TemplateKeyword ::= "template" | "no-template"
 
@@ -117,8 +117,8 @@ module CPP-SYNTAX
                    | Expr "++" [strict(c)]
                    | Expr "--" [strict(c)]
                    | BuiltinCallOp(Expr, Bool, List)
-                   | ReinterpretCast(AType, Expr) [strict(c)]
-                   | ConstCast(AType, Expr) [strict(c)]
+                   | ReinterpretCast(AType, Expr) [strict(c), symbol]
+                   | ConstCast(AType, Expr) [strict(c), symbol]
                    > right:
                      "++" Expr [strict(c)]
                    | "--" Expr [strict(c)]
@@ -183,8 +183,8 @@ module CPP-SYNTAX
                    | ThrowOp(Expr) [strict(c)]
                    > left:
                      Comma(Expr, Expr) [strict(c; 1)]
-     syntax Name ::= Name(NNS, CId)
-                   | Name(NNS, CId, List)
+     syntax Name ::= Name(NNS, CId) [symbol]
+                   | Name(NNS, CId, List) [klabel(Name3)]
 
      syntax ExecName ::= ExecName(NNS, CId)
 
@@ -193,7 +193,7 @@ module CPP-SYNTAX
      syntax Expr ::= ConvertType(CPPType, Expr)
                    | ExprLoc
 
-     syntax ExprLoc ::= ExprLoc(CabsLoc, KItem)
+     syntax ExprLoc ::= ExprLoc(CabsLoc, KItem) [symbol]
 
      syntax Init ::= ExprLoc
 
@@ -203,7 +203,7 @@ module CPP-SYNTAX
      syntax Decl
 
      syntax Stmt ::= LabelStmt(CId, List)
-                   | GotoStmt(CId)
+                   | GotoStmt(CId) [symbol]
                    | ExpressionStmt(Expr) [strict(c)]
                    | PRValExpressionStmt(Expr) [strict(c)]
                    | BreakStmt()

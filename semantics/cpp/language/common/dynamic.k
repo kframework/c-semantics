@@ -273,12 +273,12 @@ module CPP-QUALID-SYNTAX
      imports CPP-QUALID-SORTS // self
      imports CPP-SORTS // CId, Name
 
-     syntax NNS ::= NoNNS()
-                  | NNS "::" NNSSpecifier [klabel(NestedName)]
+     syntax NNS ::= NoNNS() [symbol]
+                  | NNS "::" NNSSpecifier [klabel(NestedName), symbol]
 
-     syntax NNSSpecifier ::= NNS(CId)
+     syntax NNSSpecifier ::= NNS(CId) [klabel(NNSCId), symbol]
                            | TemplateNNS(CId)
-                           | NNS(Name)
+                           | NNS(Name) [klabel(NNSName), symbol]
 
      syntax QualId ::= NNSVal "::" CId [klabel(QualId)]
 
@@ -518,7 +518,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
      syntax CPPTypes ::= toCPPTypes(List) [function]
                        | toCPPTypes(TemplateArgs) [function, klabel(TemplateArgsToCPPTypes)]
 
-     syntax TemplateArg ::= CPPType
+     syntax TemplateArg ::= CPPDType
 
      syntax String ::= showCPPTypes(CPPTypes) [function]
                      | showCPPType(CPPType) [function]
@@ -563,7 +563,7 @@ module CPP-DYNAMIC-OTHER-SYNTAX
 
      syntax KItem ::= odrDecl(String, QualId, CId, LanguageLinkage, CPPType)
 
-     syntax Stmt ::= compoundStmt(Stmt, Stmt)
+     syntax Stmt ::= compoundStmt(K, Stmt)
      syntax Stmt ::= nullStmt()
 
      syntax SSList ::= toSSList(List) [klabel(toSSListcpp), function]
@@ -777,7 +777,7 @@ module CPP-DYNAMIC-OTHER
 
      rule toTemplateArgs(.List) => .TemplateArgs
 
-     rule toCPPTypes(ListItem(A::CPPType) L::List) => A, toCPPTypes(L)
+     rule toCPPTypes(ListItem(A::CPPDType) L::List) => A, toCPPTypes(L)
 
      rule toCPPTypes(.List) => .CPPTypes
 
@@ -785,7 +785,7 @@ module CPP-DYNAMIC-OTHER
 
      rule CPPTypesSize(Ts::CPPTypes) => size(toList(Ts))
 
-     rule toList(T::CPPType, Ts::CPPTypes) => ListItem(T) toList(Ts)
+     rule toList(T::CPPDType, Ts::CPPTypes) => ListItem(T) toList(Ts)
 
      rule toList(.CPPTypes) => .List
 
@@ -1067,7 +1067,7 @@ module CPP-DYNAMIC-OTHER
 
      rule Translation() => notBool Execution()
 
-     rule compoundStmt(S1::Stmt, S2::Stmt) => S1 ~> S2
+     rule compoundStmt(S1::K, S2::Stmt) => S1 ~> S2
      rule nullStmt() => .K
 
      rule idOf(Class(_, X::CId, _)) => X
