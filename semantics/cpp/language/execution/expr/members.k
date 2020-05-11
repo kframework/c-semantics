@@ -15,10 +15,10 @@ module CPP-EXECUTION-EXPR-MEMBERS
 
      rule <k> evalBraceOrEqualInitializer(C::Class, lv(Loc::SymLoc, Tr::Trace, T::CPPType) #as Base::LVal, E::Expr) => setThis(prv(Loc, Tr, type(pointerType(type(classType(C)))))) ~> E ~> returnFromBraceOrEqualInitializer(Base, OldScope) ~> setThis(OldThis) ...</k>
           <curr-scope> OldScope::Scope => classScope(C, true) </curr-scope>
-          <this> OldThis::PRVal </this>
+          <this> OldThis::K </this>
           requires Execution()
 
-     rule <k> V:Val ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) ~> setThis(OldThis::PRVal) => .K) ...</k>
+     rule <k> V:Val ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) ~> setThis(OldThis::K) => .K) ...</k>
           <curr-scope> _ => Scope </curr-scope>
           <this> _ => OldThis </this>
           requires Execution() andBool notBool (isLExpr(V) orBool isPRExpr(V))
