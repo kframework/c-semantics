@@ -1099,8 +1099,8 @@ module CPP-TRANSLATION-OVERLOADING
           #fi
           requires isCPPRefType(T)
 
-     rule resolveUniqueDecl(V:KResult, _, _) => V
-          requires notBool isCandidateSet(V) andBool notBool isNotFoundNameRef(V)
+     rule resolveUniqueDecl(V:KItem, _, _) => V
+          requires isKResult(V) andBool notBool isCandidateSet(V) andBool notBool isNotFoundNameRef(V)
 
      rule (.K => ILL("TOL1", "No declaration found for name '" +String showCId(X) +String "'.")) ~> resolveUniqueDecl(notFound(X::CId), _, _)
 

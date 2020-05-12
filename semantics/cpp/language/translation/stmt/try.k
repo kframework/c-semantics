@@ -98,6 +98,6 @@ module CPP-TRANSLATION-STMT-TRY
 
      rule processCatchDecl(NormalizedDecl(... type: t(... st: functionType(...)) #as T::CPPType => type(pointerType(T))))
 
-     rule processCatchDecl(D::Decl) => D [owise]
+     rule processCatchDecl(D::Declarator) => D [owise]
 
 endmodule

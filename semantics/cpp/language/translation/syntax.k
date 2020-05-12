@@ -99,6 +99,8 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax Enumerator ::= Enumerator(CId, AExpr) [symbol]
 
+     syntax Decl ::= Enumerator
+
      syntax CPPType // defined in CPP-TYPING-SYNTAX
 
      syntax ATypeResult ::= NoType() [symbol]

@@ -238,7 +238,7 @@ public:
         TRY_TO(TraverseDeclarationName(NNS->getAsNamespaceAlias()->getDeclName()));
         break;
       case NestedNameSpecifier::TypeSpec:
-        Kast::add(Kast::KApply("NNSCId", Sort::NNSSPECIFIER, {Sort::CID}));
+        Kast::add(Kast::KApply("NNSName", Sort::NNSSPECIFIER, {Sort::NAME}));
         TRY_TO(TraverseType(QualType(NNS->getAsType(), 0)));
         break;
       case NestedNameSpecifier::TypeSpecWithTemplate:

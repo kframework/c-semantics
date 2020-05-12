@@ -977,7 +977,7 @@ module CPP-TYPING
 
      rule setType(T::CPPType, lv(Loc::SymLoc, Tr::Trace, _)) => lv(Loc, Tr, T)
 
-     rule setType(T::CPPType, prv(Loc::SymLoc, Tr::Trace, _)) => prv(Loc, Tr, T)
+     rule setType(T::CPPType, prv(V::CPPValue, Tr::Trace, _)) => prv(V, Tr, T)
 
      rule isEnumScoped(t(_, _, scopedEnum(_, _))) => true
 
