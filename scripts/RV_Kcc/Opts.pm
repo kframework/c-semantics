@@ -546,6 +546,19 @@ sub parseOpts {
                   ', "suppress": true' .
                   '}');
       }
+  -Wno-file-error=<file>:<errorcode:/[^:]+/>	Disable the given error in the given file.
+      {
+            RV_Kcc::Opts::pushArg(
+                  'suppressions',
+                  '{ "condition": ' .
+                        '["FileErrorId", ' .
+                              '{ "error_id": "' . $errorcode . '"' .
+                              ', "file": ' . quote(backslash($file)) .
+                              '}' .
+                        ']' .
+                  ', "suppress": true' .
+                  '}');
+      }
   -no-pedantic		Do not trigger preprocessor warnings for non-standard
 			compliant language features.
   -w			Ignore all preprocessor warnings.
