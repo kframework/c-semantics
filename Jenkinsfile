@@ -13,7 +13,7 @@ pipeline {
       }
       stages {
         stage('Set title')          { steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } } }
-        stage('Build docker image') { steps { script { img = docker.build "c-semantics:${env.CHANGE_ID}"                     } } }
+        stage('Build docker image') { steps { script { img = docker.build "c-semantics:${env.CHANGE_ID}" "--build-arg K_COMMIT=$(cd .build/k && git rev-pares --short=7 HEAD) --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)" } } }
         stage('Compile') {
           options { timeout(time: 70, unit: 'MINUTES') }
           steps {
