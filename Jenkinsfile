@@ -3,31 +3,19 @@ def img
 
 pipeline {
   agent none 
-  options {
-    ansiColor('xterm')
-  }
+  options { ansiColor('xterm') }
   stages {
-    stage ( 'Pull Request' ) {
+    stage('Pull Request') {
       agent any
       when { 
         changeRequest()
         beforeAgent true
       }
       stages {
-        stage ( 'Set title' ) { steps {
-          script {
-            currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}"
-          }
-        } }
-        stage ( 'Build docker image' ) { steps {
-          script {
-            img = docker.build "c-semantics:${env.CHANGE_ID}"
-          }
-        } }
-        stage ( 'Compile' ) {
-          options {
-            timeout(time: 70, unit: 'MINUTES')
-          }
+        stage('Set title')          { steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } } }
+        stage('Build docker image') { steps { script { img = docker.build "c-semantics:${env.CHANGE_ID}"                     } } }
+        stage('Compile') {
+          options { timeout(time: 70, unit: 'MINUTES') }
           steps {
             script { img.inside {
               sh '''
@@ -38,12 +26,11 @@ pipeline {
               '''
             } }
           }
-          post { success {
-            archiveArtifacts 'dist/timelogs.d/timelogs.csv'
-          } }
+          post { success { archiveArtifacts 'dist/timelogs.d/timelogs.csv' } }
         }
-        stage ( 'Re-compile w/ timeout' ) { steps {
-          timeout(time: 8, unit: 'SECONDS' ) {
+        stage('Re-compile w/ timeout') {
+          options { timeout(time: 8, unit: 'MINUTES') }
+          steps {
             script { img.inside {
               sh '''
                 eval $(opam config env)
@@ -52,11 +39,9 @@ pipeline {
               '''
             } }
           }
-        } }
-        stage ( 'Test' ) {
-          options {
-            timeout(time: 300, unit: 'MINUTES')
-          }
+        }
+        stage('Test') {
+          options { timeout(time: 300, unit: 'MINUTES') }
           steps {
             script { img.inside {
               sh '''
@@ -67,11 +52,9 @@ pipeline {
               '''
             } }
           }
-          post { always {
-            archiveArtifacts artifacts: 'tests/unit-pass/*config', allowEmptyArchive: true
-          } }
+          post { always { archiveArtifacts artifacts: 'tests/unit-pass/*config', allowEmptyArchive: true } }
         }
-        stage ( 'Test clean target' ) { steps {
+        stage('Test clean target') { steps {
           script { img.inside {
             sh 'make clean'
             sh '[ $(git clean -xfd 2>&1 | wc -l) -eq 0 ]'
@@ -80,18 +63,14 @@ pipeline {
       } // stages of 'Pull Request'
     }   // Pull Request
 
-    stage ( 'Merged to master' ) {
+    stage('Merged to master') {
       when {
         branch 'master'
         beforeAgent true
       }
       agent any
       stages {
-        stage ( 'Build docker image' ) { steps {
-          script {
-            img = docker.build 'runtimeverificationinc/c-semantics:latest'
-          }
-        } }
+        stage('Build docker image') { steps { script { img = docker.build 'runtimeverificationinc/c-semantics:latest' } } }
       } // stages of 'Merged to master'
     }   // 'Merged to master'
 
