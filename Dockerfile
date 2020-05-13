@@ -21,8 +21,8 @@ RUN groupadd -g $GROUP_ID user && useradd -m -u $USER_ID -s /bin/sh -g user user
 USER user:user
 WORKDIR /home/user
 
-COPY --chown=user:user .build/k/k-distribution/main/scripts/lib/opam /home/user/lib/opam
-COPY --chown=user:user .build/k/k-distribution/main/scripts/bin      /home/user/bin
+COPY --chown=user:user .build/k/k-distribution/src/main/scripts/lib/opam /home/user/lib/opam
+COPY --chown=user:user .build/k/k-distribution/src/main/scripts/bin      /home/user/bin
 
 ENV OPAMROOT=/home/user/.opam
 RUN ./bin/k-configure-opam-dev
