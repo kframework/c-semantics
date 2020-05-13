@@ -5,12 +5,13 @@ FROM runtimeverificationinc/kframework-k:ubuntu-bionic-${K_COMMIT}
 # Install packages. #
 #####################
 
-RUN     apt-get update -q \
-    &&  apt install --yes \
-          libstdc++6      \
-          llvm-6.0        \
-          clang++-6.0     \
-          clang-6.0
+RUN    apt-get update        \
+    && apt-get upgrade --yes \
+    && apt-get install --yes \
+          clang-6.0          \
+          clang++-6.0        \
+          libstdc++6         \
+          llvm-6.0
 
 # This user is set up in the runtimeverificationinc/kframework:* images.
 ARG USER_ID=1000
