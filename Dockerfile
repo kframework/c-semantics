@@ -1,5 +1,5 @@
 ARG K_COMMIT
-FROM runtimeverificationincink/kframework-k:ubuntu-bionic-${K_COMMIT}
+FROM runtimeverificationinc/kframework-k:ubuntu-bionic-${K_COMMIT}
 
 #####################
 # Install packages. #
