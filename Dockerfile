@@ -11,7 +11,8 @@ RUN    apt-get update        \
           clang-6.0          \
           clang++-6.0        \
           libstdc++6         \
-          llvm-6.0
+          llvm-6.0           \
+          pkg-config
 
 # This user is set up in the runtimeverificationinc/kframework:* images.
 ARG USER_ID=1000
