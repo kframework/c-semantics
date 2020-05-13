@@ -1,9 +1,9 @@
 ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
-export K_BIN ?= $(ROOT)/.build/k/k-distribution/target/release/k/bin
+export K_BIN ?= $(dir $(shell which kompile))
 
-export KOMPILE := $(K_BIN)/kompile
-export KDEP := $(K_BIN)/kdep
+export KOMPILE := kompile
+export KDEP    := kdep
 
 # Appending to whatever the environment provided.
 K_OPTS += -Xmx8g
