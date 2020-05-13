@@ -62,7 +62,7 @@ pipeline {
             }
           }
         }
-      } // stages of 'Pull Request'
-    }   // Pull Request
-  }     // pipeline stages
-}       // pipeline
+      }
+    }
+  }
+}
