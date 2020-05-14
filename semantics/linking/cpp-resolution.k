@@ -45,7 +45,9 @@ module LINKING-CPP-RESOLUTION
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <nenv>... X |-> (stripType(T) |-> (_, envEntry(... base: Base::SymBase => Base')) _::Map) ...</nenv>
-          <linkings>... .Map => Base |-> Base' ...</linkings>
+          <linkings> Linkings::Map => Linkings[Base <- Base'] </linkings>
+          // do not overwrite the old value with a different one
+          requires (Linkings[Base] orDefault Base') ==K Base'
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
