@@ -524,6 +524,7 @@ sub getLinkingCommand {
             @krun = addArg("OBJS", "Lblload{}(dotk{}())", 'KItem', 'text', @krun);
       }
 
+      setLanguageDefinition(profileDir('c-cpp-linking-kompiled'));
       setShellDebugFile($output, 1);
       return @krun;
 }
