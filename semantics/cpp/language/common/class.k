@@ -169,7 +169,7 @@ module CPP-CLASS-SYNTAX
 
      syntax Expr ::= evalBraceOrEqualInitializer(class: Class, object: Expr, initializer: Expr) [strict(c; 2)]
 
-     syntax KItem ::= returnFromBraceOrEqualInitializer(LVal, Scope)
+     syntax KItem ::= returnFromBraceOrEqualInitializer(Expr, Scope)
 
      syntax This ::= This() [symbol]
 

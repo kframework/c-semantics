@@ -1471,22 +1471,22 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule pad(V::Int, _) => V [owise]
 
      // brace-or-equal initializers need to be evalauted in class scope
-     rule <k> evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E ~> returnFromBraceOrEqualInitializer(Base, OldScope) ...</k>
+     rule <k> evalBraceOrEqualInitializer(C::Class, Base::Expr, E::Expr) => E ~> returnFromBraceOrEqualInitializer(Base, OldScope) ...</k>
           <curr-tr-scope> OldScope::Scope => classScope(C, true) </curr-tr-scope>
-          requires Translation()
+          requires Translation() andBool isKResult(Base)
 
      rule <k> le(E::Expr => evalBraceOrEqualInitializer(C, Base, E), _, _)
-           ~> (returnFromBraceOrEqualInitializer(Base::LVal, Scope::Scope) => .K)
+           ~> (returnFromBraceOrEqualInitializer(Base::Expr, Scope::Scope) => .K)
           ...</k>
           <curr-tr-scope> classScope(C::Class, _) => Scope </curr-tr-scope>
 
      rule <k> xe(E::Expr => evalBraceOrEqualInitializer(C, Base, E), _, _)
-           ~> (returnFromBraceOrEqualInitializer(Base::LVal, Scope::Scope) => .K)
+           ~> (returnFromBraceOrEqualInitializer(Base::Expr, Scope::Scope) => .K)
           ...</k>
           <curr-tr-scope> classScope(C::Class, _) => Scope </curr-tr-scope>
 
      rule <k> pre(E::Expr => evalBraceOrEqualInitializer(C, Base, E), _, _)
-           ~> (returnFromBraceOrEqualInitializer(Base::LVal, Scope::Scope) => .K)
+           ~> (returnFromBraceOrEqualInitializer(Base::Expr, Scope::Scope) => .K)
           ...</k>
           <curr-tr-scope> classScope(C::Class, _) => Scope </curr-tr-scope>
 
@@ -1494,20 +1494,22 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <curr-tr-scope> _ => Scope </curr-tr-scope>
           requires notBool (isLExpr(V) orBool isPRExpr(V))
 
-     rule <k> typeof(evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E)
-           ~> (.K => returnFromBraceOrEqualInitializer(Base, OldScope))
+     syntax KItem ::= restoreScope(Scope)
+
+     rule <k> typeof(evalBraceOrEqualInitializer(C::Class, _, E::Expr) => E)
+           ~> (.K => restoreScope(OldScope))
           ...</k>
           <curr-tr-scope> OldScope::Scope => classScope(C, true) </curr-tr-scope>
 
-     rule <k> typeof(V:CPPType) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
+     rule <k> typeof(V:CPPType) ~> (restoreScope(Scope::Scope) => .K) ...</k>
           <curr-tr-scope> _ => Scope </curr-tr-scope>
 
-     rule <k> catof(evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E)
-           ~> (.K => returnFromBraceOrEqualInitializer(Base, OldScope))
+     rule <k> catof(evalBraceOrEqualInitializer(C::Class, _, E::Expr) => E)
+           ~> (.K => restoreScope(OldScope))
           ...</k>
           <curr-tr-scope> OldScope::Scope => classScope(C, true) </curr-tr-scope>
 
-     rule <k> catof(V:ValueCategory) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
+     rule <k> catof(V:ValueCategory) ~> (restoreScope(Scope::Scope) => .K) ...</k>
           <curr-tr-scope> _ => Scope </curr-tr-scope>
 
      rule Class.getNonStaticDataMembers(<class>... <non-static-data-members> L::List </non-static-data-members> ...</class>) => L

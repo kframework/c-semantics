@@ -409,7 +409,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(Class.DataMember(F:CId, _)) => .List) _,
                            initList: .List,
-                           initializers: (F |-> (_::CPPType |-> (T::CPPType, Init::Expr))) _,
+                           initializers: (F |-> (_::CPPType |-> (T::CPPType, Init::Init))) _,
                            class: C::Class,
                            duration: D::Duration)
 
