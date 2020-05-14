@@ -106,7 +106,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
      rule <k> waitingOnGotoMap ...</k>
           <goto-calc>
                <computation>
-                    (ForStmt(Control:Expr, Post::Stmt, S::K) => .K)
+                    (ForStmt(Control:Expr, Post::K, S::K) => .K)
                     ~> K:K
                </computation>
                <computation-tail> Tail:K </computation-tail>

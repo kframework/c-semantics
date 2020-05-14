@@ -4,7 +4,7 @@ module CPP-EXECUTION-STMT-LOOP
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
 
-     rule <k> ForStmt(Control::Expr, Post::Stmt, S::K) ~> K:K
+     rule <k> ForStmt(Control::Expr, Post::K, S::K) ~> K:K
               => loopMarked
               ~> ForStmt(Control, Post, S)
               ~> popLoop
@@ -12,7 +12,7 @@ module CPP-EXECUTION-STMT-LOOP
           <block-history> ListItem(Num::Int) ...</block-history>
           <loop-stack> .List => ListItem(kpair(Num, K)) ...</loop-stack>
 
-     rule loopMarked ~> ForStmt(Control:Expr, Post::Stmt, S::K)
+     rule loopMarked ~> ForStmt(Control:Expr, Post::K, S::K)
           => IfStmt(Control, compoundStmt(S, compoundStmt(Post, compoundStmt(loopMarked,
               ForStmt(Control, Post, S)))), nullStmt())
 
