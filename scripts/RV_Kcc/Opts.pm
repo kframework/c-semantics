@@ -449,6 +449,7 @@ sub parseOpts {
   -ftranslation-depth=<depth>	Compile program up to a given depth. [undocumented]
   -fdebug-translation	Run translation semantics with GDB. [undocumented]
   -flinking-depth=<depth>	Link program up to a given depth. [undocumented]
+  -fdebug-linking	Run linking semantics with GDB. [undocumented]
   -fmessage-length=0	Write all error messages on a single line.
   -frunner-script	Compile program to perl script with analysis tool options. [undocumented]
   -fissue-report=<file>	Write issues to the specified file.

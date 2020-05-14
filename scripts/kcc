@@ -477,6 +477,10 @@ sub getLinkingCommand {
             push(@krun, arg('-flinking-depth='));
       }
 
+      if (arg('-fdebug-linking')) {
+            push(@krun, '--debug');
+      }
+
       my ($rvErrorJson, $string) = (getRVErrorJson(), QUOTE_STRING);
       my $json = "\\dv{SortString{}}($rvErrorJson)";
 
