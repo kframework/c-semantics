@@ -1006,7 +1006,8 @@ module CPP-DYNAMIC-OTHER
      rule showTemplateArgs(T:CPPType, T2:TemplateArg, Ts::TemplateArgs)
           => showCPPType(T) +String "," +String showTemplateArgs(T2, Ts)
 
-     rule _:KResult ~> discard => .K
+     rule X:KItem ~> discard => .K
+          requires isKResult(X)
 
      context <k> makePRVal(HOLE:Expr => reval(HOLE)) ...</k> 
              <compile-time-evaluation> true </compile-time-evaluation> [result(PRV)]
