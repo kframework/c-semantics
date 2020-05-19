@@ -532,7 +532,7 @@ sub parseOpts {
       {
             RV_Kcc::Opts::pushArg('suppressions', '{"condition": ["File", ' . quote(backslash($glob)) . '], "suppress": true}');
       }
-  -Wno-file-line=<file>:<line>	Disable errors in the specified line and file
+  -Wno-line=<file>:<line:+i>	Disable errors in the specified line and file
       {
             RV_Kcc::Opts::pushArg(
                   'suppressions',
