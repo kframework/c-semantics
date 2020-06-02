@@ -546,7 +546,7 @@ sub parseOpts {
                   ', "suppress": true' .
                   '}');
       }
-  -Wno-file-error=<file>:<errorcode:/[^:]+/>	Disable the given error in the given file.
+  -Wno-file-error=<file>:<errorcode:/[^:\s]+/>	Disable the given error in the given file.
       {
             RV_Kcc::Opts::pushArg(
                   'suppressions',
