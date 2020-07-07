@@ -6,6 +6,7 @@ module C-CONVERSION-SYNTAX
 
      // interpret the result of arithmetic as in 6.5.4
      syntax KItem ::= intArithInterpret(UType, Int)
+     syntax KItem ::= intArithInterpret(UType, Int, overflowLint: Bool)
      syntax KItem ::= floatArithInterpret(UType, Float)
      // as described in 6.3 // totype, fromvalue
      // change it to function in order
@@ -28,13 +29,14 @@ module C-CONVERSION
      imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule intArithInterpret(integerUType #as T::UType, N::Int) => tv(N, T)
+     rule intArithInterpret(T:UType, N:Int) => intArithInterpret(T, N, true)
+     rule intArithInterpret(integerUType #as T::UType, N::Int, _) => tv(N, T)
           requires (min(T) <=Int N) andBool (max(T) >=Int N)
-     rule intArithInterpret(unsignedIntegerUType #as T::UType, N::Int) => tv(N modInt (max(T) +Int 1), T)
-          requires ((N >Int max(T)) orBool (N <Int min(T))) andBool notBool hasLint
+     rule intArithInterpret(unsignedIntegerUType #as T::UType, N::Int, OverflowLint:Bool) => tv(N modInt (max(T) +Int 1), T)
+          requires ((N >Int max(T)) orBool (N <Int min(T))) andBool (notBool hasLint orBool notBool OverflowLint)
      // unsigned arithmetic isn't supposed to overflow
      rule (.K => UNDEF("CCV1", "Signed integer overflow."))
-          ~> intArithInterpret(signedIntegerUType #as T::UType, I::Int)
+          ~> intArithInterpret(signedIntegerUType #as T::UType, I::Int, _)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
           [structural]
 
@@ -365,4 +367,3 @@ module C-CONVERSION
      rule castTypes(ut(_, T'::SimpleUType), ut(Mods::Set, _)) => ut(Mods, T')
 
 endmodule
-
