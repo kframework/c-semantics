@@ -22,7 +22,7 @@ module C-COMMON-EXPR-BITWISE
      \cinline{\~E} is equivalent to the maximum value representable in that
      type minus \cinline{E}.
      }*/
-     rule ~ tv(I:Int, T::UType) => bitwiseInterpret(T, ~Int I, isNegZero(I, T))
+     rule ~ tv(I:Int, T::UType) => bitwiseInterpret(T, ~Int I, isNegZero(I, T), false)
           requires isPromoted(T)
           [structural]
 
@@ -44,7 +44,8 @@ module C-COMMON-EXPR-BITWISE
      }*/
      rule tv(E1:Int, T1::UType) << tv(E2:Int, T2::UType)
           => bitwiseInterpret(T1, E1 <<Int E2,
-               isNegZero(E1, T1) orBool isNegZero(E2, T2))
+               isNegZero(E1, T1) orBool isNegZero(E2, T2),
+               true)
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
                andBool E2 <Int bitSizeofType(T1)
@@ -91,7 +92,8 @@ module C-COMMON-EXPR-BITWISE
      }*/
      rule tv(E1:Int, T1::UType) >> tv(E2:Int, T2::UType)
           => bitwiseInterpret(T1, E1 >>Int E2,
-               isNegZero(E1, T1) orBool isNegZero(E2, T2))
+               isNegZero(E1, T1) orBool isNegZero(E2, T2),
+               true)
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
                andBool E2 <Int bitSizeofType(T1)
@@ -137,7 +139,8 @@ module C-COMMON-EXPR-BITWISE
      }*/
      rule tv(E1:Int, T::UType) & tv(E2:Int, T'::UType)
           => bitwiseInterpret(T, E1 &Int E2,
-               isNegZero(E1, T) orBool isNegZero(E2, T'))
+               isNegZero(E1, T) orBool isNegZero(E2, T'),
+               false)
           requires isPromoted(T) andBool T ==Type T'
           [structural]
 
@@ -184,7 +187,8 @@ module C-COMMON-EXPR-BITWISE
      }*/
      rule tv(E1:Int, T::UType) ^ tv(E2:Int, T'::UType)
           => bitwiseInterpret(T, E1 xorInt E2,
-               isNegZero(E1, T) orBool isNegZero(E2, T'))
+               isNegZero(E1, T) orBool isNegZero(E2, T'),
+               false)
           requires isPromoted(T) andBool T ==Type T'
           [structural]
 
@@ -220,7 +224,8 @@ module C-COMMON-EXPR-BITWISE
      }*/
      rule tv(E1:Int, T::UType) | tv(E2:Int, T'::UType)
           => bitwiseInterpret(T, E1 |Int E2,
-               isNegZero(E1, T) orBool isNegZero(E2, T'))
+               isNegZero(E1, T) orBool isNegZero(E2, T'),
+               false)
           requires isPromoted(T) andBool T ==Type T'
           [structural]
 
@@ -248,11 +253,11 @@ module C-COMMON-EXPR-BITWISE
                orBool notBool isIntegerType(type(R))
           [structural]
 
-     syntax KItem ::= bitwiseInterpret(UType, Int, Bool)   [klabel(bitwiseInterpret3)]
-     rule bitwiseInterpret(unsignedIntegerUType #as T::UType, N::Int, _) => intArithInterpret(T, N)
-     rule bitwiseInterpret(signedIntegerUType #as T::UType, N::Int, true) => intArithInterpret(T, N)
-     rule bitwiseInterpret(signedIntegerUType #as T::UType, N::Int, false)
-          => bitwiseInterpret(intArithInterpret(T, N))
+     syntax KItem ::= bitwiseInterpret(UType, Int, Bool, overflowLint: Bool)   [klabel(bitwiseInterpret3)]
+     rule bitwiseInterpret(unsignedIntegerUType #as T::UType, N::Int, _, OverflowLint:Bool) => intArithInterpret(T, N, OverflowLint)
+     rule bitwiseInterpret(signedIntegerUType #as T::UType, N::Int, true, OverflowLint:Bool) => intArithInterpret(T, N, OverflowLint)
+     rule bitwiseInterpret(signedIntegerUType #as T::UType, N::Int, false, OverflowLint:Bool)
+          => bitwiseInterpret(intArithInterpret(T, N, OverflowLint:Bool))
 
      syntax KItem ::= bitwiseInterpret(KItem) [strict]
      rule bitwiseInterpret(tv(N:Int, T::UType)) => tv(N, T)
