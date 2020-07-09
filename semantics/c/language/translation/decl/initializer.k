@@ -357,13 +357,22 @@ module C-DECL-INITIALIZER
           ...</curr-object>
           [structural]
 
-     rule <k> (.K => CV("CDI5", "Unexpected compound initializer (possibly attempting to directly initialize an anonymous member)."))
-               ~> fillInit(CompoundInit(list(L::List)))
+     rule <k> fillInit(CompoundInit(list(ListItem(Item:KItem)))) =>
+               fillInit(Item)
           ...</k>
           <curr-subobject>
                ListItem(ncle(_, T::Type))
           ...</curr-subobject>
           requires notBool isAggregateOrUnionType(T)
+          [structural]
+
+     rule <k> (.K => CV("CDI5", "Unexpected compound initializer."))
+               ~> fillInit(CompoundInit(list(L::List)))
+          ...</k>
+          <curr-subobject>
+               ListItem(ncle(_, T::Type))
+          ...</curr-subobject>
+          requires notBool isAggregateOrUnionType(T) andBool size(L) =/=Int 1
           [structural]
 
      context fillInit(InitFragment(HOLE:KItem, _))
