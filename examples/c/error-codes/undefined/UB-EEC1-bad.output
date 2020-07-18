@@ -1,5 +1,5 @@
 variably modified types in a conditional expression with unequal size expressions:
-      > in main at UB-EEC1-bad.c:6:7
+      > in main at UB-EEC1-bad.c:7:7
 
     Undefined behavior (UB-EEC1):
         see C11 section 6.7.6.2:6 http://rvdoc.org/C11/6.7.6.2

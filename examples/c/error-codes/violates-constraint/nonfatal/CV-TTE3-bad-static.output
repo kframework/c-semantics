@@ -1,11 +1,11 @@
-CV-TTE3-bad-static.c:5:3: error: if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.
+CV-TTE3-bad-static.c:6:3: error: if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.
 
     Constraint violation (CV-TTE3):
         see C11 section 6.5.15:3 http://rvdoc.org/C11/6.5.15
         see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
-CV-TTE3-bad-static.c:5:3: warning: Conversion from an integer to non-null pointer.
+CV-TTE3-bad-static.c:6:3: warning: Conversion from an integer to non-null pointer.
 
     Implementation defined behavior (IMPL-CCV13):
         see C11 section 6.3.2.3:5 http://rvdoc.org/C11/6.3.2.3
