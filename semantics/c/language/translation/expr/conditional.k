@@ -38,9 +38,10 @@ module C-EXPR-CONDITIONAL
          requires notBool isShortCircuit(C)
          [result(RValue)]
 
-     rule (.K => typeof(C ? E1 : E2)) ~> evalConditional(tv(1, ut(_, int)) #as C, E1:RValue, E2)
-     rule (.K => typeof(C ? E1 : E2)) ~> evalConditional(tv(0, ut(_, int)) #as C, E1, E2:RValue)
-     rule (.K => typeof(C ? E1 : E2)) ~> evalConditional(C::RValue, E1:RValue, E2:RValue) [owise]
+     rule (.K => typeof(C ? E1 : E2)) ~> evalConditional(tv(1, ut(_, int)) #as C, E1::RValue, E2:KItem)
+     rule (.K => typeof(C ? E1 : E2)) ~> evalConditional(tv(0, ut(_, int)) #as C, E1:KItem, E2::RValue)
+     rule (.K => typeof(C ? E1 : E2)) ~> evalConditional(C::RValue, E1::RValue, E2::RValue)
+          requires notBool isShortCircuit(C)
 
      rule typeof(T:Type) ~> evalConditional(E:K, E1:K, E2:K)
           => evalConditional(E, Cast(T, E1), Cast(T, E2), utype(T))
