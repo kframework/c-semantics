@@ -191,8 +191,8 @@ PROFILE_DEPS: $(OUTPUT_DIR)/kcc \
 	@printf "%s" $(PROFILE) > $(OUTPUT_DIR)/default-profile
 	@-$(foreach f, $(PROFILE_FILE_DEPS), \
 		cp -RLp $(f) $(PROFILE_OUTPUT_DIR);)
-	@$(foreach d, $(SUBPROFILE_DIRS), \
-		mkdir -p $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib;)
+	@true $(foreach d, $(SUBPROFILE_DIRS), \
+		&& mkdir -p $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib)
 	@-$(foreach d, $(SUBPROFILE_DIRS), \
 			$(foreach f, $(PROFILE_FILES), \
 				cp -RLp $(d)/$(f) \
@@ -214,14 +214,14 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
 				--use-profile $(PROFILE) \
 				-shared -o $@ *.C \
 				$(KCCFLAGS) -I .
-	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cd $(d)/compiler-src && \
+	@true $(foreach d,$(SUBPROFILE_DIRS), \
+		&& cd $(d)/compiler-src && \
 			$(OUTPUT_DIR)/kcc \
 				-Wfatal-errors \
 				--use-profile $(shell basename $(d)) \
 				-shared \
 				-o $(OUTPUT_DIR)/profiles/$(shell basename $(d))/lib/libstdc++.so \
-				*.C $(KCCFLAGS) -I .;)
+				*.C $(KCCFLAGS) -I .)
 	@$(LOGGER) "$(PROFILE): Done translating the C++ standard library."
 
 
@@ -237,8 +237,8 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 				--use-profile $(PROFILE) \
 				-shared -o $@ *.c \
 				$(KCCFLAGS) -I .
-	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cd $(d)/src && \
+	@true $(foreach d,$(SUBPROFILE_DIRS), \
+		&& cd $(d)/src && \
 			$(OUTPUT_DIR)/kcc \
 				-Wfatal-errors \
 				--use-profile $(shell basename $(d)) \
@@ -412,5 +412,5 @@ $(PROFILE_OUTPUT_DIR)/%-kompiled/timestamp: PROFILE_DEPS \
                                             $$(notdir $$*)-semantics
 	$(eval NAME := $(notdir $*))
 	@$(LOGGER) "Distributing $(NAME)"
-	@$(foreach d,$(SUBPROFILE_DIRS), \
-		cp -RLp $(PROFILE_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(shell basename $(d));)
+	@true $(foreach d,$(SUBPROFILE_DIRS), \
+		&& cp -RLp $(PROFILE_OUTPUT_DIR)/$(NAME)-kompiled $(OUTPUT_DIR)/profiles/$(shell basename $(d)))
