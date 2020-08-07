@@ -2,7 +2,6 @@ module C-TYPING-EXPR-SYNTAX
      imports BASIC-K
 
      syntax KItem ::= typeof(K)
-
 endmodule
 
 module C-TYPING-EXPR
@@ -189,7 +188,7 @@ module C-TYPING-EXPR
      rule typeof(_ || _ => type(int))
 
      // conditional expression
-     rule (.K => elaborate(noEval(elabResult(E1)), noEval(elabResult(E2))))
+     rule (.K => elaboratePostponed(noEval(elabResult(E1)), noEval(elabResult(E2))))
           ~> typeof(_ ? E1:KItem : E2:KItem)
 
      syntax KItem ::= elabResult(K)
@@ -201,15 +200,17 @@ module C-TYPING-EXPR
      rule <k> EXIT(_) => skipToScopeExit ...</k>
           <curr-eval-context> noEval </curr-eval-context>
 
-     context elaborateDone(_, _) ~> typeof(_ ? (HOLE:KItem => typeof(HOLE)) : _) [result(Type)]
-     context elaborateDone(_, _) ~> typeof(_ ? _ : (HOLE:KItem => typeof(HOLE))) [result(Type)]
+     context elaboratePostponed(_, _) ~> typeof(_ ? (HOLE:KItem => typeof(HOLE)) : _) [result(Type)]
+     context elaboratePostponed(_, _) ~> typeof(_ ? _ : (HOLE:KItem => typeof(HOLE))) [result(Type)]
+
+     rule (elaboratePostponed(E1, E2) => elaborate(E1, E2)) ~> typeof(_ ? _::Type : _::Type) [owise]
 
      syntax Bool ::= isNPC(K) [function]
      rule isNPC(V:RValue) => isNullPointerConstant(V)
      rule isNPC(_) => false [owise]
 
-     rule elaborateDone(_, _) ~> typeof(_ ? (arrayOrFunctionType #as T::Type => type(rvalType(T))) : _)
-     rule elaborateDone(_, _) ~> typeof(_ ? _ : (arrayOrFunctionType #as T::Type => type(rvalType(T))))
+     rule elaboratePostponed(_, _) ~> typeof(_ ? (arrayOrFunctionType #as T::Type => type(rvalType(T))) : _)
+     rule elaboratePostponed(_, _) ~> typeof(_ ? _ : (arrayOrFunctionType #as T::Type => type(rvalType(T))))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
      If both the second and third operands have arithmetic type, the result
@@ -218,11 +219,11 @@ module C-TYPING-EXPR
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule elaborateDone(_, _) ~> typeof(_ ? arithmeticType #as T::Type : (arithmeticType #as T'::Type))
+     rule elaboratePostponed(_, _) ~> typeof(_ ? arithmeticType #as T::Type : (arithmeticType #as T'::Type))
           => typeof(usualArithmeticConversion(T, T'))
-     rule elaborateDone(_, _) ~> typeof(_ ? t(... st: void) #as T::Type : t(... st: void))
+     rule elaboratePostponed(_, _) ~> typeof(_ ? t(... st: void) #as T::Type : t(... st: void))
           => typeof(stripQualifiers(T))
-     rule elaborateDone(_, _) ~> typeof(_ ? structOrUnionType #as T::Type : (structOrUnionType #as T'::Type))
+     rule elaboratePostponed(_, _) ~> typeof(_ ? structOrUnionType #as T::Type : (structOrUnionType #as T'::Type))
           => typeof(stripQualifiers(T))
           requires T ==Type T'
 
@@ -240,12 +241,12 @@ module C-TYPING-EXPR
      \cinline{void}.
      }*/
      // The result of the conditional is an rvalue, so it will be an unqualified type.
-     rule (elaborateDone(_, _) ~> typeof(_ ? t(_, Mods::Set, pointerType(T::Type)) : t(_, Mods'::Set, pointerType(T'::Type)))
+     rule (elaboratePostponed(_, _) ~> typeof(_ ? t(_, Mods::Set, pointerType(T::Type)) : t(_, Mods'::Set, pointerType(T'::Type)))
                => typeof(t(noQuals, Mods Mods', pointerType(compositeType(T, T')))))
           ~> SizeofExpression(_)
           requires stripQualifiers(T) ==Type stripQualifiers(T')
                andBool notBool (isSpecifiedVariablyModifiedType(T) orBool isSpecifiedVariablyModifiedType(T'))
-     rule (elaborateDone(_, _) ~> typeof(_ ? t(_, Mods::Set, pointerType(T::Type)) : t(_, Mods'::Set, pointerType(T'::Type)))
+     rule (elaboratePostponed(_, _) ~> typeof(_ ? t(_, Mods::Set, pointerType(T::Type)) : t(_, Mods'::Set, pointerType(T'::Type)))
                => typeof(t(noQuals, Mods Mods', pointerType(compositeType(T, T')))))
           ~> K:KItem
           requires stripQualifiers(T) ==Type stripQualifiers(T')

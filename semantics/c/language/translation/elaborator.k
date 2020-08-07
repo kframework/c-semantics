@@ -4,6 +4,7 @@ module C-ELABORATOR-SYNTAX
 
      syntax KItem ::= elaborate(K) [klabel(elaborate1)]
      syntax KItem ::= elaborate(K, K)
+     syntax KItem ::= elaboratePostponed(K, K)
 
      syntax KItem ::= elaborateDone(K)  [klabel(elaborateDone1)]
      syntax KItem ::= elaborateDone(K, K)
