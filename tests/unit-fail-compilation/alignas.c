@@ -1,7 +1,7 @@
 #include <stdalign.h>
 
 struct {
-      alignas(int) long long int x;
+      alignas(short) long long int x;
 };
 
 int main(void) {
