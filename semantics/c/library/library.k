@@ -14,6 +14,8 @@ require "string.k"
 require "threads.k"
 require "time.k"
 
+require "klee.k"
+
 module C-LIBRARY
      ////////////////////////////////
      //- C standard library
@@ -34,4 +36,5 @@ module C-LIBRARY
      imports LIBC-TYPES
 
      imports C-NATIVE-BRIDGE
+     imports OTHERS-INSPECTION
 endmodule

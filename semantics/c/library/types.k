@@ -170,10 +170,13 @@ module LIBC-TYPES
           // errno
           (id("errno") |-> type(int)
 
+          // klee helpers
+          (id("__kcc_get_obj_size") |-> fun(int, ptr(void))
+
           extensionBuiltins
           // we need these parentheses to avoid an exponential explosion of parsing time;
           // really should look further into true priorities in the parser kernel.
-          ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+          )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
      rule mtx_t => typeref("__kcc_typeref_mtx_t")
      rule jmp_buf => typeref("__kcc_typeref_jmp_buf")
