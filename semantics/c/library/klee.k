@@ -1,4 +1,6 @@
 module OTHERS-INSPECTION
+  imports LIBC-BUILTIN-SYNTAX
+
   syntax KItem ::= thing()
 
   // int __kcc_get_obj_size(void* p);
