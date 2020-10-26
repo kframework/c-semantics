@@ -1,5 +1,6 @@
 module OTHERS-INSPECTION
   imports LIBC-BUILTIN-SYNTAX
+  imports C-DYNAMIC-SYNTAX
 
   syntax KItem ::= thing()
 
