@@ -2,7 +2,7 @@ module LINKING-INIT-SYNTAX
      imports BASIC-K
      imports STRING-SYNTAX
 
-     syntax KItem ::= load(K) [symbol]
+     syntax KItem ::= load(KItem) [symbol]
      syntax KItem ::= linkProgram(entrypoint: String)
 
 endmodule
@@ -162,17 +162,21 @@ module LINKING-INIT
                         ...</ns>)
           ...</namespaces>
 
-     rule load(Obj1:KItem ~> Obj2:KItem ~> Objs:K)
-               => load(Objs ~> mergeObj(Obj1, Obj2))
+     syntax KItem ::= #load(K)
+
+     rule load(objsWrapper(K)) => #load(K)
+
+     rule #load(Obj1:KItem ~> Obj2:KItem ~> Objs:K)
+               => #load(Objs ~> mergeObj(Obj1, Obj2))
                ~> checkMerge(Obj1, Obj2)
 
-     rule <k> load(Merged:KItem)
+     rule <k> #load(Merged:KItem)
                => loadObj(mergeObj(Merged, ThisObj))
                ~> checkMerge(Merged, ThisObj)
           ...</k>
           ThisObj:GlobalCell
 
-     rule load(.K) => .K
+     rule #load(.K) => .K
 
      syntax KItem ::= checkMerge(K, K)
      rule checkMerge(_, .K) => .K

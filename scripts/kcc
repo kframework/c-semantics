@@ -505,18 +505,24 @@ sub getLinkingCommand {
                   }
             }
             my $objText = join('', @objTexts);
+
             my $one = chr((scalar @objTexts >> 24) & 0xff);
             my $two = chr((scalar @objTexts >> 16) & 0xff);
             my $three = chr((scalar @objTexts >> 8) & 0xff);
             my $four = chr((scalar @objTexts >> 0) & 0xff);
-            $objText = MAGIC . "\x04\x00\x01$objText\x03$one$two$three$four\x07";
+
+            $objText = "$objText\x03$one$two$three$four";
+            $objText = "$objText\x02\x00\x00\x00\x00\x00\x00\x00\x0b\x00o\x00b\x00j\x00s\x00W\x00r\x00a\x00p\x00p\x00e\x00r\x00\x00\x00\x00\x01";
+            $objText = "$objText\x03\00\00\00\01";
+
+            $objText = MAGIC . "\x04\x00\x01$objText\x07";
             open(my $file, '>', "$allObjsFile");
             print $file $objText;
             close $file;
 
             @krun = addArg("OBJS", $allObjsFile, 'binaryfile', @krun);
       } else {
-            @krun = addArg("OBJS", ".K", 'text', @krun);
+            @krun = addArg("OBJS", "objsWrapper(.K)", 'text', @krun);
       }
 
       @krun = addArg("PGM", ".K", 'text', @krun);
