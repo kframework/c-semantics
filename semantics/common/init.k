@@ -6,6 +6,7 @@ module COMMON-INIT-SYNTAX
      syntax KItem ::= loadObj(K)
      // this takes input from a file which is not split by thread, so we don't want to split this rule.
      syntax KItem ::= unwrapObj(GeneratedTopCell) [function, noThread, symbol]
+     syntax KItem ::= objsWrapper(K) [symbol]
 
      syntax CId ::= "mainArguments"
 

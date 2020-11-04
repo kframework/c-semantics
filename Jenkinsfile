@@ -33,7 +33,7 @@ pipeline {
               sh '''
                 eval $(opam config env)
                 eval $(perl -I "~/perl5/lib/perl5" -Mlocal::lib)
-                export KOMPILE_FLAGS=-O2
+                export KOMPILE_FLAGS=-O1
                 make -j4 profile-rule-parsing --output-sync=line
               '''
             } }
