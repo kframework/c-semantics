@@ -20,11 +20,16 @@ module COMMON-INIT
      imports C-CONFIGURATION
      imports COLLECTIONS
      imports K-EQUAL
+     imports K-REFLECTION
      imports OPTIONS-SYNTAX
      imports COMMON-TRANSLATION-UNIT-SYNTAX
 
-     rule getEntryPoint(_ SetItem(EntryPoint(EP::String))) => EP
-     rule getEntryPoint(_) => "main" [owise]
+     rule getEntryPoint(Cfg:Set) => #getEntryPoint(Cfg, #getenv("KCC_ENTRY_FUNCTION"))
+
+     syntax String ::= #getEntryPoint(Set, K) [function]
+     rule #getEntryPoint(_, EP:String) => EP
+     rule #getEntryPoint(_ SetItem(EntryPoint(EP::String)), .K) => EP
+     rule #getEntryPoint(_, _) => "main" [owise]
 
      rule <k> loadObj(G:GlobalCell) => .K ...</k>
           (<global> _ </global> => G)
