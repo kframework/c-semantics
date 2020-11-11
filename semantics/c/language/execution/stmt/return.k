@@ -30,7 +30,7 @@ module C-STMT-RETURN
 
      // Return (from C function)
      rule (.K => getCurrentFunctionType()) ~> Return(V:RValue)
-     rule t(_, Mods::Set, functionType(T::UType, _)) ~> Return(V:RValue) => Return'(cast(T, V))
+     rule t(_, Mods::Set, functionType(T::UType, _)) ~> Return(V:RValue) => Return'(cast(T, V, false))
           requires notBool (Noreturn() in Mods)
           [structural]
      rule (t(_, Mods::Set, _) => UNDEF("ESR1", "Return from a function declared _Noreturn."))

@@ -43,10 +43,10 @@ module C-EXPR-CONDITIONAL
 
      syntax KItem ::= convertedType(Type)
      rule convertedType(T::Type) ~> tv(1, ut(_, int)) ? E1:K : _
-          => sequencePoint ~> Cast(T, E1)
+          => sequencePoint ~> Cast(T, E1, false)
           [structural]
      rule convertedType(T::Type) ~> tv(0, ut(_, int)) ? _ : E2:K
-          => sequencePoint ~> Cast(T, E2)
+          => sequencePoint ~> Cast(T, E2, false)
           [structural]
      rule convertedType(_) ~> tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi), ut(_, int)) ? _ : _
 

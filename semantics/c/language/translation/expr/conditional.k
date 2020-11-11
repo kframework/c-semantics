@@ -44,7 +44,7 @@ module C-EXPR-CONDITIONAL
           requires notBool isShortCircuit(C)
 
      rule typeof(T:Type) ~> evalConditional(E:K, E1:K, E2:K)
-          => evalConditional(E, Cast(T, E1), Cast(T, E2), utype(T))
+          => evalConditional(E, Cast(T, E1, false), Cast(T, E2, false), utype(T))
           requires notBool isVariablyModifiedType(T)
      rule typeof(T:Type) ~> evalConditional(E:K, E1:K, E2:K)
           => evalConditional(E, E1, E2, utype(T))

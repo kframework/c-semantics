@@ -31,7 +31,8 @@ module C-BITSIZE
           [structural]
      rule sizeof(T:Type)
           => Cast(t(noQuals, SetItem(IntegerConstant), cfg:sizeut),
-               tv(byteSizeofType(T), ut(SetItem(IntegerConstant), cfg:largestUnsigned)))
+               tv(byteSizeofType(T), ut(SetItem(IntegerConstant), cfg:largestUnsigned)),
+               false)
           requires notBool isVariableLengthArrayType(T)
           [structural]
 

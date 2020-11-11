@@ -1142,34 +1142,34 @@ module LIBC-STDIO
           requires firstChar(D) ==String "["
 
      rule writeItem(%(dirWrite, _, Length::String, "d"), Item::String, Ptr:RValue, _)
-          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 10), utype(getFormatType'("%d", Length)))))
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 10), utype(getFormatType'("%d", Length))), false))
      rule writeItem(%(dirWrite, _, Length::String, "i"), Item::String, Ptr:RValue, _)
-          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 0), utype(getFormatType'("%i", Length)))))
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 0), utype(getFormatType'("%i", Length))), false))
           requires notBool has0xPrefix(Item)
      rule writeItem(%(dirWrite, _, Length::String, "i"), Item::String, Ptr:RValue, _)
-          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%i", Length)))))
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%i", Length))), false))
           requires has0xPrefix(Item)
      rule writeItem(%(dirWrite, _, Length::String, "o"), Item::String, Ptr:RValue, _)
-          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 8), utype(getFormatType'("%o", Length)))))
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 8), utype(getFormatType'("%o", Length))), false))
      rule writeItem(%(dirWrite, _, Length::String, "u"), Item::String, Ptr:RValue, _)
-          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 10), utype(getFormatType'("%u", Length)))))
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 10), utype(getFormatType'("%u", Length))), false))
      rule writeItem(%(dirWrite, _, Length::String, "x"), Item::String, Ptr:RValue, _)
-          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 16), utype(getFormatType'("%x", Length)))))
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 16), utype(getFormatType'("%x", Length))), false))
           requires notBool has0xPrefix(Item)
      rule writeItem(%(dirWrite, _, Length::String, "x"), Item::String, Ptr:RValue, _)
-          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%x", Length)))))
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%x", Length))), false))
           requires has0xPrefix(Item)
 
      rule writeItem(%(dirWrite, _, Length::String, "p"), Item::String, Ptr:RValue, _)
-          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(cfg:intToPointer(String2Base(Item, 16), utype(getFormatType'("%p", Length))), utype(getFormatType'("%p", Length)))))
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(cfg:intToPointer(String2Base(Item, 16), utype(getFormatType'("%p", Length))), utype(getFormatType'("%p", Length))), false))
           requires notBool has0xPrefix(Item)
                andBool toUpperCase(Item) =/=String "(NIL)"
      rule writeItem(%(dirWrite, _, Length::String, "p"), Item::String, Ptr:RValue, _)
-          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(cfg:intToPointer(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%p", Length))), utype(getFormatType'("%p", Length)))))
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(cfg:intToPointer(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%p", Length))), utype(getFormatType'("%p", Length))), false))
           requires has0xPrefix(Item)
                andBool toUpperCase(Item) =/=String "(NIL)"
      rule writeItem(%(dirWrite, _, Length::String, "p"), Item::String, Ptr:RValue, _)
-          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(NullPointer, utype(getFormatType'("%p", Length)))))
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(NullPointer, utype(getFormatType'("%p", Length))), false))
           requires toUpperCase(Item) ==String "(NIL)"
 
      rule writeItem(%(dirWrite, _, Length::String, D::String) #as D'::Directive, Item::String, Ptr:RValue, _)
@@ -1177,7 +1177,7 @@ module LIBC-STDIO
           requires isFloatDirective(D')
 
      rule writeItem(%(dirWrite, _, Length::String, "n"), _, Ptr:RValue, M::Int)
-          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(M, utype(int))))
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(M, utype(int)), false))
 
      syntax KItem ::= stringToFloat(String, UType, UType)
      rule stringToFloat(S::String, T::UType, ut(_, float))
@@ -1199,7 +1199,7 @@ module LIBC-STDIO
      syntax KItem ::= "stringToFloat'" "(" SymBase "," UType "," K ")"
      context stringToFloat'(_, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
      rule stringToFloat'(Base::SymBase, T::UType, V:RValue)
-          => deleteObject(Base) ~> cast(T, V)
+          => deleteObject(Base) ~> cast(T, V, false)
           [structural]
 
      syntax Directive ::= "%" "(" WriteBehavior "," Int "," String "," String ")"

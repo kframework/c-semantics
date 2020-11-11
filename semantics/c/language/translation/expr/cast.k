@@ -17,12 +17,13 @@ module C-EXPR-CAST
      cast specifies a conversion even if the type of the expression is the same
      as the named type and removes any extra range and precision.
      }*/
-     rule (.K => DeclType(T, K)) ~> Cast(T:Type, K:KItem, V:RValue)
+     rule (.K => DeclType(T, K)) ~> Cast(T:Type, K:KItem, V:RValue, _)
           [structural]
-     rule T:Type ~> Cast(_, _, V:RValue) => Cast(elideDeclParams(T), V)
+     rule T:Type ~> Cast(_, _, V:RValue, E::Bool) => Cast(elideDeclParams(T), V, E)
           [structural]
 
-     rule cast(T'::UType, te(K:KItem, _)) => te(Cast(type(T'), K), T')
+     // TODO: Figure out how this should work.
+     rule cast(T'::UType, te(K:KItem, _), E::Bool) => te(Cast(type(T'), K, E), T')
 
 endmodule
 

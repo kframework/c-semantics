@@ -470,7 +470,7 @@ and expression =
     (* Special case below for the compound literals. I don't know why this isn't in the ast... *)
     | CAST ((spec, declType), initExp)                           -> fun sort -> (new_counter >>= fun id -> match initExp with
         | NO_INIT         -> kapply1 KItem "Error" (puts "cast with a NO_INIT inside doesn't make sense") sort
-        | SINGLE_INIT exp -> kapply KItem "Cast" [lazy_specifier spec K; lazy_decl_type declType KItem; lazy_expression exp K] sort
+        | SINGLE_INIT exp -> kapply KItem "Cast" [lazy_specifier spec K; lazy_decl_type declType KItem; lazy_expression exp K; ktoken_bool true Bool] sort
         | COMPOUND_INIT a -> kapply KItem "CompoundLiteral" [ktoken_int id Int; lazy_specifier spec KItem; lazy_decl_type declType KItem; kapply KItem "CompoundInit" [list_of lazy_init_fragment a StrictList] KItem] sort)
     | CALL (exp1, expList)                                       -> kapply KItem "Call" [lazy_expression exp1 KItem; list_of lazy_expression expList KItem]
     | COMMA expList                                              -> kapply KItem "Comma" [list_of lazy_expression expList StrictList]

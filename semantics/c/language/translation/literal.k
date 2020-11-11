@@ -217,7 +217,7 @@ module C-LITERAL
      // a trap, it seems to me, which really doesn't seem right.
      syntax Constant ::= Cast
      rule CharLiteral(N:Int)
-          => cast(utype(int), cast(utype(unsigned-char), tv(N, ut(SetItem(IntegerConstant), int))))
+          => cast(utype(int), cast(utype(unsigned-char), tv(N, ut(SetItem(IntegerConstant), int)), false), false)
      rule WCharLiteral(N:Int) => tv(N, utype(cfg:wcharut))
      rule Constant(K:KItem) => K
 

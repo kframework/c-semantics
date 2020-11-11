@@ -86,7 +86,7 @@ module C-STMT-SWITCH
           [structural]
 
      rule tryCase(
-               (tv(V::CValue, T'::UType) => cast(stripConstants(T), tv(V, stripConstants(T')))),
+               (tv(V::CValue, T'::UType) => cast(stripConstants(T), tv(V, stripConstants(T')), false)),
                tv(_, T::UType), _)
           requires T =/=Type T'
           [structural]

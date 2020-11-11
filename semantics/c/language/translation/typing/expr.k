@@ -141,11 +141,11 @@ module C-TYPING-EXPR
           => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
 
      // cast expression
-     context typeof(Cast((HOLE:KItem), _, _)) [result(Type)]
-     rule typeof(Cast(T:Type, K:KItem, V:K) => Cast(DeclType(T, K), V))
-     context typeof(Cast(HOLE:KItem,_))
-     rule typeof(Cast(T:Type, _) => elideDeclParams(type(rvalType(T))))
-     rule typeof(cast(T:UType, _) => elideDeclParams(type(T)))
+     context typeof(Cast((HOLE:KItem), _, _, _)) [result(Type)]
+     rule typeof(Cast(T:Type, K:KItem, V:K, E::Bool) => Cast(DeclType(T, K), V, E))
+     context typeof(Cast(HOLE:KItem, _, _))
+     rule typeof(Cast(T:Type, _, _) => elideDeclParams(type(rvalType(T))))
+     rule typeof(cast(T:UType, _, _) => elideDeclParams(type(T)))
 
      syntax Type ::= usualArithmeticConversion(Type, Type) [klabel(usualArithmeticConversionQ), function]
      rule usualArithmeticConversion(T::Type, T'::Type)
