@@ -408,6 +408,7 @@ and decl_type = function
 and lazy_decl_type = fun a sort -> LazyPrinter ((fun aa -> decl_type aa sort), a)
 
 and expression =
+  let expression_loc s l = kapply KItem "ExpressionLoc" [s KItem; cabs_loc l CabsLoc] in
   let generic_assoc = function
     | GENERIC_PAIR ((spec, declType), exp) -> kapply KItem "GenericPair" [lazy_specifier spec KItem; lazy_decl_type declType KItem; lazy_expression exp KItem]
     | GENERIC_DEFAULT exp                  -> kapply KItem "GenericDefault" [lazy_expression exp KItem] in
@@ -457,10 +458,10 @@ and expression =
       | SHR_ASSIGN  -> "AssignRightShift" in
     kapply KItem (binary_operator op) [lazy_expression exp1 KItem; lazy_expression exp2 KItem] in
   function
-    | OFFSETOF ((spec, declType), exp, loc)                      -> kapply KItem "OffsetOf" [lazy_specifier spec KItem; lazy_decl_type declType KItem; lazy_expression exp KItem]
-    | TYPES_COMPAT ((spec1, declType1), (spec2, declType2), loc) -> kapply KItem "TypesCompat" [lazy_specifier spec1 KItem; lazy_decl_type declType1 KItem; lazy_specifier spec2 KItem; lazy_decl_type declType2 KItem]
+    | OFFSETOF ((spec, declType), exp, loc)                      -> expression_loc (kapply KItem "OffsetOf" [lazy_specifier spec KItem; lazy_decl_type declType KItem; lazy_expression exp KItem]) loc
+    | TYPES_COMPAT ((spec1, declType1), (spec2, declType2), loc) -> expression_loc (kapply KItem "TypesCompat" [lazy_specifier spec1 KItem; lazy_decl_type declType1 KItem; lazy_specifier spec2 KItem; lazy_decl_type declType2 KItem]) loc
     | GENERIC (exp, assocs)                                      -> kapply KItem "Generic" [lazy_expression exp K; list_of generic_assoc assocs StrictList]
-    | LOCEXP (exp, loc)                                          -> lazy_expression exp
+    | LOCEXP (exp, loc)                                          -> expression_loc (lazy_expression exp) loc
     | UNARY (op, exp1)                                           -> unary_expression op exp1
     | BINARY (op, exp1, exp2)                                    -> binary_expression op exp1 exp2
     | NOTHING                                                    -> kapply0 KItem "NothingExpression"
