@@ -1,5 +1,5 @@
 Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated:
-      > in foo at IMPL-EIO5-bad.c:6:3
+      > in foo at IMPL-EIO5-bad.c:6:10
 
     Implementation defined behavior (IMPL-EIO5):
         see C11 section 6.2.4:4 http://rvdoc.org/C11/6.2.4

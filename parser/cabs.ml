@@ -38,7 +38,7 @@
 (** This file was originally part of Hugues Casee's frontc 2.0, and has been 
  * extensively changed since. 
 **
-** 1.0	3.22.99	Hugues Cassé	First version.
+** 1.0	3.22.99	Hugues Cassï¿½	First version.
 ** 2.0  George Necula 12/12/00: Many extensions
  **)
 
@@ -166,7 +166,7 @@ and init_name_group = specifier * init_name list
 and name = string * decl_type * attribute list * cabsloc
 
 (* A variable declarator ("name") with an initializer *)
-and init_name = name * init_expression
+and init_name = name * (init_expression * cabsloc)
 
 (* Single names are for declarations that cannot come in groups, like
  * function parameters and functions *)

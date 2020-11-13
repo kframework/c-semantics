@@ -1,4 +1,4 @@
-IMPL-CCV13-bad-static.c:2:7: warning: Conversion from an integer to non-null pointer.
+IMPL-CCV13-bad-static.c:2:24: warning: Conversion from an integer to non-null pointer.
 
     Implementation defined behavior (IMPL-CCV13):
         see C11 section 6.3.2.3:5 http://rvdoc.org/C11/6.3.2.3

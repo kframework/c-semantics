@@ -276,7 +276,7 @@ module C-ABSTRACT-SYNTAX
      */
      syntax KItem ::= OffsetOf(KItem, KItem, KItem) [strict(1), symbol]
      syntax KItem ::= TypesCompat(KItem, KItem, KItem, KItem) [strict(1, 3), symbol]
-     syntax KItem ::= ExpressionLoc(KItem, KItem) [function]
+     syntax KItem ::= ExpressionLoc(K, K) [function]
 
      //must be declared as function,
      //otherwise, if then else rule failed in for(;;) cases
