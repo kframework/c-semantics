@@ -1,6 +1,6 @@
 Called calloc, malloc, realloc, or aligned_alloc with a zero size parameter:
-      > in aligned_alloc at IMPL-STDLIB8-bad.c:4:7
-        in main at IMPL-STDLIB8-bad.c:4:7
+      > in aligned_alloc at IMPL-STDLIB8-bad.c:4:17
+        in main at IMPL-STDLIB8-bad.c:4:17
 
     Implementation defined behavior (IMPL-STDLIB8):
         see C11 section 7.22.3.1:2 http://rvdoc.org/C11/7.22.3.1

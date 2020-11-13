@@ -1,5 +1,5 @@
 Conversion to a pointer type with a stricter alignment requirement (possibly undefined):
-      > in main at j025a.c:3:7
+      > in main at j025a.c:3:29
 
     Undefined behavior (UB-CCV11):
         see C11 section 6.3.2.3:7 http://rvdoc.org/C11/6.3.2.3

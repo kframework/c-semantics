@@ -1,6 +1,6 @@
 'fopen' or 'freopen': invalid open mode "+w":
-      > in fopen at UB-STDIO8-bad.c:9:7
-        in main at UB-STDIO8-bad.c:9:7
+      > in fopen at UB-STDIO8-bad.c:9:18
+        in main at UB-STDIO8-bad.c:9:18
 
     Undefined behavior (UB-STDIO8):
         see C11 section 7.21.5.3:3 http://rvdoc.org/C11/7.21.5.3

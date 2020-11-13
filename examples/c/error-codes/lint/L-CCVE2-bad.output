@@ -1,5 +1,5 @@
 Conversion to unsigned integer outside the range that can be represented:
-      > in main at L-CCVE2-bad.c:10:5
+      > in main at L-CCVE2-bad.c:10:28
 
     Possible unintended behavior (L-CCVE2):
         see CERT-C section INT31-C http://rvdoc.org/CERT-C/INT31-C

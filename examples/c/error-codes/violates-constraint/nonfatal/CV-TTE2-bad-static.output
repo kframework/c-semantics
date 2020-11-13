@@ -1,4 +1,4 @@
-CV-TTE2-bad-static.c:6:3: error: if both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.
+CV-TTE2-bad-static.c:6:12: error: if both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.
 
     Constraint violation (CV-TTE2):
         see C11 section 6.5.15:3 http://rvdoc.org/C11/6.5.15

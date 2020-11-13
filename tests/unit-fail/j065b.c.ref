@@ -1,5 +1,5 @@
 Type of lvalue (int) not compatible with the effective type of the object being accessed (volatile int):
-      > in f at j065b.c:2:7
+      > in f at j065b.c:2:14
         in main at j065b.c:6:7
 
     Undefined behavior (UB-EIO10):

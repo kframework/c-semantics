@@ -1,4 +1,4 @@
-j056c.c:5:1: error: Non-constant static initializer.
+j056c.c:5:9: error: Non-constant static initializer.
 
     Constraint violation (CV-TSE3):
         see C11 section 6.7.9:4 http://rvdoc.org/C11/6.7.9

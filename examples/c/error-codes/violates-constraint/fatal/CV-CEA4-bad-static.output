@@ -1,4 +1,4 @@
-CV-CEA4-bad-static.c:6:3: error: Invalid operand types to subtraction.
+CV-CEA4-bad-static.c:6:7: error: Invalid operand types to subtraction.
 
     Constraint violation (CV-CEA4):
         see C11 section 6.5.6:3 http://rvdoc.org/C11/6.5.6

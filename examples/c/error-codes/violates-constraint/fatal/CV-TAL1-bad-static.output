@@ -1,4 +1,4 @@
-CV-TAL1-bad-static.c:7:3: error: Trying to compute alignof of a type that is incomplete or a function type.
+CV-TAL1-bad-static.c:7:9: error: Trying to compute alignof of a type that is incomplete or a function type.
 
     Constraint violation (CV-TAL1):
         see C11 section 6.5.3.4:1 http://rvdoc.org/C11/6.5.3.4

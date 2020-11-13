@@ -1,4 +1,4 @@
-too-many-initializers.c:9:1: error: Attempting to initialize nonexistent member.
+too-many-initializers.c:9:18: error: Attempting to initialize nonexistent member.
 
     Constraint violation (CV-CDI4):
         see C11 section 6.7.9:2 http://rvdoc.org/C11/6.7.9

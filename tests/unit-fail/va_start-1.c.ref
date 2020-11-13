@@ -1,5 +1,5 @@
 Unary '&' operator applied to a value with register storage class:
-      > in foo at va_start-1.c:5:4
+      > in foo at va_start-1.c:5:37
         in main at va_start-1.c:11:3
 
     Constraint violation (CV-CER2):

@@ -31,6 +31,21 @@ module C-STMT-EXPR
      rule <k> Initializer(ncle(L:KItem, T::Type) := R:RValue) => .K ...</k>
           <elab>... .K => Initializer(L := {stripHold(R)}:>KItem) </elab>
           requires utype(T) ==Type utype(R)
+
+     rule <k>Initializer(nclv(Loc:SymLoc, T::Type) := ExpLoc(tv(V:CValue, T'::UType), CLoc:CabsLoc))
+          => init(Loc, V, T)
+          ...</k>
+          <curr-program-loc> _ => CLoc </curr-program-loc>
+          requires notBool isLinkerLoc(Loc)
+               andBool (utype(T) ==Type T')
+     rule <k> Initializer(nclv(Loc:SymLoc, T::Type) := ExpLoc(tv(V:CValue, T'::UType), CLoc:CabsLoc)) => .K ...</k>
+          <elab>... .K => Initializer(lv(Loc, T) := checkUse(ExpLoc(tv(V, T'), CLoc))) </elab>
+          requires isLinkerLoc(Loc)
+               andBool (utype(T) ==Type T')
+     rule <k> Initializer(ncle(L:KItem, T::Type) := ExpLoc(R:RValue, CLoc:CabsLoc)) => .K ...</k>
+          <elab>... .K => Initializer(L := ExpLoc({stripHold(R)}:>KItem, CLoc)) </elab>
+          requires utype(T) ==Type utype(R)
+
      rule Initializer(ncle(_, (t(_, _, auto-type) => type(V))) := V:RValue)
      rule (.K => CV("TSE1", "Incompatible types in initializer or function call arguments."))
           ~> Initializer(L:Nclv := R:RValue)

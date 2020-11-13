@@ -1,7 +1,7 @@
 Memory malloced but never freed:
     Malloced here:
-      > in malloc at L-CEIE1-bad.c:9:5
-        in main at L-CEIE1-bad.c:9:5
+      > in malloc at L-CEIE1-bad.c:9:24
+        in main at L-CEIE1-bad.c:9:24
 
     Possible unintended behavior (L-CEIE1):
         see CERT-C section MEM31-C http://rvdoc.org/CERT-C/MEM31-C

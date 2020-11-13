@@ -1,5 +1,5 @@
 Referring to an object outside of its lifetime:
-      > in main at xrealloc2.c:6:2
+      > in main at xrealloc2.c:6:13
 
     Undefined behavior (UB-CEE4):
         see C11 section 6.2.4:2 http://rvdoc.org/C11/6.2.4

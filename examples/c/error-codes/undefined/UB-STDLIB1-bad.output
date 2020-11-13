@@ -1,6 +1,6 @@
 Called realloc on memory not allocated by malloc, or already freed:
-      > in realloc at UB-STDLIB1-bad.c:6:2
-        in main at UB-STDLIB1-bad.c:6:2
+      > in realloc at UB-STDLIB1-bad.c:6:12
+        in main at UB-STDLIB1-bad.c:6:12
 
     Undefined behavior (UB-STDLIB1):
         see C11 section 7.22.3.5:3 http://rvdoc.org/C11/7.22.3.5

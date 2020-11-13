@@ -381,11 +381,12 @@ and name (a, b, c, d) = kapply KItem "Name" [identifier a CId; lazy_decl_type b 
 and lazy_name = fun a sort -> LazyPrinter ((fun aa -> name aa sort), a)
 and single_name (a, b) = kapply KItem "SingleName" [lazy_specifier a KItem; lazy_name b KItem]
 and lazy_single_name = fun a sort -> LazyPrinter ((fun aa -> single_name aa sort), a)
+and init_loc a l = kapply KItem "InitLoc" [a KItem; cabs_loc l CabsLoc]
 and init_expression = function
   | NO_INIT         -> kapply0 NoInit "NoInit"
   | SINGLE_INIT exp -> kapply KItem "SingleInit" [lazy_expression exp KItem]
   | COMPOUND_INIT a -> kapply KItem "CompoundInit" [list_of lazy_init_fragment a StrictList]
-and lazy_init_expression = fun a sort -> LazyPrinter ((fun aa -> init_expression aa sort), a)
+and lazy_init_expression = fun a sort -> LazyPrinter ((fun (aa, loc) -> init_loc (init_expression aa) loc sort), a)
 and init_fragment (a, b) =
   let rec init_what = function
     | NEXT_INIT                      -> kapply0 KResult "NextInit"
@@ -408,6 +409,7 @@ and decl_type = function
 and lazy_decl_type = fun a sort -> LazyPrinter ((fun aa -> decl_type aa sort), a)
 
 and expression =
+  let expression_loc s l = kapply KItem "ExpressionLoc" [s KItem; cabs_loc l CabsLoc] in
   let generic_assoc = function
     | GENERIC_PAIR ((spec, declType), exp) -> kapply KItem "GenericPair" [lazy_specifier spec KItem; lazy_decl_type declType KItem; lazy_expression exp KItem]
     | GENERIC_DEFAULT exp                  -> kapply KItem "GenericDefault" [lazy_expression exp KItem] in
@@ -457,10 +459,10 @@ and expression =
       | SHR_ASSIGN  -> "AssignRightShift" in
     kapply KItem (binary_operator op) [lazy_expression exp1 KItem; lazy_expression exp2 KItem] in
   function
-    | OFFSETOF ((spec, declType), exp, loc)                      -> kapply KItem "OffsetOf" [lazy_specifier spec KItem; lazy_decl_type declType KItem; lazy_expression exp KItem]
-    | TYPES_COMPAT ((spec1, declType1), (spec2, declType2), loc) -> kapply KItem "TypesCompat" [lazy_specifier spec1 KItem; lazy_decl_type declType1 KItem; lazy_specifier spec2 KItem; lazy_decl_type declType2 KItem]
+    | OFFSETOF ((spec, declType), exp, loc)                      -> expression_loc (kapply KItem "OffsetOf" [lazy_specifier spec KItem; lazy_decl_type declType KItem; lazy_expression exp KItem]) loc
+    | TYPES_COMPAT ((spec1, declType1), (spec2, declType2), loc) -> expression_loc (kapply KItem "TypesCompat" [lazy_specifier spec1 KItem; lazy_decl_type declType1 KItem; lazy_specifier spec2 KItem; lazy_decl_type declType2 KItem]) loc
     | GENERIC (exp, assocs)                                      -> kapply KItem "Generic" [lazy_expression exp K; list_of generic_assoc assocs StrictList]
-    | LOCEXP (exp, loc)                                          -> lazy_expression exp
+    | LOCEXP (exp, loc)                                          -> expression_loc (lazy_expression exp) loc
     | UNARY (op, exp1)                                           -> unary_expression op exp1
     | BINARY (op, exp1, exp2)                                    -> binary_expression op exp1 exp2
     | NOTHING                                                    -> kapply0 KItem "NothingExpression"
@@ -534,7 +536,7 @@ and definition : definition -> csort -> unit printer =
   let definition_loc a l         = if l.lineno <> -10 then kapply KItem "DefinitionLoc" [a KItem; cabs_loc l CabsLoc] else a in
   let definition_loc_range a b c = kapply KItem "DefinitionLocRange" [a KItem; cabs_loc b CabsLoc; cabs_loc c CabsLoc] in
   let init_name (a, b)           = kapply KItem "InitName" [lazy_name a KItem; lazy_init_expression b K] in
-  let init_name_group (a, b)     = kapply KItem "InitNameGroup" [lazy_specifier a KItem; list_of init_name b StrictList] in
+  let init_name_group (a, b)     = kapply KItem "InitNameGroup" [lazy_specifier a KItem; (list_of init_name b) StrictList] in
   let name_group (a, b)          = kapply KItem "NameGroup" [lazy_specifier a KItem; list_of lazy_name b StrictList] in
   function
     | FUNDEF (a, b, c, d)     -> definition_loc_range (kapply KItem "FunctionDefinition" [lazy_single_name a KItem; lazy_block b KItem]) c d

@@ -1,5 +1,5 @@
 Unsequenced side effect on scalar object with side effect of same object:
-      > in main at UB-EIO8-bad.c:9:7
+      > in main at UB-EIO8-bad.c:9:21
 
     Undefined behavior (UB-EIO8):
         see C11 section 6.5:2 http://rvdoc.org/C11/6.5
@@ -8,7 +8,7 @@ Unsequenced side effect on scalar object with side effect of same object:
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Unsequenced side effect on scalar object with value computation of same object:
-      > in foo at UB-EIO8-bad.c:4:2
+      > in foo at UB-EIO8-bad.c:4:10
         in main at UB-EIO8-bad.c:11:2
 
     Undefined behavior (UB-EIO8):
@@ -18,7 +18,7 @@ Unsequenced side effect on scalar object with value computation of same object:
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Unsequenced side effect on scalar object with side effect of same object:
-      > in foo at UB-EIO8-bad.c:4:2
+      > in foo at UB-EIO8-bad.c:4:10
         in main at UB-EIO8-bad.c:11:2
 
     Undefined behavior (UB-EIO8):

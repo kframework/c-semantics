@@ -55,10 +55,10 @@ module C-TYPING-INTERPRETATION
      syntax KItem ::= makeIncompleteArrayType(Set, Set)
 
      context ArrayType(_, (HOLE:KItem => reval(HOLE)), _) [ndheat, result(RValue)]
+     rule ArrayType(_, (ExpLoc(V:RValue, _) => V), _)
      rule ArrayType(T:Type, tv(N:Int, T'::UType), Specifier(list(Specs::List)))
           => pushTypeDown(T, makeArrayType(.Set, staticToArrayStatic(N, listToSet(Specs)), tv(N, T')))
           requires N >Int 0 andBool notBool isFlexibleType(T)
-          [structural]
      rule ArrayType(T:Type, UnspecifiedSizeExpression(), Specifier(list(Specs::List)))
           => pushTypeDown(T, makeArrayType(.Set, listToSet(Specs), UnspecifiedSizeExpression()))
           requires notBool isFlexibleType(T)

@@ -1,5 +1,5 @@
 Floating-point overflow:
-      > in main at UB-CCV12-bad.c:4:3
+      > in main at UB-CCV12-bad.c:4:7
 
     Undefined behavior (UB-CCV12):
         see C11 section 6.5:5 http://rvdoc.org/C11/6.5

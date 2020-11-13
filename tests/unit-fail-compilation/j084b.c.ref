@@ -1,4 +1,4 @@
-j084b.c:2:1: error: Redefinition of symbol: a.
+j084b.c:2:9: error: Redefinition of symbol: a.
 
     Constraint violation (CV-TDG13):
         see C11 section 6.9:3 http://rvdoc.org/C11/6.9

@@ -37,6 +37,7 @@ module C-TYPING-SYNTAX
 
      syntax Qualifier // defined in C-SYNTAX
      syntax StorageClassSpecifier // defined in C-SYNTAX
+     syntax Location  // defined in C-TRANSLATION-INIT
 
      syntax Type ::= t(q: Quals, m: Set, st: SimpleType) // possibly-qualified type
      syntax UType ::= ut(m: Set, st: SimpleUType)     // unqualified type
@@ -342,9 +343,11 @@ module C-TYPING-SYNTAX
      syntax Bool ::= fromConstantExpr(UType) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
      syntax Bool ::= fromConstantExpr(RValue) [function]
+     syntax Bool ::= fromConstantExpr(Location) [function]
 
      syntax Bool ::= isNull(RValue) [function]
      syntax Bool ::= isNullPointerConstant(RValue) [function]
+     syntax Bool ::= isNullPointerConstant(Location) [function]
 
      syntax Bool ::= hasReadFrom(UType) [function]
      syntax SymLoc ::= getReadFromLoc(UType) [function]

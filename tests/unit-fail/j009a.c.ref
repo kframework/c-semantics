@@ -1,5 +1,5 @@
 Referring to an object outside of its lifetime:
-      > in main at j009a.c:7:2
+      > in main at j009a.c:7:10
 
     Undefined behavior (UB-CEE4):
         see C11 section 6.2.4:2 http://rvdoc.org/C11/6.2.4
@@ -12,7 +12,7 @@ Referring to an object outside of its lifetime:
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Dereferencing a null pointer:
-      > in main at j009a.c:7:2
+      > in main at j009a.c:7:10
 
     Undefined behavior (UB-CER3):
         see C11 section 6.5.3.2:4 http://rvdoc.org/C11/6.5.3.2
@@ -21,7 +21,7 @@ Dereferencing a null pointer:
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Trying to read through a null pointer:
-      > in main at j009a.c:7:2
+      > in main at j009a.c:7:10
 
     Undefined behavior (UB-CEER1):
         see C11 section 6.3.2.1:1 http://rvdoc.org/C11/6.3.2.1

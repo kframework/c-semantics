@@ -1,5 +1,5 @@
 Type of lvalue (struct S) not compatible with the effective type of the object being accessed (int):
-      > in foo at struct-aliasing-1.c:6:3
+      > in foo at struct-aliasing-1.c:6:19
         in main at struct-aliasing-1.c:15:3
 
     Undefined behavior (UB-EIO10):
@@ -9,7 +9,7 @@ Type of lvalue (struct S) not compatible with the effective type of the object b
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Type of lvalue (float) not compatible with the effective type of the object being accessed (int):
-      > in foo at struct-aliasing-1.c:6:3
+      > in foo at struct-aliasing-1.c:6:19
         in main at struct-aliasing-1.c:15:3
 
     Undefined behavior (UB-EIO10):

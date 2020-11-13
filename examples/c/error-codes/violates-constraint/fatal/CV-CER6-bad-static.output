@@ -1,4 +1,4 @@
-CV-CER6-bad-static.c:6:2: error: Unary '*' operator applied to non-pointer.
+CV-CER6-bad-static.c:6:10: error: Unary '*' operator applied to non-pointer.
 
     Constraint violation (CV-CER6):
         see C11 section 6.5.3.2:2 http://rvdoc.org/C11/6.5.3.2

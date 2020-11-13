@@ -1,5 +1,5 @@
 The left operand in a bitwise right-shift is negative:
-      > in main at IMPL-CEB8-bad.c:5:3
+      > in main at IMPL-CEB8-bad.c:5:11
 
     Implementation defined behavior (IMPL-CEB8):
         see C11 section 6.5.7:5 http://rvdoc.org/C11/6.5.7

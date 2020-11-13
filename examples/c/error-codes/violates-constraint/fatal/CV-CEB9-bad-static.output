@@ -1,4 +1,4 @@
-CV-CEB9-bad-static.c:5:3: error: Both bitwise AND operands must have integer type.
+CV-CEB9-bad-static.c:5:10: error: Both bitwise AND operands must have integer type.
 
     Constraint violation (CV-CEB9):
         see C11 section 6.5.10:2 http://rvdoc.org/C11/6.5.10

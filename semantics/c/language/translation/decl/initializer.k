@@ -41,6 +41,22 @@ module C-DECL-INITIALIZER
           [structural]
 
      // aggregates
+     rule <k> figureInit(_, _, SingleInit(ExpLoc(K:KItem, L:CabsLoc) => K)) ~> (.K => #popExpLoc())
+          ...</k>
+          <curr-expression-loc> .List => ListItem(L) ...</curr-expression-loc>
+          [structural]
+     rule <k> figureInit(_, _, CompoundInit(list(ListItem(InitFragment(NextInit(), SingleInit(ExpLoc(K:KItem, L:CabsLoc) => K)))))) ~> (.K => #popExpLoc())
+          ...</k>
+          <curr-expression-loc> .List => ListItem(L) ...</curr-expression-loc>
+          [structural]
+     rule figureInit(_:CId, _:Type,
+               CompoundInit(list(ListItem(InitFragment(_, (ExpLoc(K:KItem, _::CabsLoc) => K))))))
+          [structural]
+     rule figureInit(_:CId, T:Type,
+               CompoundInit(list(ListItem(InitFragment(_, (CodeLoc(K:KItem, _::CabsLoc) => K))))))
+          requires notBool isAggregateOrUnionType(T)
+          [structural]
+
      rule figureInit(X:CId, aggregateOrUnionType #as T::Type, CompoundInit(list(L::List)))
           => giveType(X, T)
           ~> figureInit-aux(X, T, startInit(T, X, L))
@@ -94,14 +110,14 @@ module C-DECL-INITIALIZER
      rule figureInit(X:CId, T:Type, SingleInit(K:KItem))
           => figureInit-aux(X, T,
                initializer(Initializer(ncle(X, T) := K)))
-          requires notBool isArrayType(T)
+          requires notBool isArrayType(T) andBool notBool isLocation(K)
           [structural]
      // c1x 6.7.8:11
      rule figureInit(X:CId, T:Type,
                CompoundInit(list(ListItem(InitFragment(NextInit(), SingleInit(K:KItem))))))
           => figureInit-aux(X, T,
                initializer(Initializer(ncle(X, T) := K)))
-          requires notBool isAggregateOrUnionType(T)
+          requires notBool isAggregateOrUnionType(T) andBool notBool isLocation(K)
           [structural]
 
      rule (.K => UNDEF("CDI1",
@@ -121,6 +137,7 @@ module C-DECL-INITIALIZER
           ~> figureInit(_, t(_, _, incompleteArrayType(T::Type)), SingleInit(K:KItem))
           requires (notBool isWCharType(T) orBool WStringLiteral(...) :/=K K)
                andBool (notBool isCharType(T) orBool StringLiteral(...) :/=K K)
+               andBool notBool isLocation(K)
 
      syntax Bool ::= isIncompleteStringType(Type) [function]
      rule isIncompleteStringType(t(_, _, incompleteArrayType(charType))) => true
@@ -128,6 +145,7 @@ module C-DECL-INITIALIZER
 
      syntax Bool ::= isCompoundStringInit(List) [function]
      rule isCompoundStringInit(ListItem(InitFragment(NextInit(), SingleInit(StringLiteral(_))))) => true
+     rule isCompoundStringInit(ListItem(InitFragment(_, SingleInit(ExpLoc(K:KItem, _) => K))))
      rule isCompoundStringInit(_) => false [owise]
 
      // id, type, initializer
@@ -314,6 +332,9 @@ module C-DECL-INITIALIZER
           => ncle(K .init F, findFieldType(F, T))
           requires notBool isNoName(F)
      rule firstField(_, _, _) => noMoreFields [owise]
+
+     rule fillInit(CodeLoc(I, _) => I)
+          [structural]
 
      rule <k> fillInit(InitFragment(NextInit(), Exp:KItem)) => fillInit(Exp) ...</k>
           <curr-subobject>
@@ -508,6 +529,12 @@ module C-DECL-INITIALIZER
      rule fillInit(SingleInit(K:KItem)) => initializeSingleInit(K)
           requires StringLiteral(...) :/=K K
                andBool WStringLiteral(...) :/=K K
+               andBool ExpLoc(...) :/=K K
+          [structural]
+
+     rule <k> fillInit(SingleInit(ExpLoc(K:KItem, L:CabsLoc))) => fillInit(SingleInit(K)) ~> #popExpLoc()
+          ...</k>
+          <curr-expression-loc> .List => ListItem(L) ...</curr-expression-loc>
           [structural]
 
      rule <k> fillInit(SingleInit(StringLiteral(_))) ...</k>
