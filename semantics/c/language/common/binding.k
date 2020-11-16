@@ -172,7 +172,7 @@ module C-BINDING
      rule #arePromotedTypesCompat(_, _, _) => false [owise]
 
      syntax KItem ::= argPromote(RValue) [function]
-     rule argPromote(V::RValue) => cast(argPromoteType(utype(V)), V, false)
+     rule argPromote(V::RValue) => cast(argPromoteType(utype(V)), V)
 
 endmodule
 

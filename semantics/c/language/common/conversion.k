@@ -11,6 +11,7 @@ module C-CONVERSION-SYNTAX
      // as described in 6.3 // totype, fromvalue
      // change it to function in order
      // to solve anywhere rule
+     syntax Cast ::= cast(UType, K)
      syntax Cast ::= cast(UType, K, explicit: Bool)
 endmodule
 
@@ -46,6 +47,7 @@ module C-CONVERSION
           ~> floatArithInterpret(ut(... st: _:SimpleFloatType) #as T::UType, F::Float)
           requires notBool (fmin(T) <=Float F andBool fmax(T) >=Float F)
 
+     rule cast(T::UType, K::K) => cast(T, K, false)
      context cast(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
      rule cast(T'::UType, tv(V:CValue, T::UType), _) => tv(V, castTypes(T', T))
           requires T' ==Type T andBool notBool isPointerUType(T')

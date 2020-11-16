@@ -6,13 +6,13 @@ module C-PROMOTION
      imports C-TYPING-SYNTAX
      imports C-SYNTAX
 
-     rule - (V:RValue => cast(promote(utype(V)), V, false))
+     rule - (V:RValue => cast(promote(utype(V)), V))
           requires isIntegerType(type(V))
                andBool notBool isPromoted(utype(V))
-     rule + (V:RValue => cast(promote(utype(V)), V, false))
+     rule + (V:RValue => cast(promote(utype(V)), V))
           requires isIntegerType(type(V))
                andBool notBool isPromoted(utype(V))
-     rule ~ (V:RValue => cast(promote(utype(V)), V, false))
+     rule ~ (V:RValue => cast(promote(utype(V)), V))
           requires isIntegerType(type(V))
                andBool notBool isPromoted(utype(V))
 
@@ -23,12 +23,12 @@ module C-PROMOTION
         #Or (L >> R) [macro]
 
      rule arithBinOp(L:RValue, R:RValue) #as O:KItem
-          => fillExpr(O, cast(promote(utype(L)), L, false), R)
+          => fillExpr(O, cast(promote(utype(L)), L), R)
           requires isIntegerType(type(L))
                andBool notBool isPromoted(utype(L))
 
      rule arithBinOp(L:RValue, R:RValue) #as O:KItem
-          => fillExpr(O, L, cast(promote(utype(R)), R, false))
+          => fillExpr(O, L, cast(promote(utype(R)), R))
           requires isIntegerType(type(R))
                andBool notBool isPromoted(utype(R))
                andBool (notBool isIntegerType(type(L)) orBool isPromoted(utype(L)))
@@ -120,8 +120,8 @@ module C-PROMOTION
         #Or ((L ^ R))))))))))))))) [macro]
 
      rule arithBinConversionOp(L:RValue, R:RValue) #as O:KItem
-         => fillExpr(O, cast(usualArithmeticConversion(utype(L), utype(R)), L, false),
-                        cast(usualArithmeticConversion(utype(L), utype(R)), R, false))
+         => fillExpr(O, cast(usualArithmeticConversion(utype(L), utype(R)), L),
+                        cast(usualArithmeticConversion(utype(L), utype(R)), R))
          requires isArithmeticType(type(L))
                andBool isArithmeticType(type(R))
                andBool (notBool isIntegerUType(utype(L)) orBool isPromoted(utype(L)))

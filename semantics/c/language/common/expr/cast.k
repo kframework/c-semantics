@@ -15,7 +15,9 @@ module C-COMMON-EXPR-CAST
      cast specifies a conversion even if the type of the expression is the same
      as the named type and removes any extra range and precision.
      }*/
-     rule Cast(T:Type, V:RValue, E::Bool) => cast(utype(T), V, E)
+     rule #Cast(T:Type, V:RValue, E::Bool) => cast(utype(T), V, E)
+          [structural]
+     rule Cast(T:Type, V:RValue) => cast(utype(T), V)
           [structural]
 
 endmodule

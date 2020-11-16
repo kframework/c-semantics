@@ -19,7 +19,7 @@ module LIBC-STRING
      imports LIBC-IO-SYNTAX
      imports LIBC-TYPES-SYNTAX
 
-     rule (.K => cast(utype(unsigned-char), V, false))
+     rule (.K => cast(utype(unsigned-char), V))
           ~> builtin("memset", _, V::RValue, _)
           requires notBool isUCharType(type(V))
           [structural]
