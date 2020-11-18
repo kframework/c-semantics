@@ -230,7 +230,7 @@ module C-IO
                         ObjT::EffectiveType,
                         Len:Int,
                         M::Array,
-                        Locs::Set,
+                        _::Set,
                         Mem::List,
                         _,
                         InBounds:Bool => InBounds orBool assertInBounds(Offset, Len),

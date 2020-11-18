@@ -255,8 +255,11 @@ module C-SYNTAX
      context _ := (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
      syntax KItem ::= Cast(K, K) [klabel(Cast2)]
+     syntax KItem ::= #Cast(K, K, explicit: Bool) [klabel(Cast3)]
      context Cast(HOLE:KItem, _)
+     context #Cast(HOLE:KItem, _, _)
      context Cast(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
+     context #Cast(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
 
      /*
      (* There is a special form of CALL in which the function called

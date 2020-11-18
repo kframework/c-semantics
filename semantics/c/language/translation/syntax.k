@@ -290,8 +290,11 @@ module C-ABSTRACT-SYNTAX
      | CAST of (specifier * decl_type) * init_expression
      */
      syntax KItem ::= Cast(K, KItem, K) [symbol]
+     syntax KItem ::= #Cast(K, KItem, K, explicit: Bool) [symbol]
      context Cast(HOLE:KItem, _, _)
+     context #Cast(HOLE:KItem, _, _, _)
      context Cast(_, _, (HOLE:KItem => reval(HOLE))) [result(RValue)]
+     context #Cast(_, _, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
 
      // new // comp-lit id, spec, decl, init
      syntax KItem ::= CompoundLiteral(Int, KItem, KItem, KItem) [strict(2), symbol]

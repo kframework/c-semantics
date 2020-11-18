@@ -211,6 +211,7 @@ module C-DYNAMIC
 
      rule fillRHoles(V:RValue, te(L:K := E:K, T::UType)) => te(L := fillRHoles(V, E), T)
      rule fillRHoles(V:RValue, Cast(T::Type, E:K)) => Cast(T, fillRHoles(V, E))
+     rule fillRHoles(V:RValue, #Cast(T::Type, E:K, X::Bool)) => #Cast(T, fillRHoles(V, E), X)
      rule fillRHoles(V:RValue, RHOLE) => V
      rule fillRHoles(V:RValue, L:K * R:K) => fillRHoles(V, L) * R
      rule fillRHoles(V:RValue, L:K / R:K) => fillRHoles(V, L) / R

@@ -19,10 +19,14 @@ module C-EXPR-CAST
      }*/
      rule (.K => DeclType(T, K)) ~> Cast(T:Type, K:KItem, V:RValue)
           [structural]
+     rule (.K => DeclType(T, K)) ~> #Cast(T:Type, K:KItem, V:RValue, _)
+          [structural]
      rule T:Type ~> Cast(_, _, V:RValue) => Cast(elideDeclParams(T), V)
           [structural]
+     rule T:Type ~> #Cast(_, _, V:RValue, E::Bool) => #Cast(elideDeclParams(T), V, E)
+          [structural]
 
-     rule cast(T'::UType, te(K:KItem, _)) => te(Cast(type(T'), K), T')
+     rule cast(T'::UType, te(K:KItem, _), E::Bool) => te(#Cast(type(T'), K, E), T')
 
 endmodule
 
