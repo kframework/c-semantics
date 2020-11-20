@@ -1,4 +1,4 @@
-IMPLUB-CEB12-bad-static.c:4:7: error: Potential negative zero produced via bitwise operations, undefined under sign and magnitude or one's complement arithmetic, implementation-defined otherwise.
+IMPLUB-CEB12-bad-static.c:4:8: error: Potential negative zero produced via bitwise operations, undefined under sign and magnitude or one's complement arithmetic, implementation-defined otherwise.
 
     Implementation-dependent undefined behavior (IMPLUB-CEB12):
         see C11 section 6.2.6.2:4 http://rvdoc.org/C11/6.2.6.2
