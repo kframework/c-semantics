@@ -431,7 +431,7 @@ primary_expression:                     /*(* 6.5.1. *)*/
 |        	constant
 		        {LOCEXP (CONSTANT (fst $1), snd $1), snd $1 }
 |		paren_comma_expression
-		        {LOCEXP (PAREN (smooth_expression (fst $1)), snd $1), snd $1}
+		        {PAREN (smooth_expression (fst $1)), snd $1}
 |		LPAREN block RPAREN
 		        { LOCEXP (GNU_BODY (fst3 $2), $1), $1 }
 |		IDENT bit_number
@@ -448,13 +448,13 @@ postfix_expression:                     /*(* 6.5.2 *)*/
 |               primary_expression
                         { $1 }
 |		postfix_expression bracket_comma_expression
-			{LOCEXP (INDEX (fst $1, smooth_expression $2), snd $1), snd $1}
+			{INDEX (fst $1, smooth_expression $2), snd $1}
 |		postfix_expression LPAREN arguments RPAREN
-			{LOCEXP (CALL (fst $1, $3), snd $1), snd $1}
+			{CALL (fst $1, $3), snd $1}
 |		postfix_expression DOT id_or_typename
-		        {LOCEXP (MEMBEROF (fst $1, $3), snd $1), snd $1}
+		        {MEMBEROF (fst $1, $3), snd $1}
 |		postfix_expression ARROW id_or_typename
-		        {LOCEXP (MEMBEROFPTR (fst $1, $3), snd $1), snd $1}
+		        {MEMBEROFPTR (fst $1, $3), snd $1}
 |		postfix_expression PLUS_PLUS
 		        {LOCEXP (UNARY (POSINCR, fst $1), snd $1), snd $1}
 |		postfix_expression MINUS_MINUS
@@ -491,13 +491,13 @@ unary_expression:   /*(* 6.5.3 *)*/
 |		MINUS_MINUS unary_expression
 		        {LOCEXP (UNARY (PREDECR, fst $2), $1), $1}
 |		SIZEOF unary_expression
-		        {LOCEXP (EXPR_SIZEOF (fst $2), $1), $1}
+		        {EXPR_SIZEOF (fst $2), $1}
 |	 	SIZEOF LPAREN type_name RPAREN
-		        {let b, d = $3 in LOCEXP (TYPE_SIZEOF (b, d), $1), $1}
+		        {let b, d = $3 in TYPE_SIZEOF (b, d), $1}
 |		ALIGNOF unary_expression
-		        {LOCEXP (EXPR_ALIGNOF (fst $2), $1), $1}
+		        {EXPR_ALIGNOF (fst $2), $1}
 |	 	ALIGNOF LPAREN type_name RPAREN
-		        {let b, d = $3 in LOCEXP (TYPE_ALIGNOF (b, d), $1), $1}
+		        {let b, d = $3 in TYPE_ALIGNOF (b, d), $1}
 |		PLUS cast_expression
 		        {LOCEXP (UNARY (PLUS, fst $2), $1), $1}
 |		MINUS cast_expression
@@ -622,27 +622,27 @@ assignment_expression:     /*(* 6.5.16 *)*/
 |               conditional_expression
                          { $1 }
 |		cast_expression EQ assignment_expression
-			{LOCEXP (BINARY(ASSIGN, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(ASSIGN, fst $1, fst $3), snd $1}
 |		cast_expression PLUS_EQ assignment_expression
-			{LOCEXP (BINARY(ADD_ASSIGN, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(ADD_ASSIGN, fst $1, fst $3), snd $1}
 |		cast_expression MINUS_EQ assignment_expression
-			{LOCEXP (BINARY(SUB_ASSIGN, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(SUB_ASSIGN, fst $1, fst $3), snd $1}
 |		cast_expression STAR_EQ assignment_expression
-			{LOCEXP (BINARY(MUL_ASSIGN, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(MUL_ASSIGN, fst $1, fst $3), snd $1}
 |		cast_expression SLASH_EQ assignment_expression
-			{LOCEXP (BINARY(DIV_ASSIGN, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(DIV_ASSIGN, fst $1, fst $3), snd $1}
 |		cast_expression PERCENT_EQ assignment_expression
-			{LOCEXP (BINARY(MOD_ASSIGN, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(MOD_ASSIGN, fst $1, fst $3), snd $1}
 |		cast_expression AND_EQ assignment_expression
-			{LOCEXP (BINARY(BAND_ASSIGN, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(BAND_ASSIGN, fst $1, fst $3), snd $1}
 |		cast_expression PIPE_EQ assignment_expression
-			{LOCEXP (BINARY(BOR_ASSIGN, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(BOR_ASSIGN, fst $1, fst $3), snd $1}
 |		cast_expression CIRC_EQ assignment_expression
-			{LOCEXP (BINARY(XOR_ASSIGN, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(XOR_ASSIGN, fst $1, fst $3), snd $1}
 |		cast_expression INF_INF_EQ assignment_expression	
-			{LOCEXP (BINARY(SHL_ASSIGN, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(SHL_ASSIGN, fst $1, fst $3), snd $1}
 |		cast_expression SUP_SUP_EQ assignment_expression
-			{LOCEXP (BINARY(SHR_ASSIGN, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(SHR_ASSIGN, fst $1, fst $3), snd $1}
 ;
 
 expression:           /*(* 6.5.17 *)*/
