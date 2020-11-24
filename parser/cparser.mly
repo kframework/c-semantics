@@ -517,18 +517,18 @@ cast_expression:   /*(* 6.5.4 *)*/
 |              unary_expression
                          { $1 }
 |		LPAREN type_name RPAREN cast_expression
-		         { LOCEXP (CAST($2, SINGLE_INIT (fst $4)), $1), $1 }
+		         { CAST($2, SINGLE_INIT (fst $4)), $1 }
 ;
 
 multiplicative_expression:  /*(* 6.5.5 *)*/
 |               cast_expression
                          { $1 }
 |		multiplicative_expression STAR cast_expression
-			{LOCEXP (BINARY(MUL, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(MUL, fst $1, fst $3), snd $1}
 |		multiplicative_expression SLASH cast_expression
-			{LOCEXP (BINARY(DIV, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(DIV, fst $1, fst $3), snd $1}
 |		multiplicative_expression PERCENT cast_expression
-			{LOCEXP (BINARY(MOD, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(MOD, fst $1, fst $3), snd $1}
 ;
 
 additive_expression:  /*(* 6.5.6 *)*/
