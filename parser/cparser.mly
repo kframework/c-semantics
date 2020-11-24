@@ -535,9 +535,9 @@ additive_expression:  /*(* 6.5.6 *)*/
 |               multiplicative_expression
                         { $1 }
 |		additive_expression PLUS multiplicative_expression
-			{LOCEXP (BINARY(ADD, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(ADD, fst $1, fst $3), snd $1}
 |		additive_expression MINUS multiplicative_expression
-			{LOCEXP (BINARY(SUB, fst $1, fst $3), snd $1), snd $1}
+			{BINARY(SUB, fst $1, fst $3), snd $1}
 ;
 
 shift_expression:      /*(* 6.5.7 *)*/
