@@ -433,7 +433,7 @@ primary_expression:                     /*(* 6.5.1. *)*/
 |		paren_comma_expression
 		        {PAREN (smooth_expression (fst $1)), snd $1}
 |		LPAREN block RPAREN
-		        { LOCEXP (GNU_BODY (fst3 $2), $1), $1 }
+		        { GNU_BODY (fst3 $2), $1 }
 |		IDENT bit_number
 		        {let id = LOCEXP (VARIABLE (fst $1), snd $1), snd $1 in
                          BITMEMBEROF (fst id, $2), snd id}
@@ -456,12 +456,12 @@ postfix_expression:                     /*(* 6.5.2 *)*/
 |		postfix_expression ARROW id_or_typename
 		        {MEMBEROFPTR (fst $1, $3), snd $1}
 |		postfix_expression PLUS_PLUS
-		        {LOCEXP (UNARY (POSINCR, fst $1), snd $1), snd $1}
+		        {UNARY (POSINCR, fst $1), snd $1}
 |		postfix_expression MINUS_MINUS
-		        {LOCEXP (UNARY (POSDECR, fst $1), snd $1), snd $1}
+		        {UNARY (POSDECR, fst $1), snd $1}
 /* (* We handle GCC constructor expressions *) */
 |		LPAREN type_name RPAREN LBRACE initializer_list_opt RBRACE
-		        { LOCEXP(CAST($2, COMPOUND_INIT $5), $1), $1 }
+		        { CAST($2, COMPOUND_INIT $5), $1 }
 |		KCC_OFFSETOF LPAREN type_name COMMA offsetof_member_designator RPAREN
 		        { OFFSETOF ($3, $5, $1), $1 }
 |		KCC_TYPES_COMPAT LPAREN type_name COMMA type_name RPAREN
@@ -487,9 +487,9 @@ unary_expression:   /*(* 6.5.3 *)*/
 |               postfix_expression
                         { $1 }
 |		PLUS_PLUS unary_expression
-		        {LOCEXP (UNARY (PREINCR, fst $2), $1), $1}
+		        {UNARY (PREINCR, fst $2), $1}
 |		MINUS_MINUS unary_expression
-		        {LOCEXP (UNARY (PREDECR, fst $2), $1), $1}
+		        {UNARY (PREDECR, fst $2), $1}
 |		SIZEOF unary_expression
 		        {EXPR_SIZEOF (fst $2), $1}
 |	 	SIZEOF LPAREN type_name RPAREN
@@ -499,17 +499,17 @@ unary_expression:   /*(* 6.5.3 *)*/
 |	 	ALIGNOF LPAREN type_name RPAREN
 		        {let b, d = $3 in TYPE_ALIGNOF (b, d), $1}
 |		PLUS cast_expression
-		        {LOCEXP (UNARY (PLUS, fst $2), $1), $1}
+		        {UNARY (PLUS, fst $2), $1}
 |		MINUS cast_expression
-		        {LOCEXP (UNARY (MINUS, fst $2), $1), $1}
+		        {UNARY (MINUS, fst $2), $1}
 |		STAR cast_expression
-		        {LOCEXP (UNARY (MEMOF, fst $2), $1), $1}
+		        {UNARY (MEMOF, fst $2), $1}
 |		AND cast_expression				
-		        {LOCEXP (UNARY (ADDROF, fst $2), $1), $1}
+		        {UNARY (ADDROF, fst $2), $1}
 |		EXCLAM cast_expression
-		        {LOCEXP (UNARY (NOT, fst $2), $1), $1}
+		        {UNARY (NOT, fst $2), $1}
 |		TILDE cast_expression
-		        {LOCEXP (UNARY (BNOT, fst $2), $1), $1}
+		        {UNARY (BNOT, fst $2), $1}
 |               AND_AND IDENT  { LABELADDR (fst $2), $1 }
 ;
 
