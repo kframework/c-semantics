@@ -14,7 +14,7 @@ use MIME::Base64 qw(encode_base64);
 use String::Escape qw(quote backslash printable);
 use UUID::Tiny qw(:std);
 
-use RV_Kcc::Files qw(profileDir nativeCC nativeCXX distDir kBinDir tempFile tempDir error IS_CYGWIN);
+use RV_Kcc::Files qw(profileDir hardwareAddressesFile nativeCC nativeCXX distDir kBinDir tempFile tempDir error IS_CYGWIN);
 use RV_Kcc::Opts qw(
       getopts arg classify
       cppArgs suppressions ifdefs ldArgs nativeObjFiles srcFiles objFiles trampolineFiles breakpoints
@@ -527,6 +527,8 @@ sub getLinkingCommand {
 
       @krun = addArg("PGM", ".K", 'text', @krun);
 
+      @krun = addArg("HWADDR", ".K", 'text', @krun);
+
       setShellDebugFile($output, 1);
       return @krun;
 }
@@ -557,6 +559,8 @@ sub getTranslationCommand {
 
       my $kast = parse($src, $lang, $trampolines);
       @krun = addArg("PGM", $kast, 'textfile', @krun);
+
+      @krun = addArg("HWADDR", hardwareAddressesFile(), 'textfile', @krun);
 
       setShellDebugFile($output, 1);
       return @krun;

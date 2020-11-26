@@ -281,6 +281,8 @@ module LINKING-INIT
                <constexpr-symbase> CS1::Set</constexpr-symbase>
 
                <translation-units> TUs1::Bag </translation-units>
+
+               <hardware-addresses> HwA1::Set </hardware-addresses>
           </global>),
           (<global>
                <mem> M2:Map </mem>
@@ -311,6 +313,8 @@ module LINKING-INIT
                <constexpr-symbase> CS2::Set </constexpr-symbase>
 
                <translation-units> TUs2::Bag </translation-units>
+
+               <hardware-addresses> HwA2::Set </hardware-addresses>
           </global>))
           =>
           <global>
@@ -346,6 +350,8 @@ module LINKING-INIT
                <constexpr-symbase> CS1 CS2 </constexpr-symbase>
 
                <translation-units> TUs1 TUs2 </translation-units>
+
+               <hardware-addresses> HwA1 |Set HwA2 </hardware-addresses>
           </global>
 
      // TODO(chathhorn): remove redundancy

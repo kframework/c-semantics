@@ -75,7 +75,7 @@ module C-IO
                andBool (notBool isLibcFixedDuration(Base))
           [structural]
      rule checkWrite(Loc::SymLoc) => .K
-          requires isNativeLoc(Loc)
+          requires isNativeLoc(Loc) orBool isHardwareLoc(Loc)
      rule <k> (.K => UNDEF("EIO3",
                "Trying to modify an object declared with const type."))
                ~> checkWrite(loc(Base::SymBase, Offset::Int))
@@ -105,7 +105,7 @@ module C-IO
                (Offset +Int Size -Int 1 <Int Len)
                andBool Offset >=Int 0
      rule <k> checkBounds(Loc::SymLoc, _) => .K ...</k>
-          requires isNativeLoc(Loc)
+          requires isNativeLoc(Loc) orBool isHardwareLoc(Loc)
      rule <k> (.K => UNDEF("EIO2",
                "Trying to write outside the bounds of an object."))
                ~> checkBounds(loc(Base::SymBase, Offset::Int), Size::Int)

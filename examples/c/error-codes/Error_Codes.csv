@@ -219,6 +219,7 @@ CV-CTI3,The width of a bit field shall be an integer constant expression.,6.7.2.
 CV-CTI5,Structs containing a flexible array member must not be array elements.,6.7.2.1:2,Constraint Violation,
 IMPL-CCV2,Conversion to signed integer outside the range that can be represented.,"6.3.1.3:3, J.3.5:1 item 4",Implementation Defined Behavior,
 IMPL-CCV13,Conversion from an integer to non-null pointer.,"6.3.2.3:5",Implementation Defined Behavior,
+IMPL-CCV13-H,Conversion from an integer to non-null hardware-dependent pointer.,"6.3.2.3:5",Implementation Defined Behavior,
 IMPL-CCVE4,Casting a pointer to an integer.,"6.3.2.3:6",Implementation Defined Behavior,
 IMPL-CEB8,The left operand in a bitwise right-shift is negative.,"6.5.7:5, J.3.5:1 item 5",Implementation Defined Behavior,
 IMPL-CEMX4,Modulus operator with a pointer value as an argument.,"6.3.2.3:6, J.3.7:1 item 1",Implementation Defined Behavior,

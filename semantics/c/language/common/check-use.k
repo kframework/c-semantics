@@ -80,7 +80,7 @@ module C-CHECK-USE
           [structural]
      rule <k> checkLocAllowLink(loc(_, _) #as Loc::SymLoc) => .K ...</k>
           <mem> Mem::Map </mem>
-          requires (isStaticDuration(Loc) orBool isNativeLoc(Loc))
+          requires (isStaticDuration(Loc) orBool isNativeLoc(Loc) orBool isHardwareLoc(Loc))
                andBool notBool (base(Loc) in_keys(Mem))
           [structural]
      rule <k> checkLocAllowLink(loc(_, _) #as Loc::SymLoc)
@@ -91,6 +91,7 @@ module C-CHECK-USE
           requires notBool (base(Loc) in_keys(Mem))
                andBool notBool isStaticDuration(Loc)
                andBool notBool isNativeLoc(Loc)
+               andBool notBool isHardwareLoc(Loc)
           [structural]
 
      syntax K ::= checkOpaque(Opaque) [function]

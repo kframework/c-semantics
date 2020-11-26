@@ -43,6 +43,8 @@ module SYMLOC-SYNTAX
 
      syntax Duration ::= nativeAddress()
 
+     syntax Duration ::= hardwareAddress()
+
      syntax LinkDuration ::= link(String)
 
      syntax Bool ::= isAllocatedDuration(SymLoc) [function]
@@ -61,6 +63,8 @@ module SYMLOC-SYNTAX
      syntax Bool ::= isRegisterLoc(SymLoc) [function]
      syntax Bool ::= isNativeLoc(SymLoc) [function]
      syntax Bool ::= isNativeLoc(SymBase) [function, klabel(isNativeLoc2)]
+     syntax Bool ::= isHardwareLoc(SymLoc) [function]
+     syntax Bool ::= isHardwareLoc(SymBase) [function]
 
      syntax SymBase ::= autoToRegister(SymBase) [function]
 
@@ -191,10 +195,16 @@ module SYMLOC
 
      rule isNativeLoc(obj(... d: nativeAddress())) => true
      rule isNativeLoc(obj(... d: nativeSymbol(_))) => true
-     rule isNativeLoc(_::SymBase) => false [owise]
+     rule isNativeLoc(_:SymBase) => false [owise]
 
      rule isNativeLoc(NullPointer) => false
-     rule isNativeLoc(Loc::SymLoc) => isNativeLoc(base(Loc)) [owise]
+     rule isNativeLoc(Loc:SymLoc) => isNativeLoc(base(Loc)) [owise]
+
+     rule isHardwareLoc(obj(... d: hardwareAddress())) => true
+     rule isHardwareLoc(_:SymBase) => false [owise]
+
+     rule isHardwareLoc(NullPointer) => false
+     rule isHardwareLoc(Loc:SymLoc) => isHardwareLoc(base(Loc)) [owise]
 
      rule autoToRegister(obj(Id::Int, Align::Int, auto(Th:Int))) => obj(Id, Align, register(Th))
 

@@ -16,13 +16,19 @@ module COMMON-INIT-SYNTAX
 endmodule
 
 module COMMON-INIT
-     imports COMMON-INIT-SYNTAX
      imports C-CONFIGURATION
+     imports C-SETTINGS-SYNTAX
+     imports C-TYPING-SYNTAX
      imports COLLECTIONS
+     imports COMMON-INIT-SYNTAX
+     imports COMMON-SYNTAX
+     imports COMMON-TRANSLATION-UNIT-SYNTAX
      imports K-EQUAL
      imports K-REFLECTION
+     imports MEMORY-SYNTAX
      imports OPTIONS-SYNTAX
-     imports COMMON-TRANSLATION-UNIT-SYNTAX
+     imports SETTINGS-SYNTAX
+     imports SYMLOC-SYNTAX
 
      rule getEntryPoint(Cfg:Set) => #getEntryPoint(Cfg, #getenv("KCC_ENTRY_FUNCTION"))
 
@@ -69,4 +75,13 @@ module COMMON-INIT
      rule <k> reportSuccess => .K ...</k>
           <result-value> _ => 0 </result-value>
 
+     rule initHardwareAddresses(hardwareAddresses(.K)) => .
+     rule <k> initHardwareAddresses(hardwareAddresses((#hardwareAddress(Address:Int, Size:Int) => .K) ~> _:K)) ...</k>
+          <hardware-addresses>... (.Set => SetItem(Address)) ... </hardware-addresses>
+          <mem>...
+               (.Map =>
+                    obj(Address, cfg:bitsPerByte *Int cfg:alignofPointer, hardwareAddress())
+                    |-> object(t(quals(.Set), .Set, arrayType(t(quals(.Set), .Set, char), Size)), Size, makeArray(Size, uninit))
+               )
+          ...</mem>
 endmodule

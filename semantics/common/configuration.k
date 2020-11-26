@@ -142,6 +142,8 @@ module COMMON-CONFIGURATION
 
           </tu>
      </translation-units>
+
+     <hardware-addresses> .Set </hardware-addresses>
    </global>
 
 endmodule
