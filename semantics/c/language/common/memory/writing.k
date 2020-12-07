@@ -75,7 +75,7 @@ module C-MEMORY-WRITING
           [structural]
      // Write global, shared data, or "allocated" duration.
      rule write(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T, false)
-          requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc) orBool isHardwareLoc(Loc))
+          requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
                andBool notBool isConstType(T)
                andBool notBool isStringLoc(Loc)
                andBool notBool isLinkerLoc(Loc)

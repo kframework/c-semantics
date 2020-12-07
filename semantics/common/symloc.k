@@ -158,6 +158,7 @@ module SYMLOC
      rule isStaticDuration(obj(... d: wstring(_))) => true
      rule isStaticDuration(obj(... d: builtinSymbol(_))) => true
      rule isStaticDuration(obj(... d: builtinCppSymbol(_))) => true
+     rule isStaticDuration(obj(... d: hardwareAddress())) => true
      rule isStaticDuration(_::SymBase) => false [owise]
 
      rule isThreadDuration(loc(obj(... d: threadLocal(_)), _)) => true
