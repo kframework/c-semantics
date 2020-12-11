@@ -60,6 +60,10 @@ module COMMON-SYNTAX
      syntax Status ::= "initializingTu" | "mainCalled" | "mainExited" | "terminated"
      syntax KItem ::= "cleanup" | "reportSuccess"
 
+     syntax KItem ::= hardwareAddresses(K)
+     syntax KItem ::= #hardwareAddress(Int, Int)
+     syntax KItem ::= initHardwareAddresses(KItem)
+
      syntax LanguageLinkage ::= "CLinkage" | "CPPLinkage"
 
      syntax Location ::= CodeLoc(K, CabsLoc)

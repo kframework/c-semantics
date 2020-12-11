@@ -13,16 +13,20 @@ our $VERSION = 1.00;
 our @ISA = qw(Exporter);
 our @EXPORT = qw();
 our @EXPORT_OK = qw(
+      currentHardwareAddresses
       currentProfile
+      defaultHardwareAddresses
       defaultProfile
       distDir
       error
       getProfiles
+      getHardwareAddresses
       IS_CYGWIN
       kBinDir
       nativeCC
       nativeCXX
       profileDir
+      hardwareAddressesFile
       tempDir
       tempFile
 );
@@ -93,6 +97,57 @@ sub profileDir {
       return catfile($prof, @_);
 }
 
+sub hardwareAddressesDir {
+      state $profs = do {
+            my $d = distDir('hardware-addresses');
+            if (IS_CYGWIN) {
+                  $d = shell("cygpath -w $d")->stdout()->run();
+                  chop($d);
+            }
+            $d;
+      };
+
+      return catfile($profs, @_);
+}
+
+sub hardwareAddressesFile {
+      my $prof = hardwareAddressesDir(currentHardwareAddresses());
+      if (IS_CYGWIN) {
+            $prof = shell("cygpath -w $prof")->stdout()->run();
+            chop($prof);
+      }
+
+      return catfile($prof, @_);
+}
+
+sub currentHardwareAddresses {
+      state $profile;
+      if (scalar @_) {
+            ($profile) = @_;
+      }
+      $profile ||= do {
+            local $/ = undef;
+            open my $fh, '<', distDir('current-hardware-addresses')
+                  or error("Couldn't find current hardware addresses: please fix " . distDir('current-hardware-addresses') . ".\n");
+            <$fh>;
+      };
+      return $profile;
+}
+
+sub defaultHardwareAddresses {
+      state $profile;
+      if (scalar @_) {
+            ($profile) = @_;
+      }
+      $profile ||= do {
+            local $/ = undef;
+            open my $fh, '<', distDir('default-hardware-addresses')
+                  or error("Couldn't find default hardware addresses profile: please fix " . distDir('default-hardware-addresses') . ".\n");
+            <$fh>;
+      };
+      return $profile;
+}
+
 sub kBinDir {
       my $path = defined($ENV{'K_BIN'})? $ENV{'K_BIN'} : distDir('k', 'bin');
       if (IS_CYGWIN) {
@@ -121,6 +176,25 @@ sub getProfiles {
                   while (my $entry = readdir $DIR) {
                         next unless -d profilesDir($entry);
                         next if $entry eq '.' or $entry eq '..';
+                        push(@p, $entry);
+                  }
+                  @p;
+            };
+            $profilesInitialized = 1;
+      }
+
+      return @profiles;
+}
+
+sub getHardwareAddresses {
+      state @profiles;
+      state $profilesInitialized;
+      if (!$profilesInitialized) {
+            @profiles = do {
+                  opendir (my $DIR, hardwareAddressesDir());
+                  my @p = ();
+                  while (my $entry = readdir $DIR) {
+                        next unless -f hardwareAddressesDir($entry);
                         push(@p, $entry);
                   }
                   @p;

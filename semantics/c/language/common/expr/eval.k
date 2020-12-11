@@ -81,13 +81,13 @@ module C-COMMON-EXPR-EVAL
                ~> nclv(updateLastAccessType(Loc, T, LAT), T)
           ...</k>
           <mem> Mem::Map </mem>
-          requires base(Loc) in_keys(Mem)
+          requires base(Loc) in_keys(Mem) andBool notBool isHardwareLoc(Loc)
           [structural]
      rule <k> lvalConvert(Loc::SymLoc, T::Type, LAT:EffectiveType)
                => nclv(updateLastAccessType(Loc, T, LAT), T)
           ...</k>
           <mem> Mem::Map </mem>
-          requires notBool (base(Loc) in_keys(Mem))
+          requires notBool (base(Loc) in_keys(Mem)) orBool isHardwareLoc(Loc)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{

@@ -10,7 +10,8 @@ K_OPTS += -Xmx8g
 K_OPTS += -Xss32m
 export K_OPTS
 
-PROFILE_DIR := $(ROOT)/profiles/x86-gcc-limited-libc
+PROFILE_ROOT := $(ROOT)/profiles
+PROFILE_DIR := $(PROFILE_ROOT)/x86-gcc-limited-libc
 PROFILE := $(shell basename $(PROFILE_DIR))
 SUBPROFILE_DIRS :=
 
@@ -247,6 +248,12 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
 				*.c $(KCCFLAGS) -I .)
 	@$(LOGGER) "$(PROFILE): Done translating the C standard library."
 
+$(OUTPUT_DIR)/hardware-addresses.timestamp: $(PROFILE_ROOT)/*-hwa $(PROFILE_ROOT)/no-hwa
+	@printf "no-hwa" > $(OUTPUT_DIR)/default-hardware-addresses
+	@printf "no-hwa" > $(OUTPUT_DIR)/current-hardware-addresses
+	@mkdir -p $(OUTPUT_DIR)/hardware-addresses
+	@cp -Lp $? $(OUTPUT_DIR)/hardware-addresses
+	@touch $@
 
 .PHONY: $(PROFILE)-native
 $(PROFILE)-native: CC := $(PROFILE_DIR)/cc
@@ -280,7 +287,8 @@ $(PROFILE_OUTPUT_DIR)/native/%.o: $(PROFILE_DIR)/native/%.c \
 .PHONY: test-build
 test-build: $(LIBC_SO) \
             $(LIBSTDCXX_SO) \
-            $(call timestamp_of,c-cpp)
+            $(call timestamp_of,c-cpp) \
+            $(OUTPUT_DIR)/hardware-addresses.timestamp
 
 $(PARSER_BUILD_DIR)/cparser: | $(PARSER_BUILD_DIR)
 	@$(LOGGER) "Building the C parser..."

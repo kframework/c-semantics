@@ -24,7 +24,7 @@ module COMMON-IO-BUFFERED
                ListItem(bwrite(loc(Base::SymBase, Offset::Int), L::List)) => .List
           ...</buffer>
           <mem> M::Map => bufferWrite(M, Base, M[Base], Offset, L) </mem>
-          requires notBool isNativeLoc(loc(Base, Offset))
+          requires isHardwareLoc(loc(Base, Offset)) orBool notBool isNativeLoc(loc(Base, Offset))
           [structural, priority(80)]
      rule <buffer>
                ListItem(bwrite((Loc::SymLoc => Loc +bytes 1), ((ListItem(V:KItem) => writeNativeByte(Loc, V)) _::List)))

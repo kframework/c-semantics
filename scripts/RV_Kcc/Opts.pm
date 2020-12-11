@@ -342,9 +342,12 @@ sub parseOpts {
             }
             my $profile = RV_Kcc::Files::currentProfile();
             my $defaultProfile = RV_Kcc::Files::defaultProfile();
+            my $currentHardwareAddresses = RV_Kcc::Files::currentHardwareAddresses();
+            my $defaultHardwareAddresses = RV_Kcc::Files::defaultHardwareAddresses();
 
             my $profiles = join("\n	                    ", RV_Kcc::Files::getProfiles());
-            print("	Current profile: $profile\n	Installed profiles: $profiles\n	Default profile: $defaultProfile\n\n	To request additional profiles, contact runtimeverification.com/support.\n\n");
+            my $hardwareAddresses = join("\n	                              ", RV_Kcc::Files::getHardwareAddresses());
+            print("	Current profile: $profile\n	Installed profiles: $profiles\n	Default profile: $defaultProfile\n\n	Current hardware addresses: $currentHardwareAddresses\n	Installed hardware addresses: $hardwareAddresses\n	Default hardware addresses: $defaultHardwareAddresses\n\n	To request additional profiles, contact runtimeverification.com/support.\n\n");
             exit 0;
       }
   -Version		[ditto] [undocumented]
@@ -622,6 +625,28 @@ sub parseOpts {
                   RV_Kcc::Files::currentProfile($name);
             } else {
                   print "Profile '$name' is not installed. See " . RV_Kcc::Shell::commandName() . " -v for list of installed profiles.\n";
+                  exit 1;
+            }
+      }
+  -hardware-addresses <name>	Set KCC hardware address profile.
+      {
+            if ( grep( /^$name$/, RV_Kcc::Files::getHardwareAddresses() ) ) {
+                  open(my $file, '>', RV_Kcc::Files::distDir("current-hardware-addresses"))
+                        or error("Could not open hardware address profile file. Check OS permissions.\n");
+                  print $file $name;
+                  close $file;
+                  exit 0;
+            } else {
+                  print "Hardware address profile '$name' is not installed. See " . RV_Kcc::Shell::commandName() . " -v for list of installed hardware address profiles.\n";
+                  exit 1;
+            }
+      }
+  --use-hardware-addresses <name>	Use a KCC hardware address profile for this run
+      {
+            if ( grep( /^$name$/, RV_Kcc::Files::getHardwareAddresses() ) ) {
+                  RV_Kcc::Files::currentHardwareAddresses($name);
+            } else {
+                  print "Hardware address profile '$name' is not installed. See " . RV_Kcc::Shell::commandName() . " -v for list of installed hardware addresses.\n";
                   exit 1;
             }
       }

@@ -36,7 +36,8 @@ module C-CONFIGURATION
           </goto-calc>
      </goto-map-calc>
      <k color="green">
-          $PGM:K
+          initHardwareAddresses($HWADDR)
+          ~> $PGM:K
           ~> reportSuccess
           ~> cleanup
      </k>
