@@ -56,7 +56,6 @@ module LINKING-INIT
                ~> removeUnusedIdentifiers(Tu)
           ...</k>
           <external-types> Types:Map </external-types>
-          <external-decls-loc> DeclLocs:Map </external-decls-loc>
           <external-defs> Defs:Map </external-defs>
           <external-defs-loc> Locs:Map </external-defs-loc>
 
@@ -147,7 +146,6 @@ module LINKING-INIT
           ...</k>
           <odr-uses> OdrUses::Set => .Set </odr-uses>
           <external-uses> Uses::Map => .Map </external-uses>
-          <linking-deps> Deps </linking-deps>
 
      syntax KItem ::= clearLinkingState()
      rule <k> clearLinkingState() => .K ...</k>
@@ -211,7 +209,7 @@ module LINKING-INIT
                _, X |-> T':Type _,
                Locs::Map)
           requires notBool (X in_keys(Locs))
-     rule (checkExtType(true) => .K) ~> checkExtTypes(X:KItem => .K, _, _, _, _, _)
+     rule (checkExtType(true) => .K) ~> checkExtTypes(_:KItem => .K, _, _, _, _, _)
      rule (.K => setTranslationLoc(L) ~> EXT-UNDEF("TIN1",
                "Identifier " +String showCId({X}:>CId) +String " declared with incompatible types in different translation units."))
                ~> checkExtType(false) ~> checkExtTypes(X:KItem, _, _, _, _, X |-> L::CabsLoc _)
@@ -223,7 +221,7 @@ module LINKING-INIT
      rule checkExtDefs(X:KItem => .K, _, _, Defs':Set, _, _)
           requires notBool (X in Defs')
      rule checkExtDefs(.K, .Set, _, _, _, _) => .K
-     rule checkExtDefs(X:CId, Ids::Set, X |-> T::Type Types::Map, SetItem(X) Ids'::Set, X |-> T'::Type Types'::Map, X |-> L::CabsLoc Locs::Map)
+     rule checkExtDefs(X:CId, Ids::Set, X |-> _::Type Types::Map, SetItem(X) Ids'::Set, X |-> _::Type Types'::Map, X |-> L::CabsLoc Locs::Map)
           => setTranslationLoc(L)
           ~> EXT-UNDEF("TIN2", "Multiple external definitions for " +String showCId({X}:>CId) +String ".")
           ~> errorMultipleDefs(X)
