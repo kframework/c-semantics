@@ -282,7 +282,7 @@ module LINKING-INIT
 
                <translation-units> TUs1::Bag </translation-units>
 
-               <hardware-addresses> HwA1::Set </hardware-addresses>
+               <hardware-addresses> sortedHardwareAddresses(HwA1:List) </hardware-addresses>
           </global>),
           (<global>
                <mem> M2:Map </mem>
@@ -314,7 +314,7 @@ module LINKING-INIT
 
                <translation-units> TUs2::Bag </translation-units>
 
-               <hardware-addresses> HwA2::Set </hardware-addresses>
+               <hardware-addresses> sortedHardwareAddresses(HwA2:List) </hardware-addresses>
           </global>))
           =>
           <global>
@@ -351,7 +351,7 @@ module LINKING-INIT
 
                <translation-units> TUs1 TUs2 </translation-units>
 
-               <hardware-addresses> HwA1 |Set HwA2 </hardware-addresses>
+               <hardware-addresses> sortedHardwareAddresses(mergeHardwareAddresses(HwA1, HwA2, .List)) </hardware-addresses>
           </global>
 
      // TODO(chathhorn): remove redundancy
@@ -380,5 +380,31 @@ module LINKING-INIT
 
      syntax Map ::= getOverridden(Map, Map) [function]
      rule getOverridden(_, _) => .Map::Map [owise]
+
+     syntax List ::= mergeHardwareAddresses(first:List, second:List, result:List) [function]
+     rule mergeHardwareAddresses(.List, .List, Result:List) => Result
+     rule mergeHardwareAddresses(.List, Second:List, Result:List) => Result Second
+          requires size(Second) >Int 0
+     rule mergeHardwareAddresses(First:List, .List, Result:List) => Result First
+          requires size(First) >Int 0
+
+     rule mergeHardwareAddresses(
+               (ListItem(#hardwareAddress(FirstBase:Int, _:Int) #as First:KItem)) FirstRemainder:List,
+               (ListItem(#hardwareAddress(SecondBase:Int, _:Int)) _:List) #as Second::List,
+               Result:List) =>
+          mergeHardwareAddresses(FirstRemainder, Second, Result ListItem(First))
+          requires FirstBase <Int SecondBase
+     rule mergeHardwareAddresses(
+               (ListItem(#hardwareAddress(FirstBase:Int, _:Int)) _:List) #as First::List,
+               (ListItem(#hardwareAddress(SecondBase:Int, _:Int) #as Second:KItem)) SecondRemainder:List,
+               Result:List) =>
+          mergeHardwareAddresses(First, SecondRemainder, Result ListItem(Second))
+          requires FirstBase >Int SecondBase
+
+     rule mergeHardwareAddresses(
+               (ListItem(#hardwareAddress(Base:Int, Size:Int) #as First:KItem)) FirstRemainder:List,
+               (ListItem(#hardwareAddress(Base:Int, Size:Int))) SecondRemainder:List,
+               Result:List) =>
+          mergeHardwareAddresses(FirstRemainder, SecondRemainder, Result ListItem(First))
 
 endmodule

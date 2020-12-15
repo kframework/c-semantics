@@ -143,7 +143,7 @@ module COMMON-CONFIGURATION
           </tu>
      </translation-units>
 
-     <hardware-addresses> .Set </hardware-addresses>
+     <hardware-addresses> sortedHardwareAddresses(.List) </hardware-addresses>
    </global>
 
 endmodule

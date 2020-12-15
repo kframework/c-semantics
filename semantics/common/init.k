@@ -75,18 +75,20 @@ module COMMON-INIT
      rule <k> reportSuccess => .K ...</k>
           <result-value> _ => 0 </result-value>
 
-     syntax KItem ::= #hardwareAddress0(address:Int, size:Int)
+     syntax KItem ::= #initHardwareAddresses(KItem, previousAddress:Int)
 
-     rule initHardwareAddresses(hardwareAddresses(.K)) => .
-     rule <k> initHardwareAddresses(hardwareAddresses((#hardwareAddress(Address:Int, Size:Int) => #hardwareAddress0(Address:Int, Size:Int)) ~> _:K)) ...</k>
+     rule initHardwareAddresses(hardwareAddresses(...) #as HwAddr:KItem) => #initHardwareAddresses(HwAddr, -1)
+     rule #initHardwareAddresses(hardwareAddresses(.K), _) => .
+     rule <k> #initHardwareAddresses(
+               hardwareAddresses((#hardwareAddress(Address:Int, Size:Int) #as HwAddr:KItem => .K) ~> _:K),
+               PreviousAddress:Int)
+          ...</k>
           <mem>...
                (.Map =>
                     obj(Address, cfg:bitsPerByte *Int cfg:alignofPointer, hardwareAddress())
                     |-> object(t(quals(.Set), .Set, arrayType(t(quals(.Set), .Set, char), Size)), Size, makeArray(Size, uninit))
                )
           ...</mem>
-     rule <k> initHardwareAddresses(hardwareAddresses(#hardwareAddress0((Address:Int => Address +Int 1), (Size:Int => Size -Int 1)) ~> _:K)) ...</k>
-          <hardware-addresses>... (.Set => SetItem(Address)) ... </hardware-addresses>
-          requires Size >=Int 0
-     rule <k> initHardwareAddresses(hardwareAddresses((#hardwareAddress0(_:Int, 0) => .K) ~> _:K)) ...</k>
+          <hardware-addresses> sortedHardwareAddresses(L:List => L ListItem(HwAddr)) </hardware-addresses>
+          requires Address >Int PreviousAddress
 endmodule
