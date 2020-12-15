@@ -292,7 +292,7 @@ module CPP-TRANSLATION-TYPING-EXPR
 
      rule #typeofBuiltinOperator(operator[], _, _, t(... st: pointerType(...)) #as T::CPPType) => typeof(innerType(T))
 
-     rule #typeofBuiltinOperator(operator->, t(... st: pointerType(...)) #as T::CPPType, E1::Expr, E2::Name)
+     rule #typeofBuiltinOperator(operator->, t(... st: pointerType(...)) #as _::CPPType, E1::Expr, E2::Name)
           => typeof((* E1) . no-template E2)
 
      rule #typeofBuiltinOperator(operator+, T1::CPPType, _, T2::CPPType)
