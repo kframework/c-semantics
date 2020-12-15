@@ -70,10 +70,7 @@ module C-COMMON-EXPR-REFERENCE
                andBool Loc =/=K NullPointer
                andBool ifFromArrayInBounds(Loc,
                     utype(pointerType(type(char))), 1) ==K true
-               andBool
-                    (notBool hasLint
-                    orBool notBool (isNativeLoc(Loc) orBool isHardwareLoc(Loc))
-                    )
+               andBool notBool (hasLint andBool isNativeLoc(Loc))
           [structural]
 
      rule (.K => CV("CER6", "Unary '*' operator applied to non-pointer."))
