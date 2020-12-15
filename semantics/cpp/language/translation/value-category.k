@@ -68,7 +68,7 @@ module CPP-TRANSLATION-VALUE-CATEGORY
      context (HOLE:CatExpr => catof(HOLE)) cats:: _
           requires notBool isSpuriousExpr(HOLE) [result(ValueCategory)]
 
-     context K:KResult cats:: HOLE:SCatList
+     context _:KResult cats:: HOLE:SCatList
 
      // --------------------------------
 

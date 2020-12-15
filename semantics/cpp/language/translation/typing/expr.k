@@ -75,7 +75,7 @@ module CPP-TRANSLATION-TYPING-EXPR
      context (HOLE:TypeExpr => typeof(HOLE)) types:: _
           requires notBool isSpuriousExpr(HOLE) [result(CPPDType)]
 
-     context K:KResult types:: HOLE:STypeList
+     context _:KResult types:: HOLE:STypeList
 
      // ----------------------------------
 

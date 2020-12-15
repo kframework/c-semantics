@@ -407,7 +407,7 @@ module CPP-TRANSLATION-OVERLOADING
           ) ~>
           #computeUDCTo(
                _ :: Class(_, X::CId, _) #as P::Class,
-               (ListItem(t(... st: functionType(... returnType: Ret::CPPType, paramTypes: Param::CPPType)) #as FuncT::CPPType) => .List) L::List,
+               (ListItem(t(... st: functionType(... returnType: Ret::CPPType, paramTypes: Param::CPPType)) #as FuncT::CPPType) => .List) _::List,
                A::CPPType,
                C::ValueCategory,
                _
@@ -435,7 +435,7 @@ module CPP-TRANSLATION-OVERLOADING
           ~>
           #computeUDCFrom(
                P::CPPType,
-               (ListItem(t(... st: functionType(... returnType: Ret::CPPType)) #as FuncT::CPPType) => .List) L::List,
+               (ListItem(t(... st: functionType(... returnType: Ret::CPPType)) #as FuncT::CPPType) => .List) _::List,
                A::Class,
                C::ValueCategory,
                _
@@ -499,14 +499,14 @@ module CPP-TRANSLATION-OVERLOADING
      rule computeSCS2(C::Conversion, cppIntegerType #as P::CPPType, t(... st: _:CPPSimpleUnscopedEnumType) #as A::CPPType, _) => computeSCS3(C, integralConversion, P, P)
           requires utype(P) =/=Type utype(A) andBool promote(A) =/=Type P andBool promote(promote(A)) =/=Type P andBool notBool isCPPBoolType(P)
 
-     rule computeSCS2(C::Conversion, t(... st: _:CPPSimpleFloatingType) #as P::CPPType, t(... st: _:CPPSimpleFloatingType) #as A::CPPType, _) => computeSCS3(C, floatingConversion, P, P)
+     rule computeSCS2(C::Conversion, t(... st: _:CPPSimpleFloatingType) #as P::CPPType, t(... st: _:CPPSimpleFloatingType) #as _::CPPType, _) => computeSCS3(C, floatingConversion, P, P)
           requires notBool (simpleType(P) ==K double andBool simpleType(P) ==K float)
 
-     rule computeSCS2(C::Conversion, cppIntegerType #as P::CPPType, t(... st: _:CPPSimpleFloatingType) #as A::CPPType, _) => computeSCS3(C, floatingIntegralConversion, P, P)
+     rule computeSCS2(C::Conversion, cppIntegerType #as P::CPPType, t(... st: _:CPPSimpleFloatingType) #as _::CPPType, _) => computeSCS3(C, floatingIntegralConversion, P, P)
 
-     rule computeSCS2(C::Conversion, t(... st: _:CPPSimpleFloatingType) #as P::CPPType, cppIntegerType #as A::CPPType, _) => computeSCS3(C, floatingIntegralConversion, P, P)
+     rule computeSCS2(C::Conversion, t(... st: _:CPPSimpleFloatingType) #as P::CPPType, cppIntegerType #as _::CPPType, _) => computeSCS3(C, floatingIntegralConversion, P, P)
 
-     rule computeSCS2(C::Conversion, t(... st: _:CPPSimpleFloatingType) #as P::CPPType, t(... st: _:CPPSimpleUnscopedEnumType) #as A::CPPType, _) => computeSCS3(C, floatingIntegralConversion, P, P)
+     rule computeSCS2(C::Conversion, t(... st: _:CPPSimpleFloatingType) #as P::CPPType, t(... st: _:CPPSimpleUnscopedEnumType) #as _::CPPType, _) => computeSCS3(C, floatingIntegralConversion, P, P)
 
      rule computeSCS2(C::Conversion, t(... st: pointerType(...)) #as P::CPPType, cppIntegerType #as A::CPPType, _) => computeSCS3(C, pointerConversion(P, A), P, P)
 
@@ -616,16 +616,16 @@ module CPP-TRANSLATION-OVERLOADING
 
      // only one viable candidate
      rule bestViable(T::CPPType, envEntry(... base: Base::SymBase, defaultArgs: defArgs(... vals: DArgs::StrictListResult)))
-          ~> #resolveOverload2(cSet(... id: X::QualId), list(Args::List), _, _, E::Expr, _)
+          ~> #resolveOverload2(cSet(... id: _::QualId), list(Args::List), _, _, E::Expr, _)
           => #if isMethodPure(T) andBool isVirtualCall(hasTrace(E), T) #then .K #else Odr.newUse(Base) #fi
           ~> updateExternalUses(Base)
           ~> checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), DArgs))
 
-     rule bestViable(T::CPPType, builtinOp(E::Expr)) ~> #resolveOverload2(...)
+     rule bestViable(_::CPPType, builtinOp(E::Expr)) ~> #resolveOverload2(...)
           => resolveOverloadResult(E)
 
      rule (.K => computeBestViable(M, Types, Cats, O))
-          ~> #resolveOverload2(cSet(... candidates: M::Map), list(Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)
+          ~> #resolveOverload2(cSet(... candidates: M::Map), list(_Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)
           requires allFunctionTypes(M)
 
      syntax Bool ::= allFunctionTypes(Map) [function]
@@ -699,7 +699,7 @@ module CPP-TRANSLATION-OVERLOADING
                _,
                _,
                _,
-               (ListItem(kpair(T2::CPPType, K2:K)) => .List) _
+               (ListItem(kpair(_::CPPType, _:K)) => .List) _
           )
 
      rule false ~> checkIsBest(...) => noBestViable [owise]
@@ -722,12 +722,12 @@ module CPP-TRANSLATION-OVERLOADING
      rule #isBetterFunctionThan(
                HasWorseCS:Bool,
                HasBetterCS:Bool,
-               F1::CPPType,
+               _F1::CPPType,
                K1:K,
-               F2::CPPType,
+               _F2::CPPType,
                K2:K,
-               Types::List,
-               Cats::List,
+               _Types::List,
+               _Cats::List,
                NotConversionOverload()
           )
           => notBool HasWorseCS andBool (HasBetterCS orBool (notBool isTemplateSpecialization(K1) andBool isTemplateSpecialization(K2)))
@@ -802,8 +802,8 @@ module CPP-TRANSLATION-OVERLOADING
                (ListItem(P:CPPType) => .List) _,
                (ListItem(A::CPPType) => .List) _,
                (ListItem(C::ValueCategory) => .List) _,
-               B1::Bool,
-               B2::Bool,
+               _::Bool,
+               _::Bool,
                _
           )
 
@@ -821,20 +821,20 @@ module CPP-TRANSLATION-OVERLOADING
           ~> #getConversionSequences(... result: (.List => ListItem(CS)) _)
 
      rule #getConversionSequences(
-               ListItem(implicitObjectParameter(_)) Ps::List,
-               ListItem(_) As::List,
-               ListItem(_) Cs::List,
-               IsNonStaticRefNone::Bool,
+               ListItem(implicitObjectParameter(_)) _Ps::List,
+               ListItem(_) _As::List,
+               ListItem(_) _Cs::List,
+               _IsNonStaticRefNone::Bool,
                true,
                (.List => ListItem(bottomConversionSequence)) _
           )
 
      rule #getConversionSequences(
                ListItem(variadic),
-               (ListItem(_) => .List) As::List,
-               (ListItem(_) => .List) Cs::List,
-               B1::Bool,
-               B2::Bool,
+               (ListItem(_) => .List) _As::List,
+               (ListItem(_) => .List) _Cs::List,
+               _::Bool,
+               _::Bool,
                (.List => ListItem(ellipsisConversionSequence)) _
           )
 
@@ -1022,7 +1022,7 @@ module CPP-TRANSLATION-OVERLOADING
      // to which the reference is bound.
      rule standardConversionSequence(... isNonStaticRefNone: false, param: t(... st: rvRefType(...)) #as S1::CPPType)
           >CS
-          standardConversionSequence(... isNonStaticRefNone: false, param: t(... st: lvRefType(...)) #as S2::CPPType)
+          standardConversionSequence(... isNonStaticRefNone: false, param: t(... st: lvRefType(...)))
           => true
           requires notBool isCPPFunctionType(innerType(S1))
 
@@ -1071,7 +1071,7 @@ module CPP-TRANSLATION-OVERLOADING
      rule (lv(loc(Base::SymBase, 0), _, _) => .K)
           ~> bestViable(T::CPPType, (_ => envEntry(Base, false, emptyDefaultArguments(T))))
 
-     rule resolveUniqueDecl(cSet(... candidates: _::CPPType |-> (T::CPPType, envEntry(... base: Base::SymBase)), id: X::QualId), E::Expr, _)
+     rule resolveUniqueDecl(cSet(... candidates: _::CPPType |-> (T::CPPType, envEntry(... base: Base::SymBase)), id: _::QualId), E::Expr, _)
           => Odr.newUse(Base)
           ~> updateExternalUses(Base)
           ~> lv(lnew(Base), hasTrace(E), T)
@@ -1111,6 +1111,6 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule typeof(contrivedObject(T::CPPType) => T)
 
-     rule contrivedObject(T::CPPType) => noObject()
+     rule contrivedObject(_::CPPType) => noObject()
           requires Translation()
 endmodule
