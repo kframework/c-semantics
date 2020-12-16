@@ -99,11 +99,11 @@ module CPP-TRANSLATION-OVERLOADING
      syntax List ::= getArgs(List, QualId, Expr, K) [function]
 
      // @ref n4296 13.3.1.1.1:2
-     rule getArgs(Args::List, C:Class :: _, Obj::Expr . no-template _, _)
+     rule getArgs(Args::List, _:Class :: _, Obj::Expr . no-template _, _)
           => ListItem(Obj) Args
 
      // @ref n4296 13.3.1.1.1:3 case (1)
-     rule getArgs(Args::List, N:Namespace :: _, _, _) => Args
+     rule getArgs(Args::List, _:Namespace :: _, _, _) => Args
 
      // @ref n4296 13.3.1.1.1:3 case (2) when this is in scope
      rule getArgs(Args::List, C:Class :: _, _:Name, Obj:PRVal)
@@ -226,7 +226,7 @@ module CPP-TRANSLATION-OVERLOADING
      rule #notViableTypes(... params: .List, types: .List, cats: .List) => false
 
      // default arguments
-     rule #notViableTypes(ListItem(P:CPPType) _, .List => ListItem(A) DAs, ListItem(A::CPPType) DAs::List, .List => DCs, DCs::List, _)
+     rule #notViableTypes(ListItem(_:CPPType) _, .List => ListItem(A) DAs, ListItem(A::CPPType) DAs::List, .List => DCs, DCs::List, _)
 
      rule canBeImplicitlyConvertedTo(...
                fromType: FromType::CPPType,
@@ -381,7 +381,7 @@ module CPP-TRANSLATION-OVERLOADING
 
      rule #computeUDC(CS1:ConversionSequence, CS2:ConversionSequence)
           =>
-          resolveUDC(ListItem(CS1) ListItem(CS1))
+          resolveUDC(ListItem(CS1) ListItem(CS1))  // TODO: Should the last one be CS2?
 
 
      syntax KItem ::= computeUDCTo(Class, ClassInfo, CPPType, ValueCategory)
@@ -604,7 +604,7 @@ module CPP-TRANSLATION-OVERLOADING
 
      // do not actually perform overload resolution, this was a function call
      // in which the postfix expression was a function pointer
-     rule #resolveOverload2(cSet(... candidates: _::CPPType |-> (T::CPPType, envEntry(... base: Base::SymBase)), id: X::QualId), list(Args::List), _, _, E::Expr, _)
+     rule #resolveOverload2(cSet(... candidates: _::CPPType |-> (T::CPPType, envEntry(... base: Base::SymBase)), id: _::QualId), list(Args::List), _, _, E::Expr, _)
           => Odr.newUse(Base)
           ~> updateExternalUses(Base)
           ~> checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T))))))

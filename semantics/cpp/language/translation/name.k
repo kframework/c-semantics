@@ -647,7 +647,7 @@ module CPP-TRANSLATION-NAME
 
      rule getTemplateArgTypes(.TemplateArgs) => .List
 
-     rule #argDependentNameLookup(X::CId, Args::StrictList, Types::List, .Set, Y:CandidateSet) => Y
+     rule #argDependentNameLookup(X::CId, Args::StrictList, _Types::List, .Set, Y:CandidateSet) => Y
 
      rule (.K => qualifiedNameLookup(X, N, SetItem(function))) ~> #argDependentNameLookup(X::CId, _, _, (SetItem(N::Namespace) => .Set) _, _)
 
@@ -661,7 +661,7 @@ module CPP-TRANSLATION-NAME
      rule resolveElabSpecifier(templateRef(Q::QualId, T::CPPType), krlist(Args::List))
           => specializeTypeTemplate(Q, T, Args)
 
-     rule <k> specializeTypeTemplate(X::QualId, t(Q::Quals, Mods::Set, classType(N::Namespace :: Class(Tag::Tag, C::CId, .TemplateArgs))), Args::List)
+     rule <k> specializeTypeTemplate(_::QualId, t(Q::Quals, Mods::Set, classType(N::Namespace :: Class(Tag::Tag, C::CId, .TemplateArgs))), Args::List)
                => t(Q, Mods, classType(N :: Class(Tag, C, toTemplateArgs(Args))))
           ...</k>
 
