@@ -477,7 +477,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           arrayInit(...
                type:     t(... st: arrayType(T::CPPType, Size::Int)),
                current:  I::Int,
-               initList: (ListItem(Init::Init) _)
+               initList: (ListItem(Init::Init) _) #as _::List
           )
           requires notBool #isBraceInit(Init)
            andBool isAggregateType(T)

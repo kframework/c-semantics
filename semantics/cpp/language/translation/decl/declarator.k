@@ -201,7 +201,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      rule getCName(_::CPPType, X::CId, _, CLinkage, _) => X
 
-     rule getCName(t(... st: functionType(...)), X::CId, Mangled::CId, LangLinkage::LanguageLinkage, Opts::Set) => Mangled
+     rule getCName(t(... st: functionType(...)) #as _::CPPType, X::CId, Mangled::CId, LangLinkage::LanguageLinkage, Opts::Set) => Mangled
           requires (LangLinkage =/=K CLinkage) andBool (X =/=K Mangled)
                andBool notBool (NoNativeFallback() in Opts)
 
@@ -819,7 +819,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           requires notBool (isCPPRefType(T) andBool isExpr(Init))
            andBool Init =/=K NoInit()
 
-     rule #computeDefaultArgs(ListItem(cppRefType) P::List, ListItem(Init::Init) A::List, false)
+     rule #computeDefaultArgs(ListItem(cppRefType #as T::CPPType) P::List, ListItem(Init::Init) A::List, false)
           => ListItem(Init) #computeDefaultArgs(P, A, false)
           requires Init =/=K NoInit()
 

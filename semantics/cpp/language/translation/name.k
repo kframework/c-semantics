@@ -597,7 +597,7 @@ module CPP-TRANSLATION-NAME
                    | getTemplateArgTypes(TemplateArgs) [function]
 
      // @ref n4296 3.4.2:2.1
-     rule getAssociatedNamespaces((ListItem(cppFundamentalType) => .List) _, _)
+     rule getAssociatedNamespaces((ListItem(cppFundamentalType #as _::CPPType) => .List) _, _)
 
      rule getAssociatedNamespaces((ListItem(t(_, _, no-type)) => .List) _, _)
 
