@@ -225,7 +225,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           => listInit(Base, DestT, Type, L, CT, D)
 
      // @ref n4296 8.5:17.2 (reference destination type)
-     rule #figureInit(Base:LVal, cppRefType #as DestT::CPPType, _, E:Expr, _, _, _, D::Duration)
+     rule #figureInit(Base:LVal, cppRefType #as _DestT::CPPType, _, E:Expr, _, _, _, D::Duration)
           => bindReference(Base, E, D)
           requires ExprLoc(...) :/=K E
 
@@ -417,7 +417,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule #evalBraceOrEqualInitializer(_, _, NoInit()) => BraceInit(.List)
 
-     rule #evalBraceOrEqualInitializer(_, _, ExprLoc(L::CabsLoc, I:Init) => I)
+     rule #evalBraceOrEqualInitializer(_, _, ExprLoc(_::CabsLoc, I:Init) => I)
 
      rule #evalBraceOrEqualInitializer(C::Class, Base::Expr, BraceInit(L::List))
        => BraceInit(#evalBraceOrEqualInitializers(C, Base, L))
@@ -477,7 +477,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           arrayInit(...
                type:     t(... st: arrayType(T::CPPType, Size::Int)),
                current:  I::Int,
-               initList: (ListItem(Init::Init) _) #as L::List
+               initList: (ListItem(Init::Init) _)
           )
           requires notBool #isBraceInit(Init)
            andBool isAggregateType(T)
@@ -499,7 +499,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
           requires notBool isSpuriousExpr(HOLE) [result(ValueCategory)]
 
      rule braceElisionMaybe2(...
-               init:     From::Expr,
+               init:     _From::Expr,
                initType: FromT:CPPType,
                initCat:  FromC:ValueCategory,
                destType: ToT::CPPType
@@ -518,7 +518,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule (braceElisionNo() => #figureInit0(Base[I], T, CopyInit(), Init, CT, D)) ~>
           arrayInit(...
                base:     Base::LVal,
-               type:     t(... st: arrayType(T::CPPType, Size::Int)),
+               type:     t(... st: arrayType(T::CPPType, _Size::Int)),
                current:  (I::Int => I +Int 1),
                initList: (ListItem(Init::Init) => .List) _,
                ctype:    CT::ConstructorType,
@@ -534,9 +534,9 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule (braceElisionYes() => #figureInit0(Base[I], T, CopyInit(), BraceInit(L), CT, D)) ~>
           arrayInit(...
                base:     Base::LVal,
-               type:     t(... st: arrayType(T::CPPType, Size::Int)),
+               type:     t(... st: arrayType(T::CPPType, _Size::Int)),
                current:  (I::Int => I +Int 1),
-               initList: (ListItem(Init::Init) _) #as L::List => .List,
+               initList: (ListItem(_::Init) _) #as L::List => .List,
                ctype:    CT::ConstructorType,
                duration: D::Duration
           )
@@ -577,7 +577,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
 
      rule <k> (.K => resolveOverload(cSet(#if Type ==K DirectInit() #then M #else stripExplicit(M) #fi, C :: ConstructorId(X)), list(L), constructor)
               ~> stripResolveOverloadResult())
-              ~> constructorInit(Base::LVal, Type::InitType, _ :: Class(_, X::CId, _) #as C::Class, L::List, _)
+              ~> constructorInit(_Base::LVal, Type::InitType, _ :: Class(_, X::CId, _) #as C::Class, L::List, _)
           ...</k>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
@@ -618,7 +618,7 @@ module CPP-TRANSLATION-DECL-INITIALIZER
      rule (V:Val => .K)
           ~> strInit(_, _, _, _, _, (E::MaybeExpr => compoundInitJoin(E, V)))
 
-     rule strInit(Base:LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), _, "", N, E::MaybeExpr)
+     rule strInit(Base:LVal, t(_::Quals, _Mods::Set, arrayType(_::CPPType, N::Int)), _, "", N, E::MaybeExpr)
           => compoundInitJoin(E, Base)
 
      rule compoundInit(V:TExpr, LV:LVal) => le(compoundInit(stripCompoundInit(V), LV), noTrace, type(LV))

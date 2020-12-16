@@ -124,7 +124,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule getPreviousLinkage(_, _, _, _) => .K [owise]
 
      // @ref n4296 3.5:3.1
-     rule getLinkage(S::Set, _, _:NamespaceScope, Q::Quals, _, _) => InternalLinkage
+     rule getLinkage(S::Set, _, _:NamespaceScope, _::Quals, _, _) => InternalLinkage
           requires Static() in S
 
      // @ref n4296 3.5:3.2
@@ -140,7 +140,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           requires Static() in S
             orBool isFunctionDeclarationType(Type)
 
-     rule getLinkage(_, C:Class, _, _, L:Linkage, _) => L
+     rule getLinkage(_, _:Class, _, _, L:Linkage, _) => L
 
      // @ref n4296 3.5:4
      rule getClassLinkage(Parent:Namespace :: _) => getNamespaceLinkage(Parent)
@@ -151,7 +151,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule getClassLinkage(_:LocalQualifier :: _) => NoLinkage
 
      // @ref n4296 3.5:4
-     rule getNamespaceLinkage(N:UnnamedNamespace) => InternalLinkage
+     rule getNamespaceLinkage(_:UnnamedNamespace) => InternalLinkage
 
      rule getNamespaceLinkage(GlobalNamespace()) => ExternalLinkage
 
@@ -173,7 +173,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
      rule getDuration(S::Set, _) => ThreadStorage
           requires ThreadLocal() in S
 
-     rule getDuration(S::Set, Scope:BlockScope) => AutoStorage
+     rule getDuration(S::Set, _:BlockScope) => AutoStorage
           requires notBool Static() in S andBool notBool Extern() in S
 
      rule getDuration(_, _) => StaticStorage [owise]
@@ -199,9 +199,9 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax CId ::= getCName(CPPType, CId, CId, LanguageLinkage, Set) [function]
 
-     rule getCName(T::CPPType, X::CId, _, CLinkage, _) => X
+     rule getCName(_::CPPType, X::CId, _, CLinkage, _) => X
 
-     rule getCName(t(... st: functionType(...)) #as T::CPPType, X::CId, Mangled::CId, LangLinkage::LanguageLinkage, Opts::Set) => Mangled
+     rule getCName(t(... st: functionType(...)), X::CId, Mangled::CId, LangLinkage::LanguageLinkage, Opts::Set) => Mangled
           requires (LangLinkage =/=K CLinkage) andBool (X =/=K Mangled)
                andBool notBool (NoNativeFallback() in Opts)
 
@@ -277,10 +277,10 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                    ~> lazyDefineObject(N, X, CName, T, Init, Type, S, Base)
 
           // ExternalLinkage, StaticStorage, redeclare incomplete array
-          rule <k> declareObjectWithLinkage(N::Namespace, LN::Namespace, X::CId, t(... st: _:CPPSimpleArrayType) #as T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set, _, ExternalLinkage) ...</k>
+          rule <k> declareObjectWithLinkage(_::Namespace, LN::Namespace, X::CId, t(... st: _:CPPSimpleArrayType) #as T::CPPType, _::Init, _::DeclarationType, StaticStorage, _::Set, _, ExternalLinkage) ...</k>
                <curr-tr-tu> Tu::String </curr-tr-tu>
                <tu-id> Tu </tu-id>
-               <externals>... LN :: X |-> ((_::CPPType => stripType(T)) |-> (T'::CPPType => T, declState(Base::SymBase, _))) ...</externals>
+               <externals>... LN :: X |-> ((_::CPPType => stripType(T)) |-> (T'::CPPType => T, declState(_::SymBase, _))) ...</externals>
                requires isCPPArrayType(T') andBool notBool isCompleteType(T') andBool innerType(T) ==Type innerType(T') andBool getQuals(T) ==K getQuals(T')
 
           // ExternalLinkage, StaticStorage, redeclare complete type
@@ -417,7 +417,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax CPPType ::= completeDeclaration(CPPType, Init) [function]
 
-     rule completeDeclaration(T::CPPType, (ExprLoc(_, I:Init) => I))
+     rule completeDeclaration(_::CPPType, (ExprLoc(_, I:Init) => I))
 
      // @ref n4296 8.5.4:3.2 (char x[] = {"foo"})
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, T:CPPSimpleCharType))), BraceInit(ListItem(StringLiteral(Narrow::CharKind, S::String)))) => t(Q, Mods, arrayType(t(Q', Mods', T), lengthString(S) +Int 1))
@@ -478,7 +478,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax Decl ::= lazyDefineObject(NNSVal, CId, CId, CPPType, Init, DeclarationType, Set, SymBase)
 
-     rule lazyDefineObject(N::NNSVal, X::CId, CName::CId, T::CPPType, Init::Init, Type::DeclarationType, S::Set, Base::SymBase)
+     rule lazyDefineObject(N::NNSVal, X::CId, CName::CId, T::CPPType, Init::Init, Type::DeclarationType, S::Set, _::SymBase)
           => defineObject(N, X, CName, T, Init, Type, S)
           requires notBool isInitOnlyIfOdrUsed(Init)
 
@@ -492,8 +492,6 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                     scope(namespaceScope(GlobalNamespace()), clearScope() ~> defineObject(N, X, CName, T, Init, Type, S))
                  )
           ...</k>
-          <curr-tr-scope> Sc::Scope </curr-tr-scope>
-
 
      rule defineObject(_, _, _, _, NoInit(), Function(_), _) => .K
 
@@ -539,7 +537,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
 
      syntax Decl ::= defineLocalStaticObject(CId, SymBase, CPPType, Init, DeclarationType, Set)
 
-     rule defineLocalStaticObject(X::CId, Base::SymBase, T::CPPType, Init::Init, Var(Type::InitType), S::Set)
+     rule defineLocalStaticObject(X::CId, Base::SymBase, T::CPPType, Init::Init, Var(Type::InitType), _::Set)
           => addToEnv(NoNamespace() :: X, T, Base, false)
           ~> Odr.newDef(NoNamespace() :: X, T, Base)
           ~> Odr.newDecl(#NoName, NoNamespace() :: X, T, Base)
@@ -820,7 +818,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
           requires notBool (isCPPRefType(T) andBool isExpr(Init))
            andBool Init =/=K NoInit()
 
-     rule #computeDefaultArgs(ListItem(cppRefType #as T::CPPType) P::List, ListItem(Init::Init) A::List, false)
+     rule #computeDefaultArgs(ListItem(cppRefType) P::List, ListItem(Init::Init) A::List, false)
           => ListItem(Init) #computeDefaultArgs(P, A, false)
           requires Init =/=K NoInit()
 
