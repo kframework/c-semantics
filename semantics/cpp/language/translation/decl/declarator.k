@@ -492,6 +492,7 @@ module CPP-TRANSLATION-DECL-DECLARATOR
                     scope(namespaceScope(GlobalNamespace()), clearScope() ~> defineObject(N, X, CName, T, Init, Type, S))
                  )
           ...</k>
+          <curr-tr-scope> _::Scope </curr-tr-scope>
 
      rule defineObject(_, _, _, _, NoInit(), Function(_), _) => .K
 

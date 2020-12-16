@@ -56,6 +56,7 @@ module LINKING-INIT
                ~> removeUnusedIdentifiers(Tu)
           ...</k>
           <external-types> Types:Map </external-types>
+          <external-decls-loc> _:Map </external-decls-loc>
           <external-defs> Defs:Map </external-defs>
           <external-defs-loc> Locs:Map </external-defs-loc>
 
@@ -146,6 +147,7 @@ module LINKING-INIT
           ...</k>
           <odr-uses> OdrUses::Set => .Set </odr-uses>
           <external-uses> Uses::Map => .Map </external-uses>
+          <linking-deps> _ </linking-deps>
 
      syntax KItem ::= clearLinkingState()
      rule <k> clearLinkingState() => .K ...</k>

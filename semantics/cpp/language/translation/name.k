@@ -112,6 +112,7 @@ module CPP-TRANSLATION-NAME
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <inline-namespaces> InlineS::Set </inline-namespaces>
+          <nusing-namespaces> _UsingS::Set </nusing-namespaces>
 
      rule <k> nameLookupInUsingDirectives(... set: (SetItem(N::Namespace) => .Set) _,
                    usingS: (.Set => UsingS) _)
@@ -557,6 +558,7 @@ module CPP-TRANSLATION-NAME
 
      rule <k> (.K => getFunctionAddressTypes(Args))
               ~> false ~> argDependentNameLookup(_::CId, list(Args::List), krlist(_Types::List), notFound(_)) ...</k>
+          <tr-env> _Env::Map </tr-env>
 
      // if the argument is the name or address of a set of overloaded functions
      // and/or function templates, its associated classes and namespaces are
@@ -595,7 +597,7 @@ module CPP-TRANSLATION-NAME
                    | getTemplateArgTypes(TemplateArgs) [function]
 
      // @ref n4296 3.4.2:2.1
-     rule getAssociatedNamespaces((ListItem(cppFundamentalType #as T::CPPType) => .List) _, _)
+     rule getAssociatedNamespaces((ListItem(cppFundamentalType) => .List) _, _)
 
      rule getAssociatedNamespaces((ListItem(t(_, _, no-type)) => .List) _, _)
 

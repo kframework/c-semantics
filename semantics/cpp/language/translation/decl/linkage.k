@@ -17,6 +17,7 @@ module CPP-TRANSLATION-DECL-LINKAGE
               ~> listToK(Decls)
               ~> setLinkage(OldLinkage, OldExtern)
           ...</k>
+          <curr-tr-scope> _:NamespaceScope </curr-tr-scope>
           <curr-lang-linkage> OldLinkage:LanguageLinkage </curr-lang-linkage>
           <curr-extern> OldExtern::Bool </curr-extern>
 
