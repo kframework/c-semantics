@@ -1123,7 +1123,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
-            <class-type> _::ClassKey </class-type>
+            <class-type> Key::ClassKey </class-type>
             <cenv> CE::Map => #if X ==K #NoName #then CE #else CE[X, T <- classOffset(V, padOrNot(V, getT'(T), Key))] #fi </cenv>
             <dsize> V::Int => updateMaxOffset(V, T, Key) </dsize>
             <align> M::Int => maxInt(M, byteAlignofType(getT'(T))) </align>
