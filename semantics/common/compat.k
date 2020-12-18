@@ -90,7 +90,7 @@ module COMPAT-SYNTAX
 
      syntax RangeMap ::= ".RangeMap"  [function]
      syntax RangeMap ::= rangeMapAppendSorted(RangeMap, RangeMapItem)  [function]
-     // The elements in the two maps must be either identical, or disjoint.
+     // Each pair of ranges from the two maps be either identical, or disjoint.
      syntax RangeMap ::= mergeRangeMaps(RangeMap, RangeMap)  [function]
 
      syntax Bool ::= rangeMapContains(RangeMap, value:Int)  [function]
@@ -378,6 +378,11 @@ module COMPAT
      rule asRangeMapItem(Item:RangeMapItem) => Item
 
      rule .RangeMap => rangeMap(.List)
+     rule rangeMapAppendSorted(
+               rangeMap(.List),
+               rangeMapItem(Start:Int, End:Int) #as Item:RangeMapItem
+          )
+          => rangeMap(ListItem(Item))
      rule rangeMapAppendSorted(
                rangeMap(
                     (_::List ListItem(rangeMapItem(_:Int, LastEnd:Int))) #as L::List),
