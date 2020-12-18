@@ -292,65 +292,13 @@ module C-CONVERSION
           ...</k>
           requires notBool isNullPointerConstant(tv(V, T)) andBool #isHardwareAddress(V)
 
-     // (the address at 'start' is <= 'addr') or (start == 0)
-     // (the address at 'end' is >= 'addr') or (end == last-element).
-     // If only one of them is equal to 'addr', we change the other one.
-     syntax KItem ::= #findHardwareAddress(addr:Int, start:Int, end:Int)  [function, withConfig]
-     syntax KItem ::= #findHardwareAddress5(addr:Int, start:Int, middle:Int, middleItem:KItem, end:Int)  [function]
-
-     syntax Bool ::= isInHardwareAddressRange(addr:Int, hwAddr:KItem) [function]
-
-     rule #isHardwareAddress(Addr:Int) => isHardwareAddress(findHardwareAddress(Addr))
+     rule [[ #isHardwareAddress(Addr:Int) => rangeMapContains(M, Addr) ]]
+          <hardware-addresses> M:RangeMap </hardware-addresses>
      rule #isHardwareAddress(Addr:CValue) => false
           requires notBool isInt(Addr)
 
-     rule [[findHardwareAddress(Addr:Int) =>
-               #fun(X:MaybeHardwareAddress => X)(#findHardwareAddress(Addr, 0, size(L) -Int 1))
-          ]]
-          <hardware-addresses> sortedHardwareAddresses(L:List) </hardware-addresses>
-          requires size(L) >Int 0
-     rule [[findHardwareAddress(Addr:Int) => noHardwareAddress]]
-          <hardware-addresses> sortedHardwareAddresses(L:List) </hardware-addresses>
-          requires size(L) ==Int 0
-
-     rule [[ #findHardwareAddress(Addr:Int, Start:Int, Start) => L[Start] ]]
-          <hardware-addresses> sortedHardwareAddresses(L:List) </hardware-addresses>
-          requires isInHardwareAddressRange(Addr, L[Start])
-     rule [[ #findHardwareAddress(Addr:Int, Start:Int, Start) => noHardwareAddress ]]
-          <hardware-addresses> sortedHardwareAddresses(L:List) </hardware-addresses>
-          requires notBool isInHardwareAddressRange(Addr, L[Start])
-
-     rule [[ #findHardwareAddress(Addr:Int, Start:Int, End:Int) => L[Start] ]]
-          <hardware-addresses> sortedHardwareAddresses(L:List) </hardware-addresses>
-          requires Start ==Int End -Int 1
-               andBool isInHardwareAddressRange(Addr, L[Start])
-               andBool notBool isInHardwareAddressRange(Addr, L[End])
-     rule [[ #findHardwareAddress(Addr:Int, Start:Int, End:Int) => L[End] ]]
-          <hardware-addresses> sortedHardwareAddresses(L:List) </hardware-addresses>
-          requires Start ==Int End -Int 1
-               andBool notBool isInHardwareAddressRange(Addr, L[Start])
-               andBool isInHardwareAddressRange(Addr, L[End])
-     rule [[ #findHardwareAddress(Addr:Int, Start:Int, End:Int) => noHardwareAddress ]]
-          <hardware-addresses> sortedHardwareAddresses(L:List) </hardware-addresses>
-          requires Start ==Int End -Int 1
-               andBool notBool isInHardwareAddressRange(Addr, L[Start])
-               andBool notBool isInHardwareAddressRange(Addr, L[End])
-
-     rule [[ #findHardwareAddress(Addr:Int, Start:Int, End:Int) =>
-               #findHardwareAddress5(Addr, Start, (Start +Int End) /Int 2, L[(Start +Int End) /Int 2], End)
-          ]]
-          <hardware-addresses> sortedHardwareAddresses(L:List) </hardware-addresses>
-          requires Start <Int End -Int 1
-
-     rule #findHardwareAddress5(Addr:Int, Start:Int, Middle:Int, #hardwareAddress(MiddleAddr:Int, _:Int), _End:Int) =>
-               #findHardwareAddress(Addr, Start, Middle)
-          requires Addr <Int MiddleAddr
-     rule #findHardwareAddress5(Addr:Int, _Start:Int, Middle:Int, #hardwareAddress(MiddleAddr:Int, _:Int), End:Int) =>
-               #findHardwareAddress(Addr, Middle, End)
-          requires Addr >=Int MiddleAddr
-
-     rule isInHardwareAddressRange(Addr:Int, #hardwareAddress(BaseAddr:Int, Size:Int)) =>
-          Addr >=Int BaseAddr andBool Addr <Int BaseAddr +Int Size
+     rule [[findHardwareAddress(Addr:Int) => rangeMapFind(M, Addr)]]
+          <hardware-addresses> M:RangeMap </hardware-addresses>
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{
      Any pointer type may be converted to an integer type. Except as previously

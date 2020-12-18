@@ -7,6 +7,7 @@ endmodule
 module COMPAT-SYNTAX
      imports COMPAT-SORTS
      imports COMMON-SYNTAX
+     imports LIST
 
      syntax String ::= firstChar(String) [function]
      syntax String ::= lastChar(String) [function]
@@ -78,6 +79,23 @@ module COMPAT-SYNTAX
      // implements List[Idx <- Val]
      syntax List ::= myListUpdate(List, Int, KItem) [function]
 
+
+     // Range map. It is recommended to use .rangeMap and rangeMapAppendSorted
+     // to construct it.
+     syntax RangeMap
+     // A range item contains all integers between start and end, including both
+     // ends.
+     syntax RangeMapItem ::= rangeMapItem(start:Int, end:Int)
+     syntax MaybeRangeMapItem ::= RangeMapItem | "noRangeMapItem"
+
+     syntax RangeMap ::= ".RangeMap"  [function]
+     syntax RangeMap ::= rangeMapAppendSorted(RangeMap, RangeMapItem)  [function]
+     // The elements in the two maps must be either identical, or disjoint.
+     syntax RangeMap ::= mergeRangeMaps(RangeMap, RangeMap)  [function]
+
+     syntax Bool ::= rangeMapContains(RangeMap, value:Int)  [function]
+     syntax MaybeRangeMapItem ::= rangeMapFind(RangeMap, value:Int)
+
 endmodule
 
 module COMPAT-KAST [kast]
@@ -102,6 +120,7 @@ module COMPAT
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports BOOL
+     imports LIST
      imports MAP
      imports STRING
 
@@ -293,5 +312,114 @@ module COMPAT
                _
           )
           requires N >Int 0
+
+
+     // The list must be sorted, must contain only RangeMapItem, and the ranges
+     // must be disjoint.
+     syntax RangeMap ::= rangeMap(List)
+
+     syntax RangeMap ::= #mergeRangeMaps(first:RangeMap, second:RangeMap, merged:RangeMap)  [function]
+
+     // (the address at 'start' is <= 'addr') or (start == 0)
+     // (the address at 'end' is >= 'addr') or (end == last-element).
+     // If only one of them is equal to 'addr', we change the other one.
+     syntax MaybeRangeMapItem ::= #rangeMapFind(RangeMap, value:Int, start:Int, end:Int)  [function]
+     syntax MaybeRangeMapItem ::= #rangeMapFindChoice(RangeMap, addr:Int, start:Int, middle:Int, middleItem:RangeMapItem, end:Int)  [function]
+
+     syntax MaybeRangeMapItem ::= #checkInRangeMapItem(value:Int, RangeMapItem)  [function]
+     syntax MaybeRangeMapItem ::= #firstRangeMapItem(MaybeRangeMapItem, MaybeRangeMapItem)  [function]
+
+     syntax Bool ::= isInRangeMapItem(addr:Int, RangeMapItem) [function]
+     syntax RangeMapItem ::= asRangeMapItem(KItem)  [function]
+
+     rule rangeMapContains(M:RangeMap, Value:Int)
+               => isRangeMapItem(rangeMapFind(M, Value))
+
+     rule rangeMapFind(rangeMap(L:List) #as M:RangeMap, Value:Int)
+          => #rangeMapFind(M, Value, 0, size(L) -Int 1)
+          requires size(L) >Int 0
+     rule rangeMapFind(rangeMap(L:List), _:Int) => noRangeMapItem
+          requires size(L) ==Int 0
+
+     rule #rangeMapFind(rangeMap(L:List), Value:Int, Start:Int, Start)
+          => #checkInRangeMapItem(Value, asRangeMapItem(L[Start]))
+     rule #rangeMapFind(rangeMap(L:List), Value:Int, Start:Int, End:Int)
+          => #firstRangeMapItem(
+               #checkInRangeMapItem(Value, asRangeMapItem(L[Start])),
+               #checkInRangeMapItem(Value, asRangeMapItem(L[End]))
+          )
+          requires Start ==Int End -Int 1
+     rule #rangeMapFind(rangeMap(L:List) #as M:RangeMap, Value:Int, Start:Int, End:Int)
+          => #rangeMapFindChoice(
+               M, Value, Start,
+               (Start +Int End) /Int 2,
+               asRangeMapItem(L[(Start +Int End) /Int 2]),
+               End
+          )
+          requires Start <Int End -Int 1
+
+     rule #rangeMapFindChoice(M:RangeMap, Value:Int, Start:Int, Middle:Int, rangeMapItem(MiddleStart:Int, _:Int), _End:Int)
+          => #rangeMapFind(M, Value, Start, Middle)
+          requires Value <Int MiddleStart
+     rule #rangeMapFindChoice(M:RangeMap, Value:Int, _Start:Int, Middle:Int, rangeMapItem(MiddleStart:Int, _:Int), End:Int)
+          => #rangeMapFind(M, Value, Middle, End)
+          requires Value >=Int MiddleStart
+
+     rule isInRangeMapItem(Value:Int, rangeMapItem(Start:Int, End:Int))
+          => Start <=Int Value andBool Value <=Int End
+
+     rule #checkInRangeMapItem(Value:Int, Item:RangeMapItem) => Item
+          requires isInRangeMapItem(Value, Item)
+     rule #checkInRangeMapItem(_:Int, _:RangeMapItem) => noRangeMapItem  [owise]
+
+     rule #firstRangeMapItem(noRangeMapItem, Item:RangeMapItem) => Item
+     rule #firstRangeMapItem(Item:RangeMapItem, _) => Item  [owise]
+
+     rule asRangeMapItem(Item:RangeMapItem) => Item
+
+     rule .RangeMap => rangeMap(.List)
+     rule rangeMapAppendSorted(
+               rangeMap(
+                    (_::List ListItem(rangeMapItem(_:Int, LastEnd:Int))) #as L::List),
+               rangeMapItem(Start:Int, End:Int) #as Item:RangeMapItem
+          )
+          => rangeMap(L ListItem(Item))
+          requires LastEnd <Int Start andBool Start <=Int End
+
+     rule mergeRangeMaps(First:RangeMap, Second:RangeMap)
+          => #mergeRangeMaps(First, Second, .RangeMap)
+
+     rule #mergeRangeMaps(rangeMap(.List), rangeMap(.List), Merged:RangeMap)
+          => Merged
+     rule #mergeRangeMaps(
+               rangeMap(ListItem(rangeMapItem(Start:Int, End:Int) #as FirstItem) FirstRemainder:List),
+               rangeMap(ListItem(rangeMapItem(Start:Int, End:Int)) SecondRemainder:List),
+               Merged:RangeMap
+          )
+          => #mergeRangeMaps(
+               rangeMap(FirstRemainder),
+               rangeMap(SecondRemainder),
+               rangeMapAppendSorted(Merged, FirstItem)
+          )
+     rule #mergeRangeMaps(
+               rangeMap(ListItem(rangeMapItem(FirstStart:Int, _:Int) #as FirstItem) FirstRemainder:List),
+               rangeMap(ListItem(rangeMapItem(SecondStart:Int, _:Int)) _:List) #as Second:RangeMap,
+               Merged:RangeMap
+          )
+          => #mergeRangeMaps(
+               rangeMap(FirstRemainder), Second,
+               rangeMapAppendSorted(Merged, FirstItem)
+          )
+          requires FirstStart <Int SecondStart
+     rule #mergeRangeMaps(
+               rangeMap(ListItem(rangeMapItem(FirstStart:Int, _:Int)) _:List) #as First:RangeMap,
+               rangeMap(ListItem(rangeMapItem(SecondStart:Int, _:Int) #as SecondItem) SecondRemainder:List),
+               Merged:RangeMap
+          )
+          => #mergeRangeMaps(
+               First, rangeMap(SecondRemainder),
+               rangeMapAppendSorted(Merged, SecondItem)
+          )
+          requires FirstStart >Int SecondStart
 
 endmodule

@@ -89,6 +89,8 @@ module COMMON-INIT
                     |-> object(t(quals(.Set), .Set, arrayType(t(quals(.Set), .Set, char), Size)), Size, makeArray(Size, uninit))
                )
           ...</mem>
-          <hardware-addresses> sortedHardwareAddresses(L:List => L ListItem(HwAddr)) </hardware-addresses>
+          <hardware-addresses>
+               M:RangeMap => rangeMapAppendSorted(M, rangeMapItem(Address, Address +Int Size -Int 1))
+          </hardware-addresses>
           requires Address >Int PreviousAddress
 endmodule

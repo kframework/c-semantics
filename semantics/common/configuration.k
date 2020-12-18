@@ -5,6 +5,7 @@ module COMMON-CONFIGURATION
   imports SET
   imports STRING-SYNTAX
   imports COMMON-SYNTAX
+  imports COMPAT-SYNTAX
 
   configuration
   <global>
@@ -143,7 +144,7 @@ module COMMON-CONFIGURATION
           </tu>
      </translation-units>
 
-     <hardware-addresses> sortedHardwareAddresses(.List) </hardware-addresses>
+     <hardware-addresses> .RangeMap </hardware-addresses>
    </global>
 
 endmodule

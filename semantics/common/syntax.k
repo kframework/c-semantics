@@ -62,13 +62,10 @@ module COMMON-SYNTAX
      syntax KItem ::= "cleanup" | "reportSuccess"
 
      syntax KItem ::= hardwareAddresses(K)
-     syntax SortedHardwareAddresses ::= sortedHardwareAddresses(List)
-     syntax HardwareAddress ::= #hardwareAddress(Int, Int)
-     syntax MaybeHardwareAddress ::= HardwareAddress | "noHardwareAddress"
-     syntax KItem ::= MaybeHardwareAddress
+     syntax KItem ::= #hardwareAddress(Int, Int)
      syntax KItem ::= initHardwareAddresses(KItem)
-     syntax Bool ::= #isHardwareAddress(CValue)  [function]
-     syntax MaybeHardwareAddress ::= findHardwareAddress(Int)  [function, withConfig]
+     syntax Bool ::= #isHardwareAddress(CValue)  [function, withConfig]
+     syntax MaybeRangeMapItem ::= findHardwareAddress(Int)  [function, withConfig]
 
      syntax LanguageLinkage ::= "CLinkage" | "CPPLinkage"
 
