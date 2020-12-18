@@ -396,6 +396,12 @@ module COMPAT
 
      rule #mergeRangeMaps(rangeMap(.List), rangeMap(.List), Merged:RangeMap)
           => Merged
+     rule #mergeRangeMaps(rangeMap(.List), rangeMap(L::List), rangeMap(Merged::List))
+          => rangeMap(Merged L)
+          requires size(L) >Int 0
+     rule #mergeRangeMaps(rangeMap(L::List), rangeMap(.List), rangeMap(Merged::List))
+          => rangeMap(Merged L)
+          requires size(L) >Int 0
      rule #mergeRangeMaps(
                rangeMap(ListItem(rangeMapItem(Start:Int, End:Int) #as FirstItem) FirstRemainder:List),
                rangeMap(ListItem(rangeMapItem(Start:Int, End:Int)) SecondRemainder:List),
