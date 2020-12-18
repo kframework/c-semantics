@@ -94,7 +94,7 @@ module COMPAT-SYNTAX
      syntax RangeMap ::= mergeRangeMaps(RangeMap, RangeMap)  [function]
 
      syntax Bool ::= rangeMapContains(RangeMap, value:Int)  [function]
-     syntax MaybeRangeMapItem ::= rangeMapFind(RangeMap, value:Int)
+     syntax MaybeRangeMapItem ::= rangeMapFind(RangeMap, value:Int)  [function]
 
 endmodule
 
@@ -333,13 +333,12 @@ module COMPAT
      syntax RangeMapItem ::= asRangeMapItem(KItem)  [function]
 
      rule rangeMapContains(M:RangeMap, Value:Int)
-               => isRangeMapItem(rangeMapFind(M, Value))
+          => isRangeMapItem(rangeMapFind(M, Value))
 
+     rule rangeMapFind(rangeMap(.List), _:Int) => noRangeMapItem
      rule rangeMapFind(rangeMap(L:List) #as M:RangeMap, Value:Int)
           => #rangeMapFind(M, Value, 0, size(L) -Int 1)
-          requires size(L) >Int 0
-     rule rangeMapFind(rangeMap(L:List), _:Int) => noRangeMapItem
-          requires size(L) ==Int 0
+          [owise]
 
      rule #rangeMapFind(rangeMap(L:List), Value:Int, Start:Int, Start)
           => #checkInRangeMapItem(Value, asRangeMapItem(L[Start]))
@@ -372,8 +371,8 @@ module COMPAT
           requires isInRangeMapItem(Value, Item)
      rule #checkInRangeMapItem(_:Int, _:RangeMapItem) => noRangeMapItem  [owise]
 
-     rule #firstRangeMapItem(noRangeMapItem, Item:RangeMapItem) => Item
-     rule #firstRangeMapItem(Item:RangeMapItem, _) => Item  [owise]
+     rule #firstRangeMapItem(noRangeMapItem, Item:MaybeRangeMapItem) => Item
+     rule #firstRangeMapItem(Item:RangeMapItem, _) => Item
 
      rule asRangeMapItem(Item:RangeMapItem) => Item
 
