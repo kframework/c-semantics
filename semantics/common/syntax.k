@@ -20,6 +20,7 @@ endmodule
 
 module COMMON-SYNTAX
      imports COMMON-SORTS
+     imports LIST
      imports SET
      imports STRING-SYNTAX
 
@@ -63,6 +64,8 @@ module COMMON-SYNTAX
      syntax KItem ::= hardwareAddresses(K)
      syntax KItem ::= #hardwareAddress(Int, Int)
      syntax KItem ::= initHardwareAddresses(KItem)
+     syntax Bool ::= #isHardwareAddress(CValue)  [function, withConfig]
+     syntax MaybeRangeMapItem ::= findHardwareAddress(Int)  [function, withConfig]
 
      syntax LanguageLinkage ::= "CLinkage" | "CPPLinkage"
 

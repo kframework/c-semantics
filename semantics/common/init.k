@@ -75,13 +75,22 @@ module COMMON-INIT
      rule <k> reportSuccess => .K ...</k>
           <result-value> _ => 0 </result-value>
 
-     rule initHardwareAddresses(hardwareAddresses(.K)) => .
-     rule <k> initHardwareAddresses(hardwareAddresses((#hardwareAddress(Address:Int, Size:Int) => .K) ~> _:K)) ...</k>
-          <hardware-addresses>... (.Set => SetItem(Address)) ... </hardware-addresses>
+     syntax KItem ::= #initHardwareAddresses(KItem, previousAddress:Int)
+
+     rule initHardwareAddresses(hardwareAddresses(...) #as HwAddr:KItem) => #initHardwareAddresses(HwAddr, -1)
+     rule #initHardwareAddresses(hardwareAddresses(.K), _) => .
+     rule <k> #initHardwareAddresses(
+               hardwareAddresses((#hardwareAddress(Address:Int, Size:Int) #as HwAddr:KItem => .K) ~> _:K),
+               PreviousAddress:Int)
+          ...</k>
           <mem>...
                (.Map =>
                     obj(Address, cfg:bitsPerByte *Int cfg:alignofPointer, hardwareAddress())
                     |-> object(t(quals(.Set), .Set, arrayType(t(quals(.Set), .Set, char), Size)), Size, makeArray(Size, uninit))
                )
           ...</mem>
+          <hardware-addresses>
+               M:RangeMap => rangeMapAppendSorted(M, rangeMapItem(Address, Address +Int Size -Int 1))
+          </hardware-addresses>
+          requires Address >Int PreviousAddress
 endmodule

@@ -30,6 +30,7 @@ module C-CONVERSION
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
+     imports LIST
      imports SET
 
      rule intArithInterpret(T:UType, N:Int) => intArithInterpret(T, N, true)
@@ -284,14 +285,20 @@ module C-CONVERSION
      rule <k>(.K => IMPL("CCV13", "Conversion from an integer to non-null pointer."))
                ~> cast(ut(... st: pointerType(_)) #as T'::UType, tv(V:CValue, integerUType #as T::UType), _)
           ...</k>
-          <hardware-addresses> HwAddr:Set </hardware-addresses>
-          requires notBool isNullPointerConstant(tv(V, T)) andBool notBool V in HwAddr
+          requires notBool isNullPointerConstant(tv(V, T)) andBool notBool #isHardwareAddress(V)
 
      rule <k>(.K => IMPL("CCV13-H", "Conversion from an integer to non-null hardware-dependent pointer."))
                ~> cast(ut(... st: pointerType(_)) #as T'::UType, tv(V:CValue, integerUType #as T::UType), _)
           ...</k>
-          <hardware-addresses>... SetItem(V) ...</hardware-addresses>
-          requires notBool isNullPointerConstant(tv(V, T))
+          requires notBool isNullPointerConstant(tv(V, T)) andBool #isHardwareAddress(V)
+
+     rule [[ #isHardwareAddress(Addr:Int) => rangeMapContains(M, Addr) ]]
+          <hardware-addresses> M:RangeMap </hardware-addresses>
+     rule #isHardwareAddress(Addr:CValue) => false
+          requires notBool isInt(Addr)
+
+     rule [[findHardwareAddress(Addr:Int) => rangeMapFind(M, Addr)]]
+          <hardware-addresses> M:RangeMap </hardware-addresses>
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{
      Any pointer type may be converted to an integer type. Except as previously

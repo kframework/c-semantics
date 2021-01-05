@@ -282,7 +282,7 @@ module LINKING-INIT
 
                <translation-units> TUs1::Bag </translation-units>
 
-               <hardware-addresses> HwA1::Set </hardware-addresses>
+               <hardware-addresses> HwA1:RangeMap </hardware-addresses>
           </global>),
           (<global>
                <mem> M2:Map </mem>
@@ -314,7 +314,7 @@ module LINKING-INIT
 
                <translation-units> TUs2::Bag </translation-units>
 
-               <hardware-addresses> HwA2::Set </hardware-addresses>
+               <hardware-addresses> HwA2:RangeMap </hardware-addresses>
           </global>))
           =>
           <global>
@@ -351,7 +351,7 @@ module LINKING-INIT
 
                <translation-units> TUs1 TUs2 </translation-units>
 
-               <hardware-addresses> HwA1 |Set HwA2 </hardware-addresses>
+               <hardware-addresses> mergeRangeMaps(HwA1, HwA2) </hardware-addresses>
           </global>
 
      // TODO(chathhorn): remove redundancy
