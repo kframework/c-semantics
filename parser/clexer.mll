@@ -547,6 +547,7 @@ rule initial =
                                           addWhite lexbuf;
                                           initial lexbuf 
                                         }
+|		"pack"                 {PACK}
 |		'`'		       {BACKTICK}
 |		'\\'		       {BACKSLASH}
 
@@ -615,7 +616,7 @@ and hash = parse
                 (* For pragmas with irregular syntax, like #pragma warning, 
                  * we parse them as a whole line. *)
 | "pragma" blank
-                { addWhite lexbuf; hash lexbuf }
+                { pragmaLine := true; PRAGMA (currentLoc ()) (*; addWhite lexbuf; hash lexbuf *) }
 | _	        { addWhite lexbuf; endline lexbuf}
 
 and file =  parse 
