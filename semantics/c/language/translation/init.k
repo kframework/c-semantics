@@ -55,12 +55,6 @@ module C-TRANSLATION-INIT
      rule ExpressionLoc(K:K, L:CabsLoc) => ExpLoc(K, L)
 
      rule typeof(ExpLoc(K:K, _:CabsLoc) => K)
-     rule utype(ExpLoc(K:K, _:CabsLoc) => K)
-     rule type(ExpLoc(K:K, _:CabsLoc) => K)
-     rule stripHold(ExpLoc(K:KItem, L::CabsLoc)) => ExpLoc(stripHold(K), L)
-     rule value(ExpLoc(K:K, _:CabsLoc) => K)
-     rule fromConstantExpr(ExpLoc(V:RValue, _::CabsLoc)) => fromConstantExpr(V)
-     rule isNullPointerConstant(ExpLoc(V:RValue, _:CabsLoc)) => isNullPointerConstant(V)
 
      rule isKResult(ExpLoc(K:K, _::CabsLoc)) => isKResult(K) andBool notBool isTv(K)
      rule isHold(ExpLoc(K:K, _::CabsLoc)) => isHold(K)

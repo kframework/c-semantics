@@ -50,6 +50,10 @@ c-compile: ${C_KCC_COMPILED_TESTS}
 # to disable this, otherwise we will skip compilation and things will break.
 %.out: %
 
+%-nc.c.out: %-nc.c.kcc
+	@echo -n "Running $<... "
+	@-./$< 2>&1 | sed 's/:[0-9][0-9]*$$//' > $@
+
 %.out: %.kcc
 	@echo -n "Running $<... "
 	@-./$< > $@ 2>&1

@@ -45,7 +45,14 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-expression-loc> .List => ListItem(L) ...</curr-expression-loc>
           [structural]
-     rule <k> figureInit(_, _, CompoundInit(list(ListItem(InitFragment(NextInit(), SingleInit(ExpLoc(K:KItem, L:CabsLoc) => K)))))) ~> (.K => #popExpLoc())
+     rule <k> figureInit(
+                    _, _,
+                    CompoundInit(list(ListItem(InitFragment(
+                         NextInit(),
+                         SingleInit(ExpLoc(K:KItem, L:CabsLoc) => K)
+                    ))))
+               )
+               ~> (.K => #popExpLoc())
           ...</k>
           <curr-expression-loc> .List => ListItem(L) ...</curr-expression-loc>
           [structural]

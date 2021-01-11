@@ -1,5 +1,5 @@
 Unsequenced side effect on scalar object with value computation of same object:
-      > in main at j035a.c:3:20
+      > in main at j035d-nc.c:3
 
     Undefined behavior (UB-EIO8):
         see C11 section 6.5:2 http://rvdoc.org/C11/6.5
