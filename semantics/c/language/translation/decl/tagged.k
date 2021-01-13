@@ -244,5 +244,53 @@ module C-DECL-TAGGED
                orBool (tag(X, Tu, BlockNum) in_keys(Structs))
           [structural]
 
+     rule makeStructFieldInfo(Pack::Bool, Fs::List)
+          => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)
+
+     syntax FieldInfo ::= "makeStructFieldInfo'" "(" Bool "," List "," Int "," Map ","  Map "," List ")" [function]
+     rule makeStructFieldInfo'(Pack::Bool,
+               ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
+               V::Int,
+               Types::Map,
+               Offsets::Map,
+               NL::List)
+          => makeStructFieldInfo'(Pack,
+               L,
+               pad(V, T) +Int bitSizeofType(T),
+               Types[Field <- T],
+               Offsets[Field <- pad(V, T)],
+               NL ListItem(typedDeclaration(T, Field)))
+     rule makeStructFieldInfo'(true, .List, V::Int, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, roundBits(V, 1),
+               Types, Offsets,
+               computePaddingOffsets(NL, roundBits(V, 1), Types, Offsets))
+     rule makeStructFieldInfo'(false, .List, V::Int, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, roundBits(V, maxByteAlignofDecls(NL)),
+               Types, Offsets,
+               computePaddingOffsets(NL, roundBits(V, maxByteAlignofDecls(NL)), Types, Offsets))
+
+     // The padding associated with a particular field precedes it, with
+     // possibly some extra padding at the end of the whole struct not
+     // associated with any field. This is important for understanding the
+     // effect of the gcc et al. packed attr as applied to a particular field.
+
+     syntax Int ::= pad(Int, Type) [function]
+     // Non-bitfields are aligned according to their type (if we note that
+     // fields tagged with the Packed() attribute have an alignment of 1 byte).
+     rule [[ pad(V::Int, T::Type) => roundBits(V, minInt(byteAlignofType(T), PackV)) ]]
+          <pragma-pack-value> PackV::Int </pragma-pack-value>
+          requires notBool isBitfieldType(T)
+     // Non-packed bitfields that would cross an alignment boundary and
+     // zero-length bitfields have an alignment of the bitfield field type.
+     rule [[ pad(V::Int, t(... st: bitfieldType(...)) #as T::Type) => roundBits(V, minInt(byteAlignofType(innerType(T)), PackV)) ]]
+          <pragma-pack-value> PackV::Int </pragma-pack-value>
+          requires notBool (Packed() in getModifiers(T))
+               andBool (V +Int bitSizeofType(T)) >Int roundBits(V, byteAlignofType(innerType(T)))
+     rule pad(V::Int, t(... st: bitfieldType(...)) #as T::Type) => roundBits(V, byteAlignofType(innerType(T)))
+          requires bitSizeofType(T) ==Int 0
+     // Packed bitfields and non-packed bitfields that don't cross an alignment
+     // boundary have 1-bit alignment (no padding).
+     rule pad(V::Int, _) => V [owise]
+
 endmodule
 
