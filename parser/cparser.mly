@@ -278,7 +278,7 @@ let trd3 (_, _, result) = result
 %token<Cabs.cabsloc> BEGINANNOTATION ENDANNOTATION
 %token<Cabs.cabsloc> PROPERTY
 %token LTL ATOM LTL_BUILTIN_TOK
-%token PACK
+%token PRAGMA_PACK
 %token BACKTICK BACKSLASH
 
 /* sm: cabs tree transformation specification keywords */
@@ -1305,7 +1305,7 @@ pragma:
 | PRAGMA attr SEMICOLON PRAGMA_EOL	{ PRAGMA ($2, $1) }
 | PRAGMA_LINE                           { PRAGMA (VARIABLE (fst $1), 
                                                   snd $1) }
-| PRAGMA PACK pragma_pack PRAGMA_EOL { $3 }
+| PRAGMA_PACK pragma_pack { $2 }
 | PRAGMA LTL ltl_pragma PRAGMA_EOL { $3 }
 | PRAGMA PRAGMA_EOL { PRAGMA (VARIABLE "", $1) }
 ;
