@@ -486,7 +486,7 @@ and expression =
     | GNU_BODY blk                                               -> kapply KItem "GnuBody" [lazy_block blk KItem]
     | BITMEMBEROF (exp, fld)                                     -> kapply KItem "DotBit" [lazy_expression exp KItem; identifier fld CId]
     | EXPR_PATTERN s                                             -> kapply KItem "ExpressionPattern" [ktoken_string s String]
-    | PACK exp                                                   -> kapply KItem "Pack" [lazy_expression exp KItem]
+    | PACK exp                                                   -> kapply KItem "PragmaPack" [lazy_expression exp KItem]
 and lazy_expression = fun a sort -> LazyPrinter ((fun aa -> expression aa sort), a)
 
 and type_spec =

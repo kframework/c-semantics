@@ -221,6 +221,7 @@ module C-ABSTRACT-SYNTAX
      syntax KItem ::= OnlyTypedef(KItem) [symbol]
      syntax KItem ::= GlobAsm(String) [symbol]
      syntax KItem ::= Pragma(KItem) [symbol]
+     syntax KItem ::= PragmaPack(KItem) [symbol]
      syntax KItem ::= PragmaKccRule(String) [symbol]
      syntax KItem ::= Linkage(String, StrictList) [symbol]
      syntax KItem ::= StaticAssert(K, KItem) [symbol]

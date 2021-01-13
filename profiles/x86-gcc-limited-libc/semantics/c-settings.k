@@ -65,7 +65,8 @@ module C-SETTINGS
      rule cfg:alignofOversizedFloat => 16
      rule cfg:alignofPointer => 8
      // Max of the above.
-     rule cfg:alignofMalloc => 16
+     rule cfg:defaultMaxAlign => 16
+     rule cfg:alignofMalloc => cfg:defaultMaxAlign
 
      rule cfg:intToPointer(0, _) => NullPointer
      rule cfg:intToPointer(_, _) => trap [owise]

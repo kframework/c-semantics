@@ -57,7 +57,12 @@ module C-TRANSLATION-INIT
      recognized by the implementation is ignored.
      }*/
      rule Pragma(_) => .K
-          [structural]
+          [owise, structural]
+
+     context Pragma(PragmaPack(HOLE:KItem => reval(HOLE)))
+
+     rule <k> Pragma(PragmaPack(emptyValue)) => .K ...</k>
+          <pragma-pack-value> _ => cfg:defaultMaxAlign </pragma-pack-value>
 
      rule NothingExpression() => emptyValue
 

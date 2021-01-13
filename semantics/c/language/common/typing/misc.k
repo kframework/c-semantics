@@ -564,11 +564,13 @@ module C-TYPING-MISC
      syntax Int ::= pad(Int, Type) [function]
      // Non-bitfields are aligned according to their type (if we note that
      // fields tagged with the Packed() attribute have an alignment of 1 byte).
-     rule pad(V::Int, T::Type) => roundBits(V, byteAlignofType(T))
+     rule [[ pad(V::Int, T::Type) => roundBits(V, minInt(byteAlignofType(T), PackV)) ]]
+          <pragma-pack-value> PackV </pragma-pack-value>
           requires notBool isBitfieldType(T)
      // Non-packed bitfields that would cross an alignment boundary and
      // zero-length bitfields have an alignment of the bitfield field type.
-     rule pad(V::Int, t(... st: bitfieldType(...)) #as T::Type) => roundBits(V, byteAlignofType(innerType(T)))
+     rule [[ pad(V::Int, t(... st: bitfieldType(...)) #as T::Type) => roundBits(V, minInt(byteAlignofType(innerType(T)), PackV)) ]]
+          <pragma-pack-value> PackV </pragma-pack-value>
           requires notBool (Packed() in getModifiers(T))
                andBool (V +Int bitSizeofType(T)) >Int roundBits(V, byteAlignofType(innerType(T)))
      rule pad(V::Int, t(... st: bitfieldType(...)) #as T::Type) => roundBits(V, byteAlignofType(innerType(T)))
