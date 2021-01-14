@@ -27,6 +27,7 @@ module C-DECL-TAGGED
      imports C-SYNTAX
      imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-MISC
      imports SETTINGS-SYNTAX
 
      context StructDef(_, HOLE:StrictList => seqstrict(HOLE), _)
