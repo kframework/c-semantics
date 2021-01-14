@@ -245,6 +245,26 @@ module C-DECL-TAGGED
                orBool (tag(X, Tu, BlockNum) in_keys(Structs))
           [structural]
 
+     rule makeUnionFieldInfo(Pack::Bool, Fs::List)
+          => makeUnionFieldInfo'(Pack, Fs, .Map, .Map, .List)
+
+     syntax FieldInfo ::= "makeUnionFieldInfo'" "(" Bool "," List "," Map ","  Map "," List ")" [function]
+     rule makeUnionFieldInfo'(Pack::Bool,
+               ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
+               Types::Map,
+               Offsets::Map,
+               NL::List)
+          => makeUnionFieldInfo'(Pack, L,
+               Types[Field <- T], Offsets[Field <- 0],
+               NL ListItem(typedDeclaration(T, Field)))
+     rule makeUnionFieldInfo'(true, .List, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, .Set)
+     rule makeUnionFieldInfo'(false, .List, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL,
+               roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL)),
+               Types, Offsets, getPaddingOffsets(maxByteSizeofList(NL) *Int cfg:bitsPerByte, roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL))))
+
+
      rule makeStructFieldInfo(Pack::Bool, Fs::List)
           => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)
 
@@ -292,6 +312,17 @@ module C-DECL-TAGGED
      // Packed bitfields and non-packed bitfields that don't cross an alignment
      // boundary have 1-bit alignment (no padding).
      rule pad(V::Int, _) => V [owise]
+
+     rule maxByteAlignofDecls(L:List) => maxByteAlignofDecls'(1, L)
+
+     syntax Int ::= "maxByteAlignofDecls'" "(" Int "," List ")" [function]
+
+     rule [[ maxByteAlignofDecls'(Sz::Int, ListItem(typedDeclaration(T::Type, _)) LL:List)
+          => maxByteAlignofDecls'(maxInt(Sz, minInt(byteAlignofType(T), PackV)), LL) ]]
+          <pragma-pack-value> PackV::Int </pragma-pack-value>
+
+     rule maxByteAlignofDecls'(Sz::Int, .List) => Sz
+
 
 endmodule
 

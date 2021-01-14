@@ -543,25 +543,6 @@ module C-TYPING-MISC
      rule allComplete(.List) => true
      rule allComplete((ListItem(_) => .List) _) [owise]
 
-     rule makeUnionFieldInfo(Pack::Bool, Fs::List)
-          => makeUnionFieldInfo'(Pack, Fs, .Map, .Map, .List)
-
-     syntax FieldInfo ::= "makeUnionFieldInfo'" "(" Bool "," List "," Map ","  Map "," List ")" [function]
-     rule makeUnionFieldInfo'(Pack::Bool,
-               ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
-               Types::Map,
-               Offsets::Map,
-               NL::List)
-          => makeUnionFieldInfo'(Pack, L,
-               Types[Field <- T], Offsets[Field <- 0],
-               NL ListItem(typedDeclaration(T, Field)))
-     rule makeUnionFieldInfo'(true, .List, Types::Map, Offsets::Map, NL::List)
-          => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, .Set)
-     rule makeUnionFieldInfo'(false, .List, Types::Map, Offsets::Map, NL::List)
-          => fieldInfo(NL,
-               roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL)),
-               Types, Offsets, getPaddingOffsets(maxByteSizeofList(NL) *Int cfg:bitsPerByte, roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL))))
-
      syntax Set ::= computePaddingOffsets(List, Int, Map, Map) [function]
      rule computePaddingOffsets(ListItem(typedDeclaration(_, A::CId)) ListItem(typedDeclaration(BT::Type, B::CId)) L::List, Len::Int, Types::Map, Offsets::Map)
           => getPaddingOffsets({{Offsets[A]}<:KItem}:>Int +Int bitSizeofType({{Types[A]}<:KItem}:>Type), {{Offsets[B]}<:KItem}:>Int)

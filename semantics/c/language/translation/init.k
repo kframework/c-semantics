@@ -56,10 +56,13 @@ module C-TRANSLATION-INIT
      program to behave in a non-conforming manner. Any such pragma that is not
      recognized by the implementation is ignored.
      }*/
-     rule Pragma(_) => .K
-          [owise, structural]
+     rule Pragma(X) => .K
+          requires PragmaPack(_) :/=K X
 
      context Pragma(PragmaPack(HOLE:KItem => reval(HOLE)))
+
+     rule <k> Pragma(PragmaPack(tv(V::Int, _))) => .K ...</k>
+          <pragma-pack-value> _ => V </pragma-pack-value>
 
      rule <k> Pragma(PragmaPack(emptyValue)) => .K ...</k>
           <pragma-pack-value> _ => cfg:defaultMaxAlign </pragma-pack-value>
