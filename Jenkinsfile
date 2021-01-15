@@ -21,7 +21,9 @@ pipeline {
         } }
         stage ( 'Build docker image' ) { steps {
           script {
-            img = docker.build "c-semantics:${env.CHANGE_ID}"
+            img = docker.build(
+                    "c-semantics:${env.CHANGE_ID}",
+                    "--build-arg USER_ID=${sh(returnStdout: true, script: 'id -u')} ./Dockerfile")
           }
         } }
         stage ( 'Compile' ) {
