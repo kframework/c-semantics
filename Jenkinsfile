@@ -22,7 +22,8 @@ pipeline {
         stage ( 'Build docker image' ) { steps {
           script {
             def uid = sh([returnStdout: true, script: 'id -u'])
-            img = docker.build("c-semantics:${env.CHANGE_ID}", "--build-arg USER_ID=${uid} .")
+            def gid = sh([returnStdout: true, script: 'id -g'])
+            img = docker.build("c-semantics:${env.CHANGE_ID}", "--build-arg USER_ID=${uid} --build-arg GROUP_ID=${gid} .")
           }
         } }
         stage ( 'Compile' ) {
