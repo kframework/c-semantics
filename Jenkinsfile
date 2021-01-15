@@ -23,7 +23,7 @@ pipeline {
           script {
             img = docker.build(
                     "c-semantics:${env.CHANGE_ID}",
-                    "--build-arg USER_ID=${sh(returnStdout: true, script: 'id -u')} ./")
+                    "--build-arg USER_ID=${sh(returnStdout: true, script: 'id -u')} .")
           }
         } }
         stage ( 'Compile' ) {
