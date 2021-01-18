@@ -195,8 +195,8 @@ module C-MEMORY-WRITING
 
      syntax KItem ::= initStructPadding(SymLoc, FieldInfo, Bool)
      rule (.K => initPaddingByte(Loc +bits I, Trap))
-          ~> initStructPadding(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, (SetItem(I::Int) => .Set) _), Trap::Bool)
-     rule initStructPadding(_, fieldInfo(_, _, _, _, .Set), _) => .K
+          ~> initStructPadding(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, (SetItem(I::Int) => .Set) _, _), Trap::Bool)
+     rule initStructPadding(_, fieldInfo(_, _, _, _, .Set, _), _) => .K
 
      syntax K ::= initFieldPadding(SymLoc, Type, CId, Bool) [function]
      rule initFieldPadding(Loc::SymLoc, T::Type, F::CId, Trap::Bool)
@@ -347,7 +347,7 @@ module C-MEMORY-WRITING
      rule splitStructPartialBytes(_, _, 0) => .List
 
      syntax Bool ::= isPaddingOffset(Int, K) [function]
-     rule isPaddingOffset(Offset::Int, fieldInfo(_, _, _, _, PaddingOffs::Set))
+     rule isPaddingOffset(Offset::Int, fieldInfo(_, _, _, _, PaddingOffs::Set, _))
           => Offset *Int cfg:bitsPerByte in PaddingOffs
 
      rule writeChars(Loc::SymLoc, S::String)

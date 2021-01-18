@@ -198,9 +198,9 @@ module C-DECL-TAGGED
      rule firstNamedZeroLengthBitfield(.List) => ""
 
      syntax KItem ::= addTag(CId, TagInfo)
-     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set))
+     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set, MaxAlign:Int))
                // Elide function parameter names in struct types.
-               => addGlobalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs, PaddingOffs))
+               => addGlobalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs, PaddingOffs, MaxAlign))
           ...</k>
           <curr-scope> fileScope </curr-scope>
           [structural]
@@ -209,8 +209,8 @@ module C-DECL-TAGGED
           ...</k>
           <curr-scope> fileScope </curr-scope>
           [structural]
-     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set))
-               => addLocalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs, PaddingOffs))
+     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set, MaxAlign:Int))
+               => addLocalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs, PaddingOffs, MaxAlign))
           ...</k>
           <curr-scope> Scope:Scope </curr-scope>
           requires isFileScope(Scope) =/=K true
@@ -258,11 +258,11 @@ module C-DECL-TAGGED
                Types[Field <- T], Offsets[Field <- 0],
                NL ListItem(typedDeclaration(T, Field)))
      rule makeUnionFieldInfo'(true, .List, Types::Map, Offsets::Map, NL::List)
-          => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, .Set)
+          => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, .Set, maxByteAlignofDecls(NL))
      rule makeUnionFieldInfo'(false, .List, Types::Map, Offsets::Map, NL::List)
           => fieldInfo(NL,
                roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL)),
-               Types, Offsets, getPaddingOffsets(maxByteSizeofList(NL) *Int cfg:bitsPerByte, roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL))))
+               Types, Offsets, getPaddingOffsets(maxByteSizeofList(NL) *Int cfg:bitsPerByte, roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL))), maxByteAlignofDecls(NL))
 
 
      rule makeStructFieldInfo(Pack::Bool, Fs::List)
@@ -284,11 +284,12 @@ module C-DECL-TAGGED
      rule makeStructFieldInfo'(true, .List, V::Int, Types::Map, Offsets::Map, NL::List)
           => fieldInfo(NL, roundBits(V, 1),
                Types, Offsets,
-               computePaddingOffsets(NL, roundBits(V, 1), Types, Offsets))
+               computePaddingOffsets(NL, roundBits(V, 1), Types, Offsets), maxByteAlignofDecls(NL))
      rule makeStructFieldInfo'(false, .List, V::Int, Types::Map, Offsets::Map, NL::List)
           => fieldInfo(NL, roundBits(V, maxByteAlignofDecls(NL)),
                Types, Offsets,
-               computePaddingOffsets(NL, roundBits(V, maxByteAlignofDecls(NL)), Types, Offsets))
+               computePaddingOffsets(NL, roundBits(V, maxByteAlignofDecls(NL)), Types, Offsets),
+               maxByteAlignofDecls(NL))
 
      // The padding associated with a particular field precedes it, with
      // possibly some extra padding at the end of the whole struct not

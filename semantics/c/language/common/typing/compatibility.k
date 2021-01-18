@@ -113,7 +113,8 @@ module C-TYPING-COMPATIBILITY
                     Cache SetItem(kpair(S, S'))))
 
      syntax Bool ::= #areStructsCompat(FieldInfo, FieldInfo, Set) [function, memo]
-     rule #areStructsCompat(fieldInfo(Fs::List, _, _, _, _), fieldInfo(Fs'::List, _, _, _, _), Cache::Set)
+     // TODO: are they compatible even if one was packed using attribute or pragma?
+     rule #areStructsCompat(fieldInfo(Fs::List, _, _, _, _, _), fieldInfo(Fs'::List, _, _, _, _, _), Cache::Set)
           => #areCompatFields(Fs, Fs', Cache)
           requires Fs =/=K .List andBool Fs' =/=K .List
      rule #areStructsCompat(_, _, _) => true [owise]

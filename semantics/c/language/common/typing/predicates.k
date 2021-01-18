@@ -115,14 +115,14 @@ module C-TYPING-PREDICATES
      rule isFlexibleType(_) => false [owise]
 
      syntax Bool ::= isFlexibleStruct(FieldInfo) [function]
-     rule isFlexibleStruct(fieldInfo(_:List ListItem(typedDeclaration(T::Type, _)), _, _, _, _)) => true
+     rule isFlexibleStruct(fieldInfo(_:List ListItem(typedDeclaration(T::Type, _)), _, _, _, _, _)) => true
           requires isFlexibleArrayType(T)
      rule isFlexibleStruct(_) => false [owise]
 
      syntax Bool ::= isFlexibleUnion(FieldInfo) [function]
-     rule isFlexibleUnion(fieldInfo(_:List ListItem(typedDeclaration(T::Type, _)), _, _, _, _)) => true
+     rule isFlexibleUnion(fieldInfo(_:List ListItem(typedDeclaration(T::Type, _)), _, _, _, _, _)) => true
           requires isFlexibleType(T)
-     rule isFlexibleUnion(fieldInfo(_:List (ListItem(typedDeclaration(T::Type, _)) => .List), _, _, _, _))
+     rule isFlexibleUnion(fieldInfo(_:List (ListItem(typedDeclaration(T::Type, _)) => .List), _, _, _, _, _))
           requires notBool isFlexibleType(T)
      rule isFlexibleUnion(_) => false [owise]
 
