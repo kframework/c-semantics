@@ -1,4 +1,4 @@
-CV-CDI5-bad-static.c:1:1: error: Unexpected compound initializer.
+CV-CDI5-bad-static.c:5:7: error: Unexpected compound initializer.
 
     Constraint violation (CV-CDI5):
         see C11 section 6.7.9:2 http://rvdoc.org/C11/6.7.9
@@ -7,7 +7,7 @@ CV-CDI5-bad-static.c:1:1: error: Unexpected compound initializer.
         see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
-CV-CDI5-bad-static.c:1:1: error: Attempting to initialize nonexistent member.
+CV-CDI5-bad-static.c:5:7: error: Attempting to initialize nonexistent member.
 
     Constraint violation (CV-CDI4):
         see C11 section 6.7.9:2 http://rvdoc.org/C11/6.7.9

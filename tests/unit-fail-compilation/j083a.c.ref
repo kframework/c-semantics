@@ -1,4 +1,4 @@
-j083a.c:2:7: error: Invalid initializer for aggregate type.
+j083a.c:2:17: error: Invalid initializer for aggregate type.
 
     Undefined behavior (UB-CDI3):
         see C11 section 6.7.9:16 http://rvdoc.org/C11/6.7.9

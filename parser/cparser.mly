@@ -36,7 +36,7 @@
  *
  **)
 (**
-** 1.0	3.22.99	Hugues Cassé	First version.
+** 1.0	3.22.99	Hugues Cassï¿½	First version.
 ** 2.0  George Necula 12/12/00: Practically complete rewrite.
 *)
 */
@@ -70,6 +70,17 @@ let cabslu = {lineno = -10;
 			  lineOffsetStart = 0;
 			  systemHeader = false;
 			  }
+
+let fix_system first second =
+  match first with
+    {systemHeader = true; _} ->
+      (match second with
+        {systemHeader = false; _} ->
+          { first with systemHeader = false }
+      | _ -> first
+      )
+  | _ -> first
+
 
 (* cabsloc -> cabsloc *)
 (*
@@ -325,7 +336,7 @@ VOLATILE
 %type <string * cabsloc> string_constant
 %type <Cabs.expression * cabsloc> expression
 %type <Cabs.expression> opt_expression
-%type <Cabs.init_expression> init_expression
+%type <Cabs.init_expression * cabsloc> init_expression
 %type <Cabs.expression list * cabsloc> comma_expression
 %type <Cabs.expression list * cabsloc> paren_comma_expression
 %type <Cabs.expression list> arguments
@@ -333,8 +344,8 @@ VOLATILE
 %type <int64 list Queue.t * cabsloc> string_list
 %type <int64 list * cabsloc> wstring_list
 
-%type <Cabs.initwhat * Cabs.init_expression> initializer
-%type <(Cabs.initwhat * Cabs.init_expression) list> initializer_list
+%type <Cabs.initwhat * (Cabs.init_expression * Cabs.cabsloc)> initializer
+%type <(Cabs.initwhat * (Cabs.init_expression * Cabs.cabsloc)) list> initializer_list
 %type <Cabs.initwhat> init_designators init_designators_opt
 
 %type <spec_elem list * cabsloc> decl_spec_list
@@ -456,9 +467,9 @@ postfix_expression:                     /*(* 6.5.2 *)*/
 |		postfix_expression ARROW id_or_typename
 		        {MEMBEROFPTR (fst $1, $3), snd $1}
 |		postfix_expression PLUS_PLUS
-		        {UNARY (POSINCR, fst $1), snd $1}
+		        {LOCEXP (UNARY (POSINCR, fst $1), snd $1), snd $1}
 |		postfix_expression MINUS_MINUS
-		        {UNARY (POSDECR, fst $1), snd $1}
+		        {LOCEXP (UNARY (POSDECR, fst $1), snd $1), snd $1}
 /* (* We handle GCC constructor expressions *) */
 |		LPAREN type_name RPAREN LBRACE initializer_list_opt RBRACE
 		        { CAST($2, COMPOUND_INIT $5), $1 }
@@ -487,30 +498,30 @@ unary_expression:   /*(* 6.5.3 *)*/
 |               postfix_expression
                         { $1 }
 |		PLUS_PLUS unary_expression
-		        {UNARY (PREINCR, fst $2), $1}
+		        {LOCEXP (UNARY (PREINCR, fst $2), $1), $1}
 |		MINUS_MINUS unary_expression
-		        {UNARY (PREDECR, fst $2), $1}
+		        {LOCEXP (UNARY (PREDECR, fst $2), $1), $1}
 |		SIZEOF unary_expression
-		        {EXPR_SIZEOF (fst $2), $1}
+		        {LOCEXP (EXPR_SIZEOF (fst $2), $1), $1}
 |	 	SIZEOF LPAREN type_name RPAREN
-		        {let b, d = $3 in TYPE_SIZEOF (b, d), $1}
+		        {let b, d = $3 in LOCEXP (TYPE_SIZEOF (b, d), $1), $1}
 |		ALIGNOF unary_expression
-		        {EXPR_ALIGNOF (fst $2), $1}
+		        {LOCEXP (EXPR_ALIGNOF (fst $2), $1), $1}
 |	 	ALIGNOF LPAREN type_name RPAREN
-		        {let b, d = $3 in TYPE_ALIGNOF (b, d), $1}
+		        {let b, d = $3 in LOCEXP (TYPE_ALIGNOF (b, d), $1), $1}
 |		PLUS cast_expression
-		        {UNARY (PLUS, fst $2), $1}
+		        {LOCEXP (UNARY (PLUS, fst $2), $1), $1}
 |		MINUS cast_expression
-		        {UNARY (MINUS, fst $2), $1}
+		        {LOCEXP (UNARY (MINUS, fst $2), $1), $1}
 |		STAR cast_expression
-		        {UNARY (MEMOF, fst $2), $1}
+		        {LOCEXP (UNARY (MEMOF, fst $2), $1), $1}
 |		AND cast_expression				
-		        {UNARY (ADDROF, fst $2), $1}
+		        {LOCEXP (UNARY (ADDROF, fst $2), $1), $1}
 |		EXCLAM cast_expression
-		        {UNARY (NOT, fst $2), $1}
+		        {LOCEXP (UNARY (NOT, fst $2), $1), $1}
 |		TILDE cast_expression
-		        {UNARY (BNOT, fst $2), $1}
-|               AND_AND IDENT  { LABELADDR (fst $2), $1 }
+		        {LOCEXP (UNARY (BNOT, fst $2), $1), $1}
+|		AND_AND IDENT  { LABELADDR (fst $2), $1 }
 ;
 
 cast_expression:   /*(* 6.5.4 *)*/
@@ -524,29 +535,29 @@ multiplicative_expression:  /*(* 6.5.5 *)*/
 |               cast_expression
                          { $1 }
 |		multiplicative_expression STAR cast_expression
-			{BINARY(MUL, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(MUL, fst $1, fst $3), loc), loc}
 |		multiplicative_expression SLASH cast_expression
-			{BINARY(DIV, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(DIV, fst $1, fst $3), loc), loc}
 |		multiplicative_expression PERCENT cast_expression
-			{BINARY(MOD, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(MOD, fst $1, fst $3), loc), loc}
 ;
 
 additive_expression:  /*(* 6.5.6 *)*/
 |               multiplicative_expression
                         { $1 }
 |		additive_expression PLUS multiplicative_expression
-			{BINARY(ADD, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(ADD, fst $1, fst $3), loc), loc}
 |		additive_expression MINUS multiplicative_expression
-			{BINARY(SUB, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(SUB, fst $1, fst $3), loc), loc}
 ;
 
 shift_expression:      /*(* 6.5.7 *)*/
 |               additive_expression
                          { $1 }
 |		shift_expression  INF_INF additive_expression
-			{BINARY(SHL, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(SHL, fst $1, fst $3), loc), loc}
 |		shift_expression  SUP_SUP additive_expression
-			{BINARY(SHR, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(SHR, fst $1, fst $3), loc), loc}
 ;
 
 
@@ -554,22 +565,22 @@ relational_expression:   /*(* 6.5.8 *)*/
 |               shift_expression
                         { $1 }
 |		relational_expression INF shift_expression
-			{BINARY(LT, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(LT, fst $1, fst $3), loc), loc}
 |		relational_expression SUP shift_expression
-			{BINARY(GT, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(GT, fst $1, fst $3), loc), loc}
 |		relational_expression INF_EQ shift_expression
-			{BINARY(LE, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(LE, fst $1, fst $3), loc), loc}
 |		relational_expression SUP_EQ shift_expression
-			{BINARY(GE, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(GE, fst $1, fst $3), loc), loc}
 ;
 
 equality_expression:   /*(* 6.5.9 *)*/
 |              relational_expression
                         { $1 }
 |		equality_expression EQ_EQ relational_expression
-			{BINARY(EQ, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(EQ, fst $1, fst $3), loc), loc}
 |		equality_expression EXCLAM_EQ relational_expression
-			{BINARY(NE, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(NE, fst $1, fst $3), loc), loc}
 ;
 
 
@@ -577,35 +588,35 @@ bitwise_and_expression:   /*(* 6.5.10 *)*/
 |               equality_expression
                        { $1 }
 |		bitwise_and_expression AND equality_expression
-			{BINARY(BAND, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(BAND, fst $1, fst $3), loc), loc}
 ;
 
 bitwise_xor_expression:   /*(* 6.5.11 *)*/
 |               bitwise_and_expression
                        { $1 }
 |		bitwise_xor_expression CIRC bitwise_and_expression
-			{BINARY(XOR, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(XOR, fst $1, fst $3), loc), loc}
 ;
 
 bitwise_or_expression:   /*(* 6.5.12 *)*/
 |               bitwise_xor_expression
                         { $1 }
 |		bitwise_or_expression PIPE bitwise_xor_expression
-			{BINARY(BOR, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(BOR, fst $1, fst $3), loc), loc}
 ;
 
 logical_and_expression:   /*(* 6.5.13 *)*/
 |               bitwise_or_expression
                         { $1 }
 |		logical_and_expression AND_AND bitwise_or_expression
-			{BINARY(AND, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(AND, fst $1, fst $3), loc), loc}
 ;
 
 logical_or_expression:   /*(* 6.5.14 *)*/
 |               logical_and_expression
                         { $1 }
 |		logical_or_expression PIPE_PIPE logical_and_expression
-			{BINARY(OR, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(OR, fst $1, fst $3), loc), loc}
 ;
 
 conditional_expression:    /*(* 6.5.15 *)*/
@@ -622,27 +633,27 @@ assignment_expression:     /*(* 6.5.16 *)*/
 |               conditional_expression
                          { $1 }
 |		cast_expression EQ assignment_expression
-			{BINARY(ASSIGN, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(ASSIGN, fst $1, fst $3), loc), loc}
 |		cast_expression PLUS_EQ assignment_expression
-			{BINARY(ADD_ASSIGN, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(ADD_ASSIGN, fst $1, fst $3), loc), loc}
 |		cast_expression MINUS_EQ assignment_expression
-			{BINARY(SUB_ASSIGN, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(SUB_ASSIGN, fst $1, fst $3), loc), loc}
 |		cast_expression STAR_EQ assignment_expression
-			{BINARY(MUL_ASSIGN, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(MUL_ASSIGN, fst $1, fst $3), loc), loc}
 |		cast_expression SLASH_EQ assignment_expression
-			{BINARY(DIV_ASSIGN, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(DIV_ASSIGN, fst $1, fst $3), loc), loc}
 |		cast_expression PERCENT_EQ assignment_expression
-			{BINARY(MOD_ASSIGN, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(MOD_ASSIGN, fst $1, fst $3), loc), loc}
 |		cast_expression AND_EQ assignment_expression
-			{BINARY(BAND_ASSIGN, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(BAND_ASSIGN, fst $1, fst $3), loc), loc}
 |		cast_expression PIPE_EQ assignment_expression
-			{BINARY(BOR_ASSIGN, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(BOR_ASSIGN, fst $1, fst $3), loc), loc}
 |		cast_expression CIRC_EQ assignment_expression
-			{BINARY(XOR_ASSIGN, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(XOR_ASSIGN, fst $1, fst $3), loc), loc}
 |		cast_expression INF_INF_EQ assignment_expression	
-			{BINARY(SHL_ASSIGN, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(SHL_ASSIGN, fst $1, fst $3), loc), loc}
 |		cast_expression SUP_SUP_EQ assignment_expression
-			{BINARY(SHR_ASSIGN, fst $1, fst $3), snd $1}
+			{let loc = fix_system (snd $1) (snd $3) in LOCEXP (BINARY(SHR_ASSIGN, fst $1, fst $3), loc), loc}
 ;
 
 expression:           /*(* 6.5.17 *)*/
@@ -706,9 +717,9 @@ one_string:
 ;
 
 init_expression:
-     expression         { SINGLE_INIT (fst $1) }
+     expression         { SINGLE_INIT (fst $1), snd $1 }
 |    LBRACE initializer_list_opt RBRACE
-			{ COMPOUND_INIT $2}
+			{ COMPOUND_INIT $2, $1 }
 
 initializer_list:    /* ISO 6.7.8. Allow a trailing COMMA */
     initializer                             { [$1] }
@@ -902,9 +913,9 @@ init_declarator_list:                       /* ISO 6.7 */
 
 ;
 init_declarator:                             /* ISO 6.7 */
-    declarator                          { ($1, NO_INIT) }
+    declarator                          { ($1, (NO_INIT, cabslu)) }
 |   declarator EQ init_expression
-                                        { ($1, $3) }
+                                        { let b, c = $3 in let _, _, _, d = $1 in ($1, (b, fix_system c d)) }
 ;
 
 decl_spec_list:                         /* ISO 6.7 */

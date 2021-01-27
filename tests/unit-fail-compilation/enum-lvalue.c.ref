@@ -1,4 +1,4 @@
-enum-lvalue.c:6:3: error: Unary '&' operator applied to non-lvalue.
+enum-lvalue.c:6:12: error: Unary '&' operator applied to non-lvalue.
 
     Constraint violation (CV-CER1):
         see C11 section 6.5.3.2:1 http://rvdoc.org/C11/6.5.3.2

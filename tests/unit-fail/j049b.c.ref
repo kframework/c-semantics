@@ -1,5 +1,5 @@
 A pointer (or array subscript) outside the bounds of an object:
-      > in main at j049b.c:3:7
+      > in main at j049b.c:3:15
 
     Undefined behavior (UB-CEA1):
         see C11 section 6.5.6:8 http://rvdoc.org/C11/6.5.6
@@ -11,7 +11,7 @@ A pointer (or array subscript) outside the bounds of an object:
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Dereferencing a pointer past the end of an array:
-      > in main at j049b.c:3:7
+      > in main at j049b.c:3:15
 
     Undefined behavior (UB-CER4):
         see C11 section 6.5.6:8 http://rvdoc.org/C11/6.5.6

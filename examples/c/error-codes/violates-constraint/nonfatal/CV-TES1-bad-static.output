@@ -1,4 +1,4 @@
-CV-TES1-bad-static.c:10:3: error: Trying to compute sizeof of an expression with incomplete or a function type.
+CV-TES1-bad-static.c:10:14: error: Trying to compute sizeof of an expression with incomplete or a function type.
 
     Constraint violation (CV-TES1):
         see C11 section 6.5.3.4:1 http://rvdoc.org/C11/6.5.3.4

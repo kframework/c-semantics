@@ -27,6 +27,7 @@ module C-EXECUTION-INIT
      imports SETTINGS-SYNTAX
 
      imports C-CHECK-RESTRICT-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
@@ -276,5 +277,19 @@ module C-EXECUTION-INIT
           <curr-tu>TU::String</curr-tu>
 
      rule currentSemantics() => ExecutionSemantics()
+
+     syntax KItem ::= #popExecExpLoc()
+
+     rule
+          <k> ExpLoc(K:K, L::CabsLoc) => K ~> #popExecExpLoc() ... </k>
+          <curr-expression-loc> .List => ListItem(L) ...</curr-expression-loc>
+
+     rule <k> tv(...) ~> (#popExecExpLoc() => .K) ... </k>
+          <curr-expression-loc> ListItem(L) => .List ...</curr-expression-loc>
+     rule <k> nclv(...) ~> (#popExecExpLoc() => .K) ... </k>
+          <curr-expression-loc> ListItem(L) => .List ...</curr-expression-loc>
+     rule <k> #popExecExpLoc() => .K ... </k>
+          <curr-expression-loc> ListItem(L) => .List ...</curr-expression-loc>
+
 endmodule
 

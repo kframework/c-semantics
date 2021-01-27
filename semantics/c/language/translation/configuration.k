@@ -54,6 +54,9 @@ module C-CONFIGURATION
           <curr-program-loc color="black">
                UnknownCabsLoc
           </curr-program-loc>
+          <curr-expression-loc color="black">
+               .List  // Stack of CabsLoc, push and pop at the start.
+          </curr-expression-loc>
      </curr-state>
 
      <block-stack color="violet"> .List </block-stack>

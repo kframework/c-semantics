@@ -1,5 +1,5 @@
 Conversion to a pointer type with a stricter alignment requirement (possibly undefined):
-      > in doit at 991016-1.c:14:3
+      > in doit at 991016-1.c:14:19
         in main at 991016-1.c:46:11
 
     Undefined behavior (UB-CCV11):
@@ -9,7 +9,7 @@ Conversion to a pointer type with a stricter alignment requirement (possibly und
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Conversion to a pointer type with a stricter alignment requirement (possibly undefined):
-      > in doit at 991016-1.c:15:3
+      > in doit at 991016-1.c:15:19
         in main at 991016-1.c:46:11
 
     Undefined behavior (UB-CCV11):

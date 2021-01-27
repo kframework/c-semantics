@@ -1,5 +1,5 @@
 A pointer (or array subscript) outside the bounds of an object:
-      > in bar at pta-field-2.c:10:3
+      > in bar at pta-field-2.c:10:34
         in foo at pta-field-2.c:20:3
         in main at pta-field-2.c:27:3
 

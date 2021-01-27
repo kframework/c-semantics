@@ -1,5 +1,5 @@
 Cannot compare pointers with different base objects using '<':
-      > in main at UB-CERL1-bad.c:10:7
+      > in main at UB-CERL1-bad.c:10:18
 
     Undefined behavior (UB-CERL1):
         see C11 section 6.5.8:5 http://rvdoc.org/C11/6.5.8

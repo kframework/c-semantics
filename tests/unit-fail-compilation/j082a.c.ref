@@ -1,4 +1,4 @@
-j082a.c:7:2: error: Incompatible types in initializer or function call arguments.
+j082a.c:7:16: error: Incompatible types in initializer or function call arguments.
 
     Constraint violation (CV-TSE1):
         see C11 section 6.7.9:11 http://rvdoc.org/C11/6.7.9

@@ -1,4 +1,4 @@
-defines.c:4:2: error: Trying to look up identifier FOO, but no such identifier is in scope.
+defines.c:4:15: error: Trying to look up identifier FOO, but no such identifier is in scope.
 
     Syntax error (SE-CID1):
         see C11 section 6.5.1:2 http://rvdoc.org/C11/6.5.1

@@ -1,4 +1,4 @@
-CV-TDL2-bad-static.c:4:2: error: Extern declaration of a appears at block scope with an initializer.
+CV-TDL2-bad-static.c:4:17: error: Extern declaration of a appears at block scope with an initializer.
 
     Constraint violation (CV-TDL2):
         see C11 section 6.7.9:5 http://rvdoc.org/C11/6.7.9

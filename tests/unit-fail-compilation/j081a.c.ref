@@ -1,4 +1,4 @@
-j081a.c:2:7: error: Initializer for scalar contains multiple expressions.
+j081a.c:2:15: error: Initializer for scalar contains multiple expressions.
 
     Undefined behavior (UB-CDI1):
         see C11 section 6.7.9:11 http://rvdoc.org/C11/6.7.9

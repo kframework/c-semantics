@@ -1,5 +1,5 @@
 Floating-point value outside the range of values that can be represented after conversion:
-      > in main at UB-CCV4-bad.c:6:7
+      > in main at UB-CCV4-bad.c:6:17
 
     Undefined behavior (UB-CCV4):
         see C11 section 6.3.1.5:1 http://rvdoc.org/C11/6.3.1.5

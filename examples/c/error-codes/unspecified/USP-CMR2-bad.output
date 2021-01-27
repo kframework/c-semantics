@@ -1,5 +1,5 @@
 Trying to reinterpret floating bytes as integer bytes:
-      > in main at USP-CMR2-bad.c:10:3
+      > in main at USP-CMR2-bad.c:10:11
 
     Unspecified value or behavior (USP-CMR2):
         see C11 section 6.2.6.1:1 http://rvdoc.org/C11/6.2.6.1

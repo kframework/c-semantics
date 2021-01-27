@@ -1,11 +1,11 @@
-CV-TEG2-bad-static.c:2:7: error: Generic selection with a controlling expression not compatible with any type in the association list (with no default).
+CV-TEG2-bad-static.c:2:14: error: Generic selection with a controlling expression not compatible with any type in the association list (with no default).
 
     Constraint violation (CV-TEG2):
         see C11 section 6.5.1.1:2 http://rvdoc.org/C11/6.5.1.1
         see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
-CV-TEG2-bad-static.c:2:7: error: Indeterminate value used in an expression.
+CV-TEG2-bad-static.c:2:14: error: Indeterminate value used in an expression.
 
     Undefined behavior (UB-CEE2):
         see C11 section 6.2.4 http://rvdoc.org/C11/6.2.4

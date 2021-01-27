@@ -1,5 +1,5 @@
 Casting a pointer to an integer:
-      > in main at z00024a.c:5:2
+      > in main at z00024a.c:5:9
 
     Implementation defined behavior (IMPL-CCVE4):
         see C11 section 6.3.2.3:6 http://rvdoc.org/C11/6.3.2.3

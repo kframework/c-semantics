@@ -1,5 +1,5 @@
 Conversion to a pointer type with a stricter alignment requirement (possibly undefined):
-      > in bar at incompleteStruct-link2.c:5:3
+      > in bar at incompleteStruct-link2.c:5:19
         in main at incompleteStruct-link1.c:5:14
 
     Undefined behavior (UB-CCV11):

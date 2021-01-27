@@ -1,4 +1,4 @@
-CV-TES2-bad-static.c:7:3: error: Trying to compute sizeof of an incomplete or function type.
+CV-TES2-bad-static.c:7:17: error: Trying to compute sizeof of an incomplete or function type.
 
     Constraint violation (CV-TES2):
         see C11 section 6.5.3.4:1 http://rvdoc.org/C11/6.5.3.4

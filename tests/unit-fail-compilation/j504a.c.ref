@@ -1,4 +1,4 @@
-j504a.c:2:1: error: Redefinition of symbol: x.
+j504a.c:2:16: error: Redefinition of symbol: x.
 
     Constraint violation (CV-TDG13):
         see C11 section 6.9:3 http://rvdoc.org/C11/6.9

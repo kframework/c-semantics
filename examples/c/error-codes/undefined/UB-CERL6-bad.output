@@ -1,5 +1,5 @@
 Ordered comparison of a null pointer:
-      > in main at UB-CERL6-bad.c:5:3
+      > in main at UB-CERL6-bad.c:5:7
 
     Undefined behavior (UB-CERL6):
         see C11 section 6.5.8:5 http://rvdoc.org/C11/6.5.8
