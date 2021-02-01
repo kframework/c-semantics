@@ -9,7 +9,7 @@ EXCLUDES :=
 TESTS := $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link3.c, ${TUS:-link1.c=.c})))
 TEST_COMPARISON := ${TESTS:.c=.cmp}
 
-CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
+CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; @$(KCC) -d -frecover-all-errors -fno-native-compilation -o $@ $<; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
 .PRECIOUS: %.kcc %.out
