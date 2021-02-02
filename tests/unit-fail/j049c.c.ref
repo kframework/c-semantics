@@ -1,5 +1,5 @@
 A pointer (or array subscript) outside the bounds of an object:
-      > in main at j049c.c:3:7
+      > in main at j049c.c:3:9
 
     Undefined behavior (UB-CEA1):
         see C11 section 6.5.6:8 http://rvdoc.org/C11/6.5.6

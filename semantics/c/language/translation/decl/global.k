@@ -789,5 +789,6 @@ module C-DECL-GLOBAL
           [structural]
 
      rule isNoInit(initValue(_, _, .K)) => true
+     rule isNoInit(CodeLoc(I, _) => I)
 
 endmodule

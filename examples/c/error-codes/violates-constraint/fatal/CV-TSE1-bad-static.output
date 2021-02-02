@@ -1,4 +1,4 @@
-CV-TSE1-bad-static.c:9:2: error: Incompatible types in initializer or function call arguments.
+CV-TSE1-bad-static.c:9:16: error: Incompatible types in initializer or function call arguments.
 
     Constraint violation (CV-TSE1):
         see C11 section 6.7.9:11 http://rvdoc.org/C11/6.7.9
@@ -6,7 +6,7 @@ CV-TSE1-bad-static.c:9:2: error: Incompatible types in initializer or function c
         see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
-CV-TSE1-bad-static.c:9:2: error: Conversion to or from non-scalar type.
+CV-TSE1-bad-static.c:9:16: error: Conversion to or from non-scalar type.
 
     Constraint violation (CV-CCV10):
         see C11 section 6.5.4:2 http://rvdoc.org/C11/6.5.4

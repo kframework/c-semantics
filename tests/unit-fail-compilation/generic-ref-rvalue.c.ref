@@ -1,4 +1,4 @@
-generic-ref-rvalue.c:11:7: error: Unary '&' operator applied to non-lvalue.
+generic-ref-rvalue.c:11:23: error: Unary '&' operator applied to non-lvalue.
 
     Constraint violation (CV-CER1):
         see C11 section 6.5.3.2:1 http://rvdoc.org/C11/6.5.3.2

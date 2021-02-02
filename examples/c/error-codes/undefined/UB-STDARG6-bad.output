@@ -1,6 +1,6 @@
 'va_arg' called with no arguments remaining:
-      > in __kcc_va_inc at UB-STDARG6-bad.c:5:7
-        in f at UB-STDARG6-bad.c:5:7
+      > in __kcc_va_inc at UB-STDARG6-bad.c:5:16
+        in f at UB-STDARG6-bad.c:5:16
         in main at UB-STDARG6-bad.c:11:7
 
     Undefined behavior (UB-STDARG6):
@@ -10,7 +10,7 @@
         see CERT-C section EXP47-C http://rvdoc.org/CERT-C/EXP47-C
 
 Dereferencing a null pointer:
-      > in f at UB-STDARG6-bad.c:5:7
+      > in f at UB-STDARG6-bad.c:5:16
         in main at UB-STDARG6-bad.c:11:7
 
     Undefined behavior (UB-CER3):
@@ -20,7 +20,7 @@ Dereferencing a null pointer:
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Trying to read through a null pointer:
-      > in f at UB-STDARG6-bad.c:5:7
+      > in f at UB-STDARG6-bad.c:5:16
         in main at UB-STDARG6-bad.c:11:7
 
     Undefined behavior (UB-CEER1):

@@ -1,4 +1,4 @@
-960405-1.c:4:1: error: Floating-point overflow.
+960405-1.c:4:17: error: Floating-point overflow.
 
     Undefined behavior (UB-CCV12):
         see C11 section 6.5:5 http://rvdoc.org/C11/6.5

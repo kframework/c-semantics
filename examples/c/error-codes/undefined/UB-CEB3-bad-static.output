@@ -1,4 +1,4 @@
-UB-CEB3-bad-static.c:5:2: error: The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.
+UB-CEB3-bad-static.c:5:9: error: The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.
 
     Undefined behavior (UB-CEB3):
         see C11 section 6.5.7:3 http://rvdoc.org/C11/6.5.7

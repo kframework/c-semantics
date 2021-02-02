@@ -35,6 +35,10 @@ comparison: ${TEST_COMPARISON}
 	@echo -n "Running $<... "
 	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
+%-bad-nc.out: %-bad-nc.kcc
+	@echo -n "Running $<... "
+	@./$< 2>&1 | sed 's/:[0-9][0-9]*$$//' > $@.tmp; ${CHECK_RESULT_RUN}
+
 %-good.gcc: %-good.c
 	@echo -n "Compiling $< (reference)... "
 	@$(CC) $(CFLAGS) -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}

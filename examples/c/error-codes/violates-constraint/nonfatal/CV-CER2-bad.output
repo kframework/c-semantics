@@ -1,5 +1,5 @@
 Unary '&' operator applied to a value with register storage class:
-      > in main at CV-CER2-bad.c:5:3
+      > in main at CV-CER2-bad.c:5:12
 
     Constraint violation (CV-CER2):
         see C11 section 6.5.3.2:1 http://rvdoc.org/C11/6.5.3.2

@@ -1,5 +1,6 @@
 module C-ERROR-SYNTAX
      imports BASIC-K
+     imports COMMON-SORTS
      imports STRING-SYNTAX
      imports BOOL-SYNTAX
      imports INT-SYNTAX
@@ -16,11 +17,14 @@ module C-ERROR-SYNTAX
 
      syntax KResult ::= Bool
 
+     syntax CabsLoc ::= fixLocSystemHeader(mainLoc:CabsLoc, additionalLoc:CabsLoc) [function]
+
 endmodule
 
 module C-ERROR
      imports C-ERROR-SYNTAX
      imports C-CONFIGURATION
+     imports COMMON-SYNTAX
      imports BOOL
      imports STRING
 
@@ -38,5 +42,13 @@ module C-ERROR
           => EXIT(ErrorMsg(Impl(CLinkage), Title, Msg))
      rule IMPLUB(Title:String, Msg:String)
           => EXIT(ErrorMsg(ImplUB(CLinkage), Title, Msg))
+
+     rule fixLocSystemHeader(CabsLoc(... systemHeader: false) #as Main:CabsLoc, _:CabsLoc)
+          => Main
+     rule fixLocSystemHeader(
+               CabsLoc(Rel:String, Abs:String, Line:Int, Col:Int, true),
+               CabsLoc(... systemHeader: false))
+          => CabsLoc(Rel, Abs, Line, Col, false)
+     rule fixLocSystemHeader(First:CabsLoc, _:CabsLoc) => First  [owise]
 
 endmodule

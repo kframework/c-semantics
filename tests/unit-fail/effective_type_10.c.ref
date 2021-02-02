@@ -1,5 +1,5 @@
 Type of lvalue (unsigned short) not compatible with the effective type of the object being accessed (signed int):
-      > in main at effective_type_10.c:8:3
+      > in main at effective_type_10.c:8:7
 
     Undefined behavior (UB-EIO10):
         see C11 section 6.5:7 http://rvdoc.org/C11/6.5

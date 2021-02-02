@@ -174,6 +174,7 @@ module C-DYNAMIC
      rule stripHold(tv(_, _) #as V::RValue) => checkUse(V)
      rule stripHold(nclv(Loc::SymLoc, T::Type)) => lv(Loc, T)
      rule stripHold(K:KItem) => K [owise]
+     rule stripHold(ExpLoc(K:KItem, L::CabsLoc)) => ExpLoc(stripHold(K), L)
 
      rule value(tv(V:CValue, _)) => V
      rule value(nclv(Loc:SymLoc, _)) => Loc

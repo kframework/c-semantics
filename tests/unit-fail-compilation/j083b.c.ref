@@ -1,4 +1,4 @@
-j083b.c:2:7: error: Incompatible types in initializer or function call arguments.
+j083b.c:2:28: error: Incompatible types in initializer or function call arguments.
 
     Constraint violation (CV-TSE1):
         see C11 section 6.7.9:11 http://rvdoc.org/C11/6.7.9

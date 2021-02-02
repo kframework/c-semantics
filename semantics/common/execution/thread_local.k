@@ -43,6 +43,9 @@ module COMMON-THREAD-LOCAL
             <curr-program-loc color="black">
                            UnknownCabsLoc
             </curr-program-loc>
+            <curr-expression-loc color="black">
+                           .List  // Stack of CabsLoc, push and pop at the start.
+            </curr-expression-loc>
 
             // this pointer
             // Why it is not in block-control? And why it is in block-control in translation?

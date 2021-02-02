@@ -1,4 +1,4 @@
-j081b.c:2:7: error: Initializer for scalar contains multiple levels of braces.
+j081b.c:2:15: error: Initializer for scalar contains multiple levels of braces.
 
     Undefined behavior (UB-CDI2):
         see C11 section 6.7.9:11 http://rvdoc.org/C11/6.7.9

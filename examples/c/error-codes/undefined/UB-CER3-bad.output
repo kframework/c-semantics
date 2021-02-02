@@ -1,5 +1,5 @@
 Dereferencing a null pointer:
-      > in main at UB-CER3-bad.c:6:3
+      > in main at UB-CER3-bad.c:6:7
 
     Undefined behavior (UB-CER3):
         see C11 section 6.5.3.2:4 http://rvdoc.org/C11/6.5.3.2

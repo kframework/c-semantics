@@ -82,6 +82,7 @@ module C-TYPING-PREDICATES
           requires IntegerConstant in getModifiers(T)
      rule fromConstantExpr(ut(... st: pointerType(_)) #as T::UType) => true
           requires IntegerConstant in getModifiers(T)
+     rule fromConstantExpr(ExpLoc(V:RValue, _::CabsLoc)) => fromConstantExpr(V)
      rule fromConstantExpr(_:UType) => false [owise]
 
      rule isNull(tv(0, _)) => true
@@ -95,6 +96,8 @@ module C-TYPING-PREDICATES
           requires isPointerType(type(T))
                andBool (simpleType(innerType(type(T))) ==K void)
                andBool fromConstantExpr(T)
+     rule isNullPointerConstant(ExpLoc(V:RValue, _:CabsLoc))
+          => isNullPointerConstant(V)
      rule isNullPointerConstant(_) => false [owise]
 
      rule hasReadFrom(ut(SetItem(K:KItem) Mods:Set, _)) => true

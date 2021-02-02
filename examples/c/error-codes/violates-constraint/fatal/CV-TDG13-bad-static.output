@@ -1,4 +1,4 @@
-CV-TDG13-bad-static.c:4:1: error: Redefinition of symbol: x.
+CV-TDG13-bad-static.c:4:9: error: Redefinition of symbol: x.
 
     Constraint violation (CV-TDG13):
         see C11 section 6.9:3 http://rvdoc.org/C11/6.9

@@ -1,5 +1,5 @@
 Conversion to a pointer type with a stricter alignment requirement (possibly undefined):
-      > in main at UB-CCV11-bad.c:5:2
+      > in main at UB-CCV11-bad.c:5:9
 
     Undefined behavior (UB-CCV11):
         see C11 section 6.3.2.3:7 http://rvdoc.org/C11/6.3.2.3
@@ -8,7 +8,7 @@ Conversion to a pointer type with a stricter alignment requirement (possibly und
         see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
 
 Type of lvalue (int) not compatible with the effective type of the object being accessed (char [5]):
-      > in main at UB-CCV11-bad.c:5:2
+      > in main at UB-CCV11-bad.c:5:9
 
     Undefined behavior (UB-EIO10):
         see C11 section 6.5:7 http://rvdoc.org/C11/6.5

@@ -277,7 +277,7 @@ module C-ABSTRACT-SYNTAX
      */
      syntax KItem ::= OffsetOf(KItem, KItem, KItem) [strict(1), symbol]
      syntax KItem ::= TypesCompat(KItem, KItem, KItem, KItem) [strict(1, 3), symbol]
-     syntax KItem ::= ExpressionLoc(KItem, KItem) [function]
+     syntax KItem ::= ExpressionLoc(K, K) [function]
 
      //must be declared as function,
      //otherwise, if then else rule failed in for(;;) cases
@@ -395,6 +395,7 @@ module C-ABSTRACT-SYNTAX
 
      syntax KItem ::= DefinitionLoc(KItem, CabsLoc) [symbol]
      syntax KItem ::= DefinitionLocRange(KItem, CabsLoc, CabsLoc) [symbol]
+     syntax KItem ::= InitLoc(KItem, CabsLoc) [symbol]
      // this wraps all statements with their location in the original file
      syntax KItem ::= StatementLoc(KItem, CabsLoc) [symbol] // new
 
@@ -461,10 +462,18 @@ module C-ABSTRACT-REWRITING
      imports C-ABSTRACT-SYNTAX
      imports COMMON-SYNTAX
      imports FLOAT
+     imports K-EQUAL-SYNTAX
+     imports STRING
 
      rule AnonymousName() => #NoName
 
      rule DefinitionLoc(K:KItem, L::CabsLoc) => CodeLoc(K, L) [anywhere]
+     rule InitLoc(K:KItem, CabsLoc(Loc:String, _, Line:Int, _, _) #as L::CabsLoc) =>
+          #if (Loc ==String "cabs loc unknown") andBool (Line ==Int -10)
+          #then K  // TODO: something better
+          #else CodeLoc(K, L)
+          #fi
+          [anywhere]
      rule StatementLoc(K:KItem, L::CabsLoc) => CodeLoc(K, L) [anywhere]
 
      rule Conditional(K1:KItem, K2:KItem, K3:KItem) => K1 ? K2 : K3 [anywhere]
@@ -516,6 +525,7 @@ module C-ABSTRACT-REWRITING
      \source[n1570]{\para{6.5.3.2}{3}}. As a syntactic macro, it should run
      on programs before they even start to reduce. */
      rule &(*(K:KItem)) => K [anywhere]
+     rule &(ExpLoc(*(K:KItem), _:CabsLoc)) => K [anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
      A postfix expression followed by the \cinline{->} operator and an

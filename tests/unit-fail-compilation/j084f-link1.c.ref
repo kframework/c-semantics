@@ -1,4 +1,4 @@
-j084f-link1.c:1:1: error: Multiple external definitions for x.
+j084f-link1.c:1:9: error: Multiple external definitions for x.
 
     Undefined behavior (UB-TIN2):
         see C11 section 6.9:5 http://rvdoc.org/C11/6.9

@@ -6,8 +6,8 @@ Realloc overflows memory bound, returning null pointer:
 
 Memory malloced but never freed:
     Malloced here:
-      > in malloc at L-STDLIBE3-bad.c:10:5
-        in main at L-STDLIBE3-bad.c:10:5
+      > in malloc at L-STDLIBE3-bad.c:10:29
+        in main at L-STDLIBE3-bad.c:10:29
 
     Possible unintended behavior (L-CEIE1):
         see CERT-C section MEM31-C http://rvdoc.org/CERT-C/MEM31-C

@@ -1,6 +1,6 @@
 Casting a pointer to an integer:
       > in g at compcertTSO-2.c:8:3
-        in main at compcertTSO-2.c:10:3
+        in main at compcertTSO-2.c:10:18
 
     Implementation defined behavior (IMPL-CCVE4):
         see C11 section 6.3.2.3:6 http://rvdoc.org/C11/6.3.2.3
@@ -8,7 +8,7 @@ Casting a pointer to an integer:
 
 Casting a pointer to an integer:
       > in f at compcertTSO-2.c:5:3
-        in main at compcertTSO-2.c:11:3
+        in main at compcertTSO-2.c:11:18
 
     Implementation defined behavior (IMPL-CCVE4):
         see C11 section 6.3.2.3:6 http://rvdoc.org/C11/6.3.2.3

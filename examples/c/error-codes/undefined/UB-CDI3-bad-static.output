@@ -1,4 +1,4 @@
-UB-CDI3-bad-static.c:4:2: error: Invalid initializer for aggregate type.
+UB-CDI3-bad-static.c:4:12: error: Invalid initializer for aggregate type.
 
     Undefined behavior (UB-CDI3):
         see C11 section 6.7.9:16 http://rvdoc.org/C11/6.7.9

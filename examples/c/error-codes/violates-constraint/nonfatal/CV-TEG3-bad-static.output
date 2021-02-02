@@ -1,4 +1,4 @@
-CV-TEG3-bad-static.c:2:7: error: Generic selection with multiple defaults.
+CV-TEG3-bad-static.c:2:14: error: Generic selection with multiple defaults.
 
     Constraint violation (CV-TEG3):
         see C11 section 6.5.1.1:2 http://rvdoc.org/C11/6.5.1.1

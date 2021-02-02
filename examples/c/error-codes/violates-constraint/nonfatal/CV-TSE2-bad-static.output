@@ -1,4 +1,4 @@
-CV-TSE2-bad-static.c:8:2: error: Incompatible pointer types in initializer or function call arguments.
+CV-TSE2-bad-static.c:8:21: error: Incompatible pointer types in initializer or function call arguments.
 
     Constraint violation (CV-TSE2):
         see C11 section 6.7.9:11 http://rvdoc.org/C11/6.7.9

@@ -24,6 +24,14 @@ module C-EXECUTION-ERROR
           <curr-tu> Tu::String </curr-tu>
           <curr-scope> S::Scope </curr-scope>
           <curr-program-loc> Loc::CabsLoc </curr-program-loc>
+          <curr-expression-loc> .List </curr-expression-loc>
+          <call-stack> L::List </call-stack>
+          <renv> REnv::Map </renv>
+     rule <k> EXIT(E:ErrorMsg) => reportError(E, Tu, S, fixLocSystemHeader(ELoc, FileLoc), REnv, L) ~> HALT ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <curr-scope> S::Scope </curr-scope>
+          <curr-program-loc> FileLoc:CabsLoc </curr-program-loc>
+          <curr-expression-loc> ListItem(ELoc:CabsLoc) ...</curr-expression-loc>
           <call-stack> L::List </call-stack>
           <renv> REnv::Map </renv>
 

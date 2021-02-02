@@ -1,4 +1,4 @@
-regehr-int-pointer-comparison.c:2:2: error: Incompatible types in relational expression.
+regehr-int-pointer-comparison.c:2:9: error: Incompatible types in relational expression.
 
     Constraint violation (CV-CERL5):
         see C11 section 6.5.8:2 http://rvdoc.org/C11/6.5.8
