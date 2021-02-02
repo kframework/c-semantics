@@ -44,6 +44,7 @@ module C-SETTINGS-SYNTAX
      syntax Int ::= "cfg:alignofLongDouble" [function]
      syntax Int ::= "cfg:alignofOversizedFloat" [function]
      syntax Int ::= "cfg:alignofPointer" [function]
+     syntax Int ::= "cfg:defaultMaxAlign" [function]
      syntax Int ::= "cfg:alignofMalloc" [function]
 
      syntax UType

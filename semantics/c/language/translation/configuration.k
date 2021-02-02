@@ -4,6 +4,7 @@ module C-CONFIGURATION
      imports COMMON-SYNTAX
      imports DEFAULT-STRATEGY
      imports INT-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports MAP
      imports SET
 
@@ -95,6 +96,7 @@ module C-CONFIGURATION
      </init-calc>
 
      <do-not-record-linking-deps> false </do-not-record-linking-deps>
+     <pragma-pack-value> cfg:defaultMaxAlign </pragma-pack-value>
 </exec>
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>

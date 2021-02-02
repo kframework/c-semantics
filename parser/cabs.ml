@@ -315,6 +315,7 @@ and expression =
   | LTL_O of string * expression
 (*   | LTL_UNTIL of expression * expression
   | LTL_RELEASE of expression * expression *)
+  | PACK of expression
   
 and generic_association =
 	| GENERIC_PAIR of type_name * expression

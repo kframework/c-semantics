@@ -20,7 +20,11 @@ RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.7 \
     && cd ../..                                                     \
     && rm -rf z3
 
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
 # This user is set up in the runtimeverificationinc/kframework:* images.
+RUN usermod -u $USER_ID user
 USER user:user
 
 ##################
@@ -58,3 +62,5 @@ RUN cd ${DEPS_DIR}/k \
       -Dcheckstyle.skip
 
 ENV K_BIN="${DEPS_DIR}/k/k-distribution/target/release/k/bin"
+
+ENTRYPOINT ["./scripts/docker-entrypoint.sh"]

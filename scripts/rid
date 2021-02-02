@@ -1,0 +1,3 @@
+#!/bin/bash
+# run-in-docker (rid)
+docker run --rm --mount src=$(pwd),target=/home/user/c-semantics,type=bind --workdir=/home/user/c-semantics old-c-semantics "$@"

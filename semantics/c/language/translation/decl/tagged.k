@@ -27,6 +27,7 @@ module C-DECL-TAGGED
      imports C-SYNTAX
      imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-MISC
      imports SETTINGS-SYNTAX
 
      context StructDef(_, HOLE:StrictList => seqstrict(HOLE), _)
@@ -197,9 +198,9 @@ module C-DECL-TAGGED
      rule firstNamedZeroLengthBitfield(.List) => ""
 
      syntax KItem ::= addTag(CId, TagInfo)
-     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set))
+     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set, MaxAlign:Int))
                // Elide function parameter names in struct types.
-               => addGlobalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs, PaddingOffs))
+               => addGlobalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs, PaddingOffs, MaxAlign))
           ...</k>
           <curr-scope> fileScope </curr-scope>
           [structural]
@@ -208,8 +209,8 @@ module C-DECL-TAGGED
           ...</k>
           <curr-scope> fileScope </curr-scope>
           [structural]
-     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set))
-               => addLocalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs, PaddingOffs))
+     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set, MaxAlign:Int))
+               => addLocalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs, PaddingOffs, MaxAlign))
           ...</k>
           <curr-scope> Scope:Scope </curr-scope>
           requires isFileScope(Scope) =/=K true
@@ -243,6 +244,86 @@ module C-DECL-TAGGED
           requires (tag(X, Tu, global) in_keys(Structs))
                orBool (tag(X, Tu, BlockNum) in_keys(Structs))
           [structural]
+
+     rule makeUnionFieldInfo(Pack::Bool, Fs::List)
+          => makeUnionFieldInfo'(Pack, Fs, .Map, .Map, .List)
+
+     syntax FieldInfo ::= "makeUnionFieldInfo'" "(" Bool "," List "," Map ","  Map "," List ")" [function]
+     rule makeUnionFieldInfo'(Pack::Bool,
+               ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
+               Types::Map,
+               Offsets::Map,
+               NL::List)
+          => makeUnionFieldInfo'(Pack, L,
+               Types[Field <- T], Offsets[Field <- 0],
+               NL ListItem(typedDeclaration(T, Field)))
+     rule makeUnionFieldInfo'(true, .List, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, .Set, maxByteAlignofDecls(NL))
+     rule makeUnionFieldInfo'(false, .List, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL,
+               roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL)),
+               Types, Offsets, getPaddingOffsets(maxByteSizeofList(NL) *Int cfg:bitsPerByte, roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL))), maxByteAlignofDecls(NL))
+
+
+     rule makeStructFieldInfo(Pack::Bool, Fs::List)
+          => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)
+
+     syntax FieldInfo ::= "makeStructFieldInfo'" "(" Bool "," List "," Int "," Map ","  Map "," List ")" [function]
+     rule makeStructFieldInfo'(Pack::Bool,
+               ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
+               V::Int,
+               Types::Map,
+               Offsets::Map,
+               NL::List)
+          => makeStructFieldInfo'(Pack,
+               L,
+               pad(V, T) +Int bitSizeofType(T),
+               Types[Field <- T],
+               Offsets[Field <- pad(V, T)],
+               NL ListItem(typedDeclaration(T, Field)))
+     rule makeStructFieldInfo'(true, .List, V::Int, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, roundBits(V, 1),
+               Types, Offsets,
+               computePaddingOffsets(NL, roundBits(V, 1), Types, Offsets), maxByteAlignofDecls(NL))
+     rule makeStructFieldInfo'(false, .List, V::Int, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, roundBits(V, maxByteAlignofDecls(NL)),
+               Types, Offsets,
+               computePaddingOffsets(NL, roundBits(V, maxByteAlignofDecls(NL)), Types, Offsets),
+               maxByteAlignofDecls(NL))
+
+     // The padding associated with a particular field precedes it, with
+     // possibly some extra padding at the end of the whole struct not
+     // associated with any field. This is important for understanding the
+     // effect of the gcc et al. packed attr as applied to a particular field.
+
+     syntax Int ::= pad(Int, Type) [function]
+     // Non-bitfields are aligned according to their type (if we note that
+     // fields tagged with the Packed() attribute have an alignment of 1 byte).
+     rule [[ pad(V::Int, T::Type) => roundBits(V, minInt(byteAlignofType(T), PackV)) ]]
+          <pragma-pack-value> PackV::Int </pragma-pack-value>
+          requires notBool isBitfieldType(T)
+     // Non-packed bitfields that would cross an alignment boundary and
+     // zero-length bitfields have an alignment of the bitfield field type.
+     rule [[ pad(V::Int, t(... st: bitfieldType(...)) #as T::Type) => roundBits(V, minInt(byteAlignofType(innerType(T)), PackV)) ]]
+          <pragma-pack-value> PackV::Int </pragma-pack-value>
+          requires notBool (Packed() in getModifiers(T))
+               andBool (V +Int bitSizeofType(T)) >Int roundBits(V, byteAlignofType(innerType(T)))
+     rule pad(V::Int, t(... st: bitfieldType(...)) #as T::Type) => roundBits(V, byteAlignofType(innerType(T)))
+          requires bitSizeofType(T) ==Int 0
+     // Packed bitfields and non-packed bitfields that don't cross an alignment
+     // boundary have 1-bit alignment (no padding).
+     rule pad(V::Int, _) => V [owise]
+
+     rule maxByteAlignofDecls(L:List) => maxByteAlignofDecls'(1, L)
+
+     syntax Int ::= "maxByteAlignofDecls'" "(" Int "," List ")" [function]
+
+     rule [[ maxByteAlignofDecls'(Sz::Int, ListItem(typedDeclaration(T::Type, _)) LL:List)
+          => maxByteAlignofDecls'(maxInt(Sz, minInt(byteAlignofType(T), PackV)), LL) ]]
+          <pragma-pack-value> PackV::Int </pragma-pack-value>
+
+     rule maxByteAlignofDecls'(Sz::Int, .List) => Sz
+
 
 endmodule
 
