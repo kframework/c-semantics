@@ -234,20 +234,20 @@ module C-TYPING-MISC
      rule getFieldTypes(T::Type) => getFieldTypes'(getFields(T))
 
      syntax List ::= "getUnnamedBitfields'" "(" FieldInfo ")" [function]
-     rule getUnnamedBitfields'(fieldInfo(ListItem(typedDeclaration(_, F:NoName)) Decls::List, Sz::Int, Types::Map (F |-> t(... st: bitfieldType(...)) #as T::Type), Offsets::Map, Padding::Set))
-          => ListItem(F) getUnnamedBitfields'(fieldInfo(Decls, Sz, Types, Offsets, Padding))
-     rule getUnnamedBitfields'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Decls::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set))
-          => getUnnamedBitfields'(fieldInfo(Decls, Sz, Types, Offsets, Padding)) [owise]
-     rule getUnnamedBitfields'(fieldInfo(.List, _, _, _, _)) => .List
+     rule getUnnamedBitfields'(fieldInfo(ListItem(typedDeclaration(_, F:NoName)) Decls::List, Sz::Int, Types::Map (F |-> t(... st: bitfieldType(...)) #as T::Type), Offsets::Map, Padding::Set, MaxAlign::Int))
+          => ListItem(F) getUnnamedBitfields'(fieldInfo(Decls, Sz, Types, Offsets, Padding, MaxAlign))
+     rule getUnnamedBitfields'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Decls::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set, MaxAlign::Int))
+          => getUnnamedBitfields'(fieldInfo(Decls, Sz, Types, Offsets, Padding, MaxAlign)) [owise]
+     rule getUnnamedBitfields'(fieldInfo(.List, _, _, _, _, _)) => .List
 
      syntax List ::= "getFieldTypes'" "(" FieldInfo ")" [function]
-     rule getFieldTypes'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Decls::List, Sz::Int, Types::Map (F |-> T::Type), Offsets::Map, Padding::Set))
-          => ListItem(T) getFieldTypes'(fieldInfo(Decls, Sz, Types, Offsets, Padding))
+     rule getFieldTypes'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Decls::List, Sz::Int, Types::Map (F |-> T::Type), Offsets::Map, Padding::Set, MaxAlign::Int))
+          => ListItem(T) getFieldTypes'(fieldInfo(Decls, Sz, Types, Offsets, Padding, MaxAlign))
      rule getFieldTypes'(_) => .List [owise]
 
      syntax List ::= "getFieldNames'" "(" FieldInfo ")" [function]
-     rule getFieldNames'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Fields::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set))
-          => ListItem(F) getFieldNames'(fieldInfo(Fields, Sz, Types, Offsets, Padding))
+     rule getFieldNames'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Fields::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set, MaxAlign::Int))
+          => ListItem(F) getFieldNames'(fieldInfo(Fields, Sz, Types, Offsets, Padding, MaxAlign))
      rule getFieldNames'(_) => .List [owise]
 
      rule getFieldOffset(F::CId, T::Type) => getFieldOffset'(F, getFields(T))
@@ -255,7 +255,7 @@ module C-TYPING-MISC
      rule findFieldOffset(F::CId, T::Type) => getFieldOffset'(F, getFlatFields(T))
 
      syntax Int ::= "getFieldOffset'" "(" CId "," FieldInfo ")" [function]
-     rule getFieldOffset'(F::CId, fieldInfo(_, _, _, F |-> Offset::Int _, _)) => Offset
+     rule getFieldOffset'(F::CId, fieldInfo(_, _, _, F |-> Offset::Int _, _, _)) => Offset
 
      rule getFieldType(F::CId, T::Type) => getFieldType'(F, getFields(T))
 
@@ -263,7 +263,7 @@ module C-TYPING-MISC
      rule findFieldType(_, _) => type(no-type) [owise]
 
      syntax Type ::= "getFieldType'" "(" CId "," FieldInfo ")" [function]
-     rule getFieldType'(F::CId, fieldInfo(_, _, F |-> T::Type _, _, _)) => T
+     rule getFieldType'(F::CId, fieldInfo(_, _, F |-> T::Type _, _, _, _)) => T
      rule getFieldType'(_, _) => type(no-type) [owise]
 
      syntax Modifier ::= activeVariant(CId)
@@ -325,15 +325,15 @@ module C-TYPING-MISC
      rule clearActiveVariant'(_, Fields::FieldInfo) => Fields [owise]
 
      syntax CId ::= "getFieldAtOffset'" "(" Int "," FieldInfo ")" [function]
-     rule getFieldAtOffset'(Offset::Int, fieldInfo(_::List (ListItem(typedDeclaration(_, F::CId)) => .List), _, _, _::Map (F |-> FOffset::Int => .Map), _))
+     rule getFieldAtOffset'(Offset::Int, fieldInfo(_::List (ListItem(typedDeclaration(_, F::CId)) => .List), _, _, _::Map (F |-> FOffset::Int => .Map), _, _))
           requires FOffset >Int Offset
-     rule getFieldAtOffset'(_, fieldInfo(_ ListItem(typedDeclaration(_, F::CId)), _, _, _, _)) => F [owise]
+     rule getFieldAtOffset'(_, fieldInfo(_ ListItem(typedDeclaration(_, F::CId)), _, _, _, _, _)) => F [owise]
 
      syntax CId ::= "getFieldFollowingOffset'" "(" Int "," FieldInfo ")" [function]
-     rule getFieldFollowingOffset'(Offset::Int, fieldInfo((ListItem(typedDeclaration(_, F::CId)) => .List) _, _, _, _::Map (F |-> FOffset::Int => .Map), _))
+     rule getFieldFollowingOffset'(Offset::Int, fieldInfo((ListItem(typedDeclaration(_, F::CId)) => .List) _, _, _, _::Map (F |-> FOffset::Int => .Map), _, _))
           requires FOffset <=Int Offset
-     rule getFieldFollowingOffset'(_, fieldInfo(.List, _, _, _, _)) => #NoName
-     rule getFieldFollowingOffset'(_, fieldInfo(ListItem(typedDeclaration(_, F::CId)) _, _, _, _, _)) => F [owise]
+     rule getFieldFollowingOffset'(_, fieldInfo(.List, _, _, _, _, _)) => #NoName
+     rule getFieldFollowingOffset'(_, fieldInfo(ListItem(typedDeclaration(_, F::CId)) _, _, _, _, _, _)) => F [owise]
 
      rule floorBitOffset(Offset::Int, structOrUnionType #as T::Type)
           => floorFieldOffset'(Offset, getFields(T))
@@ -353,13 +353,13 @@ module C-TYPING-MISC
           => getFieldOffset({(reverseList(getFieldNames(T)))[0]}:>CId, T) /Int cfg:bitsPerByte
 
      syntax Int ::= "floorFieldOffset'" "(" Int "," FieldInfo ")" [function]
-     rule floorFieldOffset'(Offset::Int, fieldInfo(.List, _, _, _, _)) => Offset
+     rule floorFieldOffset'(Offset::Int, fieldInfo(.List, _, _, _, _, _)) => Offset
      rule floorFieldOffset'(Offset::Int, Fields::FieldInfo)
           => getFieldOffset'(getFieldAtOffset'(Offset, Fields), Fields) [owise]
 
      syntax Int ::= "ceilFieldOffset'" "(" Int "," FieldInfo ")" [function]
-     rule ceilFieldOffset'(Offset::Int, fieldInfo(.List, _, _, _, _)) => Offset
-     rule ceilFieldOffset'(Offset::Int, fieldInfo(Decls::List, Sz::Int, _, _, _) #as Fields::FieldInfo) => Sz
+     rule ceilFieldOffset'(Offset::Int, fieldInfo(.List, _, _, _, _, _)) => Offset
+     rule ceilFieldOffset'(Offset::Int, fieldInfo(Decls::List, Sz::Int, _, _, _, _) #as Fields::FieldInfo) => Sz
           requires (Decls =/=K .List) andBool getFieldFollowingOffset'(Offset, Fields) ==K #NoName
      rule ceilFieldOffset'(Offset::Int, Fields::FieldInfo)
           => getFieldOffset'(getFieldFollowingOffset'(Offset, Fields), Fields) [owise]
@@ -368,7 +368,7 @@ module C-TYPING-MISC
           => getFieldTypeAtOffset'(Offset, getFields(T))
 
      syntax Type ::= "getFieldTypeAtOffset'" "(" Int "," FieldInfo ")" [function]
-     rule getFieldTypeAtOffset'(Offset::Int, fieldInfo(.List, _, _, _, _)) => type(no-type)
+     rule getFieldTypeAtOffset'(Offset::Int, fieldInfo(.List, _, _, _, _, _)) => type(no-type)
      rule getFieldTypeAtOffset'(Offset::Int, Fields::FieldInfo)
           => getFieldType'(getFieldAtOffset'(Offset, Fields), Fields) [owise]
 
@@ -383,15 +383,15 @@ module C-TYPING-MISC
           => setFields(setFieldsSize'(Sz, getFields(T)), T)
 
      syntax FieldInfo ::= "setFieldsSize'" "(" Int "," FieldInfo ")" [function]
-     rule setFieldsSize'(Sz::Int, fieldInfo(Decls::List, _, Types::Map, Offsets::Map, Padding::Set))
-          => fieldInfo(Decls, Sz, Types, Offsets, Padding)
+     rule setFieldsSize'(Sz::Int, fieldInfo(Decls::List, _, Types::Map, Offsets::Map, Padding::Set, MaxAlign::Int))
+          => fieldInfo(Decls, Sz, Types, Offsets, Padding, MaxAlign)
 
      syntax Type ::= clearPaddingAfter(CId, Type) [function]
      rule clearPaddingAfter(F::CId, T::Type)
           => setFields(clearPaddingAfter'(getFieldOffset(F, T), getFields(T)), T)
 
      syntax FieldInfo ::= "clearPaddingAfter'" "(" Int "," FieldInfo ")" [function]
-     rule clearPaddingAfter'(Offset::Int, fieldInfo(_, _, _, _, (SetItem(N::Int) => .Set) _::Set))
+     rule clearPaddingAfter'(Offset::Int, fieldInfo(_, _, _, _, (SetItem(N::Int) => .Set) _::Set, _))
           requires N >=Int Offset
      rule clearPaddingAfter'(_, Fields::FieldInfo) => Fields [owise]
 
@@ -404,33 +404,35 @@ module C-TYPING-MISC
      rule getFlatFields(T::Type) => toFlatFieldInfo(getFields(T))
 
      syntax FieldInfo ::= toFlatFieldInfo(TagInfo) [function]
-     rule toFlatFieldInfo(Fields:FieldInfo) => flattenFieldInfo(.K, .K, Fields, fieldInfo(.List, 0, .Map, .Map, .Set))
-     rule toFlatFieldInfo(_) => fieldInfo(.List, 0, .Map, .Map, .Set) [owise]
+     rule toFlatFieldInfo(Fields:FieldInfo) => flattenFieldInfo(.K, .K, Fields, fieldInfo(.List, 0, .Map, .Map, .Set, 0))
+     rule toFlatFieldInfo(_) => fieldInfo(.List, 0, .Map, .Map, .Set, 0) [owise]
 
      syntax FieldInfo ::= flattenFieldInfo(K, K, FieldInfo, FieldInfo) [function]
      rule flattenFieldInfo(.K => getFlatFields(T), .K => Offset,
-               fieldInfo((ListItem(typedDeclaration(structOrUnionType #as T::Type, F:NoName)) => .List) _, _, _, (F |-> Offset::Int) _, _),
+               fieldInfo((ListItem(typedDeclaration(structOrUnionType #as T::Type, F:NoName)) => .List) _, _, _, (F |-> Offset::Int) _, _, _),
                _)
      rule flattenFieldInfo(.K, .K,
                fieldInfo((ListItem(typedDeclaration(T::Type, F::CId)) => .List) _,
-                    _, (F |-> T'::Type) _, (F |-> Offset::Int) _, _),
+                    _, (F |-> T'::Type) _, (F |-> Offset::Int) _, _, _),
                fieldInfo(
                     _::List (.List => ListItem(typedDeclaration(T, F))),
                     _,
                     _::Map (.Map => F |-> T'),
                     _::Map (.Map => F |-> Offset),
+                    _,
                     _)) [owise]
-     rule flattenFieldInfo(fieldInfo(Fields::List, _, Types::Map, Offsets::Map, Padding::Set) => .K, Offset:Int => .K,
+     rule flattenFieldInfo(fieldInfo(Fields::List, _, Types::Map, Offsets::Map, Padding::Set, MaxAlign1::Int) => .K, Offset:Int => .K,
                _,
                fieldInfo(
                     _::List (.List => Fields),
                     _,
                     _::Map (.Map => Types),
                     _::Map (.Map => addOffset(Offset, Offsets)),
-                    _::Set (.Set => addPaddingOffset(Offset, Padding))))
-     rule flattenFieldInfo(.K, .K, fieldInfo(.List, Sz::Int, _, _, Padding::Set),
-               fieldInfo(Decls::List, _, Types::Map, Offsets::Map, Padding'::Set))
-          => fieldInfo(Decls, Sz, Types, Offsets, Padding Padding')
+                    _::Set (.Set => addPaddingOffset(Offset, Padding)),
+                    MaxAlign2::Int => maxInt(MaxAlign1, MaxAlign2)))
+     rule flattenFieldInfo(.K, .K, fieldInfo(.List, Sz::Int, _, _, Padding::Set, MaxAlign1::Int),
+               fieldInfo(Decls::List, _, Types::Map, Offsets::Map, Padding'::Set, MaxAlign2::Int))
+          => fieldInfo(Decls, Sz, Types, Offsets, Padding Padding', maxInt(MaxAlign1, MaxAlign2))
 
      syntax Map ::= addOffset(Int, Map) [function]
      rule addOffset(Offset::Int, (K:KItem |-> N:Int) M::Map)
@@ -446,12 +448,12 @@ module C-TYPING-MISC
           => setFields(setFieldType'(F, T', getFields(T)), T)
 
      syntax FieldInfo ::= "setFieldType'" "(" CId "," Type "," FieldInfo ")" [function]
-     rule setFieldType'(F::CId, T::Type, fieldInfo(Decls::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set))
-          => fieldInfo(Decls, Sz, Types[F <- T], Offsets, Padding)
+     rule setFieldType'(F::CId, T::Type, fieldInfo(Decls::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set, MaxAlign::Int))
+          => fieldInfo(Decls, Sz, Types[F <- T], Offsets, Padding, MaxAlign)
 
      syntax Type ::= setFields(FieldInfo, Type) [function]
-     rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set) _::Set, structType(_)))
-     rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set) _::Set, unionType(_)))
+     rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _, _)) => .Set) _::Set, structType(_)))
+     rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _, _)) => .Set) _::Set, unionType(_)))
      rule setFields(Fields::FieldInfo, T::Type) => addModifier(Fields, T) [owise]
 
      rule setFieldTypeAtOffset(Offset::Int, T'::Type, T::Type)
@@ -531,52 +533,6 @@ module C-TYPING-MISC
                andBool notBool isVoidType(P)
      rule toPrototype(T::Type) => T [owise]
 
-     rule makeStructFieldInfo(Pack::Bool, Fs::List)
-          => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)
-
-     syntax FieldInfo ::= "makeStructFieldInfo'" "(" Bool "," List "," Int "," Map ","  Map "," List ")" [function]
-     rule makeStructFieldInfo'(Pack::Bool,
-               ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
-               V::Int,
-               Types::Map,
-               Offsets::Map,
-               NL::List)
-          => makeStructFieldInfo'(Pack,
-               L,
-               pad(V, T) +Int bitSizeofType(T),
-               Types[Field <- T],
-               Offsets[Field <- pad(V, T)],
-               NL ListItem(typedDeclaration(T, Field)))
-     rule makeStructFieldInfo'(true, .List, V::Int, Types::Map, Offsets::Map, NL::List)
-          => fieldInfo(NL, roundBits(V, 1),
-               Types, Offsets,
-               computePaddingOffsets(NL, roundBits(V, 1), Types, Offsets))
-     rule makeStructFieldInfo'(false, .List, V::Int, Types::Map, Offsets::Map, NL::List)
-          => fieldInfo(NL, roundBits(V, maxByteAlignofDecls(NL)),
-               Types, Offsets,
-               computePaddingOffsets(NL, roundBits(V, maxByteAlignofDecls(NL)), Types, Offsets))
-
-     // The padding associated with a particular field precedes it, with
-     // possibly some extra padding at the end of the whole struct not
-     // associated with any field. This is important for understanding the
-     // effect of the gcc et al. packed attr as applied to a particular field.
-
-     syntax Int ::= pad(Int, Type) [function]
-     // Non-bitfields are aligned according to their type (if we note that
-     // fields tagged with the Packed() attribute have an alignment of 1 byte).
-     rule pad(V::Int, T::Type) => roundBits(V, byteAlignofType(T))
-          requires notBool isBitfieldType(T)
-     // Non-packed bitfields that would cross an alignment boundary and
-     // zero-length bitfields have an alignment of the bitfield field type.
-     rule pad(V::Int, t(... st: bitfieldType(...)) #as T::Type) => roundBits(V, byteAlignofType(innerType(T)))
-          requires notBool (Packed() in getModifiers(T))
-               andBool (V +Int bitSizeofType(T)) >Int roundBits(V, byteAlignofType(innerType(T)))
-     rule pad(V::Int, t(... st: bitfieldType(...)) #as T::Type) => roundBits(V, byteAlignofType(innerType(T)))
-          requires bitSizeofType(T) ==Int 0
-     // Packed bitfields and non-packed bitfields that don't cross an alignment
-     // boundary have 1-bit alignment (no padding).
-     rule pad(V::Int, _) => V [owise]
-
      // Round up to the nearest multiple of the second arg * cfg:bitsPerByte.
      syntax Int ::= roundBits(Int, Int) [function]
      rule roundBits(N::Int, A::Int) => N
@@ -588,25 +544,6 @@ module C-TYPING-MISC
           requires notBool isCompleteType(type(V))
      rule allComplete(.List) => true
      rule allComplete((ListItem(_) => .List) _) [owise]
-
-     rule makeUnionFieldInfo(Pack::Bool, Fs::List)
-          => makeUnionFieldInfo'(Pack, Fs, .Map, .Map, .List)
-
-     syntax FieldInfo ::= "makeUnionFieldInfo'" "(" Bool "," List "," Map ","  Map "," List ")" [function]
-     rule makeUnionFieldInfo'(Pack::Bool,
-               ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
-               Types::Map,
-               Offsets::Map,
-               NL::List)
-          => makeUnionFieldInfo'(Pack, L,
-               Types[Field <- T], Offsets[Field <- 0],
-               NL ListItem(typedDeclaration(T, Field)))
-     rule makeUnionFieldInfo'(true, .List, Types::Map, Offsets::Map, NL::List)
-          => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, .Set)
-     rule makeUnionFieldInfo'(false, .List, Types::Map, Offsets::Map, NL::List)
-          => fieldInfo(NL,
-               roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL)),
-               Types, Offsets, getPaddingOffsets(maxByteSizeofList(NL) *Int cfg:bitsPerByte, roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL))))
 
      syntax Set ::= computePaddingOffsets(List, Int, Map, Map) [function]
      rule computePaddingOffsets(ListItem(typedDeclaration(_, A::CId)) ListItem(typedDeclaration(BT::Type, B::CId)) L::List, Len::Int, Types::Map, Offsets::Map)

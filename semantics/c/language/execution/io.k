@@ -283,20 +283,20 @@ module C-IO
           requires N =/=Int 0
 
      syntax Bits ::= getZeroedBits(Int, Int, Type, FieldInfo) [function, klabel(getZeroedBits2)]
-     rule getZeroedBits(Offset::Int, N::Int, t(... st: unionType(_)), fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _, _))
+     rule getZeroedBits(Offset::Int, N::Int, t(... st: unionType(_)), fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _, _, _))
           => getZeroedBits(Offset, N, T)
      rule getZeroedBits(Offset::Int, N::Int, t(... st: structType(_)), fieldInfo(
             ((ListItem(typedDeclaration(_, FId::CId))) => .List) _,
             _,
             _::Map (FId |-> T::Type),
-            _::Map (FId |-> FOffset::Int), _))
+            _::Map (FId |-> FOffset::Int), _, _))
           requires FOffset +Int bitSizeofType(T) <=Int Offset orBool Offset +Int N <=Int FOffset
      rule getZeroedBits(_, 0, _, _)
           => piece(0, 0)
      // this happens when we are reading padding bits, which are zeroed.
      // bit fields never contain padding in between two bit fields in the same byte,
      // so doing this at the end should be safe
-     rule getZeroedBits(_, N::Int, _, fieldInfo(.List, _, _, _, _))
+     rule getZeroedBits(_, N::Int, _, fieldInfo(.List, _, _, _, _, _))
           => piece(0, N)
 
      rule getZeroedBits(Offset::Int, N::Int, BaseT::Type, fieldInfo(
@@ -304,7 +304,7 @@ module C-IO
             SI::Int,
             Types::Map (FId |-> T::Type),
             Offsets::Map (FId |-> FOffset::Int),
-            PaddingOffs::Set))
+            PaddingOffs::Set, MaxAlign::Int))
           => #if isNoName(FId) #then
                // the bits of the field in the current byte are traps, because it was unnamed
                piece(trap, minInt(FOffset +Int bitSizeofType(T),
@@ -328,7 +328,7 @@ module C-IO
                    SI,
                    Types (FId |-> T),
                    Offsets (FId |-> FOffset),
-                   PaddingOffs))
+                   PaddingOffs, MaxAlign))
           [owise]
 
           // TODO(chathhorn): perf, elided

@@ -207,6 +207,7 @@ $(LIBSTDCXX_SO): $(call timestamp_of,c-cpp-linking) \
                  $(call timestamp_of,cpp-translation) \
                  $(wildcard $(PROFILE_DIR)/compiler-src/*.C) \
                  $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) \
+                 $(OUTPUT_DIR)/hardware-addresses.timestamp \
                  PROFILE_DEPS
 	@$(LOGGER) "$(PROFILE): Translating the C++ standard library..."
 	@cd $(PROFILE_DIR)/compiler-src && \
@@ -230,6 +231,7 @@ $(LIBC_SO): $(call timestamp_of,c-cpp-linking) \
             $(call timestamp_of,c-translation) \
             $(wildcard $(PROFILE_DIR)/src/*.c) \
             $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) \
+            $(OUTPUT_DIR)/hardware-addresses.timestamp \
             PROFILE_DEPS
 	@$(LOGGER) "$(PROFILE): Translating the C standard library..."
 	@cd $(PROFILE_DIR)/src && \

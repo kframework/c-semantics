@@ -115,7 +115,7 @@ module C-TYPING-COMMON
 
      syntax FieldInfo ::= toFieldInfo(TagInfo) [function]
      rule toFieldInfo(Fields:FieldInfo) => Fields
-     rule toFieldInfo(_) => fieldInfo(.List, 0, .Map, .Map, .Set) [owise]
+     rule toFieldInfo(_) => fieldInfo(.List, 0, .Map, .Map, .Set, 0) [owise]
 
      syntax Bool ::= hasNoName(Map) [function]
      rule hasNoName((_:NoName |-> structOrUnionType) _::Map) => true
@@ -126,7 +126,7 @@ module C-TYPING-COMMON
           <global>... <tags> M::Map </tags> ...</global>
 
      syntax TagInfo ::= extractTagInfo(K) [function]
-     rule extractTagInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set)) => fieldInfo(L, I, M1, M2, S)
+     rule extractTagInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set, MaxAlign::Int)) => fieldInfo(L, I, M1, M2, S, MaxAlign)
      rule extractTagInfo(enumInfo(...) #as EI::EnumInfo) => EI
      rule extractTagInfo(_) => #incomplete [owise]
 

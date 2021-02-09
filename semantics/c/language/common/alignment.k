@@ -68,16 +68,9 @@ module C-ALIGNMENT
      // TODO(dwightguth): make sure we correctly handle all the corner cases
      rule byteAlignofType'(_) => 1 [owise]
 
-     rule maxByteAlignofDecls(L:List) => maxByteAlignofDecls'(1, L)
-
-     syntax Int ::= "maxByteAlignofDecls'" "(" Int "," List ")" [function]
-     rule maxByteAlignofDecls'(Sz::Int, ListItem(typedDeclaration(T::Type, _)) LL:List)
-          => maxByteAlignofDecls'(maxInt(Sz, byteAlignofType(T)), LL)
-     rule maxByteAlignofDecls'(Sz::Int, .List) => Sz
-
      syntax Int ::= byteAlignofTagged(TagInfo) [function]
-     rule byteAlignofTagged(fieldInfo(Decls:List, _, _, _, _))
-          => maxByteAlignofDecls(Decls)
+     rule byteAlignofTagged(fieldInfo(_, _, _, _, _, MaxAlign:Int))
+          => MaxAlign
      rule byteAlignofTagged(enumInfo(... enumAlias: T::SimpleIntegerType))
           => byteAlignofType'(type(T))
      rule byteAlignofTagged(_) => 1 [owise]

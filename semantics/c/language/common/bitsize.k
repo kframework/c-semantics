@@ -62,7 +62,7 @@ module C-BITSIZE
      rule maxByteSizeofList'(Sz:Int, .List) => Sz
 
      syntax Int ::= bitSizeofFields(FieldInfo) [function]
-     rule bitSizeofFields(fieldInfo(_, NBits:Int, _, _, _)) => NBits
+     rule bitSizeofFields(fieldInfo(_, NBits:Int, _, _, _, _)) => NBits
      rule bitSizeofFields(_) => 0 [owise]
 
 endmodule
