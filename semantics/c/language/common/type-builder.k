@@ -16,6 +16,7 @@ module C-TYPE-BUILDER-SYNTAX
      syntax Type ::= const(FlexType) [function]
      syntax Type ::= noreturn(FlexType) [function]
      syntax Type ::= restrict(FlexType) [function]
+     syntax Type ::= volatile(FlexType) [function]
      syntax Type ::= typeref(String) [function]
      syntax Type ::= typdef(String) [function]
      syntax DType ::= decl(FlexType, String) [function]
@@ -65,6 +66,8 @@ module C-TYPE-BUILDER
      rule noreturn(T:FlexType) => addModifier(Noreturn(), expand(T))
 
      rule restrict(T:FlexType) => addQualifier(Restrict(), expand(T))
+
+     rule volatile(T:FlexType) => addQualifier(Volatile(), expand(T))
 
      rule typeref(S:String) => #typeref(Identifier(S))
 
