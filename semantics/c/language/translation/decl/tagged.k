@@ -245,10 +245,39 @@ module C-DECL-TAGGED
                orBool (tag(X, Tu, BlockNum) in_keys(Structs))
           [structural]
 
+     syntax Bool ::= isUnnamedStructOrUnionType(Type) [function]
+     rule isUnnamedStructOrUnionType( t( _,
+                                         _,
+                                         structType( tag ( I::CId,
+                                                           _,
+                                                           _ 
+                                                         ) 
+                                                   )
+                                       )
+                                    ) => isUnnamedCId(I)
+     rule isUnnamedStructOrUnionType( t( _,
+                                         _,
+                                         unionType( tag ( I::CId,
+                                                          _,
+                                                          _ 
+                                                        ) 
+                                                  )
+                                       )
+                                    ) => isUnnamedCId(I)
+     rule isUnnamedStructOrUnionType(T) => false [owise]
+
      rule makeUnionFieldInfo(Pack::Bool, Fs::List)
           => makeUnionFieldInfo'(Pack, Fs, .Map, .Map, .List)
 
      syntax FieldInfo ::= "makeUnionFieldInfo'" "(" Bool "," List "," Map ","  Map "," List ")" [function]
+     rule makeUnionFieldInfo'(Pack::Bool,
+               ListItem(typedDeclaration(T::Type, _:NoName)) L::List,
+               Types::Map,
+               Offsets::Map,
+               NL::List)
+          => makeUnionFieldInfo'(Pack, L,
+               Types, Offsets, NL)
+       requires notBool isUnnamedStructOrUnionType(T)
      rule makeUnionFieldInfo'(Pack::Bool,
                ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
                Types::Map,
@@ -256,7 +285,7 @@ module C-DECL-TAGGED
                NL::List)
           => makeUnionFieldInfo'(Pack, L,
                Types[Field <- T], Offsets[Field <- 0],
-               NL ListItem(typedDeclaration(T, Field)))
+               NL ListItem(typedDeclaration(T, Field))) [owise]
      rule makeUnionFieldInfo'(true, .List, Types::Map, Offsets::Map, NL::List)
           => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, .Set, maxByteAlignofDecls(NL))
      rule makeUnionFieldInfo'(false, .List, Types::Map, Offsets::Map, NL::List)
@@ -264,11 +293,23 @@ module C-DECL-TAGGED
                roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL)),
                Types, Offsets, getPaddingOffsets(maxByteSizeofList(NL) *Int cfg:bitsPerByte, roundBits(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL))), maxByteAlignofDecls(NL))
 
-
      rule makeStructFieldInfo(Pack::Bool, Fs::List)
           => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)
 
      syntax FieldInfo ::= "makeStructFieldInfo'" "(" Bool "," List "," Int "," Map ","  Map "," List ")" [function]
+     rule makeStructFieldInfo'(Pack::Bool,
+               ListItem(typedDeclaration(T::Type, _:NoName)) L::List,
+               V::Int,
+               Types::Map,
+               Offsets::Map,
+               NL::List)
+          => makeStructFieldInfo'(Pack,
+               L,
+               V,
+               Types,
+               Offsets,
+               NL)
+       requires notBool isUnnamedStructOrUnionType(T)
      rule makeStructFieldInfo'(Pack::Bool,
                ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
                V::Int,
@@ -280,7 +321,7 @@ module C-DECL-TAGGED
                pad(V, T) +Int bitSizeofType(T),
                Types[Field <- T],
                Offsets[Field <- pad(V, T)],
-               NL ListItem(typedDeclaration(T, Field)))
+               NL ListItem(typedDeclaration(T, Field))) [owise]
      rule makeStructFieldInfo'(true, .List, V::Int, Types::Map, Offsets::Map, NL::List)
           => fieldInfo(NL, roundBits(V, 1),
                Types, Offsets,
