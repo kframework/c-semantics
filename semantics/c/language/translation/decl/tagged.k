@@ -278,6 +278,7 @@ module C-DECL-TAGGED
           => makeUnionFieldInfo'(Pack, L,
                Types, Offsets, NL)
        requires notBool isUnnamedStructOrUnionType(T)
+        andBool notBool isBitfieldType(T)
      rule makeUnionFieldInfo'(Pack::Bool,
                ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
                Types::Map,
@@ -310,6 +311,7 @@ module C-DECL-TAGGED
                Offsets,
                NL)
        requires notBool isUnnamedStructOrUnionType(T)
+        andBool notBool isBitfieldType(T)
      rule makeStructFieldInfo'(Pack::Bool,
                ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
                V::Int,
