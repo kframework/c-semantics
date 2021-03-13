@@ -73,7 +73,7 @@ module CPP-TRANSLATION-DECL-ENUM
 
      syntax KItem ::= enumContext(CId, CPPType, List, fixed: Bool, ut: CPPType, opaque: Bool)
 
-     rule enumContext(X::CId, E::CPPType, Enumerators:List, Fixed::Bool, UT::CPPType, Opaque:Bool)
+     rule enumContext(X::CId, E::CPPType, Enumerators:List, Fixed::Bool, _UT::CPPType, Opaque:Bool)
           => newEnum(getEnumId(E), E, Fixed, Opaque)
           ~> addEnumToEnv(X, E)
           ~> #if Opaque #then .K #else inEnumScope(E, declareEnumerators(E, 0, 0, 0, int, Enumerators, Fixed, true)) #fi
@@ -178,13 +178,13 @@ module CPP-TRANSLATION-DECL-ENUM
      // Type of an enumerator inside the declaration is enum's underlying type
      // if it is fixed, and type of initializing expression otherwise,
      // Hence we need to store the type of underlying expression...
-     rule declareEnumerators(T::CPPType, Min::Int, Max::Int, Next::Int, _, ListItem(Enumerator(X::CId, prv(V::Int, _, t(_, _, EType:CPPSimpleType)) #as Pr::PRVal)) L::List, Fixed:Bool, First:Bool)
+     rule declareEnumerators(T::CPPType, Min::Int, Max::Int, _Next::Int, _, ListItem(Enumerator(X::CId, prv(V::Int, _, t(_, _, EType:CPPSimpleType)) #as Pr::PRVal)) L::List, Fixed:Bool, First:Bool)
           => declareEnumerator(getEnumId(T), X, Pr, Fixed, underlyingType(T))
           ~> declareEnumerators(T, #if First #then V #else minInt(Min, V) #fi, #if First #then V #else maxInt(Max, V) #fi, V +Int 1, EType, L, Fixed, false)
      requires notBool isCPPSimpleUnscopedEnumType(EType)
 
      // Enums with fixed underlying type are finished by now.
-     rule declareEnumerators(T::CPPType, _, _, _, _, .List, true, _) => .
+     rule declareEnumerators(_::CPPType, _, _, _, _, .List, true, _) => .
 
      rule declareEnumerators(T::CPPType, Min::Int, Max::Int, _, _, .List, false, _) => calculateEnumValues(T, Min, Max)
 
@@ -302,7 +302,7 @@ module CPP-TRANSLATION-DECL-ENUM
 
      syntax SetEnumMinMaxUt ::= setEnumMinMaxUt(CPPType, min: Int, max: Int, ut: CPPType)
 
-     rule <k> setEnumMinMaxUt(t(_, _, unscopedEnum(_ :: Enum(X::CId) #as E::Enum, _, Fixed:Bool)) #as T::CPPType, Min::Int, Max::Int, cppIntegerType #as UT::CPPType)
+     rule <k> setEnumMinMaxUt(t(_, _, unscopedEnum(_ :: Enum(X::CId) #as E::Enum, _, Fixed:Bool)) #as _::CPPType, Min::Int, Max::Int, cppIntegerType #as UT::CPPType)
           => addEnumToEnv(X, t(noQuals, .Set, unscopedEnum(E, UT, Fixed))) ... </k>
           <enum-id> E </enum-id>
           <enum-type> _ => t(noQuals, .Set, unscopedEnum(E, UT, Fixed)) </enum-type>
@@ -312,7 +312,7 @@ module CPP-TRANSLATION-DECL-ENUM
 
 
      // @ref n4296 7.2/3: ... An opaque-enum-declaration is either a redeclaration of an enumeration in the current scope...
-     rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPType) => . ...</k>
+     rule <k> OpaqueEnumDeclaration(X::CId, _Scoped::Bool, _UT::CPPType) => . ...</k>
           <curr-tr-scope> namespaceScope(N::Namespace) </curr-tr-scope>
           <enum-id> N::Namespace :: Enum(X) </enum-id>
 

@@ -150,7 +150,7 @@ module CPP-TRANSLATION-DECL-TEMPLATE
           <curr-template-context> templateInfo(...) </curr-template-context>
           requires Init =/=K NoInit()
 
-     rule <k> addParam(X::CId) => .K ...</k>
+     rule <k> addParam(_::CId) => .K ...</k>
           <curr-function> dependent </curr-function>
 
      rule <k> (elaborateDone(K:K) ~> calculateGotoMap => .K) ~> _:KItem ~> setScope(_) ~> _:KItem
@@ -182,7 +182,7 @@ module CPP-TRANSLATION-DECL-TEMPLATE
           ...</k>
           <template-arguments> Old::Map => updateMap(Old, Args) </template-arguments>
 
-     rule <k> templateSpecialization(T:CPPType, _, _) ~> (setTemplateArgs(_, _, Old::Map) => .K) ...</k>
+     rule <k> templateSpecialization(_:CPPType, _, _) ~> (setTemplateArgs(_, _, Old::Map) => .K) ...</k>
           <template-arguments> _ => Old </template-arguments>
 
      rule TemplateDefinitionStmt(K:K) => K

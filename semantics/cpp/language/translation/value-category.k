@@ -68,7 +68,7 @@ module CPP-TRANSLATION-VALUE-CATEGORY
      context (HOLE:CatExpr => catof(HOLE)) cats:: _
           requires notBool isSpuriousExpr(HOLE) [result(ValueCategory)]
 
-     context K:KResult cats:: HOLE:SCatList
+     context _:KResult cats:: HOLE:SCatList
 
      // --------------------------------
 
@@ -91,11 +91,11 @@ module CPP-TRANSLATION-VALUE-CATEGORY
                   orBool CallExpr(_, _, _) :=K HOLE
                   orBool _ . _ _ :=K HOLE
 
-     rule catof(L:LVal => lvalue)
+     rule catof(_:LVal => lvalue)
 
-     rule catof(X:XVal => xvalue)
+     rule catof(_:XVal => xvalue)
 
-     rule catof(PR:PRVal => prvalue)
+     rule catof(_:PRVal => prvalue)
 
      rule catof(AlignofExpr(_) => prvalue)
 

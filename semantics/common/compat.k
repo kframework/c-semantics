@@ -104,7 +104,7 @@ module COMPAT-KAST [kast]
      imports BOOL
      imports K-EQUAL
 
-     rule some(.Map::Map, Lbl:K) => false
+     rule some(.Map::Map, _Lbl:K) => false
      rule some(K1:KItem |-> K2:KItem M::Map, #klabel(Lbl:KLabel)) => Lbl(K1, K2) orBool some(M, #klabel(Lbl)) [owise]
 
      rule mapList(ListItem(K:KItem) L:List, #klabel(Lbl:KLabel)) => ListItem(Lbl(K)) mapList(L, #klabel(Lbl))

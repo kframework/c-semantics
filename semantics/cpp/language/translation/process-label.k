@@ -196,7 +196,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
      rule <k> waitingOnGotoMap ...</k>
           <goto-calc>
                <computation>
-                    TryStmt(_, (ListItem(CatchOp(T::CPPType, S::Block)) => .List) L::List) ~> K:K
+                    TryStmt(_, (ListItem(CatchOp(_::CPPType, S::Block)) => .List) _::List) ~> K:K
                </computation>
                <computation-tail> Tail:K </computation-tail>
                B::Bag
@@ -210,7 +210,7 @@ module CPP-TRANSLATION-PROCESS-LABEL
      rule <k> waitingOnGotoMap ...</k>
           <goto-calc>
                <computation>
-                    TryStmt(_, (ListItem(CatchAnyOp(S::Block)) => .List) L::List) ~> K:K
+                    TryStmt(_, (ListItem(CatchAnyOp(S::Block)) => .List) _::List) ~> K:K
                </computation>
                <computation-tail> Tail:K </computation-tail>
                B::Bag

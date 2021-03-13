@@ -1196,7 +1196,7 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
             <class-id> C </class-id>
             <class-type> Key::ClassKey </class-type>
             <cenv> CE::Map => CE[X, T <- classOffset(NaOffset, Offset)] </cenv>
-            <dsize> V::Int => Offset +Int #if isBaseClass(X) #then nvSizeof(T) #else bitSizeofType(T) #fi </dsize>
+            <dsize> _::Int => Offset +Int #if isBaseClass(X) #then nvSizeof(T) #else bitSizeofType(T) #fi </dsize>
             <align> M::Int => maxInt(M, #if isBaseClass(X) #then nvAlignof(T) #else byteAlignofType(T) #fi) </align>
             <sizeof> V2::Int => maxInt(V2, Offset +Int #if isBaseClass(X) #then nvSizeof(T) #else bitSizeofType(T) #fi) </sizeof>
           ...</class>
@@ -1271,11 +1271,11 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Union(), _, _))) #as T::CPPType, 0)
           => SetItem(utype(T)) getTypesAtOffsetForLayoutInUnion(T, getClassInfo(T), 0)
 
-     rule getTypesAtOffsetForLayout(t(... st: arrayType(InnerT::CPPType, _)) #as T::CPPType, Offset::Int)
+     rule getTypesAtOffsetForLayout(t(... st: arrayType(InnerT::CPPType, _)) #as _::CPPType, Offset::Int)
           => getTypesAtOffsetForLayout(InnerT, Offset %Int bitSizeofType(InnerT))
           requires Offset >Int 0
 
-     rule getTypesAtOffsetForLayout(t(... st: incompleteArrayType(InnerT::CPPType)) #as T::CPPType, Offset::Int)
+     rule getTypesAtOffsetForLayout(t(... st: incompleteArrayType(InnerT::CPPType)) #as _::CPPType, Offset::Int)
           => getTypesAtOffsetForLayout(InnerT, Offset %Int bitSizeofType(InnerT))
           requires Offset >Int 0
 
@@ -1305,9 +1305,9 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
                <non-static-data-members>... ListItem(Class.DataMember(X::CId, T::CPPType)) => .List </non-static-data-members>
                <cenv>... X |-> (_::Map stripType(T) |-> (_, uninitialized)) ...</cenv>
-          ...</class>, Offset::Int)
+          ...</class>, _Offset::Int)
 
-     rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
+     rule getTypesAtOffsetForLayoutInStruct(_::CPPType, <class>...
                <non-static-data-members>... ListItem(Class.DataMember(X::CId, T'::CPPType)) </non-static-data-members>
                <cenv>... X |-> (_::Map stripType(T') |-> (_, classOffset(_, FOffset::Int))) ...</cenv>
           ...</class>, Offset::Int)
@@ -1318,18 +1318,18 @@ syntax Stmt ::= Defaulted(SpecialMemberFunction, Class) [klabel(DefaultedSMF)]
                <base-classes>... ListItem(C:Class) => ListItem(type(classType(C))) </base-classes>
           ...</class>, _)
 
-     rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
+     rule getTypesAtOffsetForLayoutInStruct(_::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>
                <non-static-data-members> .List </non-static-data-members>
                <cenv>... baseClass(C) |-> (_::Map stripType(T') |-> (_, classOffset(_, FOffset::Int))) ...</cenv>
           ...</class>, Offset::Int)
           requires FOffset >Int Offset
 
-     rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
+     rule getTypesAtOffsetForLayoutInStruct(_::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>
                <non-static-data-members> .List </non-static-data-members>
                <cenv>... baseClass(C) |-> (_::Map stripType(T') |-> (_, uninitialized)) ...</cenv>
-          ...</class>, Offset::Int)
+          ...</class>, _Offset::Int)
 
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) </base-classes>

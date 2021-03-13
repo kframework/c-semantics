@@ -139,16 +139,16 @@ module CPP-TRANSLATION-TYPING-CANONICALIZATION
 
      rule (.K => typeof(E)) ~> Decltype(E::Expr)
 
-     rule (.K => catof(E)) ~> typeof(T:CPPType) ~> Decltype(E::Expr)
+     rule (.K => catof(E)) ~> typeof(_:CPPType) ~> Decltype(E::Expr)
           requires Name(_, _) :/=K E
 
      rule typeof(T:CPPType) ~> Decltype(Name(_, _)) => T
 
-     rule catof(xvalue) ~> typeof(T:CPPType) ~> Decltype(E::Expr) => type(rvRefType(T))
+     rule catof(xvalue) ~> typeof(T:CPPType) ~> Decltype(_::Expr) => type(rvRefType(T))
 
-     rule catof(lvalue) ~> typeof(T:CPPType) ~> Decltype(E::Expr) => type(lvRefType(T))
+     rule catof(lvalue) ~> typeof(T:CPPType) ~> Decltype(_::Expr) => type(lvRefType(T))
 
-     rule catof(prvalue) ~> typeof(T:CPPType) ~> Decltype(E::Expr) => T
+     rule catof(prvalue) ~> typeof(T:CPPType) ~> Decltype(_::Expr) => T
 
      syntax KItem ::= elabResult(K)
 

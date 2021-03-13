@@ -28,7 +28,7 @@ module LINKING-CPP-RESOLUTION
      syntax KItem ::= resolveCPPReference(SymBase)
      rule <k> resolveCPPReference(OdrBase:DirectBase) ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(odrDecl(Tu::String, QX::QualId, _, _, T::CPPType)) => .Set) _::Set
+               OdrBase |-> (SetItem(odrDecl(_Tu::String, QX::QualId, _, _, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
           <odr-defs>... QX |-> (stripType(T) |-> _ _::Map) ...</odr-defs>
 
@@ -54,7 +54,7 @@ module LINKING-CPP-RESOLUTION
           <odr-defs>... N :: X |-> (stripType(T) |-> _ _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (stripType(T) |-> (_, envEntry(... base: Base:DirectBase)) _::Map) ...</nenv>
+          <nenv>... X |-> (stripType(T) |-> (_, envEntry(... base: _:DirectBase)) _::Map) ...</nenv>
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
@@ -75,7 +75,7 @@ module LINKING-CPP-RESOLUTION
           <external-defs>... Mangled |-> _ ...</external-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (stripType(T) |-> (_, envEntry(... base: Base:DirectBase)) _::Map) ...</nenv>
+          <nenv>... X |-> (stripType(T) |-> (_, envEntry(... base: _:DirectBase)) _::Map) ...</nenv>
 
      rule <k> (.K => ILL("TDR3",
                     "No definition for function or variable which was odr-used: "
@@ -143,6 +143,6 @@ module LINKING-CPP-RESOLUTION
           <odr-defs>... C :: X |-> (stripType(T) |-> _ _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (stripType(T) |-> (_, envEntry(... base: Base:DirectBase)) _::Map) ...</cenv>
+          <cenv>... X |-> (stripType(T) |-> (_, envEntry(... base: _:DirectBase)) _::Map) ...</cenv>
 
 endmodule

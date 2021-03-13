@@ -13,7 +13,7 @@ module CPP-TRANSLATION-STMT-LOOP
 
      context ForTStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
 
-     rule ForTStmt((Condition:PRVal => convertType(type(bool), Condition)), Inc::Stmt, Blk::Stmt)
+     rule ForTStmt((Condition:PRVal => convertType(type(bool), Condition)), _Inc::Stmt, _Blk::Stmt)
           requires notBool isCPPBoolType(type(Condition))
 
      rule (.K => elaborate(Inc, Blk)) ~> ForTStmt(Condition:PRVal, Inc::Stmt, Blk::Stmt)
@@ -27,7 +27,7 @@ module CPP-TRANSLATION-STMT-LOOP
 
      context WhileTStmt((HOLE:Expr => reval(HOLE)), _) [result(PRVal)]
 
-     rule WhileTStmt((Condition:PRVal => convertType(type(bool), Condition)), Blk::Stmt)
+     rule WhileTStmt((Condition:PRVal => convertType(type(bool), Condition)), _::Stmt)
           requires notBool isCPPBoolType(type(Condition))
 
      rule (.K => elaborate(Blk)) ~> WhileTStmt(Condition:PRVal, Blk::Stmt)

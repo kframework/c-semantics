@@ -75,7 +75,7 @@ module C-TYPING-INTERPRETATION
           ~> ArrayType(_, tv(_:Float, _), _)
           [structural]
      rule (.K => CV("CTI2", "Arrays must have positive length."))
-          ~> ArrayType(T:Type, tv(Len:Int, _), _)
+          ~> ArrayType(_:Type, tv(Len:Int, _), _)
           requires Len <=Int 0
           [structural]
      rule (.K => CV("CTI5", "Structs containing a flexible array member must not be array elements."))

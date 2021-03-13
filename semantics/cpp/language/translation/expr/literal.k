@@ -78,7 +78,7 @@ module CPP-TRANSLATION-EXPR-LITERAL
                ~> initString(Loc +bytes 1, butFirstChar(S))
           requires S =/=String ""
 
-     rule initString(Loc::SymLoc, "")
+     rule initString(_::SymLoc, "")
           => .K
 
 endmodule

@@ -60,7 +60,7 @@ module LINKING-CPP-BUILTIN
      syntax List ::= getDummyParams(CPPType) [function]
      syntax List ::= #getDummyParams(CPPTypes, Int) [function]
      rule getDummyParams(t(_, _, functionType(... paramTypes: Ts::CPPTypes))) => #getDummyParams(Ts, 0)
-     rule #getDummyParams(T::CPPType, Ts::CPPTypes, I::Int) => ListItem(Identifier("_" +String showInt(I))) #getDummyParams(Ts, I +Int 1)
+     rule #getDummyParams(_::CPPType, Ts::CPPTypes, I::Int) => ListItem(Identifier("_" +String showInt(I))) #getDummyParams(Ts, I +Int 1)
      rule #getDummyParams(.CPPTypes, _) => .List
 
 endmodule

@@ -13,9 +13,9 @@ module CPP-TRANSLATION-IO
      imports DELETE-OBJECT-SYNTAX
      imports SYMLOC-SYNTAX
 
-     rule freeNativeObject(B::SymBase) => .K
+     rule freeNativeObject(_::SymBase) => .K
 
-     rule writeNativeByte(L::SymLoc, K::K) => .List
+     rule writeNativeByte(_::SymLoc, _::K) => .List
 
 
      rule <k> initBytes(loc(Base::SymBase, Offset::Int), ListItem(V::Bits) L::List)

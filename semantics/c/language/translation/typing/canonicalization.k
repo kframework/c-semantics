@@ -87,7 +87,7 @@ module C-TYPING-CANONICALIZATION
           requires cfg:reservedKeywordSupported(Tok)
           [structural]
      rule (.K => SE("TCANON2","Unsupported reserved identifier "+String Tok +String " (reserved variant of restrict)."))
-          ~> addMods(Mods::List ListItem(RestrictReserved(Tok::String, Loc::CabsLoc)), T:Type)
+          ~> addMods(_Mods::List ListItem(RestrictReserved(Tok::String, _::CabsLoc)), _:Type)
           requires notBool cfg:reservedKeywordSupported(Tok)
           [structural]
      rule addMods(Mods::List ListItem(Restrict()), T:Type)
@@ -123,7 +123,7 @@ module C-TYPING-CANONICALIZATION
      context addMods(_ ListItem(AlignasExpression(HOLE:KItem)), _)
      rule addMods(_::List ListItem(AlignasExpression(tv(A:Int, _)) => alignas(A)), _)
           [structural]
-     rule addMods(Mods::List (ListItem(S:KItem) => .List), _:KResult)
+     rule addMods(_Mods::List (ListItem(S:KItem) => .List), _:KResult)
           requires notBool isModifier(S)
                andBool notBool isQualifier(S)
                andBool notBool isReducibleModifier(S)

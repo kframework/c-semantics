@@ -138,7 +138,7 @@ module CPP-TRANSLATION-EXPR-NEW
 
      syntax List ::= #getSecondDeleteArg(Map, CPPType, CPPType, PRVal) [function]
 
-     rule #getSecondDeleteArg((stripType(T1) |-> _) (stripType(T2) |-> _) M::Map, T1::CPPType, T2::CPPType, V::PRVal) => ListItem(V)
+     rule #getSecondDeleteArg((stripType(T1) |-> _) (stripType(T2) |-> _) _::Map, T1::CPPType, T2::CPPType, V::PRVal) => ListItem(V)
 
      rule #getSecondDeleteArg(...) => .List [owise]
 
@@ -149,7 +149,7 @@ module CPP-TRANSLATION-EXPR-NEW
           requires isCPPPointerType(type(V)) andBool #fun(InnerT::CPPType => notBool isCPPClassType(InnerT) orBool notBool hasDestructorThat(InnerT, isVirtualDestructor))(innerType(type(V)))
 
      rule (
-            cSet(Cands::Map, Q::QualId) #as C:CandidateSet
+            cSet(Cands::Map, _::QualId) #as C:CandidateSet
             => resolveOverload(
                  C,
                  list(

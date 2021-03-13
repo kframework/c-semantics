@@ -8,7 +8,7 @@ module CPP-TRANSLATION-STMT-IF
      imports CPP-TRANSLATION-ERROR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule IfTStmt((C:PRVal => convertType(type(bool), C)), TrueBr:Block, FalseBr:Block)
+     rule IfTStmt((C:PRVal => convertType(type(bool), C)), _TrueBr:Block, _FalseBr:Block)
           requires notBool isCPPBoolType(type(C))
 
      rule (.K => elaborate(TrueBr, FalseBr))

@@ -299,7 +299,7 @@ module SYMLOC
      rule stripFromArray(Loc:SymLoc) => Loc [owise]
 
      rule getFromArray(loc(_, _, SetItem(fromArray(...) #as F::Provenance) _)) => F
-     rule getFromArray(Loc::SymLoc) => .K [owise]
+     rule getFromArray(_::SymLoc) => .K [owise]
 
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)

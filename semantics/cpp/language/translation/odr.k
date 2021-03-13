@@ -34,7 +34,7 @@ module CPP-TRANSLATION-ODR
           <odr-decls> Decls::Map => Decls[Base += odrDecl(Tu, Q, CName, LangLinkage, T)] </odr-decls>
 
      rule <k> Odr.doWhenUsed(Base::SymBase, K:KItem) => .K ...</k>
-          <odr-uses> Uses::Set </odr-uses>
+          <odr-uses> _Uses::Set </odr-uses>
           <curr-tr-tu> Tu::String </curr-tr-tu>
           <tu-id> Tu </tu-id>
           <when-odr-used>... .Map => Base |-> K </when-odr-used>
