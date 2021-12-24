@@ -11,7 +11,7 @@ understand this project:
   Applications. *POPL'12*. 
   <http://fsl.cs.uiuc.edu/pubs/ellison-rosu-2012-popl.pdf>
 - Chucky Ellison. *A Formal Semantics of C with Applications*. PhD Thesis.
-  <http://fsl.cs.uiuc.edu/pubs/ellison-2012-thesis.pdf>
+  <https://www.researchgate.net/publication/220997440_An_executable_formal_semantics_of_C_with_applications>
 
 ## Quick overview
 
