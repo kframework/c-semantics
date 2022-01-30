@@ -6,12 +6,12 @@ understand this project:
 
 - Chris Hathhorn, Chucky Ellison, and Grigore Rosu. Defining the
   Undefinedness of C. *PLDI'15*.
-  <http://fslweb.cs.illinois.edu/FSL/papers/2015/hathhorn-ellison-rosu-2015-pldi/hathhorn-ellison-rosu-2015-pldi-public.pdf>
+  <https://fsl.cs.illinois.edu/publications/hathhorn-ellison-rosu-2015-pldi.pdf>
 - Chucky Ellison and Grigore Rosu. An Executable Formal Semantics of C with 
   Applications. *POPL'12*. 
-  <http://fsl.cs.uiuc.edu/pubs/ellison-rosu-2012-popl.pdf>
+  <https://fsl.cs.illinois.edu/publications/ellison-rosu-2012-popl.pdf>
 - Chucky Ellison. *A Formal Semantics of C with Applications*. PhD Thesis.
-  <http://fsl.cs.uiuc.edu/pubs/ellison-2012-thesis.pdf>
+  <http://hdl.handle.net/2142/34297>
 
 ## Quick overview
 
