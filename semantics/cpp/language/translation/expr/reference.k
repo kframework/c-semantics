@@ -109,11 +109,11 @@ module CPP-TRANSLATION-EXPR-REFERENCE
 
      rule bindReference'(L:LVal, R:Val) => le(bindReferenceExec(L, R), trace(L), type(L))
 
-     rule <k> le(E::Expr, Tr::Trace, cppRefType #as T::CPPType => innerType(T)) ...</k>
+     rule <k> le(_::Expr, _::Trace, cppRefType #as T::CPPType => innerType(T)) ...</k>
           <unreference> true </unreference>
           <compile-time-evaluation> false </compile-time-evaluation>
 
-     rule <k> xe(E::Expr, Tr::Trace, cppRefType #as T::CPPType => innerType(T)) ...</k>
+     rule <k> xe(_::Expr, _::Trace, cppRefType #as T::CPPType => innerType(T)) ...</k>
           <unreference> true </unreference>
           <compile-time-evaluation> false </compile-time-evaluation>
 

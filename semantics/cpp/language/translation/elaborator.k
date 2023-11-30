@@ -59,7 +59,7 @@ module CPP-TRANSLATION-ELABORATOR
 
      rule (.K => K) ~> runInit(K:K)
 
-     rule K:Val ~> runInit(_) => .K
+     rule _:Val ~> runInit(_) => .K
 
      rule elaborate(K1:K, K2:K) => elaborate(K1) ~> elaborate(K2)
 

@@ -59,7 +59,7 @@ module LINKING-C-RESOLUTION
           ...</external-decls>
           <external-defs>... X |-> _ ...</external-defs>
           <tu-id> Tu </tu-id>
-          <genv>... X |-> Base:DirectBase ...</genv>
+          <genv>... X |-> _:DirectBase ...</genv>
           [structural]
      rule <k> resolveCReference(X:CId, _) => .K  ...</k>
           <external-decls>...

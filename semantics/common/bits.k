@@ -84,11 +84,11 @@ module BITS
           [owise]
 
      syntax Bool ::= piecesJoinable(Bits, Bits) [function]
-     rule piecesJoinable(piece(N:Int, _), piece(N':Int, _)) => true
-     rule piecesJoinable(piece(unknown(N:Int), _), piece(unknown(N':Int), _)) => true
+     rule piecesJoinable(piece(_N:Int, _), piece(_N':Int, _)) => true
+     rule piecesJoinable(piece(unknown(_N:Int), _), piece(unknown(_N':Int), _)) => true
      rule piecesJoinable(piece(trap, _), piece(trap, _)) => true
-     rule piecesJoinable(piece(encodedPtr(N::PtrValue, From::Int, To::Int), _), piece(encodedPtr(N, To, _), _)) => true
-     rule piecesJoinable(piece(encodedValue(N::EncodableValue, From::Int, To::Int), _), piece(encodedValue(N, To, _), _)) => true
+     rule piecesJoinable(piece(encodedPtr(N::PtrValue, _From::Int, To::Int), _), piece(encodedPtr(N, To, _), _)) => true
+     rule piecesJoinable(piece(encodedValue(N::EncodableValue, _From::Int, To::Int), _), piece(encodedValue(N, To, _), _)) => true
      rule piecesJoinable(_, _) => false [owise]
 
      syntax Bits ::= joinPieces(Bits, Bits) [function]

@@ -112,7 +112,7 @@ module CPP-TRANSLATION-NAME
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <inline-namespaces> InlineS::Set </inline-namespaces>
-          <nusing-namespaces> UsingS::Set </nusing-namespaces>
+          <nusing-namespaces> _UsingS::Set </nusing-namespaces>
 
      rule <k> nameLookupInUsingDirectives(... set: (SetItem(N::Namespace) => .Set) _,
                    usingS: (.Set => UsingS) _)
@@ -347,7 +347,7 @@ module CPP-TRANSLATION-NAME
                andBool notBool isIgnoredClassSet(C2, B2)
                andBool notBool isIgnoredClassSet(B2, C2)
 
-     rule mergeClassSet(classSet(_, C1::QualId, C2::Set), classSet(_, B1::QualId, B2::Set))
+     rule mergeClassSet(classSet(_, C1::QualId, C2::Set), classSet(_, _::QualId, B2::Set))
           => classSet(ambiguous, C1, C2 B2) [owise]
 
      syntax Bool ::= isIgnoredClassSet(Set, Set) [function]
@@ -381,7 +381,7 @@ module CPP-TRANSLATION-NAME
 
      rule (.K => argDependentNameLookup(X, Args)) ~> CallExpr(Name(NoNNS(), X::CId), Args::StrictList, krlist(.List))
 
-     rule <k> CallExpr((ExprLoc(L::CabsLoc, E:Expr) => E), Args::StrictList, krlist(.List)) ...</k>
+     rule <k> CallExpr((ExprLoc(L::CabsLoc, E:Expr) => E), _Args::StrictList, krlist(.List)) ...</k>
           <curr-tr-program-loc> _ => L </curr-tr-program-loc>
 
      context CallExpr(Name(HOLE:NNS, _), _, _)
@@ -394,7 +394,7 @@ module CPP-TRANSLATION-NAME
 
      rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr((le(_, _, t(... st: classType(C::Class))) #Or xe(_, _, t(... st: classType(C::Class))) #Or pre(_, _, t(... st: classType(C::Class)))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
 
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(V:Val . no-template Name(C:NNSVal, X::CId), _, _)
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(_:Val . no-template Name(C:NNSVal, X::CId), _, _)
 
      rule cSet(Y::Map, X::QualId) ~> CallExpr(E::Expr, Args::StrictList, krlist(.List))
           => resolveOverload(cSet(Y, X), Args, E)
@@ -521,7 +521,7 @@ module CPP-TRANSLATION-NAME
      rule <k> (.K => isDependentName(X, Args, Types)) ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), _:CandidateSet) ...</k>
           <curr-template-context> templateInfo(...) </curr-template-context>
 
-     rule <k> (.K => false) ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), _:CandidateSet) ...</k>
+     rule <k> (.K => false) ~> argDependentNameLookup(_::CId, list(_Args::List), krlist(_Types::List), _:CandidateSet) ...</k>
           <curr-template-context> noTemplate </curr-template-context>
 
      // TODO(dwightguth): class member stuff
@@ -535,7 +535,7 @@ module CPP-TRANSLATION-NAME
 
      rule isDependentName(_, .List, .List) => false
 
-     rule <k> false ~> argDependentNameLookup(X::CId, Args::StrictList, Types::StrictList, cSet(Y::Map, QX::QualId)) => cSet(Y, QX) ...</k>
+     rule <k> false ~> argDependentNameLookup(X::CId, _Args::StrictList, _Types::StrictList, cSet(Y::Map, QX::QualId)) => cSet(Y, QX) ...</k>
            <tr-env> Env::Map </tr-env>
            requires hasSpecialDeclInArgLookup(X, Y, Env)
 
@@ -552,13 +552,13 @@ module CPP-TRANSLATION-NAME
 
      // associated namespaces
      rule <k> (.K => getFunctionAddressTypes(Args))
-              ~> false ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), cSet(... candidates: Y::Map)) ...</k>
+              ~> false ~> argDependentNameLookup(X::CId, list(Args::List), krlist(_Types::List), cSet(... candidates: Y::Map)) ...</k>
           <tr-env> Env::Map </tr-env>
           requires notBool hasSpecialDeclInArgLookup(X, Y, Env)
 
      rule <k> (.K => getFunctionAddressTypes(Args))
-              ~> false ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), notFound(_)) ...</k>
-          <tr-env> Env::Map </tr-env>
+              ~> false ~> argDependentNameLookup(_::CId, list(Args::List), krlist(_Types::List), notFound(_)) ...</k>
+          <tr-env> _Env::Map </tr-env>
 
      // if the argument is the name or address of a set of overloaded functions
      // and/or function templates, its associated classes and namespaces are
@@ -578,9 +578,9 @@ module CPP-TRANSLATION-NAME
 
      syntax Bool ::= isAddressOfName(Init) [function]
 
-     rule isAddressOfName(& N:Name) => true
+     rule isAddressOfName(& _:Name) => true
 
-     rule isAddressOfName(UnaryOperator(operator&, N:Name)) => true
+     rule isAddressOfName(UnaryOperator(operator&, _:Name)) => true
 
      rule isAddressOfName(_) => false [owise]
 
@@ -597,7 +597,7 @@ module CPP-TRANSLATION-NAME
                    | getTemplateArgTypes(TemplateArgs) [function]
 
      // @ref n4296 3.4.2:2.1
-     rule getAssociatedNamespaces((ListItem(cppFundamentalType #as T::CPPType) => .List) _, _)
+     rule getAssociatedNamespaces((ListItem(cppFundamentalType #as _::CPPType) => .List) _, _)
 
      rule getAssociatedNamespaces((ListItem(t(_, _, no-type)) => .List) _, _)
 
@@ -647,7 +647,7 @@ module CPP-TRANSLATION-NAME
 
      rule getTemplateArgTypes(.TemplateArgs) => .List
 
-     rule #argDependentNameLookup(X::CId, Args::StrictList, Types::List, .Set, Y:CandidateSet) => Y
+     rule #argDependentNameLookup(_::CId, _Args::StrictList, _Types::List, .Set, Y:CandidateSet) => Y
 
      rule (.K => qualifiedNameLookup(X, N, SetItem(function))) ~> #argDependentNameLookup(X::CId, _, _, (SetItem(N::Namespace) => .Set) _, _)
 
@@ -661,7 +661,7 @@ module CPP-TRANSLATION-NAME
      rule resolveElabSpecifier(templateRef(Q::QualId, T::CPPType), krlist(Args::List))
           => specializeTypeTemplate(Q, T, Args)
 
-     rule <k> specializeTypeTemplate(X::QualId, t(Q::Quals, Mods::Set, classType(N::Namespace :: Class(Tag::Tag, C::CId, .TemplateArgs))), Args::List)
+     rule <k> specializeTypeTemplate(_::QualId, t(Q::Quals, Mods::Set, classType(N::Namespace :: Class(Tag::Tag, C::CId, .TemplateArgs))), Args::List)
                => t(Q, Mods, classType(N :: Class(Tag, C, toTemplateArgs(Args))))
           ...</k>
 

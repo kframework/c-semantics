@@ -120,7 +120,7 @@ module C-TYPING-EXPR
      rule typeof(+ T:Type => tryPromote(T))
      rule typeof(- T:Type => tryPromote(T))
      rule typeof(~ T:Type => tryPromote(T:Type))
-     rule typeof(! T:Type => type(int))
+     rule typeof(! _:Type => type(int))
 
      rule typeof(SizeofExpression(T:Type) => SizeofType(T, .K))
      rule typeof(SizeofType(T:Type, _)
@@ -257,10 +257,10 @@ module C-TYPING-EXPR
           requires stripQualifiers(T) ==Type stripQualifiers(T')
                andBool SizeofExpression(...) :/=K K
 
-     rule elaborateDone(V:K, V':K) ~> typeof(_ ? t(...) : (t(...) #as T'::Type))
+     rule elaborateDone(V:K, _V':K) ~> typeof(_ ? t(...) : (t(...) #as T'::Type))
           => typeof(stripQualifiers(T'))
           requires isNPC(V) andBool isPointerType(T')
-     rule elaborateDone(V:K, V':K) ~> typeof(_ ? (t(...) #as T::Type) : t(...))
+     rule elaborateDone(_V:K, V':K) ~> typeof(_ ? (t(...) #as T::Type) : t(...))
           => typeof(stripQualifiers(T))
           requires isNPC(V') andBool isPointerType(T)
 
